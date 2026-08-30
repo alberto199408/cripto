@@ -93,6 +93,24 @@ main{flex:1;min-width:0;padding:16px 20px calc(30px + env(safe-area-inset-bottom
 .b.rj{background:color-mix(in srgb,var(--dn) 20%,var(--b2));border-color:color-mix(in srgb,var(--dn) 45%,transparent);
   color:#FFB3C0}
 .b.rj:hover{background:var(--dn);color:#fff}
+.b.ok2{background:color-mix(in srgb,var(--up) 16%,var(--b2));
+  border-color:color-mix(in srgb,var(--up) 42%,transparent);color:var(--up);font-weight:600}
+.mini{background:var(--b0);border:1px solid var(--ln);color:var(--t3);cursor:pointer;
+  width:26px;height:26px;border-radius:7px;display:inline-grid;place-items:center;padding:0}
+.mini:hover{border-color:var(--ac);color:var(--ac)}
+.mini .ic{width:13px;height:13px}
+.mini.peg{margin-left:3px}
+.cacc{white-space:nowrap}
+.pegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:6px;
+  max-height:44vh;overflow:auto}
+label.peg{display:flex;align-items:center;gap:6px;background:var(--b0);border:1px solid var(--ln);
+  border-radius:9px;padding:6px 9px;cursor:pointer;font-size:12px}
+label.peg:hover{border-color:var(--ac)}
+label.peg.sab{border-left:3px solid var(--sab)}
+label.peg.dom{border-left:3px solid var(--dom)}
+label.peg.fer{border-left:3px solid var(--fer)}
+label.peg .pd2{flex:1;text-transform:capitalize}
+label.peg .pe{font-size:10px;color:var(--t3);font-family:Consolas,monospace}
 .b.cerrado{background:color-mix(in srgb,var(--dn) 18%,var(--b2));
   border-color:color-mix(in srgb,var(--dn) 45%,transparent);color:#FFB3C0;font-weight:600}
 .b.abierto{background:color-mix(in srgb,var(--up) 18%,var(--b2));
@@ -538,7 +556,7 @@ body.claro .hoja{box-shadow:0 20px 50px rgba(0,0,0,.18)}
         stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
       <h1 id="titulo">Registro de horario</h1>
       <div class="der">
-        <button class="b sm" id="bInst" style="display:none"></button><button class="b sm cerrado" id="candado" style="display:none"></button><span class="syn" id="sync" style="display:none"><i></i></span>
+        <button class="b sm ac" id="bSave">GUARDAR</button><button class="b sm" id="bInst" style="display:none"></button><button class="b sm cerrado" id="candado" style="display:none"></button><span class="syn" id="sync" style="display:none"><i></i></span>
         <div class="selm">
           <button id="mAnt" title="mes anterior">‹</button>
           <select id="selMes"></select>
@@ -709,7 +727,7 @@ function usd(n){
 }
 
 /* ---------- un día ---------- */
-function diaVacio(){ return {e1:"",s1:"",e2:"",s2:"",perm:"",obs:"",tipo:"",lib:false}; }
+function diaVacio(){ return {e1:"",s1:"",e2:"",s2:"",perm:"",obs:"",tipo:"",lib:false,mod:0}; }
 
 function calcDia(iso, d, cfg){
   d = d || diaVacio();
@@ -878,6 +896,10 @@ function cargar(){
       }
     }
   }catch(e){}
+  /* Arrastre viejo: al principio venía "AQUA INGENIERIA" puesto de fábrica
+     y quedó guardado en el navegador. Este registro es personal suyo, así
+     que si nunca lo cambió a mano, se limpia. */
+  if(!BD.cfg.empresaMia && /AQUA/i.test(BD.cfg.empresa||"")) BD.cfg.empresa="";
   sembrar();
 }
 
@@ -1589,6 +1611,45 @@ function instalarApp(){
   aviso("Use el menú del navegador: Instalar aplicación / Agregar a inicio.", true);
 }
 
+/* =====================================================================
+   EL BOTÓN GUARDAR
+   Guarda en este equipo y, si está conectado, manda todo al otro
+   equipo en el momento. Antes no había botón y no se sabía si algo
+   se había guardado o no.
+   ===================================================================== */
+var GUARDADO_HORA="";
+function guardarYSincronizar(){
+  var b=document.getElementById("bSave");
+  guardar();
+  GUARDADO_HORA=new Date().toTimeString().slice(0,5);
+  if(!gitCfg().token){
+    pintarBotonGuardar();
+    aviso("Guardado en este equipo · "+GUARDADO_HORA+
+          ". Para verlo en el teléfono, conecte la sincronización en Configuración.");
+    return;
+  }
+  if(b){ b.disabled=true; b.textContent="Guardando…"; }
+  sincronizar(true).then(function(){
+    if(b) b.disabled=false;
+    GUARDADO_HORA=new Date().toTimeString().slice(0,5);
+    pintarBotonGuardar();
+    aviso(SYNC.error
+      ? ("Guardado aquí, pero no se pudo mandar al otro equipo: "+SYNC.error)
+      : ("Guardado y enviado · "+GUARDADO_HORA+". Ya está en sus otros equipos."),
+      !!SYNC.error);
+  });
+}
+function pintarBotonGuardar(){
+  var b=document.getElementById("bSave");
+  if(!b) return;
+  b.disabled=false;
+  if(!GUARDADO_HORA){ b.className="b sm ac"; b.textContent="GUARDAR"; return; }
+  b.className="b sm ok2";
+  b.textContent="Guardado "+GUARDADO_HORA;
+  b.title=gitCfg().token ? "Guardado aquí y enviado a sus otros equipos."
+                         : "Guardado en este equipo.";
+}
+
 function arrancar(){
   cargar();
   try{ aplicarColores(); }catch(e){}
@@ -1606,6 +1667,14 @@ function arrancarDeVerdad(){
   });
   document.getElementById("candado").onclick=tocarCandado;
   document.getElementById("bInst").onclick=instalarApp;
+  document.getElementById("bSave").onclick=guardarYSincronizar;
+  pintarBotonGuardar();
+  /* Ctrl+S guarda, como en cualquier programa */
+  document.addEventListener("keydown", function(e){
+    if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="s"){
+      e.preventDefault(); guardarYSincronizar();
+    }
+  });
   DESBLOQ = archivoCerrado() ? DESBLOQ : true;
   document.getElementById("mAnt").onclick=function(){ moverMes(-1); };
   document.getElementById("mSig").onclick=function(){ moverMes(1); };
@@ -2588,22 +2657,51 @@ function nombreEquipo(){
 
 /* junta los dos lados: cada MES se compara por separado, así lo que
    escribió en el teléfono no borra lo de la computadora */
+/* ---------------------------------------------------------------------
+   JUNTAR LO DE LOS DOS EQUIPOS
+   Se compara DÍA POR DÍA, no mes por mes: cada día lleva la hora en que
+   se escribió, y gana el más reciente. Antes se comparaba el mes entero
+   con una hora que nunca se guardaba, así que el último en sincronizar
+   pisaba al otro y nunca coincidían.
+   --------------------------------------------------------------------- */
+function lleno(x){
+  return !!(x && (x.e1||x.s1||x.e2||x.s2||x.perm||x.obs||x.tipo));
+}
 function juntarMeses(local, remoto){
-  var r=Object.assign({}, remoto||{});
-  Object.keys(local||{}).forEach(function(k){
-    var A=local[k], B=r[k];
+  var r={};
+  var claves={};
+  Object.keys(local||{}).forEach(function(k){ claves[k]=1; });
+  Object.keys(remoto||{}).forEach(function(k){ claves[k]=1; });
+
+  Object.keys(claves).forEach(function(k){
+    var A=(local||{})[k], B=(remoto||{})[k];
+    if(!A){ r[k]=B; return; }
     if(!B){ r[k]=A; return; }
-    var dias=Object.assign({}, B.dias||{});
-    Object.keys(A.dias||{}).forEach(function(iso){
-      var a=A.dias[iso], b=dias[iso];
-      var lleno=function(x){ return x && (x.e1||x.s1||x.e2||x.s2||x.perm||x.obs||x.tipo); };
-      if(!lleno(b) && lleno(a)) dias[iso]=a;               /* allá vacío, acá lleno */
-      else if(lleno(a) && (A.mod||0)>=(B.mod||0)) dias[iso]=a;
+
+    var dias={};
+    var isos={};
+    Object.keys(A.dias||{}).forEach(function(i){ isos[i]=1; });
+    Object.keys(B.dias||{}).forEach(function(i){ isos[i]=1; });
+
+    Object.keys(isos).forEach(function(iso){
+      var a=(A.dias||{})[iso], b=(B.dias||{})[iso];
+      if(!lleno(a) && !lleno(b)){ if(a||b) dias[iso]=a||b; return; }
+      if(!lleno(b)){ dias[iso]=a; return; }      /* allá vacío, acá lleno */
+      if(!lleno(a)){ dias[iso]=b; return; }      /* acá vacío, allá lleno */
+      /* los dos con horas: gana el escrito más tarde */
+      dias[iso] = (+a.mod||0) >= (+b.mod||0) ? a : b;
     });
-    r[k]={dias:dias,
-      anticipo:(A.anticipo||B.anticipo||0), prest:(A.prest||B.prest||0),
-      otros:(A.otros||B.otros||0), otrosNom:(A.otrosNom||B.otrosNom||""),
-      nota:(A.nota||B.nota||""), mod:Math.max(A.mod||0,B.mod||0)};
+
+    /* los descuentos: gana el mes tocado más tarde */
+    var nuevoA = (+A.mod||0) >= (+B.mod||0);
+    var F = nuevoA ? A : B, G = nuevoA ? B : A;
+    r[k]={ dias:dias,
+      anticipo: (F.anticipo!=null && F.anticipo!==0) ? F.anticipo : (G.anticipo||0),
+      prest:    (F.prest!=null    && F.prest!==0)    ? F.prest    : (G.prest||0),
+      otros:    (F.otros!=null    && F.otros!==0)    ? F.otros    : (G.otros||0),
+      otrosNom: F.otrosNom || G.otrosNom || "",
+      nota:     F.nota || G.nota || "",
+      mod: Math.max(+A.mod||0, +B.mod||0) };
   });
   return r;
 }
@@ -2933,6 +3031,8 @@ function ico(n){
     grafo:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',
     ley:'<path d="M12 3v18M5 7h14M7 7l-3 6a3 3 0 006 0zM17 7l-3 6a3 3 0 006 0zM8 21h8"/>',
     paleta:'<circle cx="12" cy="12" r="9"/><circle cx="9" cy="9" r="1.2"/><circle cx="15" cy="9" r="1.2"/><circle cx="9.5" cy="15" r="1.2"/>',
+    copia:'<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>',
+    pega:'<path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 14l2 2 4-4"/>',
     baja:'<path d="M12 3v12M7 11l5 5 5-5M4 21h16"/>',
     imp:'<path d="M6 9V3h12v6M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/>',
     xls:'<path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6"/><path d="M9 13l6 6M15 13l-6 6"/>',
@@ -2962,32 +3062,99 @@ function celT(f,campo,ph){
 function engancharMes(c){
   var box=document.getElementById("cuerpo");
 
-  /* escribir horas: se recalcula al momento */
+  /* ------------------------------------------------------------------
+     ESCRIBIR LAS HORAS
+     OJO: NO se redibuja la tabla al escribir. Antes se volvía a pintar
+     todo con cada tecla y por eso saltaba el cursor y se escribía mal.
+     Ahora solo se actualizan las celdas de ESA fila y los totales.
+     ------------------------------------------------------------------ */
   box.querySelectorAll("tr[data-d]").forEach(function(tr){
     var iso=tr.getAttribute("data-d");
     tr.querySelectorAll("[data-c]").forEach(function(inp){
-      inp.addEventListener("change", function(){
-        var m=mesDe(MES);
-        if(!m.dias[iso]) m.dias[iso]=diaVacio();
-        m.dias[iso][inp.getAttribute("data-c")]=inp.value;
-        guardar();
-        var foco=document.activeElement, sel=null;
-        if(foco && foco.getAttribute) sel=foco.getAttribute("data-c");
-        pintarMes();
-        /* devolver el cursor donde estaba */
-        if(sel){
-          var f=document.querySelector('tr[data-d="'+iso+'"] [data-c="'+sel+'"]');
-          if(f){ f.focus(); if(f.select) try{ f.select(); }catch(e){} }
-        }
+      inp.addEventListener("input", function(){ anotar(tr, iso, inp); });
+      inp.addEventListener("change", function(){ anotar(tr, iso, inp); });
+      /* Enter o flechas: pasar a la siguiente casilla, como en Excel */
+      inp.addEventListener("keydown", function(e){
+        if(e.key==="Enter"){ e.preventDefault(); mover(tr, inp, e.shiftKey?-1:1); }
+        if(e.key==="ArrowDown" && inp.type!=="time"){ e.preventDefault(); bajarFila(tr, inp); }
+        if(e.key==="ArrowUp" && inp.type!=="time"){ e.preventDefault(); subirFila(tr, inp); }
       });
     });
-    /* tocar el día abre el menú de marcas */
     tr.querySelector(".cdia").onclick=function(){ marcarDia(iso); };
     tr.querySelector(".cfec").onclick=function(){ marcarDia(iso); };
   });
 
+  /* guarda el dato y refresca SOLO lo que cambió de esa fila */
+  function anotar(tr, iso, inp){
+    var m=mesDe(MES);
+    if(!m.dias[iso]) m.dias[iso]=diaVacio();
+    m.dias[iso][inp.getAttribute("data-c")]=inp.value;
+    m.dias[iso].mod=Date.now();     /* la hora de ESTE día, para sincronizar bien */
+    m.mod=Date.now();
+    guardar();
+    GUARDADO_HORA=""; pintarBotonGuardar();
+    refrescarFila(tr, iso);
+    refrescarTotales();
+  }
+
+  /* vuelve a calcular una sola fila, sin tocar el resto */
+  function refrescarFila(tr, iso){
+    var m=mesDe(MES);
+    var f=calcDia(iso, m.dias[iso], cfgDe(+MES.slice(0,4)));
+    var tot=tr.querySelector(".ctot");
+    if(tot){ tot.textContent=fh(f.trab); tot.className="ctot"+(f.trab?"":" nada"); }
+    var c50=tr.children[7], c100=tr.children[8];
+    if(c50)  c50.innerHTML  = f.sup50 ?'<span class="p50">'+fh(f.sup50)+'</span>'  :'<span class="nada">—</span>';
+    if(c100) c100.innerHTML = f.ext100?'<span class="p100">'+fh(f.ext100)+'</span>':'<span class="nada">—</span>';
+  }
+
+  /* los totales del pie y las cifras de arriba */
+  function refrescarTotales(){
+    var c2=calcMes(MES);
+    var pie=box.querySelector(".tdias tfoot tr");
+    if(pie){
+      pie.children[1].innerHTML='<b>'+fh(c2.tTrab)+'</b>';
+      pie.children[2].innerHTML='<b class="p50">'+fh(c2.tSup)+'</b>';
+      pie.children[3].innerHTML='<b class="p100">'+fh(c2.tExt)+'</b>';
+      pie.children[4].innerHTML='<b>'+(fh(c2.tPerm)||"—")+'</b>';
+    }
+    var big=box.querySelector(".pbig");
+    if(big) big.textContent=usd(c2.neto);
+    var pv=document.getElementById("pieV");
+    if(pv) pv.textContent=usd(c2.neto);
+    clearTimeout(refrescarTotales._t);
+    refrescarTotales._t=setTimeout(function(){ if(vista==="mes") pintarMes(); }, 2500);
+  }
+
+  /* moverse entre casillas como en Excel */
+  function casillas(){
+    return [].slice.call(box.querySelectorAll(".tdias [data-c]"));
+  }
+  function mover(tr, inp, paso){
+    var t=casillas(), i=t.indexOf(inp);
+    var s=t[i+paso];
+    if(s){ s.focus(); if(s.select) try{ s.select(); }catch(e){} }
+  }
+  function bajarFila(tr, inp){ saltarFila(tr, inp, 1); }
+  function subirFila(tr, inp){ saltarFila(tr, inp, -1); }
+  function saltarFila(tr, inp, dir){
+    var col=inp.getAttribute("data-c");
+    var filas=[].slice.call(box.querySelectorAll("tr[data-d]"));
+    var i=filas.indexOf(tr), s=filas[i+dir];
+    if(!s) return;
+    var n=s.querySelector('[data-c="'+col+'"]');
+    if(n){ n.focus(); if(n.select) try{ n.select(); }catch(e){} }
+  }
+
   var b;
   if((b=box.querySelector("#bLlenar"))) b.onclick=llenarHorarioFijo;
+  if((b=box.querySelector("#bCopiar"))) b.onclick=pegarEnVarios;
+  box.querySelectorAll("[data-cop]").forEach(function(x){
+    x.onclick=function(e){ e.stopPropagation(); copiarDia(x.getAttribute("data-cop")); };
+  });
+  box.querySelectorAll("[data-peg]").forEach(function(x){
+    x.onclick=function(e){ e.stopPropagation(); pegarDia(x.getAttribute("data-peg")); };
+  });
   if((b=box.querySelector("#bImp"))) b.onclick=imprimirMes;
   if((b=box.querySelector("#bXls"))) b.onclick=bajarExcel;
   if((b=box.querySelector("#bLimpiar"))) b.onclick=function(){
@@ -3008,6 +3175,107 @@ function engancharMes(c){
   var on=box.querySelector("#fOtroN");
   if(on) on.addEventListener("change", function(){
     mesDe(MES).otrosNom=on.value.trim(); guardar();
+  });
+}
+
+/* =====================================================================
+   COPIAR Y PEGAR UN DÍA
+   Hay días que se repiten toda la semana. Se copia uno y se pega en los
+   que quiera, sin escribir cuatro horas cada vez.
+   ===================================================================== */
+var DIA_COPIADO=null;
+
+function copiarDia(iso){
+  var m=mesDe(MES), d=m.dias[iso];
+  if(!d || (!d.e1 && !d.s1 && !d.e2 && !d.s2)){
+    aviso("Ese día está vacío: no hay nada que copiar.", true); return;
+  }
+  DIA_COPIADO={e1:d.e1||"", s1:d.s1||"", e2:d.e2||"", s2:d.s2||"",
+               perm:d.perm||"", obs:d.obs||"", tipo:d.tipo||"", de:iso};
+  pintarMes();
+  aviso("Copiado el "+(+iso.slice(8,10))+": "+
+        (DIA_COPIADO.e1||"—")+"–"+(DIA_COPIADO.s1||"—")+
+        (DIA_COPIADO.e2?" y "+DIA_COPIADO.e2+"–"+DIA_COPIADO.s2:"")+
+        ". Ahora toque pegar en los días que quiera.");
+}
+
+function pegarDia(iso){
+  if(!DIA_COPIADO){ aviso("Primero copie un día con el primer botón.", true); return; }
+  var m=mesDe(MES);
+  if(!m.dias[iso]) m.dias[iso]=diaVacio();
+  var d=m.dias[iso];
+  d.e1=DIA_COPIADO.e1; d.s1=DIA_COPIADO.s1;
+  d.e2=DIA_COPIADO.e2; d.s2=DIA_COPIADO.s2;
+  d.perm=DIA_COPIADO.perm;
+  d.mod=Date.now();
+  m.mod=Date.now();
+  guardar(); pintarMes();
+  aviso("Pegado en el "+(+iso.slice(8,10))+".");
+}
+
+/* pegar en varios días de una vez */
+function pegarEnVarios(){
+  if(!DIA_COPIADO){ aviso("Primero copie un día.", true); return; }
+  var c=calcMes(MES);
+  var h='<div class="hoja ancha"><div class="hh"><h3>Pegar en varios días</h3>'+
+    '<button class="x" data-cerrar>×</button></div><div class="hb">'+
+    '<div class="fcalc">Va a pegar: <b>'+(DIA_COPIADO.e1||"—")+'–'+(DIA_COPIADO.s1||"—")+'</b>'+
+      (DIA_COPIADO.e2?' y <b>'+DIA_COPIADO.e2+'–'+DIA_COPIADO.s2+'</b>':'')+
+      ' (copiado del día '+(+DIA_COPIADO.de.slice(8,10))+')</div>'+
+    '<div class="frap" style="margin:12px 0">'+
+      '<button class="b sm" data-sel="lv">Lunes a viernes</button>'+
+      '<button class="b sm" data-sel="vacios">Solo los vacíos</button>'+
+      '<button class="b sm" data-sel="todos">Todos</button>'+
+      '<button class="b sm" data-sel="nada">Ninguno</button>'+
+    '</div>'+
+    '<div class="pegrid">';
+  c.filas.forEach(function(f){
+    var lleno = f.d.e1||f.d.s1||f.d.e2||f.d.s2;
+    h+='<label class="peg'+(f.fer?" fer":f.esDom?" dom":f.esSab?" sab":"")+'">'+
+      '<input type="checkbox" data-p="'+f.iso+'"'+
+        (f.esDom||f.fer?'':'')+'>'+
+      '<span class="pd2">'+f.dia+' '+(+f.iso.slice(8,10))+'</span>'+
+      '<span class="pe">'+(lleno? fh(f.trab) : (f.fer?esc(f.fer.slice(0,14)):"vacío"))+'</span>'+
+    '</label>';
+  });
+  h+='</div><div class="nota">Los días que ya tienen horas se van a <b>reemplazar</b>. '+
+     'Los domingos y feriados no se marcan solos.</div>'+
+     '</div><div class="hf"><button class="b" data-cerrar>Cancelar</button>'+
+     '<button class="b ac" id="pgOk">Pegar en los marcados</button></div></div>';
+
+  abrir(h, function(M){
+    function marcar(cual){
+      M.querySelectorAll("[data-p]").forEach(function(ch){
+        var iso=ch.getAttribute("data-p");
+        var f=c.filas.filter(function(x){ return x.iso===iso; })[0];
+        var lleno = f.d.e1||f.d.s1||f.d.e2||f.d.s2;
+        if(cual==="nada") ch.checked=false;
+        else if(cual==="todos") ch.checked=true;
+        else if(cual==="lv") ch.checked = !f.esDom && !f.esSab && !f.fer;
+        else if(cual==="vacios") ch.checked = !lleno && !f.esDom && !f.fer;
+      });
+    }
+    M.querySelectorAll("[data-sel]").forEach(function(b){
+      b.onclick=function(){ marcar(b.getAttribute("data-sel")); };
+    });
+    marcar("vacios");
+    M.querySelector("#pgOk").onclick=function(){
+      var m=mesDe(MES), n=0;
+      M.querySelectorAll("[data-p]").forEach(function(ch){
+        if(!ch.checked) return;
+        var iso=ch.getAttribute("data-p");
+        if(!m.dias[iso]) m.dias[iso]=diaVacio();
+        var d=m.dias[iso];
+        d.e1=DIA_COPIADO.e1; d.s1=DIA_COPIADO.s1;
+        d.e2=DIA_COPIADO.e2; d.s2=DIA_COPIADO.s2;
+        d.perm=DIA_COPIADO.perm;
+        d.mod=Date.now();
+        n++;
+      });
+      m.mod=Date.now();
+      guardar(); cerrar(); pintarMes();
+      aviso(n? ("Pegado en "+n+" día(s).") : "No marcó ningún día.", !n);
+    };
   });
 }
 
@@ -3084,6 +3352,8 @@ function marcarDia(iso){
       if(!m.dias[iso]) m.dias[iso]=diaVacio();
       m.dias[iso].tipo=tipo;
       m.dias[iso].obs=M.querySelector("#dO").value.trim();
+      m.dias[iso].mod=Date.now();
+      m.mod=Date.now();
       var nom=M.querySelector("#dF").value.trim();
       var ferPrevio = feriadoDe(iso)||"";
       if(nom!==ferPrevio && hayClave() && !DESBLOQ){
@@ -3122,6 +3392,7 @@ function llenarHorarioFijo(){
         var d=m.dias[f.iso];
         if(d && (d.e1||d.s1||d.e2||d.s2)) return;   /* ya tiene algo escrito */
         if(!m.dias[f.iso]) m.dias[f.iso]=diaVacio();
+        m.dias[f.iso].mod=Date.now();
         m.dias[f.iso].e1=cfg.e1; m.dias[f.iso].s1=cfg.s1;
         if(f.esSab){
           m.dias[f.iso].e1=cfg.sE1||cfg.e1; m.dias[f.iso].s1=cfg.sS1||cfg.s1;
@@ -3138,6 +3409,7 @@ function tablaDias(c){
   var h='<div class="pan tabla"><div class="pt">'+ico("tabla")+
     'REGISTRO DIARIO DE HORAS<span class="sp"></span>'+
     '<button class="b sm ac" id="bLlenar">Llenar horario fijo</button>'+
+    '<button class="b sm" id="bCopiar">'+ico("copia")+'Copiar un día</button>'+
     '<button class="b sm" id="bImp">'+ico("imp")+'Imprimir</button>'+
     '<button class="b sm" id="bXls">'+ico("xls")+'Excel</button>'+
     '<button class="b sm rj" id="bLimpiar">Limpiar mes</button></div>'+
@@ -3146,7 +3418,7 @@ function tablaDias(c){
       th("Entrada","ent","in")+th("Salida","sal","out")+
       th("Entrada","ent","in")+th("Salida","sal","out")+
       th("Trabajó","tra","reloj")+th("50%","c50","mas")+th("100%","c100","mas2")+
-      th("Permiso","per","perm")+th("Observación","obs","nota")+
+      th("Permiso","per","perm")+th("Observación","obs","nota")+th("","fec","")+
     '</tr></thead><tbody>';
 
   c.filas.forEach(function(f){
@@ -3165,6 +3437,10 @@ function tablaDias(c){
       '<td>'+(f.ext100?'<span class="p100">'+fh(f.ext100)+'</span>':'<span class="nada">—</span>')+'</td>'+
       '<td>'+celT(f,"perm","hh:mm")+'</td>'+
       '<td class="cobs">'+celT(f,"obs","")+'</td>'+
+      '<td class="cacc">'+
+        '<button class="mini" data-cop="'+f.iso+'" title="Copiar este día">'+ico("copia")+'</button>'+
+        '<button class="mini peg" data-peg="'+f.iso+'" title="Pegar aquí">'+ico("pega")+'</button>'+
+      '</td>'+
     '</tr>';
   });
 
@@ -3173,7 +3449,7 @@ function tablaDias(c){
     '<td><b>'+fh(c.tTrab)+'</b></td>'+
     '<td><b class="p50">'+fh(c.tSup)+'</b></td>'+
     '<td><b class="p100">'+fh(c.tExt)+'</b></td>'+
-    '<td><b>'+(fh(c.tPerm)||"—")+'</b></td><td></td>'+
+    '<td><b>'+(fh(c.tPerm)||"—")+'</b></td><td></td><td></td>'+
   '</tr></tfoot></table></div>'+
   '<div class="leyenda">'+
     '<span><i class="lg n"></i> día normal</span>'+
@@ -3509,7 +3785,13 @@ function engancharCfg(){
       aviso("Guardado a mano. En Leyes puede volver a los valores oficiales.");
     });
   }
-  txt("cNom","nombre"); txt("cEmp","empresa"); txt("cCar","cargo");
+  txt("cNom","nombre"); txt("cCar","cargo");
+  var eEmp=box.querySelector("#cEmp");
+  if(eEmp) eEmp.addEventListener("change", function(){
+    BD.cfg.empresa=eEmp.value.trim();
+    BD.cfg.empresaMia=true;        /* usted la escribió: ya no se toca */
+    guardar();
+  });
   nu("cSue","sueldo",1); nu("cHm","horasMes",1); nu("cJor","jornada",1);
   nu("cTd","topeDia",0);
   pc("cR50","rec50"); pc("cR100","rec100");
