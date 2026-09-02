@@ -2949,6 +2949,11 @@ function limpiarCarpetasVacias(){
   });
   return antes!==BD.carpetas.length;
 }
+/* Qué carpetas están desplegadas en PLANTILLAS.
+   Faltaba declararla: al haber una sola carpeta, la pestaña reventaba
+   entera y quedaba en blanco, sin poder crear más plantillas. */
+var CARPABIERTA={};
+
 function arbolCarpetas(){
   /* "2026", "2026/AGOSTO" -> árbol */
   var carps=carpetasPlant(), nodos={}, raiz=[];
