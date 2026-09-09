@@ -4,13 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Portafolio Cripto</title>
-<link rel="manifest" href="./manifest.webmanifest">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <meta name="theme-color" content="#0B1017">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Portafolio">
-<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20192%20192%22%3E%3Crect%20width%3D%22192%22%20height%3D%22192%22%20rx%3D%2242%22%20fill%3D%22%230B1017%22/%3E%3Ccircle%20cx%3D%2296%22%20cy%3D%2296%22%20r%3D%2258%22%20fill%3D%22%2312E19A%22/%3E%3Ctext%20x%3D%2296%22%20y%3D%22127%22%20text-anchor%3D%22middle%22%20font-family%3D%22Segoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2296%22%20font-weight%3D%22800%22%20fill%3D%22%2304120C%22%3EB%3C/text%3E%3C/svg%3E">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20192%20192%22%3E%3Crect%20width%3D%22192%22%20height%3D%22192%22%20rx%3D%2242%22%20fill%3D%22%230B1017%22/%3E%3Ccircle%20cx%3D%2296%22%20cy%3D%2296%22%20r%3D%2258%22%20fill%3D%22%2312E19A%22/%3E%3Ctext%20x%3D%2296%22%20y%3D%22127%22%20text-anchor%3D%22middle%22%20font-family%3D%22Segoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%2296%22%20font-weight%3D%22800%22%20fill%3D%22%2304120C%22%3EB%3C/text%3E%3C/svg%3E">
 
 <style>
@@ -101,11 +103,24 @@ main{flex:1;min-width:0;padding:20px 24px calc(40px + env(safe-area-inset-bottom
 .cp{padding:16px 18px}
 
 /* ---------- tabla de activos ---------- */
-.env{overflow-x:auto}
+.env{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;min-width:820px}
+@media(max-width:760px){
+  table{min-width:600px}
+  thead th,tbody td{padding:9px 8px;font-size:12.5px}
+  .opt{display:none}                     /* columnas que no son imprescindibles */
+  .b.sm{min-height:38px}                 /* que se puedan tocar con el dedo */
+  .rapidos button{min-height:40px}
+}
 thead th{text-align:right;padding:11px 14px;font-size:11.5px;font-weight:600;color:var(--t3);
   background:var(--b2);white-space:nowrap}
 thead th:first-child{text-align:left}
+thead th.ord{cursor:pointer;user-select:none}
+thead th.ord:hover{color:var(--tx);background:var(--b1)}
+thead th.ord.act{color:var(--ac)}
+thead th .ordp{cursor:pointer;padding:1px 5px;border-radius:5px;border:1px solid var(--ln)}
+thead th .ordp.act{color:var(--ac);border-color:var(--ac)}
+thead th .ordp:hover{color:var(--tx)}
 tbody td{padding:13px 14px;text-align:right;font-family:Consolas,monospace;font-size:13.5px;
   font-variant-numeric:tabular-nums;border-bottom:1px solid var(--ln);white-space:nowrap}
 tbody td:first-child{text-align:left;font-family:inherit}
@@ -135,7 +150,8 @@ label{display:block;font-size:11.5px;font-weight:600;color:var(--t3);margin-bott
 input,select{width:100%;background:var(--b0);color:var(--tx);border:1px solid var(--ln);
   border-radius:9px;padding:10px 12px;font-family:Consolas,monospace;font-size:14px}
 select{font-family:inherit}
-input:focus,select:focus{outline:none;border-color:var(--ac)}
+input:focus,select:focus{outline:2px solid var(--ac);outline-offset:1px;border-color:var(--ac)}
+tr.cl:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ac);outline-offset:-2px}
 input[type=color]{padding:3px;height:42px}
 .campos{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
 .ancho{grid-column:1/-1}
@@ -143,6 +159,8 @@ input[type=color]{padding:3px;height:42px}
   background:color-mix(in srgb,var(--ac) 9%,transparent);
   border:1px solid color-mix(in srgb,var(--ac) 32%,transparent);
   font-family:Consolas,monospace;font-size:13px;color:var(--ac2);line-height:1.6}
+.nota.ojo{background:color-mix(in srgb,#FF9F3C 13%,transparent);
+  border-color:color-mix(in srgb,#FF9F3C 45%,transparent);color:#FFB86B}
 .pill{display:flex;background:var(--b0);border:1px solid var(--ln);border-radius:9px;padding:3px}
 .pill button{flex:1;background:none;border:0;color:var(--t3);padding:9px;border-radius:7px;
   font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
@@ -172,6 +190,13 @@ input[type=color]{padding:3px;height:42px}
 .rank .pc b{display:block;font-size:17px;font-weight:800}
 .rank .pc span{font-size:12px}
 
+#verNueva{position:fixed;left:50%;transform:translateX(-50%) translateY(140%);bottom:18px;
+  z-index:90;display:flex;align-items:center;gap:11px;padding:12px 16px;border-radius:13px;
+  background:var(--b1);border:1px solid var(--ac);box-shadow:0 10px 40px rgba(0,0,0,.55);
+  transition:transform .35s ease;max-width:calc(100vw - 24px);flex-wrap:wrap}
+#verNueva.on{transform:translateX(-50%) translateY(0)}
+#verNueva span{font-size:13.5px;font-weight:600}
+
 /* ---------- rosca ---------- */
 .rosca{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
 .rosca svg{width:150px;height:150px;flex:none}
@@ -199,7 +224,12 @@ input[type=color]{padding:3px;height:42px}
 .mv .q .l1{font-size:14px;font-weight:600;margin-bottom:3px}
 .mv .q .l1 em{font-style:normal;font-family:Consolas,monospace;font-weight:700}
 .mv .q .l2{font-size:11.5px;color:var(--t3);font-family:Consolas,monospace}
-.mv .p{text-align:right;flex:none;font-family:Consolas,monospace}
+.mv .r{text-align:right;flex:none;font-family:Consolas,monospace;min-width:96px;
+  padding-right:13px;border-right:1px solid var(--ln)}
+.mv .r b{display:block;font-size:15px;font-weight:800}
+.mv .r span{font-size:10.5px;color:var(--t3)}
+.mv .r i{font-style:normal;font-weight:700}
+.mv .p{text-align:right;flex:none;font-family:Consolas,monospace;min-width:84px}
 .mv .p b{font-size:16px;font-weight:800;display:block}
 .mv .p span{font-size:11px;color:var(--t3)}
 .mv.compra{border-left:3px solid var(--up)}
@@ -253,7 +283,9 @@ input[type=color]{padding:3px;height:42px}
   aside{width:100%;height:auto;position:static;flex-direction:row;align-items:center;overflow-x:auto;
     padding:10px 12px;border-right:0;border-bottom:1px solid var(--ln)}
   aside .marca{padding:0 12px 0 4px}
-  aside .marca span{display:none}
+  /* la versión SÍ se ve en el teléfono: es lo primero que hay que mirar
+     después de actualizar, y antes estaba escondida */
+  aside .marca span{display:block;font-size:9px;letter-spacing:.1em;white-space:nowrap}
   aside nav{flex-direction:row;gap:4px}
   aside nav button{padding:9px 12px;font-size:12.5px}
   aside nav button span.tx{display:none}
@@ -359,7 +391,9 @@ tbody tr.cl:hover{background:color-mix(in srgb,var(--ac) 9%,transparent)}
 .meta .mb i{display:block;height:100%;background:linear-gradient(90deg,var(--ac),var(--up));
   transition:width .6s ease}
 .meta .mt{font-size:12px;color:var(--t2);margin-top:6px;font-family:Consolas,monospace}
-.hsec{display:grid;grid-template-columns:repeat(2,minmax(130px,1fr));gap:10px;align-content:center}
+.hsec{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;
+  align-content:center;flex:1.15;min-width:300px}
+@media(max-width:900px){ .hsec{grid-template-columns:repeat(2,minmax(130px,1fr))} }
 .hc{background:var(--b2);border:1px solid var(--ln);border-radius:11px;padding:11px 13px}
 .hc .e{font-size:9.5px;letter-spacing:.13em;color:var(--t3);font-weight:700}
 .hc .v{font-size:19px;font-weight:700;margin-top:4px}
@@ -574,7 +608,7 @@ thead th:first-child span.cap{background:color-mix(in srgb,var(--ac) 16%,var(--b
 <div id="marca"></div>
 <div id="app">
   <aside>
-    <div class="marca"><div class="d">₿</div><div><b>Portafolio</b><span>CRIPTO</span></div></div>
+    <div class="marca"><div class="d">₿</div><div><b>Portafolio</b><span id="marcaVer">CRIPTO</span></div></div>
     <nav id="nav"></nav>
     <div class="pie"><b id="pieTot">—</b><span>valor del portafolio</span></div>
   </aside>
@@ -584,7 +618,7 @@ thead th:first-child span.cap{background:color-mix(in srgb,var(--ac) 16%,var(--b
       <div class="der">
         <div class="act" id="act"><span class="lz"></span><span id="actT">…</span></div><span class="syn" id="sync" style="display:none"><i></i></span>
         <button class="b sm" id="bRef">↻ Actualizar</button>
-        <button class="b sm ac" id="bSave">GUARDAR</button><button class="b ac sm" id="bComprar">+ Comprar / Ingresar</button>
+        <button class="b sm ac" id="bSave" title="Todo se guarda solo; este botón manda los cambios a sus otros equipos">ENVIAR</button><button class="b ac sm" id="bComprar">+ Comprar / Ingresar</button>
       </div>
     </div>
     <div id="cuerpo"></div>
@@ -596,6 +630,11 @@ thead th:first-child span.cap{background:color-mix(in srgb,var(--ac) 16%,var(--b
 </div>
 <div id="velo"><div id="veloIn" style="width:100%;display:flex;justify-content:center"></div></div>
 <div id="aviso"></div>
+<div id="verNueva">
+  <span id="vnTxt">Hay una versión nueva del programa</span>
+  <button class="b ac sm" id="vnOk">Actualizar ahora</button>
+  <button class="b sm" id="vnNo">Ahora no</button>
+</div>
 <script>
 /* =====================================================================
    PORTAFOLIO CRIPTO — todo vive en este archivo.
@@ -684,10 +723,25 @@ function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){
   return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
 function num(v){
   if(v==null) return null;
-  var s=String(v).trim().replace(/\s/g,"").replace(/,/g,".");
+  var s=String(v).trim().replace(/[\s$%]/g,"");
   if(s==="") return null;
+  var neg = s.charAt(0)==="-";
+  if(neg||s.charAt(0)==="+") s=s.slice(1);
+  var c=s.lastIndexOf(","), p=s.lastIndexOf(".");
+  if(c>=0 && p>=0){
+    /* tiene los dos: el ultimo que aparece es el decimal */
+    if(c>p) s=s.replace(/\./g,"").replace(/,/g,".");
+    else    s=s.replace(/,/g,"");
+  } else if(c>=0){
+    /* solo comas: una sola es decimal (1.250,50); varias son miles */
+    s = (s.split(",").length>2) ? s.replace(/,/g,"") : s.replace(",",".");
+  } else if((s.split(".").length-1)>1){
+    /* varios puntos: son miles (1.250.500) */
+    s = s.replace(/\./g,"");
+  }
   var n=parseFloat(s);
-  return isNaN(n)?null:n;
+  if(isNaN(n)) return null;
+  return neg?-n:n;
 }
 /* dinero: siempre 2 decimales, con separador de miles */
 function usd(n){
@@ -709,7 +763,12 @@ function cant(n){
 }
 function pct(n,dec){
   if(n==null||isNaN(n)||!isFinite(n)) return "—";
-  return (n>=0?"+":"")+n.toFixed(dec==null?2:dec)+"%";
+  return (n>=0?"+":"")+n.toFixed(dec==null?2:dec).replace(".",",")+"%";
+}
+/* porcentaje sin el signo +, con coma decimal como el resto */
+function pctS(n, dec){
+  if(n==null||isNaN(n)||!isFinite(n)) return "—";
+  return n.toFixed(dec==null?1:dec).replace(".",",")+"%";
 }
 function claseDe(n){ return n==null||isNaN(n)?"neutro":(n>0?"sube":(n<0?"baja":"neutro")); }
 function hoy(){ var d=new Date(); return d.getFullYear()+"-"+P(d.getMonth()+1)+"-"+P(d.getDate()); }
@@ -732,10 +791,16 @@ function idNuevo(){ return Date.now().toString(36)+Math.random().toString(36).sl
 function aviso(txt, malo){
   var e=document.getElementById("aviso");
   if(!e) return;
+  e.setAttribute("role","status");
+  e.setAttribute("aria-live","polite");
   e.textContent=txt;
+  e.title="Toque para cerrar";
+  e.onclick=function(){ e.className=""; };
   e.className="on"+(malo?" mal":"");
   clearTimeout(aviso._t);
-  aviso._t=setTimeout(function(){ e.className=""; },4000);
+  /* los avisos largos, y los de error, se quedan el tiempo necesario para leerlos */
+  var seg = Math.min(14000, Math.max(malo?6000:3500, String(txt).length*70));
+  aviso._t=setTimeout(function(){ e.className=""; }, seg);
 }
 
 /* ---------- guardado ---------- */
@@ -743,11 +808,30 @@ var BD={ ops:[], fut:[], precios:{}, alertas:[], borrados:[], ajustes:{}, tema:n
 var LLAVE="portafolio-cripto-v7";
 var MEM=null;   /* si el navegador no deja guardar, al menos no se cae */
 
+var AJ_FIRMA=null;        /* para no marcar los ajustes como cambiados en cada guardado */
+var GUARDA_FALLA=false;   /* para avisar una sola vez si el navegador no deja guardar */
+function firmaAjustes(){
+  /* mod, la clave y las marcas internas no cuentan como "el usuario cambió un ajuste" */
+  try{ return JSON.stringify([Object.assign({},BD.ajustes,{mod:0,git:0,verChk:0}), BD.tema]); }
+  catch(e){ return ""; }
+}
 function guardar(){
-  if(BD.ajustes) BD.ajustes.mod=Date.now();
+  if(BD.ajustes){
+    var f=firmaAjustes();
+    if(AJ_FIRMA===null) AJ_FIRMA=f;                 /* primer guardado: no cuenta como cambio */
+    else if(f!==AJ_FIRMA){ AJ_FIRMA=f; BD.ajustes.mod=Date.now(); }
+    if(!BD.ajustes.mod) BD.ajustes.mod=Date.now();
+  }
   try{ if(typeof GUARDADO_HORA!=="undefined"){ GUARDADO_HORA=""; pintarBotonGuardar(); } }catch(e){}
-  try{ localStorage.setItem(LLAVE, JSON.stringify(BD)); }
-  catch(e){ MEM=JSON.stringify(BD); }
+  try{ localStorage.setItem(LLAVE, JSON.stringify(BD)); GUARDA_FALLA=false; }
+  catch(e){
+    MEM=JSON.stringify(BD);
+    if(!GUARDA_FALLA){
+      GUARDA_FALLA=true;
+      try{ aviso("Este navegador no esta dejando guardar. Lo de hoy queda solo en memoria: "+
+        "descargue una copia desde Configuracion antes de cerrar la ventana.", true); }catch(x){}
+    }
+  }
 }
 function cargar(){
   var t=null;
@@ -790,8 +874,8 @@ var PRE={ cargando:false, ultimo:null, fuente:"", fallo:"" };
 /* todas las monedas que aparecen en el portafolio */
 function simbolos(){
   var s={};
-  BD.ops.forEach(function(o){ if(o.sym) s[o.sym]=1; });
-  BD.fut.forEach(function(f){ if(f.sym) s[f.sym]=1; });
+  BD.ops.forEach(function(o){ if(o.sym) s[String(o.sym).toUpperCase()]=1; });
+  BD.fut.forEach(function(f){ if(f.sym) s[String(f.sym).toUpperCase()]=1; });
   return Object.keys(s);
 }
 
@@ -810,6 +894,66 @@ function ponerPrecioMano(sym, v){
   BD.precios[sym]=Object.assign({}, BD.precios[sym], {p:v, mano:true, t:Date.now()});
   guardar();
 }
+/* devuelve la moneda a los precios de internet */
+function quitarPrecioMano(sym){
+  sym=String(sym).toUpperCase();
+  if(BD.precios[sym]) BD.precios[sym]=Object.assign({}, BD.precios[sym], {mano:false});
+  guardar();
+}
+/* los precios que usted escribio a mano, para llevarlos al telefono */
+function preciosManuales(){
+  var r={};
+  Object.keys(BD.precios||{}).forEach(function(s){
+    if(BD.precios[s] && BD.precios[s].mano) r[s]=BD.precios[s];
+  });
+  return r;
+}
+/* =====================================================================
+   ESCRIBIR LOS PRECIOS A MANO
+   Para las monedas que ninguna fuente de internet tiene. Lo que escriba
+   aqui manda: la actualizacion automatica ya no lo pisa. Si borra la
+   casilla, esa moneda vuelve a tomar el precio de internet.
+   ===================================================================== */
+function preciosAMano(){
+  var syms=simbolos().filter(function(x){ return !esEstable(x); }).sort();
+  if(!syms.length){ aviso("Todavía no tiene monedas registradas.",true); return; }
+  abrir('<div class="hoja ancha"><div class="hh"><h3>Escribir precios a mano</h3>'+
+    '<button class="x" data-cerrar>×</button></div><div class="hb">'+
+    '<div class="campos">'+
+    syms.map(function(x){
+      var p=BD.precios[String(x).toUpperCase()];
+      var v=(p&&typeof p.p==="number")?String(p.p).replace(".",","):"";
+      return '<div class="campo"><label>'+esc(x)+
+        (esManual(x)?' <b style="color:var(--ac)">· a mano</b>'
+                    :(p&&typeof p.p==="number"?' <span class="mut">· de internet</span>'
+                                              :' <b style="color:var(--dn)">· sin precio</b>'))+
+        '</label><input class="pmI" data-s="'+esc(x)+'" inputmode="decimal" value="'+esc(v)+'"></div>';
+    }).join("")+
+    '</div><div class="nota">Escriba el precio en dolares de las monedas que no aparecen '+
+    'en las fuentes. El precio que escriba aqui <b>manda</b>: la actualizacion automatica ya '+
+    'no lo cambia. Para que una moneda vuelva a tomar el precio de internet, <b>borre su '+
+    'casilla</b> y guarde.</div></div>'+
+    '<div class="hf"><button class="b" data-cerrar>Cancelar</button>'+
+    '<button class="b ac" id="pmOk">Guardar precios</button></div></div>',
+  function(M){
+    M.querySelector("#pmOk").onclick=function(){
+      var puestos=0, quitados=0, malos=[];
+      M.querySelectorAll(".pmI").forEach(function(i){
+        var x=i.getAttribute("data-s"), v=num(i.value);
+        if(String(i.value).trim()===""){
+          if(esManual(x)){ quitarPrecioMano(x); quitados++; }
+          return;
+        }
+        if(v==null || v<=0){ malos.push(x); return; }
+        if(precioDe(x)!==v || !esManual(x)){ ponerPrecioMano(x, v); puestos++; }
+      });
+      if(malos.length){ aviso("Revise el precio de: "+malos.join(", "),true); return; }
+      guardar(); cerrar(); repintar();
+      aviso(puestos+" precio(s) a mano"+(quitados?" · "+quitados+" vuelve(n) a internet":"")+".");
+    };
+  });
+}
+
 function cambioDe(sym){
   var p=BD.precios[String(sym).toUpperCase()];
   return (p&&typeof p.ch==="number")?p.ch:null;
@@ -830,6 +974,7 @@ function traerPrecios(silencioso){
   return siguiente().then(function(res){
     var t=Date.now(), n=0;
     Object.keys(res.datos).forEach(function(s){
+      if(BD.precios[s] && BD.precios[s].mano) return;   /* el precio que usted escribio manda */
       BD.precios[s]=Object.assign({}, BD.precios[s], res.datos[s], {t:t, mano:false});
       n++;
     });
@@ -1147,58 +1292,7 @@ var SEMILLA_OPS=[
   {id:"s13",sym:"ETH",tipo:"compra",cant:0.0098,precio:1710.0,com:0,fecha:"2026-06-15",nota:"",casa:"BINANCE",mod:1},
   {id:"s14",sym:"SOL",tipo:"compra",cant:0.614,precio:72.4,com:0,fecha:"2026-06-17",nota:"",casa:"BINANCE",mod:1}
 ];
-var SEMILLA_FUT=[
-  {id:"f1",n:1,sym:"",lado:"SHORT",monto:20.0,apal:10.0,pct:0.153,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f2",n:2,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f3",n:3,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:0.192,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f4",n:4,sym:"",lado:"SHORT",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f5",n:5,sym:"",lado:"SHORT",monto:20.0,apal:10.0,pct:0.1,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f6",n:6,sym:"",lado:"SHORT",monto:20.0,apal:10.0,pct:0.175,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f7",n:7,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f8",n:8,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f9",n:9,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:0.105,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f10",n:10,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:0.152,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f11",n:11,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:0.1,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f12",n:12,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f13",n:13,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:0.158,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f14",n:14,sym:"",lado:"SHORT",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f15",n:15,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f16",n:16,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f17",n:17,sym:"",lado:"SHORT",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f18",n:18,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:0.167,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f19",n:19,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:0.17,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f20",n:20,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f21",n:21,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f22",n:22,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f23",n:23,sym:"",lado:"SHORT",monto:20.0,apal:10.0,pct:0.161,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f24",n:24,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f25",n:25,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f26",n:26,sym:"",lado:"SHORT",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f27",n:27,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f28",n:28,sym:"",lado:"SHORT",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f29",n:29,sym:"",lado:"SHORT",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f30",n:30,sym:"",lado:"SHORT",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f31",n:31,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f32",n:32,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f33",n:33,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f34",n:34,sym:"",lado:"SHORT",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f35",n:35,sym:"",lado:"SHORT",monto:20.0,apal:10.0,pct:0.239,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f36",n:36,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f37",n:37,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f38",n:38,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f39",n:39,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:0.23,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f40",n:40,sym:"",lado:"SHORT",monto:20.0,apal:10.0,pct:0.144,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f41",n:41,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f42",n:42,sym:"",lado:"SHORT",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f43",n:43,sym:"",lado:"SHORT",monto:20.0,apal:10.0,pct:0.2,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f44",n:44,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:0.17,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f45",n:45,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f46",n:46,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f47",n:47,sym:"",lado:"SHORT",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f48",n:48,sym:"",lado:"SHORT",monto:20.0,apal:10.0,pct:0.18,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f49",n:49,sym:"",lado:"SHORT",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1},
-  {id:"f50",n:50,sym:"",lado:"LONG",monto:20.0,apal:10.0,pct:-0.07,fecha:"",nota:"",estado:"cerrada",mod:1}
-];
+/* (aqui habia 18 operaciones de futuros de ejemplo que nunca se usaban) */
 
 /* =====================================================================
    TEMA — todo el color sale de aquí. El usuario lo cambia y se repinta
@@ -1239,21 +1333,39 @@ function aplicarTema(){
    CUENTAS — spot
    ===================================================================== */
 function estadoDe(sym){
-  var ops=BD.ops.filter(function(o){ return o.sym===sym; })
+  var S=String(sym).toUpperCase();
+  var ops=BD.ops.filter(function(o){ return String(o.sym).toUpperCase()===S; })
                 .sort(function(a,b){ return (a.fecha+a.id)<(b.fecha+b.id)?-1:1; });
   var cantidad=0, costo=0, realizado=0, comprado=0, vendido=0, nCompras=0, nVentas=0;
+  var porOp={};        /* qué dejó CADA movimiento, para verlo en el historial */
   ops.forEach(function(o){
     var c=+o.cant||0, p=+o.precio||0, com=+o.com||0;
     if(o.tipo==="venta"){
+      var pedida=c;
       if(c>cantidad+1e-12) c=cantidad;
       var prom = cantidad>0 ? costo/cantidad : 0;
       var salida = c*p - com;
-      realizado += salida - c*prom;
-      costo -= c*prom; cantidad -= c; vendido += salida; nVentas++;
+      var g = salida - c*prom;
+      var base = c*prom;
+      porOp[o.id]={tipo:"venta", gan:g, pct: base>0 ? g/base*100 : null,
+                   prom:prom, cant:c, recortada: pedida>c+1e-12, sinCosto: !(base>0)};
+      realizado += g;
+      costo -= base; cantidad -= c; vendido += salida; nVentas++;
       if(cantidad<1e-12){ cantidad=0; costo=0; }
     } else {
-      cantidad += c; costo += c*p + com; comprado += c*p + com; nCompras++;
+      var pagado = c*p + com;
+      porOp[o.id]={tipo:"compra", pagado:pagado, precio:p, cant:c};
+      cantidad += c; costo += pagado; comprado += pagado; nCompras++;
     }
+  });
+  /* a las compras se les puede decir cuánto valen hoy */
+  var prHoy=precioDe(sym);
+  if(prHoy!=null) Object.keys(porOp).forEach(function(k){
+    var x=porOp[k];
+    if(x.tipo!=="compra" || !(x.pagado>0)) return;
+    x.valorHoy = x.cant*prHoy;
+    x.gan = x.valorHoy - x.pagado;
+    x.pct = x.gan/x.pagado*100;
   });
   var pr=precioDe(sym), valor = pr!=null ? cantidad*pr : null;
   var abierto = valor!=null ? valor-costo : null;
@@ -1261,24 +1373,38 @@ function estadoDe(sym){
     promedio: cantidad>0?costo/cantidad:null, precio:pr, valor:valor, abierto:abierto,
     abiertoPct: (abierto!=null&&costo>0)?abierto/costo*100:null,
     realizado:realizado, comprado:comprado, vendido:vendido,
-    nCompras:nCompras, nVentas:nVentas, cerrada: cantidad<=0 && ops.length>0};
+    nCompras:nCompras, nVentas:nVentas, cerrada: cantidad<=0 && ops.length>0,
+    porOp:porOp};
+}
+/* resultado de cada movimiento de spot, en un solo mapa por identificador */
+function resultadoDeOps(){
+  var r={};
+  carteraSpot().lista.forEach(function(e){
+    Object.keys(e.porOp||{}).forEach(function(k){ r[k]=e.porOp[k]; });
+  });
+  return r;
 }
 function carteraSpot(){
-  var s={}; BD.ops.forEach(function(o){ if(o.sym) s[o.sym]=1; });
+  var s={}; BD.ops.forEach(function(o){ if(o.sym) s[String(o.sym).toUpperCase()]=1; });
   var lista=Object.keys(s).map(estadoDe);
   lista.sort(function(a,b){
     if(a.cerrada!==b.cerrada) return a.cerrada?1:-1;
     return (b.valor||0)-(a.valor||0);
   });
-  var t={valor:0,costo:0,abierto:0,realizado:0,sinPrecio:0};
+  var t={valor:0,costo:0,abierto:0,realizado:0,sinPrecio:0,costoConPrecio:0,costoSinPrecio:0,
+         sinPrecioSyms:[], comprado:0, cerradas:0, realizadoCerradas:0};
   lista.forEach(function(e){
+    t.comprado+=e.comprado;                      /* todo lo que puso alguna vez */
+    if(e.cerrada){ t.cerradas++; t.realizadoCerradas+=e.realizado; }
     if(e.cantidad>0){
       t.costo+=e.costo;
-      if(e.valor!=null){ t.valor+=e.valor; t.abierto+=e.abierto; } else t.sinPrecio++;
+      if(e.valor!=null){ t.valor+=e.valor; t.abierto+=e.abierto; t.costoConPrecio+=e.costo; }
+      else { t.sinPrecio++; t.costoSinPrecio+=e.costo; t.sinPrecioSyms.push(e.sym); }
     }
     t.realizado+=e.realizado;
   });
-  t.abiertoPct = t.costo>0 ? t.abierto/t.costo*100 : null;
+  /* el rendimiento se saca solo sobre lo que SI tiene precio, si no sale una cifra falsa */
+  t.abiertoPct = t.costoConPrecio>0 ? t.abierto/t.costoConPrecio*100 : null;
   return {lista:lista, tot:t};
 }
 
@@ -1315,6 +1441,15 @@ function estadoOp(f){
   var liq = (ent>0 && apal>1)
     ? (f.lado==="SHORT" ? ent*(1+1/apal) : ent*(1-1/apal)) : null;
 
+  /* "Lo liquidaron" solo si el PRECIO cruzó el de liquidación. Aparte, con margen
+     aislado nunca se pierde más de lo que puso, ni por la comisión. */
+  var liquidado=false;
+  if(liq!=null && sal!=null) liquidado = (f.lado==="SHORT") ? (sal>=liq) : (sal<=liq);
+  var topado=false;
+  if(gan!=null && margen>0 && gan < -margen){
+    gan=-margen; pctMargen=-100; topado=true;
+  }
+
   /* qué gana si pega el TP y qué pierde si le llega el SL */
   var tp = (f.tp!=null && f.tp!=="") ? +f.tp : null;
   var sl = (f.sl!=null && f.sl!=="") ? +f.sl : null;
@@ -1323,17 +1458,25 @@ function estadoOp(f){
   var rr = (ganTp!=null && perSl!=null && perSl<0) ? Math.abs(ganTp/perSl) : null;
 
   /* si sigue abierta y hay precio de mercado, cuánto va ganando ahora */
-  var flot=null, pctFlot=null;
+  var flot=null, pctFlot=null, enPeligro=null;
   if(sal==null && f.estado==="abierta" && ent>0 && f.sym){
     var pr=precioDe(f.sym);
     if(pr!=null){
       pctFlot = signo*(pr-ent)/ent*100*apal;
       flot = margen*pctFlot/100 - com;
+      if(liq!=null){
+        /* qué tan cerca está del precio que lo liquida (0% = ya lo cruzó) */
+        enPeligro = signo*(pr-liq)/liq*100;
+        if((f.lado==="SHORT") ? (pr>=liq) : (pr<=liq)) liquidado=true;
+      }
+      /* tampoco en una operación abierta se puede perder más que el margen */
+      if(margen>0 && flot < -margen){ flot=-margen; pctFlot=-100; topado=true; }
     }
   }
   return {f:f, margen:margen, apal:apal, entrada:ent, valor:valor, monedas:monedas,
           salida:sal, pctPrecio:pctPrecio, pct:pctMargen!=null?pctMargen/100:null,
-          pctMargen:pctMargen, gan:gan, com:com, liq:liq,
+          pctMargen:pctMargen, gan:gan, com:com, liq:liq, liquidado:liquidado,
+          topado:topado, enPeligro:enPeligro,
           tp:tp, sl:sl, ganTp:ganTp, perSl:perSl, rr:rr,
           flot:flot, pctFlot:pctFlot,
           abierta: f.estado==="abierta"};
@@ -1346,12 +1489,24 @@ function carteraFut(){
   var t={n:cerradas.length, gan:0, pctAcum:0, ganadas:0, perdidas:0,
          margenAbierto:0, nAb:abiertas.length, flotante:0, comision:0};
   var sg=0,ng=0,sp=0,np=0;
+  t.nLiq=0; t.neutras=0;
   cerradas.forEach(function(e){
+    if(e.liquidado) t.nLiq++;
     t.gan+=e.gan; t.pctAcum+=e.pct; t.comision+=e.com;
-    if(e.pct>0){ t.ganadas++; sg+=e.pct; ng++; } else { t.perdidas++; sp+=e.pct; np++; }
+    /* salir en tablas no es ni acierto ni fallo: antes contaba como perdida */
+    if(e.pct>0){ t.ganadas++; sg+=e.pct; ng++; }
+    else if(e.pct<0){ t.perdidas++; sp+=e.pct; np++; }
+    else t.neutras++;
   });
-  abiertas.forEach(function(e){ t.margenAbierto+=e.margen; t.flotante+=(e.flot||0); });
-  t.aciertos = t.n ? t.ganadas/t.n*100 : null;
+  t.enRiesgo=0; t.sinPrecioAb=0;
+  abiertas.forEach(function(e){
+    t.margenAbierto+=e.margen; t.flotante+=(e.flot||0);
+    if(e.liquidado) t.enRiesgo++;
+    if(e.flot==null) t.sinPrecioAb++;          /* su flotante no entra en el total */
+  });
+  var decididas=t.ganadas+t.perdidas;
+  t.decididas=decididas;
+  t.aciertos = decididas ? t.ganadas/decididas*100 : null;
   t.mediaGana = ng ? sg/ng*100 : null;
   t.mediaPierde = np ? sp/np*100 : null;
   t.esperanza = t.n ? t.pctAcum/t.n*100 : null;
@@ -1366,6 +1521,7 @@ function carteraFut(){
   });
   var racha=0, signo=null;
   for(var i=cerradas.length-1;i>=0;i--){
+    if(cerradas[i].pct===0) continue;          /* los empates no cortan la racha */
     var s=cerradas[i].pct>0;
     if(signo===null){ signo=s; racha=1; }
     else if(s===signo) racha++;
@@ -1383,7 +1539,8 @@ function abrirFut(editar){
   if(editar && !f){ aviso("Esa operación ya no existe.",true); return; }
   var A=BD.ajustes;
   var lado = f?f.lado:"LONG";
-  var mon  = f?(f.sym||""):(FUT_mon||"");
+  var mon  = FUT_pend ? FUT_pend : (f?(f.sym||""):(FUT_mon||""));
+  FUT_pend=null;
   var sigN = f?f.n : (BD.fut.reduce(function(m,x){ return Math.max(m,+x.n||0); },0)+1);
 
   abrir('<div class="hoja ancha fuw '+(lado==="SHORT"?"esc":"elar")+'" id="fuHoja">'+
@@ -1410,7 +1567,10 @@ function abrirFut(editar){
         (f?f.monto:(A.monto||20))+'"></div>'+
       '<div class="campo"><label>Apalancamiento</label><input id="fA" inputmode="decimal" value="'+
         (f?f.apal:(A.apal||10))+'"></div>'+
-      '<div class="campo"><label>Precio de entrada</label><input id="fE" inputmode="decimal" '+
+      '<div class="campo"><label>Precio de entrada'+
+        '<button type="button" class="b sm" id="fHoy" style="float:right;padding:2px 8px;'+
+        'font-size:10.5px">usar el de hoy</button></label>'+
+        '<input id="fE" inputmode="decimal" '+
         'placeholder="65000" value="'+(f&&f.entrada?f.entrada:"")+'"></div>'+
     '</div>'+
     '<div class="fcalc" id="fPos">Escriba margen, apalancamiento y precio de entrada.</div>'+
@@ -1457,8 +1617,11 @@ function abrirFut(editar){
     M.querySelector("#fS").onclick=function(){
       var d=leer();
       elegirMoneda(mon, function(s){
-        FUT_mon=s;
+        FUT_mon=String(s).toUpperCase();
+        FUT_pend=FUT_mon;              /* también al EDITAR, antes se descartaba */
         setTimeout(function(){ abrirFut(editar); poner(d, s); },0);
+      }, function(){                    /* si cancela, vuelve al formulario intacto */
+        setTimeout(function(){ FUT_pend=mon; abrirFut(editar); poner(d, mon); },0);
       });
     };
     function leer(){
@@ -1477,6 +1640,8 @@ function abrirFut(editar){
       N.querySelector("#fSL").value=d.sl; N.querySelector("#fX").value=d.x;
       N.querySelector("#fC").value=d.c; N.querySelector("#fK").value=d.k;
       N.querySelector("#fNo").value=d.no;
+      var bl=N.querySelector("#fL button[data-l='"+d.lado+"']");
+      if(bl) bl.click();        /* deja LARGO o CORTO como estaba */
       N.querySelector("#fM").dispatchEvent(new Event("input",{bubbles:true}));
     }
 
@@ -1527,18 +1692,42 @@ function abrirFut(editar){
       }
       var st=estadoOp({sym:mon,lado:sel,monto:m,apal:a,entrada:e,tp:tp,sl:sl,salida:x,com:k,
                        estado:x==null?"abierta":"cerrada"});
+      var prHoy = mon ? precioDe(mon) : null;
+      var lejos = (prHoy!=null && prHoy>0) ? Math.abs(e-prHoy)/prHoy*100 : null;
       pos.innerHTML='<b>'+usd(st.valor)+'</b> de posición · <b>'+cant(st.monedas)+' '+
         (mon||"monedas")+'</b> · lo liquidan en <b class="dn">'+
         (st.liq!=null?precio(st.liq):"—")+'</b>'+
-        (st.liq!=null?' <span class="mut">('+pct((st.liq-e)/e*100,1)+' del precio)</span>':'');
+        (st.liq!=null?' <span class="mut">('+pct((st.liq-e)/e*100,1)+' del precio · aproximado)</span>':'')+
+        (lejos!=null && lejos>20
+          ? '<br><b class="dn">OJO: hoy '+esc(mon)+' está en '+precio(prHoy)+
+            ', un '+pctS(lejos,0)+' lejos de la entrada que escribió. Revise que no le falte o le sobre un número.</b>'
+          : '');
 
       if(tp!=null||sl!=null){
-        var p=[];
-        if(st.ganTp!=null) p.push('Si pega el TP en <b>'+precio(tp)+'</b> gana <b class="up">'+
-          usd(st.ganTp)+'</b> ('+pct(st.ganTp/m*100,0)+' del margen)');
-        if(st.perSl!=null) p.push('Si le llega el SL en <b>'+precio(sl)+'</b> pierde <b class="dn">'+
-          usd(Math.abs(st.perSl))+'</b> ('+pct(st.perSl/m*100,0)+')');
-        if(st.rr!=null) p.push('Relación <b>'+st.rr.toFixed(2)+' a 1</b>'+
+        var p=[], lg=(sel!=="SHORT");
+        if(st.ganTp!=null){
+          var bien = lg ? (tp>e) : (tp<e);
+          p.push(bien
+            ? ('Si pega el TP en <b>'+precio(tp)+'</b> gana <b class="up">'+usd(st.ganTp)+
+               '</b> ('+pct(st.ganTp/m*100,0)+' del margen)')
+            : ('<b class="dn">OJO: en un '+(lg?"LARGO el TP va POR ENCIMA":"CORTO el TP va POR DEBAJO")+
+               ' de la entrada ('+precio(e)+').</b> Así como está, salir en '+precio(tp)+
+               ' le haría <b class="dn">perder '+usd(Math.abs(st.ganTp))+'</b>'));
+        }
+        if(st.perSl!=null){
+          var bien2 = lg ? (sl<e) : (sl>e);
+          p.push(bien2
+            ? ('Si le llega el SL en <b>'+precio(sl)+'</b> pierde <b class="dn">'+
+               usd(Math.abs(st.perSl))+'</b> ('+pct(st.perSl/m*100,0)+' del margen)')
+            : ('<b class="dn">OJO: en un '+(lg?"LARGO el SL va POR DEBAJO":"CORTO el SL va POR ENCIMA")+
+               ' de la entrada.</b> Así como está no le corta la pérdida.'));
+          if(bien2 && st.liq!=null){
+            var pasa = lg ? (sl<=st.liq) : (sl>=st.liq);
+            if(pasa) p.push('<b class="dn">Ese SL queda más allá del precio de liquidación ('+
+              precio(st.liq)+'): lo liquidarían antes de que llegue.</b>');
+          }
+        }
+        if(st.rr!=null) p.push('Relación <b>'+st.rr.toFixed(2).replace(".",",")+' a 1</b>'+
           (st.rr>=1.5?' — buena':st.rr>=1?' — justa':' — arriesga más de lo que puede ganar'));
         rr.innerHTML=p.join("<br>");
       } else rr.innerHTML='<span class="mut">Ponga TP y SL para ver cuánto gana y cuánto arriesga.</span>';
@@ -1551,17 +1740,27 @@ function abrirFut(editar){
               pct(st.pctFlot,1)+' del margen</div>'
             : '<div class="frs">Cuando la cierre, escriba el precio de salida y todo se calcula solo.</div>');
       } else {
-        res.innerHTML='<div class="frt">'+(st.gan>=0?"Ganó":"Perdió")+'</div>'+
+        res.innerHTML='<div class="frt">'+(st.liquidado?"Lo liquidaron":(st.gan>=0?"Ganó":"Perdió"))+'</div>'+
           '<div class="frv '+cl(st.gan)+'">'+(st.gan>=0?"+":"−")+usd(st.gan).replace("-","")+'</div>'+
           '<div class="frs">el precio se movió '+pct(st.pctPrecio,2)+
           ' · con '+a+'x eso es <b>'+pct(st.pctMargen,1)+'</b> de su margen'+
           (k?' · menos '+usd(k)+' de comisión':'')+
-          ' · de los '+usd(m)+' quedan <b>'+usd(m+st.gan)+'</b></div>';
+          ' · de los '+usd(m)+' quedan <b>'+usd(m+st.gan)+'</b>'+
+          (st.liquidado?' · <b class="dn">a ese precio ya lo habrían liquidado (en '+
+            precio(st.liq)+'): con margen aislado no se pierde más de los '+usd(m)+
+            ' que puso</b>':'')+'</div>';
       }
     }
     ["#fM","#fA","#fE","#fTP","#fSL","#fX","#fK"].forEach(function(id){
       M.querySelector(id).addEventListener("input", rec);
     });
+    M.querySelector("#fHoy").onclick=function(){
+      if(!mon){ aviso("Primero elija la moneda.",true); return; }
+      var pr=precioDe(mon);
+      if(pr==null){ aviso("Todavía no hay precio de "+mon+".",true); return; }
+      M.querySelector("#fE").value=String(pr).replace(".",",");
+      rec();
+    };
     rec();
 
     if(f) M.querySelector("#fD").onclick=function(){
@@ -1578,8 +1777,22 @@ function abrirFut(editar){
       if(!mon){ aviso("Elija la moneda.",true); return; }
       if(m==null||m<=0){ aviso("El margen debe ser mayor que cero.",true); return; }
       if(a==null||a<1){ aviso("El apalancamiento mínimo es 1.",true); return; }
+      if(a>125){ aviso("125x es el apalancamiento más alto que existe. Revise ese número.",true); return; }
       if(e==null||e<=0){ aviso("Escriba el precio de entrada.",true); return; }
-      var datos={n:n, sym:mon, lado:sel, monto:m, apal:a, entrada:e,
+      if(x!=null && x<=0){ aviso("El precio de salida debe ser mayor que cero. Déjelo vacío si sigue abierta.",true); return; }
+      if(k<0){ aviso("La comisión no puede ser negativa.",true); return; }
+      if(n!=null && (n<=0 || n!==Math.round(n))){
+        aviso("El número de operación debe ser un número entero mayor que cero.",true); return;
+      }
+      /* que no se repita el numero de operacion (pasa al registrar en dos equipos) */
+      if(n!=null){
+        var choca=BD.fut.some(function(x){ return (!f||x.id!==f.id) && (+x.n||0)===n; });
+        if(choca){
+          n=BD.fut.reduce(function(mx,x){ return Math.max(mx,+x.n||0); },0)+1;
+          aviso("Ese número ya estaba usado: se guardó como operación "+n+".");
+        }
+      }
+      var datos={n:n, sym:String(mon).toUpperCase(), lado:sel, monto:m, apal:a, entrada:e,
         tp:num(M.querySelector("#fTP").value), sl:num(M.querySelector("#fSL").value),
         salida:x, com:k, fecha:M.querySelector("#fF").value||hoy(),
         cierre:M.querySelector("#fC").value||(x!=null?hoy():""),
@@ -1594,7 +1807,7 @@ function abrirFut(editar){
     };
   });
 }
-var FUT_mon="";
+var FUT_mon="", FUT_pend=null;
 
 /* cerrar una abierta: solo el precio de salida */
 function cerrarOp(id){
@@ -1657,7 +1870,9 @@ function cerrarOp(id){
 var IC={
   res:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>',
   spot:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M15 9.5a3.5 3 0 1 0 0 5"/></svg>',
-  fut:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg>',
+  fut:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">'+
+      '<path d="M7 3v18M17 3v18"/><rect x="4" y="7" width="6" height="8" rx="1.2"/>'+
+      '<rect x="14" y="10" width="6" height="7" rx="1.2"/></svg>',
   mov:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   alr:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>',
   dat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-1.1-2.7H1a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 2.6 7a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H7a1.6 1.6 0 0 0 1-1.5V1a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V7a1.6 1.6 0 0 0 1.5 1H23a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z" transform="translate(0.5,0.5) scale(0.92)"/></svg>',
@@ -1692,7 +1907,12 @@ function colDe(s){ var m=MONEDAS[s]; return (m&&m.c)||colorDe(s); }
 
 /* aviso cuando faltan precios */
 function alertaPrecios(){
-  var syms=simbolos().filter(function(s){ return !esEstable(s); });
+  /* solo las monedas que todavía tiene o que están en un futuro abierto: antes
+     seguía avisando por monedas vendidas hace meses */
+  var vivas={};
+  carteraSpot().lista.forEach(function(e){ if(e.cantidad>0) vivas[e.sym]=1; });
+  BD.fut.forEach(function(f){ if(f.sym && f.estado==="abierta") vivas[String(f.sym).toUpperCase()]=1; });
+  var syms=Object.keys(vivas).filter(function(s){ return !esEstable(s); });
   var sin=syms.filter(function(s){ return precioDe(s)==null; });
   if(!sin.length) return "";
   var todos=sin.length===syms.length;
@@ -1711,34 +1931,46 @@ function cambio24(S){
     var ch=cambioDe(e.sym);
     if(e.cantidad>0 && e.valor!=null && ch!=null){ v+=e.valor; d+=e.valor*ch/100; }
   });
-  return v>0 ? {pct:d/(v-d)*100, usd:d} : null;
+  var ayer=v-d;
+  return v>0 ? {pct: ayer>0 ? d/ayer*100 : null, usd:d} : null;
 }
 /* USDT disponible: lo que le entró por sus ventas más las estables que registró */
-function efectivo(){
-  var t=0;
+/* Saldo libre en la casa de cambio, con el detalle de como sale:
+     + lo que cobro por sus ventas       - lo que pago por sus compras
+     + los dolares/estables que registro - los que saco
+   Si registra la venta Y ademas la entrada de USDT que esa venta genero,
+   el saldo sale doble: por eso se muestra el desglose debajo de la cifra. */
+function efectivoDet(){
+  var vend=0, comp=0, dep=0, ret=0;
   BD.ops.forEach(function(o){
-    if(o.tipo==="venta" && !esEstable(o.sym))
-      t += (+o.cant||0)*(+o.precio||0) - (+o.com||0);
+    var bruto=(+o.cant||0)*(+o.precio||0), k=(+o.com||0);
+    if(esEstable(o.sym)){
+      if(o.tipo==="venta") ret+=(+o.cant||0); else dep+=(+o.cant||0);
+    } else {
+      if(o.tipo==="venta") vend+=bruto-k; else comp+=bruto+k;
+    }
   });
-  Object.keys(MONEDAS).forEach(function(s){
-    if(!MONEDAS[s].estable) return;
-    var e=estadoDe(s); if(e.cantidad>0) t+=e.cantidad;
-  });
-  return t;
+  return {vend:vend, comp:comp, dep:dep, ret:ret, total: vend-comp+dep-ret};
 }
+function efectivo(){ return efectivoDet().total; }
 function nVentas(){
   return BD.ops.filter(function(o){ return o.tipo==="venta"; }).length;
 }
 /* tarjeta del saldo en USDT, con su logo */
 function tarjetaUsdt(){
-  var e=efectivo(), n=nVentas();
+  var D=efectivoDet(), e=D.total;
+  var partes=[];
+  if(D.vend) partes.push("ventas "+usd(D.vend));
+  if(D.comp) partes.push("compras −"+usd(D.comp));
+  if(D.dep)  partes.push("USDT que registro +"+usd(D.dep));
+  if(D.ret)  partes.push("USDT que saco −"+usd(D.ret));
+  var sub = partes.length ? partes.join(" · ") : "todavía no ha registrado nada";
+  if(e<0) sub = "falta registrar el USDT que metió desde fuera (unos "+usd(-e)+") · "+sub;
   return '<div class="caja tjU"><div class="cp" style="display:flex;align-items:center;gap:14px">'+
     '<span class="icoU">'+icono("USDT")+'</span>'+
     '<div style="flex:1;min-width:0"><div class="etU">USDT DISPONIBLE</div>'+
-    '<div class="valU mono">'+usd(e)+'</div>'+
-    '<div class="subU">'+(e>0
-      ? (n? "de "+n+" venta(s) realizada(s)" : "estables registradas")
-      : "todavía no ha vendido nada")+'</div></div>'+
+    '<div class="valU mono">'+usd(e<0?0:e)+'</div>'+
+    '<div class="subU">'+esc(sub)+'</div></div>'+
     (e>0?'<button class="b ac" onclick="abrirOp(\'compra\')">Usarlo en una compra</button>':'')+
     '</div></div>';
 }
@@ -1771,9 +2003,9 @@ function pintarSpot(){
     '<div class="env"><table>'+
     '<thead><tr>'+
       thOrd("Cripto","sym")+thOrd("Precio actual","precio")+thOrd("Cantidad","cant")+
-      '<th>1ª compra</th>'+
+      '<th class="opt">1ª compra</th>'+
       thOrd("Precio promedio","prom")+thOrd("Inversión","inv")+
-      thOrd("Valor actual","valor")+thOrd("Ganancia","gan")+
+      thOrd("Valor actual","valor")+thOrdGan()+
     '<th></th></tr></thead><tbody>';
   if(!mostrar.length) h+='<tr><td colspan="9" style="text-align:center;color:var(--t3);padding:26px">'+
     (BUSCA? 'Ninguna moneda se llama así.' : 'Sin monedas.')+'</td></tr>';
@@ -1784,7 +2016,8 @@ function pintarSpot(){
     var casas={};
     e.ops.forEach(function(o){ if(o.casa) casas[o.casa]=1; });
     var lc=Object.keys(casas);
-    h+='<tr class="cl" data-sym="'+esc(e.sym)+'" style="--fc:'+colDe(e.sym)+'">'+
+    h+='<tr class="cl" tabindex="0" role="button" aria-label="Ver el detalle de '+esc(e.sym)+'" '+
+      'data-sym="'+esc(e.sym)+'" style="--fc:'+colDe(e.sym)+'">'+
       '<td><div class="cri">'+icono(e.sym)+'<div><b>'+esc(e.sym)+'</b><span>'+
         esc(nombreDe(e.sym))+'</span>'+
         (lc.length?'<div class="casita" style="margin-top:3px">'+
@@ -1793,13 +2026,13 @@ function pintarSpot(){
       '<td>'+(pr!=null?precio(pr):'<span class="nt">—</span>')+
         (ch2!=null?'<br><span style="font-size:11px" class="'+cl(ch2)+'">'+pct(ch2,1)+'</span>':'')+'</td>'+
       '<td>'+cant(e.cantidad)+'<br><span style="font-size:11px;color:var(--t3)">'+esc(e.sym)+'</span></td>'+
-      '<td>'+(f0?fechaCorta(f0.fecha):"—")+
+      '<td class="opt">'+(f0?fechaCorta(f0.fecha):"—")+
         '<br><span style="font-size:11px;color:var(--t3)">'+e.nCompras+' compra'+(e.nCompras===1?"":"s")+'</span></td>'+
       '<td>'+precio(e.promedio)+'</td>'+
       '<td>'+usd(e.costo)+'</td>'+
       '<td>'+(e.valor!=null?usd(e.valor):'<span class="nt">—</span>')+
         (peso!=null?'<br><span class="pesoc"><i style="width:'+Math.max(3,peso*0.5)+'px"></i>'+
-          '<span>'+peso.toFixed(1)+'% del total</span></span>':'')+'</td>'+
+          '<span>'+pctS(peso)+' del total</span></span>':'')+'</td>'+
       '<td><span class="gpill '+(e.abierto>0?"p":e.abierto<0?"n":"z")+'">'+
         (e.abierto!=null?(e.abierto>=0?"+":"−")+usd(e.abierto).replace("-",""):"—")+'</span>'+
         (e.abiertoPct!=null?'<span class="gsub '+cl(e.abiertoPct)+'">'+pct(e.abiertoPct)+'</span>':'')+'</td>'+
@@ -1813,6 +2046,23 @@ function pintarSpot(){
       (S.tot.abierto>=0?"+":"−")+usd(S.tot.abierto).replace("-","")+'</span>'+
       '<span class="gsub '+cl(S.tot.abiertoPct)+'">'+pct(S.tot.abiertoPct)+'</span></td>'+
     '<td></td></tr></tfoot></table></div></div>';
+
+  /* las que ya vendió del todo: antes se esfumaban y no había cómo volver a verlas */
+  var cerr=S.lista.filter(function(e){ return e.cerrada && !esEstable(e.sym); });
+  if(cerr.length){
+    var totC=cerr.reduce(function(a,e){ return a+e.realizado; },0);
+    h+='<div class="caja"><h2>Ya vendidas del todo<span class="sp"></span>'+
+      '<span class="mut" style="font-size:12.5px">resultado <b class="'+cl(totC)+'">'+
+      (totC>=0?"+":"−")+usd(totC).replace("-","")+'</b></span></h2>'+
+      '<div class="cp" style="display:flex;gap:9px;flex-wrap:wrap">'+
+      cerr.map(function(e){
+        return '<button class="b" data-sym2="'+esc(e.sym)+'" style="display:flex;gap:8px;'+
+          'align-items:center">'+icono(e.sym)+'<span>'+esc(e.sym)+'</span>'+
+          '<b class="'+cl(e.realizado)+'">'+(e.realizado>=0?"+":"−")+
+          usd(e.realizado).replace("-","")+'</b></button>';
+      }).join("")+
+      '</div></div>';
+  }
 
   /* fila de abajo: mejor, peor, efectivo y resumen con rosca */
   var conP=vivas.filter(function(e){ return e.abiertoPct!=null; })
@@ -1866,10 +2116,18 @@ function resumenRosca(S, vivas, ch){
   return h+'<div class="rosca">'+s+'<div class="ley">'+
     cv.slice(0,6).map(function(e){
       return '<span><i style="background:'+colDe(e.sym)+'"></i>'+esc(e.sym)+
-        '<b>'+(e.valor/suma*100).toFixed(1)+'%</b></span>';
+        '<b>'+pctS(e.valor/suma*100)+'</b></span>';
     }).join("")+'</div></div>';
 }
 function enganchar(c){
+  c.querySelectorAll("[data-sym2]").forEach(function(b){
+    b.onclick=function(){ verMoneda(b.getAttribute("data-sym2")); };
+  });
+  c.querySelectorAll("tr.cl[data-sym]").forEach(function(t){
+    t.onkeydown=function(ev){
+      if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); verMoneda(t.getAttribute("data-sym")); }
+    };
+  });
   engancharOrden(c, pintarSpot);
   var bi=c.querySelector("#bImpP"); if(bi) bi.onclick=imprimirPortafolio;
   var bx=c.querySelector("#bXlsP"); if(bx) bx.onclick=exportarExcelCripto;
@@ -1911,6 +2169,10 @@ function venderMoneda(sym){
       '<div class="campo"><label>Comisión</label><input id="vK" inputmode="decimal" placeholder="0"></div>'+
       '<div class="campo"><label>Cantidad exacta</label>'+
         '<input id="vEx" inputmode="decimal" value=""></div>'+
+      '<div class="campo ancho"><label>Dónde vendió</label><select id="vCa">'+
+        Object.keys(CASAS).map(function(k){
+          return '<option value="'+k+'"'+((BD.ajustes.casa||"BINANCE")===k?" selected":"")+
+            '>'+esc(CASAS[k].n)+'</option>'; }).join("")+'</select></div>'+
     '</div>'+
     '<div class="nota" id="vR">Mueva la barra para elegir cuánto vender.</div>'+
     '</div><div class="hf"><button class="b" data-cerrar>Cancelar</button>'+
@@ -1925,7 +2187,7 @@ function venderMoneda(sym){
     function rec(){
       var c=cantidadElegida(), p=num(M.querySelector("#vPr").value),
           k=num(M.querySelector("#vK").value)||0;
-      M.querySelector("#vPc").textContent=(e.cantidad>0?(c/e.cantidad*100).toFixed(1):"0")+"%";
+      M.querySelector("#vPc").textContent=(e.cantidad>0?pctS(c/e.cantidad*100):"0%");
       M.querySelector("#vCant").textContent=cant(c)+" "+sym;
       M.querySelector("#vUsd").textContent = p!=null ? usd(c*p-k) : "—";
       var r=M.querySelector("#vR");
@@ -1958,8 +2220,10 @@ function venderMoneda(sym){
       if(c<=0){ aviso("Elija cuánto vender.",true); return; }
       if(p==null||p<=0){ aviso("Escriba el precio de venta.",true); return; }
       if(c>e.cantidad+1e-9){ aviso("No puede vender más de lo que tiene.",true); return; }
-      BD.ops.push({id:idNuevo(), sym:sym, tipo:"venta", cant:c, precio:p, com:k,
-                   fecha:f, nota:"", mod:Date.now()});
+      var ca=(M.querySelector("#vCa")||{}).value || BD.ajustes.casa || "BINANCE";
+      BD.ops.push({id:idNuevo(), sym:String(sym).toUpperCase(), tipo:"venta", cant:c,
+                   precio:p, com:k, fecha:f, nota:"", casa:ca, mod:Date.now()});
+      BD.ajustes.casa=ca;
       guardar(); cerrar(); repintar();
       var g=(p-e.promedio)*c-k;
       aviso("Venta registrada · "+(g>=0?"ganó ":"perdió ")+usd(Math.abs(g))+".");
@@ -1975,8 +2239,10 @@ function heroValor(S, ch, vivas, efe){
   var g=S.tot.abierto, gp=S.tot.abiertoPct;
   var meta=+BD.ajustes.meta||0;
   var avance = meta>0 ? Math.min(100, S.tot.valor/meta*100) : null;
-  var d=diasInvertido(), porMes = (d>20 && S.tot.costo>0)
-      ? (S.tot.abierto+S.tot.realizado)/S.tot.costo*100/(d/30.4) : null;
+  /* el rendimiento se saca sobre TODO lo que puso alguna vez, no sobre lo que le
+     queda invertido hoy: si no, después de vender salían cifras imposibles */
+  var d=diasInvertido(), porMes = (d>20 && S.tot.comprado>0)
+      ? (S.tot.abierto+S.tot.realizado)/S.tot.comprado*100/(d/30.4) : null;
 
   return '<div class="hero'+(g>=0?" gana":" pierde")+'">'+
     '<div class="hz">'+
@@ -1986,7 +2252,10 @@ function heroValor(S, ch, vivas, efe){
         '<div class="hg">'+
           '<span class="gpill '+(g>0?"p":g<0?"n":"z")+'" style="font-size:16px;padding:6px 13px">'+
             (g>=0?"+":"−")+usd(g).replace("-","")+'</span>'+
-          '<span class="gp2 '+cl(gp)+'">'+pct(gp)+'</span>'+
+          '<span class="gp2 '+cl(gp)+'" title="'+
+            (S.tot.sinPrecio?"sobre "+usd(S.tot.costoConPrecio)+" (lo que sí tiene precio)"
+                            :"sobre lo invertido")+'">'+pct(gp)+
+            (S.tot.sinPrecio?'<small style="opacity:.7"> de lo que tiene precio</small>':'')+'</span>'+
           (ch?'<span class="gch '+cl(ch.pct)+'">24 h '+pct(ch.pct)+'</span>':'')+
         '</div>'+
         (meta>0?'<div class="meta"><div class="mb"><i style="width:'+avance.toFixed(1)+'%"></i></div>'+
@@ -1994,11 +2263,16 @@ function heroValor(S, ch, vivas, efe){
           usd(Math.max(0,meta-S.tot.valor))+'</div></div>':'')+
       '</div>'+
       '<div class="hsec">'+
-        chip2("INVERTIDO", usd(S.tot.costo), "", vivas.length+" monedas")+
-        chip2("USDT LIBRE", usd(efe), efe>0?"up":"", nVentas()+" venta(s)")+
-        chip2("COMISIONES", usd(comisiones()), "", "pagadas en total")+
+        chip2("INVERTIDO", usd(S.tot.costo), "",
+              vivas.length+" monedas"+
+              (S.tot.sinPrecio?" · "+usd(S.tot.costoSinPrecio)+" sin precio":""))+
+        chip2("YA COBRADO", (S.tot.realizado>=0?"+":"−")+usd(S.tot.realizado).replace("-",""),
+              cl(S.tot.realizado), nVentas()+" venta(s) hechas")+
+        chip2("USDT LIBRE", usd(efe<0?0:efe), efe>0?"up":"",
+              efe<0?"falta registrar entradas":"para comprar")+
+        chip2("COMISIONES", usd(comisiones()), "", "spot y futuros")+
         chip2("RINDE AL MES", porMes!=null?pct(porMes,1):"—", cl(porMes),
-              d?("lleva "+d+" días"):"sin fechas")+
+              d?("sobre "+usd(S.tot.comprado)+" en "+d+" días"):"sin fechas")+
       '</div>'+
     '</div></div>';
 }
@@ -2014,7 +2288,8 @@ function diasInvertido(){
   return Math.max(0, Math.round(d));
 }
 function comisiones(){
-  return BD.ops.reduce(function(a,o){ return a+(+o.com||0); },0);
+  var t=BD.ops.reduce(function(a,o){ return a+(+o.com||0); },0);
+  return t + BD.fut.reduce(function(a,f){ return a+(+f.com||0); },0);   /* faltaban las de futuros */
 }
 
 /* =====================================================================
@@ -2149,11 +2424,16 @@ function verMoneda(sym){
     /* datos que antes no salían */
     '<div class="dchips">'+
       dchip("Tiempo", dias?dias+" días":"—", d0?("desde "+fechaCorta(d0)):"")+
-      dchip("Del portafolio", peso!=null?peso.toFixed(1)+"%":"—", "de todo su dinero")+
+      dchip("Del portafolio", pctS(peso), "de todo su dinero")+
       dchip("Comisiones", usd(com), "pagadas en "+e.ops.length+" movimiento(s)")+
-      dchip("Recupera en", e.promedio!=null?precio(e.promedio):"—", "sobre ese precio gana")+
+      dchip("Para no perder", e.promedio!=null?precio(e.promedio):"—",
+            (pr!=null&&e.promedio!=null)
+              ? (pr>=e.promedio ? "ya está por encima" : "falta que suba "+pctS((e.promedio-pr)/pr*100,1))
+              : "su precio promedio")+
       dchip("Duplica en", e.promedio!=null?precio(e.promedio*2):"—",
-            pr!=null&&e.promedio!=null?("falta "+pct((e.promedio*2-pr)/pr*100,0)):"")+
+            (pr!=null&&e.promedio!=null)
+              ? (pr>=e.promedio*2 ? "ya lo superó" : "falta que suba "+pctS((e.promedio*2-pr)/pr*100,0))
+              : "")+
       (e.realizado?dchip("Ya cobrado", usd(e.realizado), ventas.length+" venta(s)"):"")+
     '</div>'+
 
@@ -2173,11 +2453,23 @@ function verMoneda(sym){
     '</div><div class="hf">'+
     '<button class="b vd" id="mCom">+ Comprar más</button>'+
     (e.cantidad>0?'<button class="b rj" id="mVen">Vender</button>':'')+
+    (e.ops.length?'<button class="b" id="mQuit" style="margin-right:auto">Quitar esta moneda</button>':'')+
     '<button class="b" data-cerrar>Cerrar</button></div></div>',
   function(M){
     M.querySelector("#mCom").onclick=function(){ cerrar(); abrirOp("compra",sym); };
     var bv=M.querySelector("#mVen");
     if(bv) bv.onclick=function(){ cerrar(); venderMoneda(sym); };
+    var bq=M.querySelector("#mQuit");
+    if(bq) bq.onclick=function(){
+      cerrar();
+      confirmar("Quitar "+esc(sym),"Se borran los <b>"+e.ops.length+
+        "</b> movimiento(s) de "+esc(sym)+" (compras y ventas) en todos sus equipos. "+
+        "Los futuros de esta moneda no se tocan.","Quitar "+esc(sym), function(){
+          e.ops.forEach(function(o){ anotarBorrado(o.id); });
+          BD.ops=BD.ops.filter(function(o){ return o.sym!==sym; });
+          guardar(); repintar(); aviso(sym+" quitada del portafolio.");
+        }, true);
+    };
     M.querySelectorAll("[data-ed]").forEach(function(b){
       b.onclick=function(){ var id=b.getAttribute("data-ed"); cerrar(); abrirOp(null,null,id); };
     });
@@ -2248,6 +2540,7 @@ function filasMov(e, sym, pr){
     var bruto=(+o.cant||0)*(+o.precio||0), tot=v?bruto-(+o.com||0):bruto+(+o.com||0);
     var p=String(o.fecha||"").split("-");
     var dd = o.fecha ? Math.max(0,Math.round((Date.now()-new Date(o.fecha+"T12:00:00").getTime())/86400000)) : null;
+    var R = (e.porOp||{})[o.id] || {};
     var r = (!v && pr!=null) ? (pr-(+o.precio))/(+o.precio)*100 : null;
     return '<div class="mvx '+(v?"venta":"compra")+'">'+
       '<div class="fh"><b>'+(p[2]||"--")+'</b><span>'+(M2[(+p[1])-1]||"")+" "+(p[0]||"").slice(2)+'</span></div>'+
@@ -2259,7 +2552,12 @@ function filasMov(e, sym, pr){
         (dd!=null?" · hace "+dd+" días":"")+
         (o.nota?" · "+esc(o.nota):"")+'</div>'+
       '<div class="bar"><i style="width:'+(bruto/maxT*100).toFixed(1)+'%"></i></div></div>'+
-      (r!=null?'<div class="rr '+cl(r)+'"><b>'+pct(r,1)+'</b><span>esta compra</span></div>':'')+
+      (v
+        ? (R.gan!=null
+            ? '<div class="rr '+cl(R.gan)+'"><b>'+(R.gan>=0?"+":"−")+usd(R.gan).replace("-","")+'</b>'+
+              '<span>'+(R.gan>=0?"ganó":"perdió")+(R.pct!=null?" "+pct(R.pct,1):"")+'</span></div>'
+            : '<div class="rr"><b>—</b><span>sin compra previa</span></div>')
+        : (r!=null?'<div class="rr '+cl(r)+'"><b>'+pct(r,1)+'</b><span>esta compra</span></div>':''))+
       '<div class="p"><b class="'+(v?"dn":"up")+'">'+(v?"−":"+")+usd(tot).replace("-","")+'</b>'+
         '<span>'+(v?"salió":"entró")+'</span></div>'+
       '<button class="b sm" data-ed="'+o.id+'">Editar</button></div>';
@@ -2292,7 +2590,7 @@ function tarjetaAlertas(){
         (x.a.dir==="sube"?"sube a":"baja a")+' <b>'+precio(x.a.precio)+'</b></div>'+
         '<div class="bar"><i style="width:'+an.toFixed(0)+'%"></i></div></div>'+
         '<div class="fl">'+(x.son?'<b class="ao">¡ya!</b>'
-          :(x.falta!=null?'<b>'+x.falta.toFixed(1)+'%</b><span>falta</span>':'<span>sin precio</span>'))+
+          :(x.falta!=null?'<b>'+pctS(x.falta)+'</b><span>falta</span>':'<span>sin precio</span>'))+
         '</div></div>';
     }).join("")+'</div></div>';
 }
@@ -2321,9 +2619,11 @@ function pintarRes(){
       '<button class="b sm" onclick="irA(\'spot\')">Ver todo el detalle</button></h2>'+
       '<div class="env"><table><thead><tr><th><span class="cap">Cripto</span></th><th><span class="cap">Cantidad</span></th><th><span class="cap">Promedio</span></th>'+
       '<th><span class="cap">Precio actual</span></th><th><span class="cap">Valor</span></th><th><span class="cap">Ganancia</span></th><th></th></tr></thead><tbody>';
-    vivas.slice(0,8).forEach(function(e){
+    var mostrarR=vivas.slice(0,8);
+    mostrarR.forEach(function(e){
       var ch3=cambioDe(e.sym);
-      h+='<tr class="cl" data-sym="'+esc(e.sym)+'" style="--fc:'+colDe(e.sym)+'">'+
+      h+='<tr class="cl" tabindex="0" role="button" aria-label="Ver el detalle de '+esc(e.sym)+'" '+
+      'data-sym="'+esc(e.sym)+'" style="--fc:'+colDe(e.sym)+'">'+
         '<td><div class="cri">'+icono(e.sym)+'<div><b>'+esc(e.sym)+'</b><span>'+
         esc(nombreDe(e.sym))+'</span></div></div></td>'+
         '<td>'+cant(e.cantidad)+'</td><td>'+precio(e.promedio)+'</td>'+
@@ -2336,6 +2636,11 @@ function pintarRes(){
         '<td><button class="b sm rj" data-vender="'+esc(e.sym)+'">Vender</button></td></tr>';
     });
     h+='</tbody></table></div></div>';
+    if(vivas.length>mostrarR.length)
+      h=h.replace("</table></div></div>",
+        "</table></div><div class=\"cp\" style=\"padding-top:0\"><span class=\"mut\">y "+
+        (vivas.length-mostrarR.length)+" moneda(s) más · "+
+        "<b>Ver todo el detalle</b> las muestra todas.</span></div></div>");
   }
 
   h+='<div class="inf">';
@@ -2347,6 +2652,10 @@ function pintarRes(){
       '<div class="mut" style="margin-top:5px">'+F.tot.n+' cerradas'+
       (F.tot.aciertos!=null?" · "+F.tot.aciertos.toFixed(0)+"% acertadas":"")+
       (F.tot.nAb?" · "+F.tot.nAb+" abierta(s) con "+usd(F.tot.margenAbierto):"")+'</div>'+
+      (F.tot.nAb?'<div class="mut" style="margin-top:4px">van <b class="'+cl(F.tot.flotante)+'">'+
+        (F.tot.flotante>=0?"+":"−")+usd(F.tot.flotante).replace("-","")+'</b> al precio de hoy'+
+        (F.tot.enRiesgo?' · <b style="color:var(--dn)">'+F.tot.enRiesgo+
+          ' pasada(s) del precio de liquidación</b>':'')+'</div>':'')+
       '<button class="b sm" style="margin-top:10px" onclick="irA(\'fut\')">Ver futuros</button>'+
       '</div></div>';
   }
@@ -2362,17 +2671,56 @@ function pintarRes(){
 /* =====================================================================
    HISTORIAL
    ===================================================================== */
-var MOV_f="todo";
+var MOV_f="todo", MOV_q="", MOV_mon="", MOV_d1="", MOV_d2="";
 function pintarMov(){
   var c=document.getElementById("cuerpo"), todo=[];
+  var RES=resultadoDeOps();     /* cuánto ganó o perdió en cada movimiento */
   BD.ops.forEach(function(o){ todo.push({f:o.fecha,k:o.tipo==="venta"?"venta":"compra",o:o}); });
   BD.fut.forEach(function(x){ todo.push({f:x.fecha||"",k:"futuro",x:x}); });
   todo.sort(function(a,b){ return (a.f||"")<(b.f||"")?1:-1; });
-  var lista=todo.filter(function(m){ return MOV_f==="todo"||m.k===MOV_f; });
+
+  /* todas las monedas que aparecen, para el desplegable */
+  var monedas={};
+  todo.forEach(function(m){ var y=(m.o?m.o.sym:m.x.sym)||""; if(y) monedas[y]=1; });
+  var listaMon=Object.keys(monedas).sort();
+
+  var q=MOV_q.trim().toLowerCase();
+  function pasa(m){
+    if(MOV_f!=="todo" && m.k!==MOV_f) return false;
+    var sym=(m.o?m.o.sym:m.x.sym)||"";
+    if(MOV_mon && sym!==MOV_mon) return false;
+    var fe=m.f||"";
+    if(MOV_d1 && (!fe || fe<MOV_d1)) return false;
+    if(MOV_d2 && (!fe || fe>MOV_d2)) return false;
+    if(q){
+      var casa=(m.o&&m.o.casa)||"";
+      var texto=[sym, nombreDe(sym), (m.o?m.o.nota:m.x.nota)||"", casa, nombreCasa(casa),
+                 fe, (m.x?("op "+(m.x.n||"")+" "+(m.x.lado||"")):"" )].join(" ").toLowerCase();
+      if(texto.indexOf(q)<0) return false;
+    }
+    return true;
+  }
+  var lista=todo.filter(pasa);
   var M2=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
   var nC=todo.filter(function(m){ return m.k==="compra"; }).length,
       nV=todo.filter(function(m){ return m.k==="venta"; }).length,
       nF=todo.filter(function(m){ return m.k==="futuro"; }).length;
+
+  /* lo que suman los movimientos que quedaron a la vista */
+  var sC=0, sV=0, sG=0, hayG=false, sF=0, hayF=false;
+  lista.forEach(function(m){
+    if(m.o){
+      var br=(+m.o.cant||0)*(+m.o.precio||0), k=(+m.o.com||0);
+      if(m.o.tipo==="venta"){
+        sV+=br-k;
+        var R=RES[m.o.id];
+        if(R && R.gan!=null){ sG+=R.gan; hayG=true; }
+      } else sC+=br+k;
+    } else if(m.x){
+      var e2=estadoOp(m.x);
+      if(e2.gan!=null){ sF+=e2.gan; hayF=true; }
+    }
+  });
 
   var h='<div class="mets">'+
     met(IC.mov,"Movimientos", String(todo.length), "", "desde el principio")+
@@ -2380,12 +2728,42 @@ function pintarMov(){
     met(IC.baja,"Ventas", String(nV), nV?"dn":"nt", "realizadas")+
     met(IC.fut,"Futuros", String(nF), "ao", "operaciones")+
     '</div>';
+
   h+='<div class="caja"><h2>Historial completo<span class="sp"></span>'+
     ["todo","compra","venta","futuro"].map(function(k){
       var e={todo:"Todo",compra:"Compras",venta:"Ventas",futuro:"Futuros"}[k];
       return '<button class="b sm'+(MOV_f===k?" ac":"")+'" data-mf="'+k+'">'+e+'</button>';
-    }).join(" ")+'</h2><div class="cp">';
-  if(!lista.length) h+='<div class="mut">No hay movimientos de ese tipo.</div>';
+    }).join(" ")+'</h2>'+
+
+    /* ---- buscador y filtros ---- */
+    '<div class="cp" style="padding-bottom:0"><div class="campos">'+
+      '<div class="campo ancho"><label>Buscar</label>'+
+        '<input id="mvQ" style="font-family:inherit" placeholder="moneda, nota, casa de cambio, n° de operación…" '+
+        'value="'+esc(MOV_q)+'"></div>'+
+      '<div class="campo"><label>Moneda</label><select id="mvM">'+
+        '<option value="">Todas</option>'+
+        listaMon.map(function(x){
+          return '<option value="'+esc(x)+'"'+(MOV_mon===x?" selected":"")+'>'+esc(x)+'</option>';
+        }).join("")+'</select></div>'+
+      '<div class="campo"><label>Desde</label><input type="date" id="mvD" value="'+esc(MOV_d1)+'"></div>'+
+      '<div class="campo"><label>Hasta</label><input type="date" id="mvH" value="'+esc(MOV_d2)+'"></div>'+
+    '</div>'+
+    ((q||MOV_mon||MOV_d1||MOV_d2||MOV_f!=="todo")
+      ? '<div class="nota">Se ven <b>'+lista.length+'</b> de '+todo.length+' movimiento(s)'+
+        (sC?' · pagó '+usd(sC):'')+(sV?' · cobró '+usd(sV):'')+
+        (hayG?' · resultado de esas ventas <b class="'+cl(sG)+'">'+
+              (sG>=0?"+":"−")+usd(sG).replace("-","")+'</b>':'')+
+        (hayF?' · futuros <b class="'+cl(sF)+'">'+(sF>=0?"+":"−")+usd(sF).replace("-","")+'</b>':'')+
+        ' <button class="b sm" id="mvLimpia" style="margin-left:8px">Ver todo</button></div>'
+      : '<div class="nota">'+todo.length+' movimiento(s) · pagó '+usd(sC)+' · cobró '+usd(sV)+
+        (hayG?' · <b>resultado de sus ventas</b> <b class="'+cl(sG)+'">'+
+              (sG>=0?"+":"−")+usd(sG).replace("-","")+'</b>':'')+
+        (hayF?' · futuros <b class="'+cl(sF)+'">'+(sF>=0?"+":"−")+usd(sF).replace("-","")+'</b>':'')+
+        '</div>')+
+    '</div>'+
+
+    '<div class="cp">';
+  if(!lista.length) h+='<div class="mut">Ningún movimiento coincide con lo que busca.</div>';
   lista.forEach(function(m){
     var p=String(m.f||"").split("-");
     var fh='<div class="fh"><b>'+(p[2]||"--")+'</b><span>'+(M2[(+p[1])-1]||"")+" "+(p[0]||"").slice(2)+'</span></div>';
@@ -2395,20 +2773,49 @@ function pintarMov(){
         '<div class="q"><div class="l1">'+(m.x.lado==="SHORT"?"Corto":"Largo")+' '+e.apal+'x'+
         (m.x.sym?" en "+esc(m.x.sym):"")+
         (e.pct!=null?' · salió en <em class="'+cl(e.pct)+'">'+pct(e.pct*100,1)+'</em>':' · <em>abierta</em>')+
-        '</div><div class="l2">puso '+usd(e.monto)+(m.x.nota?" · "+esc(m.x.nota):"")+'</div></div>'+
-        '<div class="p"><b class="'+cl(e.gan)+'">'+(e.gan!=null?(e.gan>=0?"+":"−")+
-          usd(e.gan).replace("-",""):"—")+'</b><span>'+(e.pct!=null?"resultado":"sin cerrar")+'</span></div>'+
+        (e.liquidado?' · <em class="dn">liquidada</em>':'')+
+        '</div><div class="l2">op N° '+esc(String(m.x.n||"—"))+' · puso '+usd(e.margen)+
+        (m.x.nota?" · "+esc(m.x.nota):"")+'</div></div>'+
+        '<div class="r"><b class="'+cl(e.pct!=null?e.pct:e.pctFlot)+'">'+
+          (e.pct!=null?pct(e.pct*100,1):(e.pctFlot!=null?pct(e.pctFlot,1):"—"))+'</b>'+
+          '<span>'+(e.pct!=null?"del margen":"va ganando")+'</span></div>'+
+        '<div class="p"><b class="'+cl(e.gan!=null?e.gan:e.flot)+'">'+
+          (e.gan!=null?((e.gan>=0?"+":"−")+usd(e.gan).replace("-",""))
+                      :(e.flot!=null?((e.flot>=0?"+":"−")+usd(e.flot).replace("-","")):"—"))+'</b>'+
+          '<span>'+(e.pct!=null?"resultado":"sin cerrar")+'</span></div>'+
         '<button class="b sm" onclick="abrirFut(\''+m.x.id+'\')">Editar</button></div>';
     } else {
       var o=m.o, v=o.tipo==="venta";
       var bruto=(+o.cant||0)*(+o.precio||0), tot=v?bruto-(+o.com||0):bruto+(+o.com||0);
+      var R=RES[o.id]||{};
+      var col;
+      if(v){
+        /* en una venta: cuánto ganó o perdió contra lo que le había costado */
+        col = (R.gan!=null)
+          ? '<div class="r"><b class="'+cl(R.gan)+'">'+(R.gan>=0?"+":"−")+
+            usd(R.gan).replace("-","")+'</b><span>'+(R.gan>=0?"ganó":"perdió")+
+            (R.pct!=null?' <i class="'+cl(R.pct)+'">'+pct(R.pct,1)+'</i>':'')+
+            (R.recortada?' · vendió más de lo que tenía':'')+'</span></div>'
+          : '<div class="r"><b>—</b><span>sin compra previa</span></div>';
+      } else {
+        /* en una compra: cómo va esa compra al precio de hoy */
+        col = (R.pct!=null)
+          ? '<div class="r"><b class="'+cl(R.pct)+'">'+pct(R.pct,1)+'</b>'+
+            '<span>hoy vale '+usd(R.valorHoy)+'</span></div>'
+          : '<div class="r"><b>—</b><span>sin precio hoy</span></div>';
+      }
       h+='<div class="mv '+(v?"venta":"compra")+'">'+fh+
         '<div style="flex:none">'+icono(o.sym)+'</div>'+
         '<div class="q"><div class="l1">'+(v?"Vendió":"Compró")+' <em>'+cant(o.cant)+'</em> '+
-        esc(o.sym)+' a <em>'+precio(o.precio)+'</em></div>'+
-        '<div class="l2">'+esc(nombreDe(o.sym))+((+o.com)?" · comisión "+usd(o.com):"")+
+        esc(o.sym)+' a <em>'+precio(o.precio)+'</em>'+
+        (v&&R.prom?' <span class="mut" style="font-weight:400">· le costaba '+precio(R.prom)+'</span>':'')+
+        '</div>'+
+        '<div class="l2">'+esc(nombreDe(o.sym))+
+        (o.casa?" · "+esc(nombreCasa(o.casa)):"")+
+        ((+o.com)?" · comisión "+usd(o.com):"")+
         (o.nota?" · "+esc(o.nota):"")+'</div></div>'+
-        '<div class="p"><b class="'+(v?"dn":"up")+'">'+(v?"−":"+")+usd(tot).replace("-","")+'</b>'+
+        col+
+        '<div class="p"><b class="'+(v?"up":"dn")+'">'+(v?"+":"−")+usd(tot).replace("-","")+'</b>'+
         '<span>'+(v?"recibió":"pagó")+'</span></div>'+
         '<button class="b sm" onclick="abrirOp(null,null,\''+o.id+'\')">Editar</button></div>';
     }
@@ -2418,17 +2825,41 @@ function pintarMov(){
   c.querySelectorAll("[data-mf]").forEach(function(b){
     b.onclick=function(){ MOV_f=b.getAttribute("data-mf"); pintarMov(); };
   });
+  var bq=c.querySelector("#mvQ");
+  bq.oninput=function(){
+    MOV_q=bq.value; pintarMov();
+    var n=document.getElementById("mvQ");
+    if(n){ n.focus(); n.setSelectionRange(n.value.length,n.value.length); }
+  };
+  c.querySelector("#mvM").onchange=function(){ MOV_mon=this.value; pintarMov(); };
+  c.querySelector("#mvD").onchange=function(){ MOV_d1=this.value; pintarMov(); };
+  c.querySelector("#mvH").onchange=function(){ MOV_d2=this.value; pintarMov(); };
+  var bl=c.querySelector("#mvLimpia");
+  if(bl) bl.onclick=function(){
+    MOV_q=""; MOV_mon=""; MOV_d1=""; MOV_d2=""; MOV_f="todo"; pintarMov();
+  };
 }
 
 /* =====================================================================
    ALERTAS — avisan cuando una moneda llega al precio que usted marque
    ===================================================================== */
+/* se cumple ahora mismo? */
+function alertaSuena(a){
+  var p=precioDe(a.sym);
+  if(p==null) return false;
+  return a.dir==="sube" ? p>=a.precio : p<=a.precio;
+}
+/* las que suenan y usted todavia no ha dado por vistas.
+   Si el precio se devuelve y vuelve a cruzar, la alerta se rearma sola. */
 function alertasQueSonaron(){
-  return (BD.alertas||[]).filter(function(a){
-    var p=precioDe(a.sym);
-    if(p==null) return false;
-    return a.dir==="sube" ? p>=a.precio : p<=a.precio;
+  var cambio=false;
+  var r=(BD.alertas||[]).filter(function(a){
+    var son=alertaSuena(a);
+    if(!son && a.visto){ a.visto=0; a.mod=Date.now(); cambio=true; }   /* se rearma */
+    return son && !a.visto;
   });
+  if(cambio){ try{ guardar(); }catch(e){} }
+  return r;
 }
 function avisoAlertas(){
   var s=alertasQueSonaron();
@@ -2452,33 +2883,58 @@ function pintarAlr(){
   } else {
     lista.forEach(function(a,i){
       var p=precioDe(a.sym);
-      var sono = p!=null && (a.dir==="sube" ? p>=a.precio : p<=a.precio);
+      var sono = alertaSuena(a);
       var falta = p!=null ? (a.precio-p)/p*100 : null;
-      h+='<div class="alr'+(sono?" son":"")+'">'+icono(a.sym)+
+      h+='<div class="alr'+(sono&&!a.visto?" son":"")+'">'+icono(a.sym)+
         '<div class="q"><b>'+esc(a.sym)+' '+(a.dir==="sube"?"sube a":"baja a")+' '+precio(a.precio)+'</b>'+
         '<span>'+(p!=null
-          ? ("hoy "+precio(p)+(sono?" · ¡cumplida!":" · falta "+pct(falta,1)))
+          ? ("hoy "+precio(p)+(sono?(a.visto?" · cumplida (ya la vio)":" · ¡cumplida!")
+                                   :" · falta "+pct(falta,1)))
           : "sin precio todavía")+'</span></div>'+
         (sono?'<span class="chip a">CUMPLIDA</span>':'')+
+        (sono&&!a.visto?'<button class="b ac sm" data-avis="'+i+'">Ya la vi</button>':'')+
         '<button class="b sm" data-adel="'+i+'">Quitar</button></div>';
     });
   }
   h+='</div></div>';
   c.innerHTML=h;
+  c.querySelectorAll("[data-avis]").forEach(function(b){
+    b.onclick=function(){
+      var a=BD.alertas[+b.getAttribute("data-avis")];
+      if(a){ a.visto=Date.now(); a.mod=Date.now(); }
+      guardar(); pintarAlr(); pintarMenu(); repintar();
+      aviso("Listo, ya no le vuelve a avisar de esa (hasta que el precio se devuelva y la cruce otra vez).");
+    };
+  });
   c.querySelectorAll("[data-adel]").forEach(function(b){
     b.onclick=function(){
-      BD.alertas.splice(+b.getAttribute("data-adel"),1);
-      guardar(); pintarAlr(); pintarMenu(); aviso("Alerta quitada.");
+      var i2=+b.getAttribute("data-adel"), a=BD.alertas[i2];
+      if(!a) return;
+      confirmar("Quitar alerta","Se quita la alerta de <b>"+esc(a.sym)+" "+
+        (a.dir==="sube"?"sube a":"baja a")+" "+precio(a.precio)+"</b> en todos sus equipos.",
+        "Quitarla", function(){
+          if(a.id) anotarBorrado(a.id);       /* que no vuelva del otro equipo */
+          BD.alertas.splice(i2,1);
+          guardar(); pintarAlr(); pintarMenu(); aviso("Alerta quitada.");
+        }, true);
     };
   });
 }
 function nuevaAlerta(){
-  var syms=simbolos();
-  if(!syms.length){ aviso("Primero registre alguna compra.",true); return; }
+  var mias=simbolos().filter(function(x){ return !esEstable(x); }).sort();
+  var otras=Object.keys(MONEDAS).filter(function(x){
+    return !MONEDAS[x].estable && mias.indexOf(x)<0; }).sort();
+  var syms=mias.concat(otras);       /* tambien las que todavia no tiene */
+  if(!syms.length){ aviso("No hay monedas para vigilar.",true); return; }
   abrir('<div class="hoja"><div class="hh"><h3>Nueva alerta de precio</h3>'+
     '<button class="x" data-cerrar>×</button></div><div class="hb"><div class="campos">'+
     '<div class="campo ancho"><label>Moneda</label><select id="alS">'+
-      syms.map(function(s){ return '<option value="'+esc(s)+'">'+esc(s)+' · '+esc(nombreDe(s))+'</option>'; }).join("")+
+      (mias.length?'<optgroup label="Las que tiene">'+mias.map(function(x){
+        return '<option value="'+esc(x)+'">'+esc(x)+' · '+esc(nombreDe(x))+'</option>'; }).join("")+
+        '</optgroup>':'')+
+      (otras.length?'<optgroup label="Las demás">'+otras.map(function(x){
+        return '<option value="'+esc(x)+'">'+esc(x)+' · '+esc(nombreDe(x))+'</option>'; }).join("")+
+        '</optgroup>':'')+
     '</select></div>'+
     '<div class="campo ancho"><label>Avisarme cuando</label>'+
       '<div class="pill" id="alD"><button data-d="sube" class="on v">SUBA A</button>'+
@@ -2515,7 +2971,11 @@ function nuevaAlerta(){
       var s=M.querySelector("#alS").value, p=num(M.querySelector("#alP").value);
       if(p==null||p<=0){ aviso("Escriba el precio.",true); return; }
       BD.alertas=BD.alertas||[];
-      BD.alertas.push({sym:s, dir:dir, precio:p, mod:Date.now()});
+      if(BD.alertas.some(function(x){ return x.sym===s && x.dir===dir && +x.precio===p; })){
+        aviso("Esa alerta ya existe.",true); return;
+      }
+      BD.alertas.push({id:idNuevo(), sym:String(s).toUpperCase(), dir:dir, precio:p,
+                       visto:0, mod:Date.now()});
       guardar(); cerrar(); irA("alr"); pintarMenu();
       aviso("Alerta creada para "+s+".");
     };
@@ -2527,6 +2987,7 @@ function tarjetaCasas(){
   var por={};
   BD.ops.forEach(function(o){
     if(o.tipo==="venta") return;
+    if(esEstable(o.sym)) return;      /* meter USDT no es invertir en cripto */
     var k=o.casa||"OTRA";
     por[k]=(por[k]||0)+(+o.cant||0)*(+o.precio||0)+(+o.com||0);
   });
@@ -2546,6 +3007,36 @@ function metD(icono, etiqueta, valor, clase, sub, unidad){
   return met(icono, etiqueta, valor, clase, sub, unidad).replace('class="met"','class="met dest"');
 }
 
+/* Lectura en palabras de como le esta yendo en futuros.
+   Solo con lo que ya cerro: no adivina nada del futuro. */
+function consejoFut(F){
+  var T=F.tot, p=[];
+  if(T.aciertos!=null)
+    p.push('Acierta <b>'+T.aciertos.toFixed(0)+'%</b> de las veces ('+T.ganadas+' de '+T.n+').');
+  if(T.esperanza!=null)
+    p.push('Cada operación le deja <b class="'+cl(T.esperanza)+'">'+pct(T.esperanza,1)+
+           '</b> del margen en promedio.');
+  if(T.mediaGana!=null && T.mediaPierde!=null && T.mediaPierde!==0){
+    var r=Math.abs(T.mediaGana/T.mediaPierde);
+    p.push('Cuando pega gana '+pctS(T.mediaGana)+' y cuando falla pierde '+
+      pctS(Math.abs(T.mediaPierde))+' — relación <b>'+r.toFixed(2).replace(".",",")+' a 1</b>'+
+      (r>=1.5?' (buena)':r>=1?' (justa)':' (arriesga mas de lo que gana)')+'.');
+  }
+  var L=T.lados.LONG, S=T.lados.SHORT;
+  if(L.n>=2 && S.n>=2 && L.aciertos!=null && S.aciertos!=null){
+    var d=L.aciertos-S.aciertos;
+    if(Math.abs(d)>=15)
+      p.push('Le va bastante mejor en <b>'+(d>0?"largos":"cortos")+'</b> ('+
+        (d>0?L.aciertos:S.aciertos).toFixed(0)+'% contra '+
+        (d>0?S.aciertos:L.aciertos).toFixed(0)+'%).');
+  }
+  if(T.racha>=3)
+    p.push('Lleva <b>'+T.racha+'</b> seguidas '+(T.rachaGana?"ganando":"perdiendo")+'.');
+  if(T.comision>0) p.push('Comisiones pagadas: <b>'+usd(T.comision)+'</b>.');
+  if(T.nLiq) p.push('<b class="dn">'+T.nLiq+'</b> '+(T.nLiq===1?"terminó":"terminaron")+' en liquidación.');
+  return p.length ? '<div class="fcalc" style="margin-top:12px">'+p.join(" ")+'</div>' : "";
+}
+
 /* =====================================================================
    PANTALLA DE FUTUROS
    ===================================================================== */
@@ -2559,19 +3050,26 @@ function pintarFut(){
       '<button class="b ac" onclick="abrirFut()">+ Registrar operación</button></div></div>';
     return;
   }
-  var h='<div class="hero'+(T.gan>=0?" gana":" pierde")+'"><div class="hz">'+
+  var h=alertaPrecios()+
+    '<div class="hero'+(T.gan>=0?" gana":" pierde")+'"><div class="hz">'+
     '<div class="hprin"><div class="he">RESULTADO EN FUTUROS</div>'+
     '<div class="hv mono '+cl(T.gan)+'">'+(T.gan>=0?"+":"−")+usd(T.gan).replace("-","")+'</div>'+
     '<div class="hg"><span class="gpill '+(T.aciertos>=50?"p":"z")+'" style="font-size:15px">'+
       (T.aciertos!=null?T.aciertos.toFixed(0)+"% acertadas":"—")+'</span>'+
-    '<span class="gp2">'+T.ganadas+' de '+T.n+'</span>'+
-    (T.nAb?'<span class="gch ao">'+T.nAb+' abierta(s)</span>':'')+'</div></div>'+
+    '<span class="gp2">'+T.ganadas+' de '+T.decididas+
+      (T.neutras?' (+'+T.neutras+' en tablas)':'')+'</span>'+
+    (T.nAb?'<span class="gch ao">'+T.nAb+' abierta(s)</span>':'')+
+    (T.enRiesgo?'<span class="gch" style="color:var(--dn)">'+T.enRiesgo+
+      ' pasada(s) del precio de liquidación</span>':'')+'</div></div>'+
     '<div class="hsec">'+
       chip2("CADA OPERACIÓN", pct(T.esperanza), cl(T.esperanza), "rinde en promedio")+
-      chip2("ACIERTO MEDIO", T.mediaGana!=null?"+"+T.mediaGana.toFixed(1)+"%":"—","up","cuando pega")+
-      chip2("FALLO MEDIO", T.mediaPierde!=null?T.mediaPierde.toFixed(1)+"%":"—","dn","cuando falla")+
-      chip2("EN RIESGO", usd(T.margenAbierto), T.flotante?cl(T.flotante):"",
-            T.nAb?("flotante "+usd(T.flotante)):"nada abierto")+
+      chip2("ACIERTO MEDIO", T.mediaGana!=null?"+"+pctS(T.mediaGana):"—","up","cuando pega")+
+      chip2("FALLO MEDIO", pctS(T.mediaPierde),"dn","cuando falla")+
+      chip2("EN RIESGO", usd(T.margenAbierto), "",
+            T.nAb?(T.nAb+" abierta(s)"):"nada abierto")+
+      chip2("VAN GANANDO", T.nAb?((T.flotante>=0?"+":"−")+usd(T.flotante).replace("-","")):"—",
+            T.nAb?cl(T.flotante):"",
+            T.sinPrecioAb?(T.sinPrecioAb+" sin precio, no entra"):"las abiertas, al precio de hoy")+
     '</div></div></div>';
 
   if(T.n>=4){
@@ -2668,7 +3166,8 @@ function tablaFut(lista, abiertas, T){
 /* =====================================================================
    ELEGIR MONEDA — cuadro con buscador e iconos, no una lista escondida
    ===================================================================== */
-function elegirMoneda(actual, alElegir){
+function elegirMoneda(actual, alElegir, alCancelar){
+  var elegido=false;
   var todas=Object.keys(MONEDAS).sort(function(a,b){
     var ea=MONEDAS[a].estable?1:0, eb=MONEDAS[b].estable?1:0;
     if(ea!==eb) return ea-eb;
@@ -2677,7 +3176,7 @@ function elegirMoneda(actual, alElegir){
   var mias=simbolos();
   abrir('<div class="hoja ancha"><div class="hh"><h3>Elegir criptomoneda</h3>'+
     '<button class="x" data-cerrar>×</button></div><div class="hb">'+
-    '<input id="emQ" placeholder="Escriba el nombre o el símbolo (BTC, Solana…)" '+
+    '<input id="emQ" data-sinenter placeholder="Escriba el nombre o el símbolo (BTC, Solana…)" '+
       'style="font-family:inherit;margin-bottom:14px" autocomplete="off">'+
     '<div id="emL" class="rejilla"></div>'+
     '<div class="nota" style="margin-top:14px">¿No está en la lista? Escriba su símbolo arriba '+
@@ -2698,7 +3197,7 @@ function elegirMoneda(actual, alElegir){
           (mias.indexOf(s)>=0?'<em>la tiene</em>':'')+'</button>';
       }).join("") || '<div class="mut" style="padding:14px">Ninguna coincide. Use el botón de abajo.</div>';
       L.querySelectorAll("[data-m]").forEach(function(b){
-        b.onclick=function(){ cerrar(); alElegir(b.getAttribute("data-m")); };
+        b.onclick=function(){ elegido=true; cerrar(); alElegir(b.getAttribute("data-m")); };
       });
     }
     q.addEventListener("input", pinta);
@@ -2706,13 +3205,15 @@ function elegirMoneda(actual, alElegir){
     M.querySelector("#emOtro").onclick=function(){
       var s=q.value.trim().toUpperCase().replace(/[^A-Z0-9]/g,"");
       if(!s){ aviso("Escriba el símbolo.",true); return; }
-      cerrar(); alElegir(s);
+      elegido=true; cerrar(); alElegir(s);
     };
-  });
+  },
+  function(){ if(!elegido && alCancelar) alCancelar(); });
 }
 
 /* elegir casa de cambio */
-function elegirCasa(actual, alElegir){
+function elegirCasa(actual, alElegir, alCancelar){
+  var elegido=false;
   abrir('<div class="hoja"><div class="hh"><h3>¿Dónde compró?</h3>'+
     '<button class="x" data-cerrar>×</button></div><div class="hb"><div class="rejilla">'+
     Object.keys(CASAS).map(function(k){
@@ -2722,9 +3223,10 @@ function elegirCasa(actual, alElegir){
     '<button class="b" data-cerrar>Cancelar</button></div></div>',
   function(M){
     M.querySelectorAll("[data-c]").forEach(function(b){
-      b.onclick=function(){ cerrar(); alElegir(b.getAttribute("data-c")); };
+      b.onclick=function(){ elegido=true; cerrar(); alElegir(b.getAttribute("data-c")); };
     });
-  });
+  },
+  function(){ if(!elegido && alCancelar) alCancelar(); });
 }
 
 /* =====================================================================
@@ -2736,6 +3238,12 @@ function abrirOp(tipo, sym, editar){
   var t = o ? o.tipo : (tipo||"compra");
   var mon = o ? o.sym : (sym||"");
   var casa = o ? (o.casa||BD.ajustes.casa||"BINANCE") : (BD.ajustes.casa||"BINANCE");
+  /* si esta editando, el total se muestra ya calculado */
+  var totIni = "";
+  if(o){
+    var br=(+o.cant||0)*(+o.precio||0), kk=(+o.com||0);
+    totIni = String((o.tipo==="venta" ? br-kk : br+kk).toFixed(2)).replace(".",",");
+  }
 
   abrir('<div class="hoja"><div class="hh"><h3>'+(o?"Editar movimiento":"Registrar movimiento")+
     '</h3><button class="x" data-cerrar>×</button></div><div class="hb">'+
@@ -2755,8 +3263,9 @@ function abrirOp(tipo, sym, editar){
         'placeholder="65000" value="'+(o?o.precio:"")+'"></div>'+
       '<div class="campo"><label>Comisión</label><input id="opK" inputmode="decimal" '+
         'placeholder="0" value="'+(o&&o.com?o.com:"")+'"></div>'+
-      '<div class="campo ancho"><label>Total gastado (opcional)</label>'+
-        '<input id="opT2" inputmode="decimal" placeholder="si escribe el total, la cantidad se calcula sola"></div>'+
+      '<div class="campo ancho"><label>Total '+(t==="venta"?"recibido":"gastado")+' (opcional)</label>'+
+        '<input id="opT2" inputmode="decimal" value="'+totIni+'" '+
+        'placeholder="si escribe el total, la cantidad se calcula sola"></div>'+
       '<div class="campo ancho"><label>Nota</label><input id="opN" style="font-family:inherit" '+
         'placeholder="opcional" value="'+esc(o?(o.nota||""):"")+'"></div>'+
     '</div><div class="nota" id="opR">Elija la moneda y escriba cantidad y precio.</div></div>'+
@@ -2773,33 +3282,45 @@ function abrirOp(tipo, sym, editar){
         '<span><b>'+esc(nombreCasa(casa))+'</b><i>casa de cambio</i></span><em>cambiar</em>';
     }
     pintaSel();
-    M.querySelector("#opS").onclick=function(){
-      elegirMoneda(mon, function(s){ mon=s; abrirOpVuelve(); });
-    };
-    M.querySelector("#opE").onclick=function(){
-      elegirCasa(casa, function(c){ casa=c; abrirOpVuelve(); });
-    };
-    /* al volver de un selector se reabre el formulario con lo escrito */
-    function abrirOpVuelve(){
-      var datos={cant:M.querySelector("#opC").value, precio:M.querySelector("#opP").value,
+    /* OJO: el cuadro de elegir moneda REEMPLAZA a este formulario, asi que todo lo
+       escrito se guarda ANTES de abrirlo, nunca despues (ese era el error de
+       "vendo y ya no me deja comprar"). */
+    function leerOp(){
+      return {cant:M.querySelector("#opC").value, precio:M.querySelector("#opP").value,
         com:M.querySelector("#opK").value, fecha:M.querySelector("#opF").value,
-        nota:M.querySelector("#opN").value};
+        total:M.querySelector("#opT2").value, nota:M.querySelector("#opN").value, tipo:sel};
+    }
+    function volverOp(d){
       setTimeout(function(){
-        abrirOp(sel, mon, editar);
+        OP_casa=casa; OP_mon=mon;
+        abrirOp(d.tipo, mon, editar);
         var N=document.getElementById("veloIn");
-        if(!N) return;
-        if(N.querySelector("#opC")){
-          N.querySelector("#opC").value=datos.cant;
-          N.querySelector("#opP").value=datos.precio;
-          N.querySelector("#opK").value=datos.com;
-          N.querySelector("#opF").value=datos.fecha;
-          N.querySelector("#opN").value=datos.nota;
-          OP_casa=casa;
-          N.querySelector("#opC").dispatchEvent(new Event("input",{bubbles:true}));
-        }
+        if(!N || !N.querySelector("#opC")) return;
+        N.querySelector("#opC").value=d.cant;
+        N.querySelector("#opP").value=d.precio;
+        N.querySelector("#opK").value=d.com;
+        N.querySelector("#opF").value=d.fecha;
+        N.querySelector("#opT2").value=d.total;
+        N.querySelector("#opN").value=d.nota;
+        var bt=N.querySelector("#opT button[data-t='"+d.tipo+"']");
+        if(bt) bt.click();                    /* deja COMPRA o VENTA como estaba */
+        N.querySelector("#opC").dispatchEvent(new Event("input",{bubbles:true}));
       },0);
     }
-    if(OP_casa){ casa=OP_casa; OP_casa=null; pintaSel(); }
+    M.querySelector("#opS").onclick=function(){
+      var d=leerOp();
+      elegirMoneda(mon, function(x){ mon=String(x).toUpperCase(); volverOp(d); },
+                        function(){ volverOp(d); });   /* si cancela, no se pierde nada */
+    };
+    M.querySelector("#opE").onclick=function(){
+      var d=leerOp();
+      elegirCasa(casa, function(c){ casa=c; volverOp(d); },
+                       function(){ volverOp(d); });
+    };
+    /* al volver del selector, la moneda y la casa elegidas mandan (tambien editando) */
+    if(OP_mon){ mon=OP_mon; OP_mon=null; }
+    if(OP_casa){ casa=OP_casa; OP_casa=null; }
+    pintaSel();
 
     M.querySelectorAll("#opT button").forEach(function(b){
       b.onclick=function(){
@@ -2824,6 +3345,13 @@ function abrirOp(tipo, sym, editar){
           k=num(M.querySelector("#opK").value)||0, r=M.querySelector("#opR");
       if(!mon){ r.textContent="Primero elija la criptomoneda."; return; }
       if(c==null||p==null){ r.textContent="Escriba cantidad y precio."; return; }
+      var avisos=[];
+      if(p===0) avisos.push("OJO: precio 0 · va a quedar como si la hubiera recibido gratis");
+      if(esEstable(mon) && sel==="compra")
+        avisos.push("OJO: el USDT/USDC que registre aquí cuenta como dinero que METIÓ desde fuera. "+
+          "Si es el USDT que le quedó de una venta, no hace falta registrarlo: ya está contado");
+      var fSel=M.querySelector("#opF").value;
+      if(fSel && fSel>hoy()) avisos.push("OJO: esa fecha todavía no llega");
       var tot = sel==="venta" ? c*p-k : c*p+k;
       var txt=(sel==="venta"?"Recibe ":"Paga ")+usd(tot)+" por "+cant(c)+" "+mon+
               " en "+nombreCasa(casa);
@@ -2841,10 +3369,12 @@ function abrirOp(tipo, sym, editar){
           txt+=" · "+(g>=0?"gana ":"pierde ")+usd(Math.abs(g))+" contra su promedio de "+precio(est.promedio);
         }
       }
-      r.textContent=txt;
+      r.textContent = avisos.length ? (avisos.join(" · ")+" · "+txt) : txt;
+      r.className = avisos.length ? "nota ojo" : "nota";
     }
-    ["#opC","#opP","#opK"].forEach(function(id){
+    ["#opC","#opP","#opK","#opF"].forEach(function(id){
       M.querySelector(id).addEventListener("input", rec);
+      M.querySelector(id).addEventListener("change", rec);
     });
     rec();
 
@@ -2853,6 +3383,7 @@ function abrirOp(tipo, sym, editar){
       confirmar("Eliminar","Se borra la "+(o.tipo==="venta"?"venta":"compra")+" de "+cant(o.cant)+
         " "+esc(o.sym)+".","Eliminar",function(){
           BD.ops=BD.ops.filter(function(x){ return x.id!==o.id; });
+          anotarBorrado(o.id);          /* para que no vuelva del otro equipo */
           guardar(); repintar(); aviso("Eliminado.");
         }, true);
     };
@@ -2867,8 +3398,9 @@ function abrirOp(tipo, sym, editar){
         var est=estadoDe(mon), disp=est.cantidad+(o&&o.sym===mon&&o.tipo==="venta"?(+o.cant||0):0);
         if(c>disp+1e-9){ aviso("No puede vender "+cant(c)+" "+mon+": tiene "+cant(disp)+".",true); return; }
       }
-      if(o){ o.sym=mon;o.tipo=sel;o.cant=c;o.precio=p;o.com=k;o.fecha=f;o.nota=n;o.casa=casa;o.mod=Date.now(); }
-      else BD.ops.push({id:idNuevo(),sym:mon,tipo:sel,cant:c,precio:p,com:k,fecha:f,
+      var MON=String(mon).toUpperCase();
+      if(o){ o.sym=MON;o.tipo=sel;o.cant=c;o.precio=p;o.com=k;o.fecha=f;o.nota=n;o.casa=casa;o.mod=Date.now(); }
+      else BD.ops.push({id:idNuevo(),sym:MON,tipo:sel,cant:c,precio:p,com:k,fecha:f,
                         nota:n,casa:casa,mod:Date.now()});
       BD.ajustes.casa=casa;
       guardar(); cerrar(); repintar(); traerPrecios(true);
@@ -2876,7 +3408,7 @@ function abrirOp(tipo, sym, editar){
     };
   });
 }
-var OP_casa=null;
+var OP_casa=null, OP_mon=null;
 
 /* =====================================================================
    SINCRONIZAR ENTRE SUS EQUIPOS
@@ -2885,8 +3417,24 @@ var OP_casa=null;
    Se juntan los cambios de los dos lados: gana el más reciente de cada
    registro, y lo que borró en un lado no vuelve a aparecer.
    ===================================================================== */
-var SYNC={ ocupado:false, ultimo:null, error:"", auto:null };
+var SYNC={ ocupado:false, ultimo:null, error:"", auto:null, firma:"", sha:"" };
+var RELOJ_avisado=false;
+/* huella de los datos: si no cambio nada, no hace falta subir otra vez */
+function firmaDatos(){
+  try{
+    return JSON.stringify({o:BD.ops, f:BD.fut, a:BD.alertas, b:BD.borrados,
+      m:preciosManuales(), j:BD.ajustes&&BD.ajustes.mod, t:BD.tema});
+  }catch(e){ return String(Date.now()); }
+}
 
+/* la lista de borrados se juntaba consigo misma en cada sincronizada y crecia
+   sin parar; aqui se deja una sola entrada por identificador */
+function limpiarBorrados(l){
+  var por={};
+  (l||[]).forEach(function(x){ if(x && x.id) por[x.id]=Math.max(por[x.id]||0, +x.t||0); });
+  return Object.keys(por).map(function(k){ return {id:k, t:por[k]}; })
+    .sort(function(a,b){ return a.t-b.t; }).slice(-400);
+}
 function anotarBorrado(id){
   BD.borrados=BD.borrados||[];
   BD.borrados.push({id:id, t:Date.now()});
@@ -2904,10 +3452,29 @@ function gh(ruta, opciones){
     "X-GitHub-Api-Version":"2022-11-28"
   }, o.headers||{});
   return fetch("https://api.github.com"+ruta, o).then(function(r){
-    if(r.status===401) throw new Error("La clave no sirve o se venció");
-    if(r.status===403) throw new Error("La clave no tiene permiso sobre repositorios");
+    /* de paso se compara el reloj de este equipo con el de GitHub: si va muy
+       desfasado, al juntar los cambios "gana" la fecha equivocada */
+    try{
+      var dd=r.headers.get("date");
+      if(dd){
+        var dif=Math.abs(new Date(dd).getTime()-Date.now());
+        if(dif>5*60000 && !RELOJ_avisado){
+          RELOJ_avisado=true;
+          aviso("El reloj de este equipo está desfasado "+Math.round(dif/60000)+
+            " minuto(s) contra el de internet. Póngalo en hora: si no, al juntar los "+
+            "cambios entre sus equipos puede ganar la versión equivocada.", true);
+        }
+      }
+    }catch(e){}
+    if(r.status===401){ var e1=new Error("La clave no sirve o se venció"); e1.codigo=401; throw e1; }
+    if(r.status===403){ var e2=new Error("La clave no tiene permiso sobre repositorios"); e2.codigo=403; throw e2; }
     if(r.status===404) return {__falta:true};
-    if(!r.ok) return r.text().then(function(t){ throw new Error("GitHub respondió "+r.status); });
+    if(!r.ok) return r.text().then(function(t){
+      var e3=new Error(r.status===409
+        ? "los dos equipos escribieron a la vez"
+        : ("GitHub respondió "+r.status));
+      e3.codigo=r.status; throw e3;
+    });
     return r.json();
   });
 }
@@ -2939,14 +3506,15 @@ function bajarRemoto(){
     var txt;
     try{ txt=decodeURIComponent(escape(atob((r.content||"").replace(/\n/g,"")))); }
     catch(e){ txt=atob((r.content||"").replace(/\n/g,"")); }
-    var d=null;
-    try{ d=JSON.parse(txt); }catch(e){}
-    return {datos:d, sha:r.sha};
+    var d=null, roto=false;
+    try{ d=JSON.parse(txt); }catch(e){ roto=true; }
+    return {datos:d, sha:r.sha, roto:roto};
   });
 }
 function subirRemoto(sha){
   var g=gitCfg();
   var paquete={ops:BD.ops, fut:BD.fut, alertas:BD.alertas, borrados:BD.borrados||[],
+               manuales:preciosManuales(),
                ajustes:sinClave(BD.ajustes), tema:BD.tema, sembrado:BD.sembrado,
                equipo:nombreEquipo(), guardado:Date.now()};
   var txt=JSON.stringify(paquete,null,1);
@@ -2974,7 +3542,11 @@ function juntar(local, remoto, borrados){
   (borrados||[]).forEach(function(b){ fuera[b.id]=Math.max(fuera[b.id]||0, b.t||0); });
   function meter(arr){
     (arr||[]).forEach(function(x){
-      if(!x || !x.id) return;
+      if(!x) return;
+      /* copias viejas sin identificador: se les arma uno con su propio contenido,
+         igual en los dos equipos, para que no se pierdan ni se dupliquen */
+      if(!x.id) x.id = "v_"+[x.tipo||x.lado||"", x.sym||"", x.fecha||"",
+                             x.cant!=null?x.cant:x.monto, x.precio!=null?x.precio:x.entrada].join("_");
       var m=+x.mod||0;
       if(fuera[x.id] && fuera[x.id]>=m) return;        /* lo borró: no vuelve */
       var y=por[x.id];
@@ -2985,19 +3557,22 @@ function juntar(local, remoto, borrados){
   return Object.keys(por).map(function(k){ return por[k]; });
 }
 
-function sincronizar(silencioso){
+function sincronizar(silencioso, reintento){
   var g=gitCfg();
   if(!g.token || !g.user){ if(!silencioso) aviso("Primero conecte su cuenta.",true); return Promise.resolve(); }
   if(SYNC.ocupado) return Promise.resolve();
   SYNC.ocupado=true; pintarSync("trabajando");
   return bajarRemoto().then(function(r){
+    /* archivo remoto ilegible: se para. Si se subiera encima, se perderia lo que
+       el otro equipo hubiera guardado ahi. */
+    if(r.roto) throw new Error("el archivo del repositorio no se pudo leer; no se subió nada para no pisarlo");
     var d=r.datos;
     if(d){
-      var bor=(BD.borrados||[]).concat(d.borrados||[]);
+      var bor=limpiarBorrados((BD.borrados||[]).concat(d.borrados||[]));
       BD.ops=juntar(BD.ops, d.ops, bor);
       BD.fut=juntar(BD.fut, d.fut, bor);
-      BD.alertas=juntarAlertas(BD.alertas, d.alertas);
-      BD.borrados=bor.slice(-400);
+      BD.alertas=juntarAlertas(BD.alertas, d.alertas, bor);
+      BD.borrados=bor;
       if(!BD.sembrado && d.sembrado) BD.sembrado=d.sembrado;
       /* el tema y los ajustes: se queda el más reciente, sin tocar la clave */
       if(d.ajustes){
@@ -3009,26 +3584,53 @@ function sincronizar(silencioso){
           aplicarTema();
         }
       }
-      BD.ops.sort(function(a,b){ return (a.fecha||"")<(b.fecha||"")?-1:1; });
+      /* los precios que escribio a mano tambien viajan */
+      if(d.manuales) Object.keys(d.manuales).forEach(function(x){
+        var mio=BD.precios[x], suyo=d.manuales[x];
+        if(!mio || !mio.mano || (+suyo.t||0) > (+mio.t||0))
+          BD.precios[x]=Object.assign({}, suyo, {mano:true});
+      });
+      BD.ops.sort(function(a,b){
+        var fa=a.fecha||"", fb=b.fecha||"";
+        if(fa!==fb) return fa<fb?-1:1;
+        var ia=String(a.id||""), ib=String(b.id||"");
+        return ia<ib?-1:(ia>ib?1:0);
+      });
     }
-    return subirRemoto(r.sha);
+    /* si nada cambio de este lado y alla sigue lo mismo, no se sube (no ensucia el repositorio) */
+    if(silencioso && SYNC.firma && SYNC.firma===firmaDatos() && SYNC.sha && SYNC.sha===r.sha)
+      return null;                       /* nada cambio de este lado ni del otro */
+    return subirRemoto(r.sha).then(function(res){
+      SYNC.firma=firmaDatos();
+      if(res && res.content && res.content.sha) SYNC.sha=res.content.sha;
+      return res;
+    });
   }).then(function(){
     SYNC.ocupado=false; SYNC.ultimo=Date.now(); SYNC.error="";
     guardar(); repintar();
     if(!silencioso) aviso("Sincronizado. Sus cambios están en todos sus equipos.");
   }).catch(function(e){
-    SYNC.ocupado=false; SYNC.error=String(e&&e.message||e);
+    SYNC.ocupado=false;
+    /* los dos equipos subieron a la vez: se vuelve a bajar y se reintenta una sola vez */
+    if(e && e.codigo===409 && !reintento){
+      return sincronizar(silencioso, true);
+    }
+    SYNC.error=String(e&&e.message||e);
     pintarSync("mal");
     if(!silencioso) aviso("No se pudo sincronizar: "+SYNC.error, true);
   });
 }
-function juntarAlertas(a,b){
-  var v={}, r=[];
+function juntarAlertas(a, b, borrados){
+  var fuera={}, por={}, r=[];
+  (borrados||[]).forEach(function(x){ fuera[x.id]=Math.max(fuera[x.id]||0, x.t||0); });
   (a||[]).concat(b||[]).forEach(function(x){
     if(!x||!x.sym) return;
-    var k=x.sym+"|"+x.dir+"|"+x.precio;
-    if(!v[k]){ v[k]=1; r.push(x); }
+    if(!x.id) x.id = "va_"+[x.sym,x.dir,x.precio].join("_");
+    if(fuera[x.id] && fuera[x.id] >= (+x.mod||0)) return;   /* la borro: no vuelve */
+    var y=por[x.id];
+    if(!y || (+x.mod||0) > (+y.mod||0)) por[x.id]=x;
   });
+  Object.keys(por).forEach(function(k){ r.push(por[k]); });
   return r;
 }
 function pintarSync(estado){
@@ -3141,6 +3743,49 @@ function engancharSync(box){
 /* =====================================================================
    AJUSTES — aquí cambia TODO el color
    ===================================================================== */
+/* ---------- el programa: versión, actualizar y publicar al teléfono ---------- */
+function panelPrograma(){
+  var g=gitCfg(), enPc=(location.protocol==="file:");
+  var hayNueva = PROG.remota && (+PROG.remota > +VERSION);
+  return '<div class="caja"><h2>El programa<span class="sp"></span>'+
+    '<span class="chip a">versión '+esc(VERSION)+'</span></h2><div class="cp">'+
+    '<div class="fcalc">Está corriendo la <b>versión '+esc(VERSION)+'</b> '+
+      (enPc ? 'desde el archivo de esta computadora'
+            : 'desde internet · el teléfono toma la versión nueva solo, la próxima vez que lo abra')+
+      (PROG.remota ? ' · publicada en su repositorio: <b'+(hayNueva?' class="dn"':'')+'>versión '+
+                     esc(PROG.remota)+'</b>' : '')+
+    '</div>'+
+    (hayNueva
+      ? '<div class="nota ojo" style="margin-top:12px"><b>Hay una versión más nueva publicada.</b> '+
+        (enPc ? 'Descárguela y reemplace con ella el CRIPTO.html de esta carpeta.'
+              : 'Cierre y vuelva a abrir la aplicación.')+'</div>'
+      : '')+
+    (g.token
+      ? '<div class="campos" style="margin-top:12px">'+
+          '<div class="campo ancho"><label>Repositorio público donde vive el programa</label>'+
+          '<input id="pgRepo" style="font-family:inherit" value="'+esc(repoApp())+'" '+
+          'placeholder="cripto"></div>'+
+        '</div>'+
+        '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px">'+
+          '<button class="b ac" id="pgSubir">Publicar para el teléfono</button>'+
+          '<button class="b" id="pgVer">Buscar versión nueva</button>'+
+          (hayNueva&&enPc?'<button class="b" id="pgBajar">Descargar la versión '+
+            esc(PROG.remota)+'</button>':'')+
+          '<input type="file" id="pgArch" accept=".html,.js,.webmanifest,.css" multiple '+
+          'style="display:none"></div>'+
+        '<div class="nota"><b>Publicar</b> sube al repositorio <b>'+esc(repoApp())+
+        '</b> los archivos que elija (CRIPTO.html y sw-portafolio.js, dentro de la carpeta '+
+        'portafolio) sin que usted '+
+        'tenga que entrar a github.com. Puede elegir varios de una vez. Después de publicar, '+
+        'el teléfono se actualiza solo: la próxima vez que lo abra con internet ya trae la '+
+        'versión nueva.<br><br><b>Ese repositorio es público.</b> Aquí solo entra el programa: '+
+        'las copias de sus datos (.json) están bloqueadas, por extensión y por contenido. '+
+        'Sus movimientos viajan por el repositorio privado, que es otro.</div>'
+      : '<div class="nota">Conecte su clave de GitHub más abajo y desde aquí podrá publicar '+
+        'el programa para el teléfono sin entrar a github.com.</div>')+
+  '</div></div>';
+}
+
 function pintarDat(){
   var box=document.getElementById("cuerpo"), t=BD.tema, a=BD.ajustes;
   box.innerHTML=
@@ -3198,6 +3843,9 @@ function pintarDat(){
       '</select></div>'+
     '<div class="campo"><label>Meta de portafolio (USD)</label>'+
       '<input id="aMeta" inputmode="decimal" placeholder="500" value="'+(a.meta||"")+'"></div>'+
+    '<div class="campo ancho"><label>Nombre para los papeles impresos</label>'+
+      '<input id="aNombre" style="font-family:inherit" placeholder="su nombre o el de la empresa" '+
+      'value="'+esc(a.nombre||"")+'"></div>'+
     '<div class="campo"><label>Casa de cambio por defecto</label><select id="aCasa">'+
       Object.keys(CASAS).map(function(k){
         return '<option value="'+k+'"'+((a.casa||"BINANCE")===k?" selected":"")+'>'+esc(CASAS[k].n)+'</option>';
@@ -3216,6 +3864,7 @@ function pintarDat(){
     '<div class="campo"><label>Take profit %</label><input id="aTp" inputmode="decimal" value="'+(a.tp!=null?a.tp:10)+'"></div>'+
   '</div></div></div>'+
 
+  panelPrograma()+
   panelRespaldo()+
   panelSync()+
   '<div class="caja"><h2>Respaldo</h2><div class="cp">'+
@@ -3232,8 +3881,31 @@ function pintarDat(){
   '<div class="caja"><h2>Borrar</h2><div class="cp">'+
     '<div style="display:flex;gap:9px;flex-wrap:wrap">'+
     '<button class="b rj" id="dBorrar">Borrar todo</button>'+
-    '<button class="b" id="dCero">Quitar lo que traje de su Excel</button></div>'+
+    (BD.ops.some(esSemilla)
+      ? '<button class="b" id="dCero">Quitar las compras de ejemplo</button>'
+      : '<button class="b" id="dTraerSem">Traer las compras iniciales del Excel</button>')+
+    '</div>'+
   '</div></div>';
+
+  var pgR=box.querySelector("#pgRepo");
+  if(pgR) pgR.addEventListener("change", function(){
+    BD.ajustes.repoApp=pgR.value.trim()||"cripto";
+    PROG.remota=null; PROG.txt=null; guardar(); pintarDat();
+  });
+  var pgS=box.querySelector("#pgSubir"), pgA=box.querySelector("#pgArch");
+  if(pgS && pgA){
+    pgS.onclick=function(){ pgA.value=""; pgA.click(); };
+    pgA.onchange=function(){ publicarPrograma(pgA.files); pgA.value=""; };
+  }
+  var pgV=box.querySelector("#pgVer");
+  if(pgV) pgV.onclick=function(){
+    pgV.disabled=true; pgV.textContent="Consultando…";
+    buscarVersionPrograma(false).then(function(){
+      pgV.disabled=false; pgV.textContent="Buscar versión nueva";
+    });
+  };
+  var pgB=box.querySelector("#pgBajar");
+  if(pgB) pgB.onclick=descargarPrograma;
 
   engancharRespaldo(box);
   engancharSync(box);
@@ -3281,6 +3953,10 @@ function pintarDat(){
     BD.ajustes.cada=+this.value; guardar(); programarPrecios(); aviso("Listo.");
   };
   box.querySelector("#aCasa").onchange=function(){ BD.ajustes.casa=this.value; guardar(); };
+  box.querySelector("#aNombre").addEventListener("change", function(){
+    BD.ajustes.nombre=this.value.trim(); guardar();
+    aviso(BD.ajustes.nombre?("Los papeles saldrán a nombre de "+BD.ajustes.nombre+"."):"Nombre quitado.");
+  });
   box.querySelector("#aMeta").addEventListener("change", function(){
     var v=num(this.value); BD.ajustes.meta = (v!=null&&v>0)?v:0; guardar();
     aviso(BD.ajustes.meta?("Meta puesta en "+usd(BD.ajustes.meta)+"."):"Meta quitada.");
@@ -3295,20 +3971,48 @@ function pintarDat(){
   box.querySelector("#dCsv").onclick=descargarCsv;
   box.querySelector("#dSube").onclick=function(){ box.querySelector("#dArch").click(); };
   box.querySelector("#dArch").onchange=restaurarCopia;
-  box.querySelector("#dCero").onclick=function(){
-    confirmar("Empezar de cero","Se quitan las <b>"+BD.ops.length+
-      "</b> compras que traje de su Excel.","Empezar de cero", function(){
-        BD.ops=[]; BD.fut=[]; BD.sembrado=1; guardar(); repintar(); aviso("Todo en blanco.");
+  var bCero=box.querySelector("#dCero");
+  if(bCero) bCero.onclick=function(){
+    var sem=BD.ops.filter(esSemilla);
+    confirmar("Quitar las compras de ejemplo","Se quitan solo las <b>"+sem.length+
+      "</b> compras de ejemplo que traía el programa. <b>Todo lo que usted registró se queda.</b>",
+      "Quitarlas", function(){
+        sem.forEach(function(o){ anotarBorrado(o.id); });
+        BD.ops=BD.ops.filter(function(o){ return !esSemilla(o); });
+        BD.sembrado=1; guardar(); repintar();
+        aviso("Listo · quedan "+BD.ops.length+" movimiento(s) suyos.");
       }, true);
   };
+  var bSem=box.querySelector("#dTraerSem");
+  if(bSem) bSem.onclick=function(){
+    confirmar("Traer las compras iniciales","Se agregan las <b>"+SEMILLA_OPS.length+
+      "</b> compras que venían con el programa (las de su Excel de junio).","Traerlas", function(){
+        SEMILLA_OPS.forEach(function(o){
+          if(!BD.ops.some(function(x){ return x.id===o.id; }))
+            BD.ops.push(Object.assign({}, o));
+        });
+        BD.sembrado=1; guardar(); repintar(); aviso("Agregadas.");
+      });
+  };
   box.querySelector("#dBorrar").onclick=function(){
-    confirmar("Borrar todo","Se borran <b>"+BD.ops.length+"</b> movimiento(s) y <b>"+
-      BD.fut.length+"</b> operación(es). No se puede deshacer.","Sí, borrar",function(){
-        BD.ops=[]; BD.fut=[]; BD.alertas=[]; guardar(); repintar(); aviso("Todo en blanco.");
+    confirmar("Borrar todo","Se borran <b>"+BD.ops.length+"</b> movimiento(s) de spot, <b>"+
+      BD.fut.length+"</b> operación(es) de futuros y <b>"+(BD.alertas||[]).length+
+      "</b> alerta(s), <b>en todos sus equipos</b>. No se puede deshacer.","Sí, borrar todo",function(){
+        /* se anota cada borrado para que no vuelvan del otro equipo al sincronizar */
+        BD.ops.forEach(function(o){ anotarBorrado(o.id); });
+        BD.fut.forEach(function(f){ anotarBorrado(f.id); });
+        (BD.alertas||[]).forEach(function(a){ anotarBorrado(a.id); });
+        BD.ops=[]; BD.fut=[]; BD.alertas=[];
+        guardar(); repintar(); aviso("Todo en blanco.");
       }, true);
   };
 }
 
+/* numero tal como lo entiende un Excel en espanol: coma decimal, sin separador de miles */
+function numEs(n, dec){
+  if(n==null || isNaN(n)) return "";
+  return (+n).toFixed(dec==null?2:dec).replace(".",",");
+}
 function bajarArchivo(nom, txt, tipo){
   var b=new Blob([txt],{type:tipo||"application/json"}), u=URL.createObjectURL(b),
       a=document.createElement("a");
@@ -3316,38 +4020,76 @@ function bajarArchivo(nom, txt, tipo){
   setTimeout(function(){ URL.revokeObjectURL(u); a.remove(); },300);
 }
 function descargarCopia(){
-  bajarArchivo("portafolio-"+hoy()+".json", JSON.stringify(BD,null,1));
-  aviso("Copia descargada.");
+  /* la clave de GitHub NUNCA sale del equipo, ni siquiera en la copia */
+  var c=Object.assign({}, BD, {ajustes:sinClave(BD.ajustes)});
+  bajarArchivo("portafolio-"+hoy()+".json", JSON.stringify(c,null,1));
+  aviso("Copia descargada. No lleva su clave de GitHub.");
 }
 function descargarCsv(){
-  var f=[["TIPO","FECHA","MONEDA","LADO","CANTIDAD","PRECIO","MONTO","APAL","PORCENTAJE","GANANCIA","NOTA"]];
-  BD.ops.forEach(function(o){
-    f.push([o.tipo==="venta"?"VENTA":"COMPRA",o.fecha,o.sym,"",o.cant,o.precio,"","","","",o.nota||""]);
-  });
+  var f=[["TIPO","FECHA","MONEDA","LADO","ESTADO","CANTIDAD","PRECIO","SALIDA","COMISION",
+          "TOTAL","MARGEN","APAL","PORCENTAJE","GANANCIA","DONDE","NOTA"]];
+  BD.ops.slice().sort(function(a,b){ return (a.fecha||"")<(b.fecha||"")?-1:1; })
+    .forEach(function(o){
+      var bruto=(+o.cant||0)*(+o.precio||0), k=(+o.com||0);
+      var tot = o.tipo==="venta" ? bruto-k : bruto+k;
+      f.push([o.tipo==="venta"?"VENTA":"COMPRA", o.fecha||"", o.sym||"", "", "",
+              numEs(o.cant,8), numEs(o.precio,8), "", numEs(k,2), numEs(tot,2),
+              "","","","", o.casa||"", o.nota||""]);
+    });
   BD.fut.forEach(function(x){
     var e=estadoOp(x);
-    f.push(["FUTURO",x.fecha||"",x.sym||"",x.lado,"","",e.monto,e.apal,
-            e.pct!=null?(e.pct*100).toFixed(2):"", e.gan!=null?e.gan.toFixed(2):"", x.nota||""]);
+    f.push(["FUTURO", x.fecha||"", x.sym||"", x.lado||"",
+            e.abierta?"ABIERTA":(e.liquidado?"LIQUIDADA":"CERRADA"),
+            "", e.entrada?numEs(e.entrada,8):"",
+            e.salida!=null?numEs(e.salida,8):"", numEs(e.com,2), "",
+            numEs(e.margen,2), String(e.apal),
+            e.pct!=null?numEs(e.pct*100,2):(e.pctFlot!=null?numEs(e.pctFlot,2):""),
+            e.gan!=null?numEs(e.gan,2):(e.flot!=null?numEs(e.flot,2):""),
+            "", x.nota||""]);
   });
   bajarArchivo("portafolio-"+hoy()+".csv","\ufeff"+f.map(function(l){
     return l.map(function(c){ return '"'+String(c==null?"":c).replace(/"/g,'""')+'"'; }).join(";");
   }).join("\r\n"),"text/csv;charset=utf-8");
-  aviso("Archivo descargado, se abre con Excel.");
+  aviso("Archivo descargado · "+BD.ops.length+" movimiento(s) y "+BD.fut.length+
+        " futuro(s), con comision y total. Se abre con Excel.");
 }
+
 function restaurarCopia(ev){
   var arch=ev.target.files&&ev.target.files[0]; if(!arch) return;
   var fr=new FileReader();
   fr.onload=function(){
     var d=null; try{ d=JSON.parse(fr.result); }catch(e){}
     if(!d||!Array.isArray(d.ops)){ aviso("Ese archivo no es una copia válida.",true); ev.target.value=""; return; }
-    confirmar("Restaurar copia","Trae <b>"+d.ops.length+"</b> movimiento(s) y <b>"+
-      ((d.fut&&d.fut.length)||0)+"</b> operación(es). Reemplaza lo que hay ahora.","Restaurar",
+    confirmar("Restaurar copia","Trae <b>"+d.ops.length+"</b> movimiento(s), <b>"+
+      ((d.fut&&d.fut.length)||0)+"</b> operación(es) de futuros y <b>"+
+      ((d.alertas&&d.alertas.length)||0)+"</b> alerta(s). Reemplaza lo que hay ahora. "+
+      "Su clave de GitHub no se toca, y lo que traiga la copia manda sobre el otro equipo.",
+      "Restaurar",
       function(){
-        BD.ops=d.ops||[]; BD.fut=d.fut||[]; BD.precios=d.precios||{};
-        BD.ajustes=Object.assign(BD.ajustes,d.ajustes||{});
+        var tk=BD.ajustes.git;                       /* su clave de ahora se queda */
+        var ahora=Date.now();
+        BD.ops=Array.isArray(d.ops)?d.ops:[];
+        BD.fut=Array.isArray(d.fut)?d.fut:[];
+        BD.precios=(d.precios&&typeof d.precios==="object")?d.precios:{};
+        BD.alertas=Array.isArray(d.alertas)?d.alertas:[];      /* antes se perdian */
+        BD.borrados=Array.isArray(d.borrados)?d.borrados:[];   /* para que no vuelva lo borrado */
+        BD.ajustes=Object.assign({}, BD.ajustes, d.ajustes||{}, {git:tk});
         if(d.tema) BD.tema=Object.assign(BD.tema,d.tema);
+        ordenarDatosViejos();
+        /* Lo que vuelve de la copia tiene que MANDAR sobre el otro equipo. Si no se
+           marca como recien tocado, el registro de borrados del otro equipo lo borra
+           otra vez en la primera sincronizada — justo lo contrario de lo que se busca
+           al restaurar. */
+        var vivos={};
+        BD.ops.forEach(function(o){ o.mod=ahora; if(o.id) vivos[o.id]=1; });
+        BD.fut.forEach(function(f){ f.mod=ahora; if(f.id) vivos[f.id]=1; });
+        BD.alertas.forEach(function(a){ a.mod=ahora; if(a.id) vivos[a.id]=1; });
+        BD.borrados=(BD.borrados||[]).filter(function(x){ return !vivos[x.id]; });
+        SYNC.firma=""; SYNC.sha="";        /* obliga a subir el resultado ya mismo */
         guardar(); aplicarTema(); programarPrecios(); repintar(); traerPrecios(true);
-        aviso("Portafolio restaurado.");
+        if(gitCfg().token) sincronizar(true);
+        aviso("Portafolio restaurado · "+BD.ops.length+" movimiento(s), "+BD.fut.length+
+              " futuro(s) y "+(BD.alertas||[]).length+" alerta(s).");
       });
     ev.target.value="";
   };
@@ -3357,18 +4099,59 @@ function restaurarCopia(ev){
 /* =====================================================================
    VENTANAS
    ===================================================================== */
-function abrir(html, listo){
+var CERRAR_CB=null;      /* qué hacer si la ventana se cierra SIN aceptar */
+var FOCO_PREVIO=null;    /* a dónde vuelve el cursor al cerrarla */
+function enfocables(c){
+  return [].slice.call(c.querySelectorAll(
+    'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),'+
+    'textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'))
+    .filter(function(x){ return x.offsetParent!==null || x===document.activeElement; });
+}
+function abrir(html, listo, alCerrar){
   var v=document.getElementById("velo"), c=document.getElementById("veloIn");
+  if(!CERRAR_CB) FOCO_PREVIO=document.activeElement;   /* solo la primera de la pila */
+  CERRAR_CB = alCerrar || null;
   c.innerHTML=html; v.className="on";
+  var h=c.querySelector(".hoja");
+  if(h){ h.setAttribute("role","dialog"); h.setAttribute("aria-modal","true"); }
   c.querySelectorAll("[data-cerrar]").forEach(function(b){ b.onclick=cerrar; });
   v.onclick=function(e){ if(e.target===v) cerrar(); };
-  document.onkeydown=function(e){ if(e.key==="Escape") cerrar(); };
+  document.onkeydown=function(e){
+    if(e.key==="Escape"){ cerrar(); return; }
+    if(e.key==="Tab"){
+      /* el cursor no se va detrás de la ventana */
+      var l=enfocables(c); if(!l.length) return;
+      var pri=l[0], ult=l[l.length-1];
+      if(e.shiftKey && document.activeElement===pri){ e.preventDefault(); ult.focus(); }
+      else if(!e.shiftKey && document.activeElement===ult){ e.preventDefault(); pri.focus(); }
+      else if(l.indexOf(document.activeElement)<0){ e.preventDefault(); pri.focus(); }
+      return;
+    }
+    if(e.key==="Enter"){
+      /* Enter registra, como en cualquier formulario */
+      var a=document.activeElement;
+      if(!a || !c.contains(a)) return;
+      if(a.tagName==="TEXTAREA" || a.tagName==="BUTTON") return;
+      if(a.getAttribute && a.getAttribute("data-sinenter")!=null) return;
+      var pie=c.querySelector(".hf");
+      if(!pie) return;
+      var bs=[].slice.call(pie.querySelectorAll("button")).filter(function(b){
+        return !b.disabled && b.getAttribute("data-cerrar")===null;
+      });
+      var ok=bs[bs.length-1];
+      if(ok){ e.preventDefault(); ok.click(); }
+    }
+  };
   if(listo) listo(c);
-  var p=c.querySelector("input,select"); if(p&&p.focus) p.focus();
+  var p=c.querySelector("input:not([type=hidden]),select"); if(p&&p.focus) p.focus();
 }
 function cerrar(){
+  var cb=CERRAR_CB; CERRAR_CB=null;
+  var vol=FOCO_PREVIO; FOCO_PREVIO=null;
   document.getElementById("velo").className="";
   document.getElementById("veloIn").innerHTML=""; document.onkeydown=null;
+  if(cb){ try{ cb(); }catch(e){} return; }        /* si reabre algo, no toca el foco */
+  try{ if(vol && vol.focus && document.body.contains(vol)) vol.focus(); }catch(e){}
 }
 function confirmar(tit, cuerpo, textoOk, alOk, peligro){
   abrir('<div class="hoja"><div class="hh"><h3>'+esc(tit)+'</h3><button class="x" data-cerrar>×</button></div>'+
@@ -3376,6 +4159,170 @@ function confirmar(tit, cuerpo, textoOk, alOk, peligro){
     '<div class="hf"><button class="b" data-cerrar>Cancelar</button>'+
     '<button class="b '+(peligro?"rj":"ac")+'" id="okB">'+esc(textoOk)+'</button></div></div>',
     function(M){ M.querySelector("#okB").onclick=function(){ cerrar(); alOk(); }; });
+}
+
+/* =====================================================================
+   EL PROGRAMA: versión, actualización sola en el teléfono y publicación
+   ===================================================================== */
+var VERSION="9";
+var PROG={ remota:null, txt:null, buscando:false, ultima:0 };
+var SW_REG=null;
+
+/* --- teléfono: el ayudante (sw.js) trae la versión nueva solo --- */
+function registrarAyudante(){
+  if(location.protocol==="file:") return;      /* en la computadora no hace falta */
+  if(!navigator.serviceWorker) return;
+  var recargando=false;
+  navigator.serviceWorker.addEventListener("controllerchange", function(){
+    if(recargando) return;
+    /* si tiene una ventana abierta a medio llenar, NO se recarga: se le avisa */
+    var M=document.getElementById("veloIn");
+    if(M && M.children.length){
+      mostrarVersionNueva("Ya está lista la versión nueva. Termine lo que está haciendo y pulse Actualizar.");
+      return;
+    }
+    recargando=true; location.reload();
+  });
+  /* el ayudante de la carpeta portafolio/ se llama asi; al conservar el mismo
+     nombre, el navegador RECONOCE el que ya estaba instalado y lo reemplaza */
+  navigator.serviceWorker.register("sw-portafolio.js").then(function(reg){
+    SW_REG=reg;
+    if(reg.waiting && navigator.serviceWorker.controller) mostrarVersionNueva();
+    reg.addEventListener("updatefound", function(){
+      var n=reg.installing; if(!n) return;
+      n.addEventListener("statechange", function(){
+        if(n.state==="installed" && navigator.serviceWorker.controller) mostrarVersionNueva();
+      });
+    });
+    /* se pregunta por una versión nueva al volver a la aplicación y cada 15 min */
+    document.addEventListener("visibilitychange", function(){
+      if(!document.hidden){ try{ reg.update(); }catch(e){} }
+    });
+    setInterval(function(){ try{ reg.update(); }catch(e){} }, 900000);
+    try{ reg.update(); }catch(e){}
+  }).catch(function(){});
+}
+function mostrarVersionNueva(txt){
+  var e=document.getElementById("verNueva");
+  if(!e) return;
+  if(txt) document.getElementById("vnTxt").textContent=txt;
+  e.className="on";
+  document.getElementById("vnOk").onclick=function(){
+    e.className="";
+    if(SW_REG && SW_REG.waiting) SW_REG.waiting.postMessage({tipo:"actualizar"});
+    else location.reload();
+  };
+  document.getElementById("vnNo").onclick=function(){ e.className=""; };
+}
+
+/* --- computadora: se le pregunta a GitHub qué versión hay publicada --- */
+function repoApp(){ return (BD.ajustes && BD.ajustes.repoApp) || "cripto"; }
+function textoDeGithub(r){
+  var b=(r.content||"").replace(/\n/g,"");
+  try{ return decodeURIComponent(escape(atob(b))); }catch(e){ return atob(b); }
+}
+function buscarVersionPrograma(silencioso){
+  var g=gitCfg();
+  if(!g.token || !g.user){
+    if(!silencioso) aviso("Primero conecte su clave de GitHub.",true);
+    return Promise.resolve(null);
+  }
+  if(PROG.buscando) return Promise.resolve(null);
+  PROG.buscando=true;
+  return gh("/repos/"+g.user+"/"+repoApp()+"/contents/CRIPTO.html").then(function(r){
+    PROG.buscando=false;
+    if(r.__falta) throw new Error("no hay un CRIPTO.html en el repositorio "+repoApp());
+    var txt=textoDeGithub(r);
+    var m=txt.match(/var VERSION="([^"]+)"/);
+    PROG.remota = m ? m[1] : "?";
+    PROG.txt = txt;
+    PROG.ultima = Date.now();
+    var hayNueva = (+PROG.remota > +VERSION);
+    if(!silencioso){
+      if(hayNueva) aviso("Hay la versión "+PROG.remota+" publicada. Usted tiene la "+VERSION+".");
+      else aviso("Está al día: publicada la "+PROG.remota+", aquí la "+VERSION+".");
+      if(vista==="dat") pintarDat();
+    } else if(hayNueva && location.protocol==="file:"){
+      mostrarVersionNueva("Hay publicada la versión "+PROG.remota+" del programa (usted tiene la "+VERSION+")");
+      document.getElementById("vnOk").textContent="Descargarla";
+      document.getElementById("vnOk").onclick=function(){
+        document.getElementById("verNueva").className="";
+        descargarPrograma();
+      };
+    }
+    return PROG.remota;
+  }).catch(function(e){
+    PROG.buscando=false;
+    if(!silencioso) aviso("No se pudo consultar: "+(e.message||e), true);
+    return null;
+  });
+}
+function descargarPrograma(){
+  if(!PROG.txt){ aviso("Primero pulse Buscar versión nueva.",true); return; }
+  bajarArchivo("CRIPTO.html", PROG.txt, "text/html;charset=utf-8");
+  aviso("Descargado. Reemplace con él el CRIPTO.html de su carpeta y vuelva a abrir el programa.");
+}
+
+/* --- publicar el programa para el teléfono, sin entrar a github.com --- */
+function leerTexto(f){
+  return new Promise(function(ok, mal){
+    var fr=new FileReader();
+    fr.onload=function(){ ok(fr.result); };
+    fr.onerror=function(){ mal(new Error("no se pudo leer "+f.name)); };
+    fr.readAsText(f);
+  });
+}
+/* ¿esto es una copia del portafolio en vez del programa? */
+function pareceDatos(txt){
+  var t=String(txt||"").replace(/^\uFEFF/,"").trim();
+  if(t.charAt(0)!=="{" && t.charAt(0)!=="[") return false;
+  try{
+    var d=JSON.parse(t);
+    if(!d || typeof d!=="object") return false;
+    if(Array.isArray(d.ops) || Array.isArray(d.fut) || d.ajustes || d.borrados) return true;
+  }catch(e){}
+  return false;
+}
+function publicarPrograma(archivos){
+  var g=gitCfg(), repo=repoApp();
+  if(!g.token || !g.user){ aviso("Primero conecte su clave de GitHub.",true); return; }
+  var lista=[].slice.call(archivos||[]);
+  if(!lista.length) return;
+  /* NUNCA .json: ahí viven sus copias de seguridad, y este repositorio es PÚBLICO */
+  var malos=lista.filter(function(f){ return !/\.(html|js|webmanifest|css)$/i.test(f.name); });
+  if(malos.length){
+    aviso("Aquí solo se publica el programa (CRIPTO.html, sw.js, manifest.webmanifest). "+
+      "\""+malos[0].name+"\" no se sube: este repositorio es público y sus datos no pueden ir ahí.", true);
+    return;
+  }
+  aviso("Publicando "+lista.length+" archivo(s) en "+repo+"…");
+  var i=0, ok=[], err=[];
+  function siguiente(){
+    if(i>=lista.length){
+      if(err.length) aviso("Publicados "+ok.length+" · falló "+err.join(" · "), true);
+      else aviso("Publicado: "+ok.join(", ")+". El teléfono lo toma solo la próxima vez que lo abra con internet.");
+      PROG.remota=null; PROG.txt=null;
+      if(vista==="dat") pintarDat();
+      return;
+    }
+    var f=lista[i++];
+    leerTexto(f).then(function(txt){
+      /* segundo cerrojo: si el archivo parece una copia de sus datos, no se sube
+         aunque le hayan cambiado el nombre */
+      if(pareceDatos(txt))
+        throw new Error("parece una copia de sus datos, no el programa");
+      var ruta="/repos/"+g.user+"/"+repo+"/contents/"+encodeURIComponent(f.name);
+      return gh(ruta).then(function(r){
+        var b64;
+        try{ b64=btoa(unescape(encodeURIComponent(txt))); }catch(e){ b64=btoa(txt); }
+        var cuerpo={message:"programa · "+f.name+" · "+ahora(), content:b64};
+        if(!r.__falta && r.sha) cuerpo.sha=r.sha;
+        return gh(ruta, {method:"PUT", body:JSON.stringify(cuerpo)});
+      });
+    }).then(function(){ ok.push(f.name); siguiente(); })
+      .catch(function(e){ err.push(f.name+" ("+(e.message||e)+")"); siguiente(); });
+  }
+  siguiente();
 }
 
 /* =====================================================================
@@ -3399,6 +4346,31 @@ function irA(v){
   vista=v; repintar();
   window.scrollTo({top:0,behavior:"smooth"});
 }
+/* son de la semilla las que traen los identificadores s0, s1, ... */
+function esSemilla(o){ return /^s\d+$/.test(String(o&&o.id)); }
+
+/* Arregla de una vez los datos guardados de antes:
+     - simbolos en minuscula (btc y BTC eran dos monedas distintas)
+     - movimientos, futuros y alertas sin identificador (se perdian al sincronizar) */
+function ordenarDatosViejos(){
+  var cambio=false;
+  (BD.ops||[]).forEach(function(o){
+    if(o.sym){ var u=String(o.sym).toUpperCase(); if(u!==o.sym){ o.sym=u; cambio=true; } }
+    if(!o.id){ o.id="v_"+[o.tipo,o.sym,o.fecha,o.cant,o.precio].join("_"); cambio=true; }
+  });
+  (BD.fut||[]).forEach(function(f){
+    if(f.sym){ var u=String(f.sym).toUpperCase(); if(u!==f.sym){ f.sym=u; cambio=true; } }
+    if(!f.id){ f.id="vf_"+[f.sym,f.lado,f.fecha,f.monto,f.entrada,f.n].join("_"); cambio=true; }
+  });
+  (BD.alertas||[]).forEach(function(a){
+    if(a.sym){ var u=String(a.sym).toUpperCase(); if(u!==a.sym){ a.sym=u; cambio=true; } }
+    if(!a.id){ a.id="va_"+[a.sym,a.dir,a.precio].join("_"); cambio=true; }
+    if(!a.mod){ a.mod=1; cambio=true; }
+  });
+  if(cambio) guardar();
+  return cambio;
+}
+
 function arrancar(){
   cargar();
   if(!BD.tema) BD.tema={ac:"#12E19A",h:215,s:14,L:9,up:"#12E19A",dn:"#FF4D5E",fz:16,rad:14};
@@ -3407,15 +4379,31 @@ function arrancar(){
   if(BD.ajustes.marca===undefined) BD.ajustes.marca=true;
   if(BD.ajustes.marcaCada===undefined) BD.ajustes.marcaCada=12;
   if(BD.ajustes.marcaOp===undefined) BD.ajustes.marcaOp=5.5;
-  if(!BD.ops.length && !BD.sembrado){
-    BD.ops=SEMILLA_OPS.slice(); BD.sembrado=1;   /* solo sus compras del Excel */
-    guardar();
-  }
+  /* Ya NO se meten solas las 15 compras de ejemplo: en un equipo o carpeta nueva
+     eso se mezclaba con lo de verdad y se subia a GitHub. Ahora se traen a mano
+     desde Configuracion → Borrar → "Traer las compras iniciales del Excel". */
+  ordenarDatosViejos();
   aplicarTema();
+  var mv=document.getElementById("marcaVer");
+  if(mv) mv.textContent="CRIPTO · v"+VERSION;
   try{ programarMarca(); }catch(x){}
   try{ programarSync(); }catch(x){}
+  try{ reconectarRespaldo(); }catch(x){}   /* si no, el respaldo a carpeta moria al recargar */
+  try{ registrarAyudante(); }catch(x){}    /* el teléfono se actualiza solo */
+  /* una vez al día se mira si hay una versión nueva publicada */
+  setTimeout(function(){
+    try{
+      if(gitCfg().token && (Date.now()-(+BD.ajustes.verChk||0))>86400000){
+        BD.ajustes.verChk=Date.now(); guardar();
+        buscarVersionPrograma(true);
+      }
+    }catch(x){}
+  }, 6000);
   document.getElementById("bRef").onclick=function(){ traerPrecios(false); };
   document.getElementById("bComprar").onclick=function(){ abrirOp("compra"); };
+  /* este botón NUNCA estuvo enganchado: la función existía y nadie la llamaba */
+  document.getElementById("bSave").onclick=guardarYSincronizar;
+  pintarBotonGuardar();
   repintar(); programarPrecios(); traerPrecios(true);
   document.addEventListener("visibilitychange", function(){
     if(!document.hidden && PRE.ultimo && Date.now()-PRE.ultimo>120000) traerPrecios(true);
@@ -3488,7 +4476,9 @@ function respaldarAhora(forzar){
   if(!forzar && (t-RESP_ultimo)<15000) return Promise.resolve(false);
   RESP_ultimo=t;
   if(typeof RESP.handle.getDirectoryHandle!=="function"){ RESP.handle=null; return Promise.resolve(false); }
-  var txt=JSON.stringify(BD);
+  /* la clave de GitHub NUNCA sale del equipo, tampoco en el respaldo de la carpeta
+     (esa carpeta puede estar en OneDrive o Drive y el archivo saldria a la nube) */
+  var txt=JSON.stringify(Object.assign({}, BD, {ajustes:sinClave(BD.ajustes)}));
   return RESP.handle.getDirectoryHandle("CRIPTO",{create:true})
     .then(function(dh){ return dh.getFileHandle(hoy()+".json",{create:true}); })
     .then(function(fh){ return fh.createWritable(); })
@@ -3590,11 +4580,22 @@ function pintarBotonGuardar(){
   var b=document.getElementById("bSave");
   if(!b) return;
   b.disabled=false;
-  if(!GUARDADO_HORA){ b.className="b sm ac"; b.textContent="GUARDAR"; return; }
+  var hayGit=!!gitCfg().token;
+  if(!GUARDADO_HORA){
+    b.className="b sm ac";
+    /* el nombre del OTRO equipo, para que en el teléfono no diga "enviar al teléfono" */
+    var alla = /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent||"")
+      ? "A LA COMPUTADORA" : "AL TELÉFONO";
+    b.textContent = hayGit ? ("ENVIAR "+alla) : "GUARDAR COPIA";
+    b.title = hayGit
+      ? "Todo se guarda solo en este equipo en el momento. Este botón manda los cambios a sus otros equipos ahora mismo, sin esperar."
+      : "Todo se guarda solo en este equipo en el momento. Este botón además escribe la copia en su carpeta de respaldo.";
+    return;
+  }
   b.className="b sm ok2";
-  b.textContent="Guardado "+GUARDADO_HORA;
-  b.title=gitCfg().token ? "Guardado aquí y enviado a sus otros equipos."
-                         : "Guardado en este equipo.";
+  b.textContent=(hayGit?"Enviado ":"Guardado ")+GUARDADO_HORA;
+  b.title=hayGit ? "Enviado a sus otros equipos. Todo se guarda solo en este equipo de todas formas."
+                 : "Copia escrita. Todo se guarda solo en este equipo de todas formas.";
 }
 
 /* =====================================================================
@@ -3629,6 +4630,14 @@ function filtrarLista(lista){
            String(nombreDe(e.sym)).toLowerCase().indexOf(q)>=0;
   });
 }
+/* la columna de ganancia se puede ordenar por dólares o por porcentaje */
+function thOrdGan(){
+  var eD=ORD.col==="gan", eP=ORD.col==="pct";
+  return '<th class="ord'+((eD||eP)?" act":"")+'">'+
+    '<span data-orden="gan" title="Ordenar por dólares">Ganancia</span> '+
+    '<span data-orden="pct" class="ordp'+(eP?" act":"")+'" title="Ordenar por porcentaje">%</span>'+
+    '<i>'+((eD||eP)?(ORD.desc?"▼":"▲"):"⇅")+'</i></th>';
+}
 function thOrd(t, col){
   var act = ORD.col===col;
   return '<th data-orden="'+col+'" class="ord'+(act?" act":"")+'">'+t+
@@ -3659,23 +4668,45 @@ function engancharOrden(box, repintar2){
    Para llevarlo al contador o guardarlo en PDF.
    ===================================================================== */
 function imprimirPortafolio(){
-  var C=carteraSpot(), T=C.tot;
+  var C=carteraSpot(), T=C.tot, F=carteraFut(), TF=F.tot, D=efectivoDet();
   var lista=C.lista.filter(function(e){ return e.cantidad>0; });
   var fil=lista.map(function(e){
     var pr=precioDe(e.sym);
     return '<tr><td class="l">'+esc(e.sym)+'</td><td class="l">'+esc(nombreDe(e.sym))+'</td>'+
       '<td>'+cant(e.cantidad)+'</td><td>'+precio(e.promedio)+'</td>'+
-      '<td>'+(pr!=null?precio(pr):"—")+'</td>'+
+      '<td>'+(pr!=null?precio(pr)+(esManual(e.sym)?' <i>(a mano)</i>':''):"sin precio")+'</td>'+
       '<td>'+usd(e.costo)+'</td><td>'+(e.valor!=null?usd(e.valor):"—")+'</td>'+
       '<td>'+(e.abierto!=null?((e.abierto>=0?"+":"")+usd(e.abierto)):"—")+'</td>'+
       '<td>'+(e.abiertoPct!=null?pct(e.abiertoPct,1):"—")+'</td></tr>';
   }).join("");
+
+  /* operaciones de futuros ya cerradas */
+  var filF=F.cerradas.map(function(e){
+    return '<tr><td>'+esc(e.f.n||"")+'</td><td>'+esc(e.f.fecha||"")+'</td>'+
+      '<td class="l">'+esc(e.f.sym||"")+'</td><td>'+(e.f.lado==="SHORT"?"CORTO":"LARGO")+'</td>'+
+      '<td>'+usd(e.margen)+'</td><td>'+e.apal+'x</td>'+
+      '<td>'+(e.entrada?precio(e.entrada):"—")+'</td><td>'+(e.salida!=null?precio(e.salida):"—")+'</td>'+
+      '<td>'+pct(e.pct*100,1)+'</td>'+
+      '<td>'+(e.gan>=0?"+":"")+usd(e.gan)+(e.liquidado?" <i>(liquidada)</i>":"")+'</td></tr>';
+  }).join("");
+  var filA=F.abiertas.map(function(e){
+    return '<tr><td>'+esc(e.f.n||"")+'</td><td>'+esc(e.f.fecha||"")+'</td>'+
+      '<td class="l">'+esc(e.f.sym||"")+'</td><td>'+(e.f.lado==="SHORT"?"CORTO":"LARGO")+'</td>'+
+      '<td>'+usd(e.margen)+'</td><td>'+e.apal+'x</td>'+
+      '<td>'+(e.entrada?precio(e.entrada):"—")+'</td>'+
+      '<td>'+(e.liq!=null?precio(e.liq):"—")+'</td>'+
+      '<td>'+(e.pctFlot!=null?pct(e.pctFlot,1):"—")+'</td>'+
+      '<td>'+(e.flot!=null?((e.flot>=0?"+":"")+usd(e.flot)):"—")+'</td></tr>';
+  }).join("");
+
+  var nom=(BD.ajustes&&BD.ajustes.nombre)||"";
   var html='<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">'+
     '<title>Portafolio '+hoy()+'</title><style>'+
     '@page{size:A4 landscape;margin:12mm}'+
     'body{font-family:Arial,sans-serif;font-size:11px;color:#000}'+
     'h1{font-size:17px;margin:0 0 2px}.sub{color:#444;margin:0 0 14px;font-size:11px}'+
-    '.res{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:13px}'+
+    'h2{font-size:12px;margin:16px 0 6px;padding-bottom:3px;border-bottom:1.5px solid #333}'+
+    '.res{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:13px}'+
     '.res div{border:1px solid #999;padding:6px 9px}'+
     '.res b{display:block;font-size:8px;letter-spacing:.6px;color:#555}'+
     '.res span{font-size:14px;font-weight:bold}'+
@@ -3684,23 +4715,62 @@ function imprimirPortafolio(){
     'th{background:#e4e4e4;font-size:9px}td.l{text-align:left}'+
     'tfoot td{background:#ddd;font-weight:bold}'+
     '.pie{margin-top:14px;font-size:9px;color:#666}'+
+    '.ojo{margin:8px 0;padding:5px 8px;border:1px solid #999;background:#f4f4f4;font-size:10px}'+
     '</style></head><body>'+
     '<h1>Portafolio de criptomonedas</h1>'+
-    '<p class="sub">'+esc(BD.cfg&&BD.cfg.nombre||"")+' · al '+fLargaC(hoy())+'</p>'+
+    '<p class="sub">'+(nom?esc(nom)+' · ':'')+'al '+fLargaC(hoy())+'</p>'+
     '<div class="res">'+
       '<div><b>INVERTIDO</b><span>'+usd(T.costo)+'</span></div>'+
       '<div><b>VALE HOY</b><span>'+usd(T.valor)+'</span></div>'+
-      '<div><b>GANANCIA</b><span>'+(T.abierto>=0?"+":"")+usd(T.abierto)+'</span></div>'+
-      '<div><b>RENDIMIENTO</b><span>'+pct(T.abiertoPct,2)+'</span></div>'+
+      '<div><b>GANANCIA ABIERTA</b><span>'+(T.abierto>=0?"+":"")+usd(T.abierto)+'</span></div>'+
+      '<div><b>YA REALIZADA</b><span>'+(T.realizado>=0?"+":"")+usd(T.realizado)+'</span></div>'+
+      '<div><b>USDT DISPONIBLE</b><span>'+usd(D.total<0?0:D.total)+'</span></div>'+
     '</div>'+
+    (D.total<0
+      ? '<div class="ojo"><b>Ojo:</b> según lo registrado se gastó '+usd(-D.total)+
+        ' más de lo que entró. Falta registrar el USDT que metió desde fuera '+
+        '(regístrelo como una compra de USDT y el saldo cuadra).</div>'
+      : '')+
+    (T.sinPrecio
+      ? '<div class="ojo"><b>Ojo:</b> '+T.sinPrecio+' moneda(s) sin precio ('+
+        esc(T.sinPrecioSyms.join(", "))+') con '+usd(T.costoSinPrecio)+
+        ' invertidos. Entran en INVERTIDO pero no en VALE HOY ni en la ganancia.</div>'
+      : '')+
+    '<h2>Spot — lo que tiene ahora</h2>'+
     '<table><thead><tr><th class="l">SÍMBOLO</th><th class="l">MONEDA</th><th>CANTIDAD</th>'+
       '<th>PRECIO PROMEDIO</th><th>PRECIO HOY</th><th>INVERTIDO</th><th>VALE HOY</th>'+
-      '<th>GANANCIA</th><th>%</th></tr></thead><tbody>'+fil+'</tbody>'+
+      '<th>GANANCIA</th><th>%</th></tr></thead><tbody>'+
+      (fil||'<tr><td colspan="9">Sin monedas.</td></tr>')+'</tbody>'+
       '<tfoot><tr><td colspan="5">TOTAL · '+lista.length+' monedas</td>'+
       '<td>'+usd(T.costo)+'</td><td>'+usd(T.valor)+'</td>'+
       '<td>'+(T.abierto>=0?"+":"")+usd(T.abierto)+'</td>'+
       '<td>'+pct(T.abiertoPct,1)+'</td></tr></tfoot></table>'+
-    '<div class="pie">Precios tomados de '+esc((BD.precios&&BD.precios.fuente)||"internet")+
+
+    '<h2>USDT disponible</h2>'+
+    '<table><thead><tr><th>COBRÓ POR VENTAS</th><th>PAGÓ POR COMPRAS</th>'+
+      '<th>USDT QUE REGISTRÓ</th><th>USDT QUE SACÓ</th><th>SALDO</th></tr></thead>'+
+      '<tbody><tr><td>'+usd(D.vend)+'</td><td>'+usd(D.comp)+'</td><td>'+usd(D.dep)+
+      '</td><td>'+usd(D.ret)+'</td><td><b>'+usd(D.total)+'</b></td></tr></tbody></table>'+
+    '<div class="pie" style="margin-top:4px">Saldo = ventas − compras + USDT registrado − USDT retirado.</div>'+
+
+    (F.abiertas.length
+      ? '<h2>Futuros abiertos</h2>'+
+        '<table><thead><tr><th>N°</th><th>FECHA</th><th class="l">MONEDA</th><th>LADO</th>'+
+        '<th>MARGEN</th><th>APAL.</th><th>ENTRADA</th><th>LIQUIDACIÓN</th><th>% MARGEN</th>'+
+        '<th>FLOTANTE</th></tr></thead><tbody>'+filA+'</tbody></table>' : '')+
+
+    (F.cerradas.length
+      ? '<h2>Futuros cerrados</h2>'+
+        '<table><thead><tr><th>N°</th><th>FECHA</th><th class="l">MONEDA</th><th>LADO</th>'+
+        '<th>MARGEN</th><th>APAL.</th><th>ENTRADA</th><th>SALIDA</th><th>% MARGEN</th>'+
+        '<th>RESULTADO</th></tr></thead><tbody>'+filF+'</tbody>'+
+        '<tfoot><tr><td colspan="8">TOTAL · '+TF.n+' operación(es) · '+
+        (TF.aciertos!=null?TF.aciertos.toFixed(0)+"% acertadas":"—")+'</td>'+
+        '<td>'+(TF.esperanza!=null?pct(TF.esperanza,1)+" media":"—")+'</td>'+
+        '<td>'+(TF.gan>=0?"+":"")+usd(TF.gan)+'</td></tr></tfoot></table>' : '')+
+
+    '<div class="pie">Precios tomados de '+esc(PRE.fuente||"internet")+
+      (PRE.ultimo?' el '+fLargaC(hoy())+' a las '+hora(PRE.ultimo):'')+
       '. Los valores cambian a cada momento. Esto no es asesoría financiera.</div>'+
     '</body></html>';
   var w2=window.open("","_blank");
@@ -3708,6 +4778,7 @@ function imprimirPortafolio(){
   w2.document.write(html); w2.document.close();
   setTimeout(function(){ try{ w2.focus(); w2.print(); }catch(e){} }, 400);
 }
+
 function fLargaC(iso){
   var M=["enero","febrero","marzo","abril","mayo","junio","julio",
          "agosto","septiembre","octubre","noviembre","diciembre"];
@@ -3719,85 +4790,133 @@ function fLargaC(iso){
    EXPORTAR A EXCEL — con hojas y formato
    ===================================================================== */
 function exportarExcelCripto(){
-  var C=carteraSpot(), T=C.tot;
+  var C=carteraSpot(), T=C.tot, F=carteraFut(), TF=F.tot, D=efectivoDet();
   var lista=C.lista.filter(function(e){ return e.cantidad>0; });
-  var f1=lista.map(function(e){
+  var nom=(BD.ajustes&&BD.ajustes.nombre)||"";
+  var NC=14;   /* columnas de la hoja */
+
+  function fila(cs, cl){
+    return '<tr>'+cs.map(function(c){
+      var t=(c&&c.t!=null)?c.t:c, k=(c&&c.c)?c.c:"";
+      var v=(t===""||t==null)?"":String(t);
+      /* x:num le dice a Excel el valor exacto, sin importar si su Windows usa
+         coma o punto: asi la celda entra SIEMPRE como numero y se puede sumar */
+      var xn = ((k==="$"||k==="n") && /^-?\d+,\d+$/.test(v)) ? ' x:num="'+v.replace(",",".")+'"' : "";
+      return '<td'+(k?' class="'+k+'"':'')+xn+((c&&c.span)?' colspan="'+c.span+'"':'')+'>'+
+        esc(v)+'</td>';
+    }).join("")+'</tr>';
+  }
+  function ths(cs){ return '<tr>'+cs.map(function(c){ return '<th>'+esc(c)+'</th>'; }).join("")+'</tr>'; }
+  function titulo(t){ return '<tr><td class="tit" colspan="'+NC+'">'+esc(t)+'</td></tr>'; }
+  function sub(t){ return '<tr><td class="sub" colspan="'+NC+'">'+esc(t)+'</td></tr>'; }
+  function blanco(){ return '<tr><td colspan="'+NC+'"></td></tr>'; }
+
+  var h='<table>';
+  h+=titulo("PORTAFOLIO DE CRIPTOMONEDAS — "+hoy());
+  if(nom) h+=sub(nom);
+  h+=blanco();
+
+  /* --- resumen --- */
+  h+=sub("RESUMEN");
+  h+=ths(["INVERTIDO","VALE HOY","GANANCIA ABIERTA","YA REALIZADA","USDT DISPONIBLE",
+          "RENDIMIENTO %","MONEDAS SIN PRECIO"]);
+  h+=fila([{t:numEs(T.costo),c:"$"},{t:numEs(T.valor),c:"$"},{t:numEs(T.abierto),c:"$"},
+           {t:numEs(T.realizado),c:"$"},{t:numEs(D.total<0?0:D.total),c:"$"},
+           {t:T.abiertoPct!=null?numEs(T.abiertoPct):"" ,c:"n"},
+           {t:String(T.sinPrecio)+(T.sinPrecio?" ("+T.sinPrecioSyms.join(", ")+")":"")}]);
+  if(D.total<0) h+=sub("Ojo: según lo registrado se gastó "+usd(-D.total)+
+    " más de lo que entró. Falta registrar el USDT que metió desde fuera.");
+  if(T.sinPrecio) h+=sub("Ojo: "+T.sinPrecio+" moneda(s) sin precio ("+
+    T.sinPrecioSyms.join(", ")+") con "+usd(T.costoSinPrecio)+
+    " invertidos: entran en INVERTIDO pero no en VALE HOY ni en la ganancia.");
+  h+=blanco();
+
+  /* --- spot --- */
+  h+=sub("SPOT — LO QUE TIENE AHORA");
+  h+=ths(["SÍMBOLO","MONEDA","CANTIDAD","PRECIO PROMEDIO","PRECIO HOY","INVERTIDO",
+          "VALE HOY","GANANCIA","%","PRECIO A MANO"]);
+  lista.forEach(function(e){
     var pr=precioDe(e.sym);
-    return '<tr><td class="l">'+esc(e.sym)+'</td><td class="l">'+esc(nombreDe(e.sym))+'</td>'+
-      '<td>'+e.cantidad+'</td><td class="$">'+(e.promedio||0).toFixed(8)+'</td>'+
-      '<td class="$">'+(pr||0).toFixed(8)+'</td>'+
-      '<td class="$">'+(e.costo||0).toFixed(2)+'</td>'+
-      '<td class="$">'+(e.valor||0).toFixed(2)+'</td>'+
-      '<td class="$">'+(e.abierto||0).toFixed(2)+'</td>'+
-      '<td>'+(e.abiertoPct||0).toFixed(2)+'%</td></tr>';
-  }).join("");
-  var f2=BD.ops.slice().sort(function(a,b){ return (a.fecha||"")<(b.fecha||"")?-1:1; })
-    .map(function(o){
-      var bruto=(+o.cant||0)*(+o.precio||0);
-      var tot=o.tipo==="venta"? bruto-(+o.com||0) : bruto+(+o.com||0);
-      return '<tr><td>'+esc(o.fecha||"")+'</td><td class="l">'+
-        (o.tipo==="venta"?"VENTA":"COMPRA")+'</td><td class="l">'+esc(o.sym)+'</td>'+
-        '<td>'+o.cant+'</td><td class="$">'+(+o.precio||0).toFixed(8)+'</td>'+
-        '<td class="$">'+(+o.com||0).toFixed(2)+'</td>'+
-        '<td class="$">'+tot.toFixed(2)+'</td>'+
-        '<td class="l">'+esc(o.casa||"")+'</td><td class="l">'+esc(o.nota||"")+'</td></tr>';
-    }).join("");
+    h+=fila([{t:e.sym,c:"l"},{t:nombreDe(e.sym),c:"l"},{t:numEs(e.cantidad,8),c:"n"},
+             {t:numEs(e.promedio,8),c:"$"},{t:pr!=null?numEs(pr,8):"",c:"$"},
+             {t:numEs(e.costo),c:"$"},{t:e.valor!=null?numEs(e.valor):"",c:"$"},
+             {t:e.abierto!=null?numEs(e.abierto):"",c:"$"},
+             {t:e.abiertoPct!=null?numEs(e.abiertoPct):"",c:"n"},
+             {t:esManual(e.sym)?"SI":"",c:"l"}]);
+  });
+  h+='<tr class="tot"><td colspan="5">TOTAL</td>'+
+     '<td class="$">'+numEs(T.costo)+'</td><td class="$">'+numEs(T.valor)+'</td>'+
+     '<td class="$">'+numEs(T.abierto)+'</td><td>'+
+     (T.abiertoPct!=null?numEs(T.abiertoPct):"")+'</td><td></td></tr>';
+  h+=blanco();
+
+  /* --- de donde sale el USDT --- */
+  h+=sub("USDT DISPONIBLE — DE DÓNDE SALE");
+  h+=ths(["COBRÓ POR VENTAS","PAGÓ POR COMPRAS","USDT QUE REGISTRÓ","USDT QUE SACÓ","SALDO"]);
+  h+=fila([{t:numEs(D.vend),c:"$"},{t:numEs(D.comp),c:"$"},{t:numEs(D.dep),c:"$"},
+           {t:numEs(D.ret),c:"$"},{t:numEs(D.total),c:"$"}]);
+  h+=blanco();
+
+  /* --- movimientos --- */
+  h+=sub("TODOS LOS MOVIMIENTOS DE SPOT");
+  h+=ths(["FECHA","TIPO","MONEDA","CANTIDAD","PRECIO","COMISIÓN","TOTAL","DÓNDE","NOTA"]);
+  BD.ops.slice().sort(function(a,b){ return (a.fecha||"")<(b.fecha||"")?-1:1; })
+    .forEach(function(o){
+      var bruto=(+o.cant||0)*(+o.precio||0), k=(+o.com||0);
+      var tot=o.tipo==="venta"? bruto-k : bruto+k;
+      h+=fila([{t:o.fecha||""},{t:o.tipo==="venta"?"VENTA":"COMPRA",c:"l"},{t:o.sym||"",c:"l"},
+               {t:numEs(o.cant,8),c:"n"},{t:numEs(o.precio,8),c:"$"},{t:numEs(k),c:"$"},
+               {t:numEs(tot),c:"$"},{t:o.casa||"",c:"l"},{t:o.nota||"",c:"l"}]);
+    });
+  h+=blanco();
+
+  /* --- futuros --- */
+  h+=sub("FUTUROS");
+  h+=ths(["N°","FECHA","MONEDA","LADO","ESTADO","MARGEN","APAL.","ENTRADA","SALIDA",
+          "LIQUIDACIÓN","% MARGEN","RESULTADO","COMISIÓN","NOTA"]);
+  F.lista.forEach(function(e){
+    h+=fila([{t:e.f.n||""},{t:e.f.fecha||""},{t:e.f.sym||"",c:"l"},
+             {t:e.f.lado==="SHORT"?"CORTO":"LARGO",c:"l"},
+             {t:e.abierta?"ABIERTA":(e.liquidado?"LIQUIDADA":"CERRADA"),c:"l"},
+             {t:numEs(e.margen),c:"$"},{t:String(e.apal)},
+             {t:e.entrada?numEs(e.entrada,8):"",c:"$"},
+             {t:e.salida!=null?numEs(e.salida,8):"",c:"$"},
+             {t:e.liq!=null?numEs(e.liq,8):"",c:"$"},
+             {t:e.pct!=null?numEs(e.pct*100):(e.pctFlot!=null?numEs(e.pctFlot):""),c:"n"},
+             {t:e.gan!=null?numEs(e.gan):(e.flot!=null?numEs(e.flot):""),c:"$"},
+             {t:numEs(e.com),c:"$"},{t:e.f.nota||"",c:"l"}]);
+  });
+  if(TF.n) h+='<tr class="tot"><td colspan="11">TOTAL CERRADAS · '+TF.n+' · '+
+    (TF.aciertos!=null?TF.aciertos.toFixed(0)+"% acertadas":"")+'</td>'+
+    '<td class="$">'+numEs(TF.gan)+'</td><td class="$">'+numEs(TF.comision)+'</td><td></td></tr>';
+  h+=blanco();
+  h+=sub("Precios de "+(PRE.fuente||"internet")+". Los valores cambian a cada momento.");
+  h+='</table>';
 
   var estilo='<style>'+
     'td,th{border:1px solid #808080;font-family:Calibri;font-size:11pt}'+
     'th{background:#1F3864;color:#FFF;font-weight:bold;font-size:9pt;text-align:center}'+
     'td{text-align:center} .l{text-align:left}'+
     '.tit{font-size:15pt;font-weight:bold;background:#1F3864;color:#FFF;text-align:left;border:none;height:26pt}'+
-    '.sub{font-size:10pt;color:#404040;text-align:left;border:none;font-weight:bold}'+
+    '.sub{font-size:10pt;color:#1F3864;text-align:left;border:none;font-weight:bold;height:20pt}'+
     '.tot{background:#D9E2F3;font-weight:bold}'+
-    '.\\$ {mso-number-format:"\\#\\,\\#\\#0\\.00";text-align:right}'+
+    '.\\$ {text-align:right} .n{text-align:right}'+
     '</style>';
-  var hojas=[
-    {n:"PORTAFOLIO", h:'<table>'+
-      '<tr><td class="tit" colspan="9">PORTAFOLIO DE CRIPTOMONEDAS — '+hoy()+'</td></tr>'+
-      '<tr><td class="sub" colspan="9">'+esc(BD.cfg&&BD.cfg.nombre||"")+'</td></tr>'+
-      '<tr><td colspan="9"></td></tr>'+
-      '<tr><th>SÍMBOLO</th><th>MONEDA</th><th>CANTIDAD</th><th>PRECIO PROMEDIO</th>'+
-      '<th>PRECIO HOY</th><th>INVERTIDO</th><th>VALE HOY</th><th>GANANCIA</th><th>%</th></tr>'+
-      f1+
-      '<tr class="tot"><td colspan="5">TOTAL</td>'+
-      '<td class="$">'+(T.costo||0).toFixed(2)+'</td>'+
-      '<td class="$">'+(T.valor||0).toFixed(2)+'</td>'+
-      '<td class="$">'+(T.abierto||0).toFixed(2)+'</td>'+
-      '<td>'+(T.abiertoPct||0).toFixed(2)+'%</td></tr></table>'},
-    {n:"MOVIMIENTOS", h:'<table>'+
-      '<tr><td class="tit" colspan="9">TODOS LOS MOVIMIENTOS</td></tr>'+
-      '<tr><td colspan="9"></td></tr>'+
-      '<tr><th>FECHA</th><th>TIPO</th><th>MONEDA</th><th>CANTIDAD</th><th>PRECIO</th>'+
-      '<th>COMISIÓN</th><th>TOTAL</th><th>DÓNDE</th><th>NOTA</th></tr>'+f2+'</table>'}
-  ];
   var xml='<html xmlns:o="urn:schemas-microsoft-com:office:office" '+
     'xmlns:x="urn:schemas-microsoft-com:office:excel" '+
     'xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8">'+
-    '<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets>'+
-    hojas.map(function(h){ return '<x:ExcelWorksheet><x:Name>'+h.n+'</x:Name>'+
-      '<x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet>'; }).join("")+
-    '</x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->'+estilo+'</head><body>'+
-    hojas.map(function(h){ return h.h; }).join('<br style="page-break-before:always">')+
-    '</body></html>';
+    estilo+'</head><body>'+h+'</body></html>';
   var a=document.createElement("a");
   a.href=URL.createObjectURL(new Blob(["\ufeff"+xml],
     {type:"application/vnd.ms-excel;charset=utf-8"}));
   a.download="Portafolio-"+hoy()+".xls";
+  document.body.appendChild(a);
   a.click();
-  setTimeout(function(){ try{ URL.revokeObjectURL(a.href); }catch(e){} },4000);
-  aviso("Descargado. Se abre con Excel: una hoja con el portafolio y otra con todos los movimientos.");
+  setTimeout(function(){ try{ URL.revokeObjectURL(a.href); a.remove(); }catch(e){} },4000);
+  aviso("Descargado. Se abre con Excel: resumen, spot, USDT, movimientos y futuros, "+
+        "uno debajo del otro en la misma hoja.");
 }
 
-</script>
-<script>
-/* Registra el ayudante que permite instalar la aplicación y abrirla sin internet.
-   Antes esta parte no existía: por eso sw.js estaba en el repositorio sin usarse. */
-if("serviceWorker" in navigator && location.protocol.indexOf("http")===0){
-  window.addEventListener("load", function(){
-    navigator.serviceWorker.register("./sw-portafolio.js").catch(function(){});
-  });
-}
 </script>
 </body>
 </html>

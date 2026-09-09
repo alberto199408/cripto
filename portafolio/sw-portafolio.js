@@ -1,48 +1,98 @@
-/* Hace que la aplicación se pueda instalar y que abra aunque no haya internet.
-   Los precios sí necesitan conexión; el portafolio no. */
-var CACHE="portafolio-v8";   /* archivo: sw-portafolio.js, dentro de la carpeta portafolio */
+/* =====================================================================
+   AYUDANTE DEL PORTAFOLIO CRIPTO  ·  sw-portafolio.js
+   Va DENTRO de la carpeta portafolio/, junto a CRIPTO.html.
 
-/* Este ayudante manda SOLO sobre los archivos de su propia carpeta.
-   Si hay otras aplicaciones en subcarpetas (medidores, horario...), no
-   se mete con ellas: antes las interceptaba y les servía CRIPTO. */
-function esMio(url){
-  try{
-    var base=new URL("./", self.registration.scope).pathname;   /* mi carpeta */
-    var p=new URL(url).pathname;
-    if(p.indexOf(base)!==0) return false;
-    return p.slice(base.length).indexOf("/")<0;   /* nada de subcarpetas */
-  }catch(e){ return false; }
-}
+   Qué hace: guarda una copia de la página para que el teléfono abra sin
+   internet, PERO cuando hay internet siempre pregunta primero por la
+   versión nueva. Así, en cuanto usted sube un CRIPTO.html nuevo, el
+   teléfono lo toma solo la próxima vez que lo abra. Ya no hay que borrar
+   datos del sitio ni reinstalar nada.
+   ===================================================================== */
+
+var CACHE   = "portafolio-v9";
+var ESPERA  = 3500;   /* si internet tarda más que esto, se usa lo guardado */
+var ARCHIVOS = ["./", "./CRIPTO.html", "./manifest.webmanifest"];
 
 self.addEventListener("install", function(e){
+  /* El ayudante ANTERIOR servía siempre la copia guardada, así que la página
+     nunca se enteraba de que había una versión nueva: quedaba esperando para
+     siempre. Por eso este toma el mando en cuanto se instala. La página, por
+     su lado, no se recarga si usted tiene un formulario abierto: en ese caso
+     le muestra el aviso y espera a que usted pulse. */
   self.skipWaiting();
-  e.waitUntil(caches.open(CACHE).then(function(c){
-    return Promise.all(["./CRIPTO.html","./manifest.webmanifest",
-                        "./icon-192.png","./icon-512.png","./icon-512-maskable.png"].map(function(u){
-      return c.add(u).catch(function(){});
-    }));
-  }));
+  e.waitUntil(
+    caches.open(CACHE).then(function(c){
+      return Promise.all(ARCHIVOS.map(function(u){
+        /* cache:"reload" = pedirlo a internet de verdad, no a la caché del navegador */
+        return c.add(new Request(u, {cache:"reload"})).catch(function(){});
+      }));
+    })
+  );
 });
 
 self.addEventListener("activate", function(e){
-  e.waitUntil(caches.keys().then(function(ks){
-    return Promise.all(ks.map(function(k){ if(k!==CACHE) return caches.delete(k); }));
-  }).then(function(){ return self.clients.claim(); }));
+  e.waitUntil(
+    caches.keys().then(function(ks){
+      return Promise.all(ks.map(function(k){
+        if(k !== CACHE) return caches.delete(k);   /* fuera lo viejo */
+      }));
+    }).then(function(){ return self.clients.claim(); })
+  );
 });
 
+/* primero internet, y si no contesta, lo guardado */
+function deInternet(req){
+  return new Promise(function(ok, mal){
+    var listo=false;
+    var t=setTimeout(function(){ if(!listo){ listo=true; mal(new Error("tardó")); } }, ESPERA);
+    fetch(req).then(function(r){
+      if(listo) return;
+      listo=true; clearTimeout(t);
+      if(r && r.ok && (r.type==="basic" || r.type==="default")){
+        var copia=r.clone();
+        caches.open(CACHE).then(function(c){ c.put(req, copia); }).catch(function(){});
+      }
+      ok(r);
+    }).catch(function(e){
+      if(listo) return;
+      listo=true; clearTimeout(t); mal(e);
+    });
+  });
+}
+
 self.addEventListener("fetch", function(e){
-  var u=e.request.url;
-  if(e.request.method!=="GET" || u.indexOf("api.")>=0 || u.indexOf("github.com")>=0) return;
-  if(!esMio(u)) return;                    /* de otra aplicación: no lo toco */
+  var req=e.request;
+  if(req.method !== "GET") return;
+
+  var url;
+  try{ url=new URL(req.url); }catch(x){ return; }
+
+  /* los precios y GitHub van derecho a internet, sin pasar por aquí */
+  if(url.origin !== self.location.origin) return;
+
+  function deLoGuardado(respuesta){
+    return caches.match(req).then(function(c){
+      if(c) return c;
+      /* si pedía una página, se le devuelve la aplicación guardada */
+      if(req.mode === "navigate")
+        return caches.match("./CRIPTO.html").then(function(x){
+          return x || respuesta || new Response("", {status:504, statusText:"sin internet"});
+        });
+      return respuesta || new Response("", {status:504, statusText:"sin internet"});
+    });
+  }
+
   e.respondWith(
-    fetch(e.request).then(function(r){
-      var copia=r.clone();
-      caches.open(CACHE).then(function(c){ c.put(e.request,copia).catch(function(){}); });
-      return r;
-    }).catch(function(){
-      return caches.match(e.request).then(function(r){
-        return r || caches.match("./CRIPTO.html");
-      });
-    })
+    deInternet(req).then(function(r){
+      /* que el servidor conteste no quiere decir que conteste bien: un 500 o un
+         503 también tiene que caer en lo guardado */
+      if(r && r.ok) return r;
+      return deLoGuardado(r);
+    }).catch(function(){ return deLoGuardado(null); })
   );
+});
+
+/* la página puede pedir que la versión nueva entre ya */
+self.addEventListener("message", function(e){
+  if(e.data && e.data.tipo === "actualizar") self.skipWaiting();
 });
