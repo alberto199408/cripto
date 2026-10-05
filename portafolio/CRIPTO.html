@@ -311,8 +311,10 @@ tfoot td:last-child{padding-right:var(--e5)}
 .ic{width:30px;height:30px;flex:none;border-radius:50%;display:block;object-fit:cover}
 .ic.svg{display:grid;place-items:center;overflow:hidden;background:var(--b2)}
 .ic.svg svg{width:100%;height:100%;display:block}
-.ic.svg{display:grid;place-items:center;overflow:hidden;background:var(--b2)}
-.ic.svg svg{width:100%;height:100%;display:block}
+/* los dibujos hechos todos en negro o todos en blanco llevan su propio disco,
+   para que se vean igual de bien en cualquier tema */
+.ic.svg.claro{background:#f1f3f6}
+.ic.svg.oscuro{background:#1b1f27}
 .cri .ic{box-shadow:0 0 0 2px color-mix(in srgb,var(--fc) 45%,transparent)}
 .cri b{font-size:14px;font-weight:700;display:block;line-height:1.25}
 .cri span{font-size:11px;color:var(--t2)}
@@ -367,8 +369,10 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
   border:1px solid var(--ln);border-radius:9px;padding:9px 12px;cursor:pointer;
   font-family:inherit;color:var(--tx);text-align:left}
 .selector:hover{border-color:var(--acTx)}
-.selector .ic,.selector .casa{width:28px;height:28px;flex:none}
 .selector span{flex:1;min-width:0}
+/* el logo NO se estira: va después de la regla de arriba y gana por especificidad,
+   si no se convierte en un óvalo negro del ancho de la fila */
+.selector .ic,.selector .casa{flex:0 0 28px;width:28px;height:28px;min-width:28px}
 .selector span b{display:block;font-size:14px}
 .selector span i{font-style:normal;font-size:11px;color:var(--t2)}
 .selector em{font-style:normal;font-size:12px;color:var(--acTx);font-weight:700}
@@ -405,12 +409,40 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
 .franja .sw.on span{color:var(--tx)}
 
 /* ---------- la caja grande: cuánto meter ---------- */
+/* ---------- las casillas y el resultado, dentro del MISMO bloque ----------
+   Antes el cuadro del lote flotaba suelto y parecía una ventana que salió
+   de la nada. Ahora va pegado abajo de las casillas de donde salen sus
+   números, sin sombra y sin esquinas sueltas: se lee como su resultado. */
+.opbloq{border:1px solid var(--ln);border-radius:var(--rad);padding:var(--e4);
+  background:color-mix(in srgb,var(--vac) 4%,var(--b0));margin-top:var(--e4)}
+.opbloq>.campos:first-child{margin-top:0!important}
+.opbloq .lotazo{margin:var(--e4) calc(-1 * var(--e4) - 1px) calc(-1 * var(--e4) - 1px);
+  border-radius:0 0 var(--rad) var(--rad);border-left:0;border-right:0;border-bottom:0;
+  box-shadow:none}
+/* el punto de color que amarra cada casilla con su línea en la gráfica */
+.pt{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;
+  vertical-align:-1px}
+.pt.sl{background:var(--dn)}
+.pt.tp{background:var(--up)}
+.pt.ent{background:var(--t2)}
+
 .lotazo{margin-top:var(--e4);border-radius:var(--rad);overflow:hidden;
   border:1px solid color-mix(in srgb,var(--up) 42%,var(--ln));
   background:linear-gradient(150deg,color-mix(in srgb,var(--up) 22%,var(--b1)),
                                     color-mix(in srgb,var(--up) 7%,var(--b1)) 70%);
   box-shadow:0 10px 30px color-mix(in srgb,var(--up) 15%,transparent)}
 .lotazo.falta{border-color:var(--ln);background:var(--b0);box-shadow:none}
+/* cuando el stop está del lado equivocado no se muestra ningún número:
+   se para aquí arriba y se dice qué hay que arreglar */
+.lotazo.mal{border-color:color-mix(in srgb,var(--dn) 55%,var(--ln));
+  background:linear-gradient(150deg,color-mix(in srgb,var(--dn) 20%,var(--b1)),
+                                    color-mix(in srgb,var(--dn) 7%,var(--b1)) 70%)}
+.lotazo.mal .lv{font-size:var(--f6);line-height:1.25;letter-spacing:0}
+.lotazo .lfrase{font-size:var(--f4);font-weight:700;color:var(--tx);line-height:1.5;
+  padding:0 var(--e5) var(--e4)}
+.lotazo .lfrase .up{color:var(--upTx)}
+.lotazo .lfrase .dn{color:var(--dnTx)}
+.lotazo .larr{margin:var(--e4) var(--e5) 0;display:flex;gap:9px;flex-wrap:wrap}
 .lotazo .lz{padding:var(--e5) var(--e5) var(--e4)}
 .lotazo .le{font-size:var(--f1);letter-spacing:.14em;font-weight:800;color:var(--t2);margin-bottom:var(--e2)}
 .lotazo .lv{font-size:var(--f8);font-weight:800;letter-spacing:-.035em;line-height:1;color:var(--tx)}
@@ -499,9 +531,16 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
   background:color-mix(in srgb,var(--b0) 70%,transparent);
   padding:0 3px;border-radius:3px}
 .glineas{position:absolute;inset:0}
-.gsom{position:absolute;left:0;right:0;pointer-events:none}
-.gsom.riesgo{background:color-mix(in srgb,var(--dn) 15%,transparent)}
-.gsom.premio{background:color-mix(in srgb,var(--up) 14%,transparent)}
+/* las dos zonas: de la entrada al stop (rojo, lo que arriesga) y de la entrada
+   al objetivo (verde, lo que puede ganar), con su porcentaje encima */
+.gsom{position:absolute;left:0;right:0;pointer-events:none;display:flex;align-items:center;
+  padding-left:10px;overflow:hidden}
+.gsom.riesgo{background:color-mix(in srgb,var(--dn) 18%,transparent)}
+.gsom.premio{background:color-mix(in srgb,var(--up) 17%,transparent)}
+.gsom b{font-size:10.5px;letter-spacing:.08em;font-weight:800;padding:2px 7px;
+  border-radius:6px;white-space:nowrap;line-height:1.35}
+.gsom.riesgo b{background:var(--dn);color:var(--dnInk)}
+.gsom.premio b{background:var(--up);color:var(--upInk)}
 .gcompra{position:absolute;left:0;right:0;height:0;border-top:1px solid var(--c2);opacity:.85;
   pointer-events:none}
 .gcompra i{position:absolute;right:6px;top:-9px;width:9px;height:9px;border-radius:50%;
@@ -540,6 +579,29 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
   padding:20px;color:var(--t2);font-size:13px;background:var(--b0);z-index:4}
 .gpieg{display:flex;gap:16px;flex-wrap:wrap;padding:9px 11px;border-top:1px solid var(--ln);
   font-size:12px;color:var(--t2)}
+
+/* ---------- lo opcional, plegado debajo del botón de registrar ---------- */
+.opcional{margin-top:var(--e4);border:1px solid var(--ln);border-radius:var(--rad);
+  background:var(--b0);overflow:hidden}
+.opcional>summary{list-style:none;cursor:pointer;padding:var(--e4) var(--e5);
+  font-size:var(--f3);font-weight:700;color:var(--t2);display:flex;align-items:center;gap:8px}
+.opcional>summary::-webkit-details-marker{display:none}
+.opcional>summary::after{content:"▾";margin-left:auto;font-size:14px;transition:.18s}
+.opcional[open]>summary::after{transform:rotate(180deg)}
+.opcional[open]>summary{border-bottom:1px solid var(--ln);color:var(--tx)}
+.opcional .cuerpoOp{padding:var(--e4) var(--e5) var(--e5)}
+/* el panel de registrar no recorta nada, para que el botón pueda quedarse pegado abajo */
+.caja.opform{overflow:visible}
+.accReg{margin-top:var(--e4);display:flex;gap:9px;flex-wrap:wrap}
+
+/* ---------- operaciones programadas: esperando a que el precio llegue ---------- */
+.mv.prog{border-left:3px solid var(--acTx);
+  background:color-mix(in srgb,var(--ac) 7%,var(--b0))}
+.espera{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;
+  letter-spacing:.07em;padding:3px 9px;border-radius:99px;
+  background:color-mix(in srgb,var(--ac) 20%,transparent);color:var(--acTx)}
+.espera i{width:7px;height:7px;border-radius:50%;background:var(--acTx);
+  animation:late 1.6s ease-in-out infinite}
 
 /* ---------- checklist de disciplina ---------- */
 .chk{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:6px}
@@ -641,8 +703,9 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
   border-radius:11px;padding:9px 11px;cursor:pointer;font-family:inherit;color:var(--tx);text-align:left}
 .mfic:hover{border-color:var(--acTx);background:color-mix(in srgb,var(--ac) 9%,transparent)}
 .mfic.on{border-color:var(--acTx);background:color-mix(in srgb,var(--ac) 15%,transparent)}
-.mfic .ic,.mfic .casa{width:28px;height:28px}
 .mfic span{flex:1;min-width:0}
+/* igual que en .selector: el logo queda fijo y no se estira */
+.mfic .ic,.mfic .casa{flex:0 0 28px;width:28px;height:28px;min-width:28px}
 .mfic span b{display:block;font-size:13px}
 .mfic span i{font-style:normal;font-size:12px;color:var(--t2);display:block;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -755,12 +818,20 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
   .busca{max-width:none;flex:1 1 100%}
   .caja>h2{padding:12px 13px;font-size:15px}
   .cp{padding:12px 13px}
-  .mv{gap:8px 10px;padding:10px 11px}
-  .mv .lg,.mv .fh{order:1}
+  /* UNA sola forma de tarjeta en todo el programa, siempre en el mismo orden:
+     1 logo y título · 2 el detalle en gris · 3 las cifras en columnas iguales,
+     con las etiquetas a la misma altura · 4 los botones. Así nada queda
+     a media altura ni con huecos en blanco. */
+  .mv{gap:8px 10px;padding:11px 12px;align-items:flex-start}
+  .mv .lg,.mv .fh{order:1;align-self:center}
+  .mv .cab2{order:1;flex:1 1 0;min-width:0;align-self:center}
   .mv .q{flex:1 1 100%;order:2;min-width:0}
-  .mv .cab2{order:1;flex:1 1 0;min-width:0}
-  .mv .r,.mv .pg{order:3;text-align:left;min-width:0;flex:1 1 45%}
-  .mv .acc{order:4;flex:1 1 100%;justify-content:flex-end}
+  .mv .r,.mv .pg{order:3;text-align:left;min-width:0;flex:1 1 0;
+    padding-top:8px;border-top:1px solid var(--ln)}
+  .mv .r>span:first-child,.mv .pg>span:first-child{display:block;font-size:11.5px;
+    line-height:1.25;min-height:29px;margin-bottom:1px}
+  .mv .r>b,.mv .pg>b{font-size:16px;line-height:1.25}
+  .mv .acc{order:4;flex:1 1 100%;justify-content:flex-end;align-items:center}
   .lote{grid-template-columns:1fr 1fr}
   .gzona{height:250px}
   .chk{grid-template-columns:1fr}
@@ -837,7 +908,7 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por GitHub.
    ===================================================================== */
-var VERSION="14";
+var VERSION="15";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
 
 /* =====================================================================
@@ -1043,6 +1114,12 @@ function precio(n){
   var a=Math.abs(n), d=a>=1000?2:a>=1?4:a>=0.01?6:8;
   return "$"+n.toLocaleString("es-EC",{minimumFractionDigits:2,maximumFractionDigits:d});
 }
+/* precio corto: para las líneas de resumen, donde seis decimales estorban */
+function precioC(n){
+  if(n==null||isNaN(n)||!isFinite(n)) return "—";
+  var a=Math.abs(n), d=a>=1?2:a>=0.01?4:6;
+  return "$"+n.toLocaleString("es-EC",{minimumFractionDigits:2,maximumFractionDigits:d});
+}
 function cant(n){
   if(n==null||isNaN(n)||!isFinite(n)) return "—";
   var a=Math.abs(n), d=a>=1000?2:a>=1?4:a>=0.0001?6:8;
@@ -1230,15 +1307,58 @@ function discoMoneda(sym, tam){
 }
 /* los logos que vienen DENTRO del programa (1.400 y pico, como dibujo) */
 var LOGO_SVG={}, LOGO_listos=false;
+/* Casi un tercio de los dibujos traen dentro id="a", id="b"… y pintan con
+   url(#a). Si en la misma página hay dos que usan el mismo nombre, el
+   navegador agarra el PRIMERO que encuentra; y si ese primero está dentro de
+   algo escondido (la tabla de PC, que en el teléfono no se ve), el degradado
+   no se resuelve y el logo sale como un círculo negro vacío. Por eso cada
+   copia que se pone en pantalla lleva su propio nombre: id="g7-a". */
+var LOGO_plan={}, LOGO_n=0;
+function hayLogoEmbebido(sym){
+  return !!(LOGO_SVG[sym] || LOGO_SVG[String(sym).replace(/^1000+/,"")]);
+}
 function logoEmbebido(sym){
-  return LOGO_SVG[sym] || LOGO_SVG[sym.replace(/^1000+/,"")] || null;
+  var s=LOGO_SVG[sym] || LOGO_SVG[String(sym).replace(/^1000+/,"")] || null;
+  if(!s) return null;
+  if(s.charAt(0)!=="<") return s;                    /* dibujo en base64: va tal cual */
+  if(LOGO_plan[sym]===undefined){
+    LOGO_plan[sym] = s.indexOf('id="')<0 ? null
+      : s.replace(/\bid="([^"]+)"/g, 'id="\u0001$1"')
+         .replace(/url\(#([^)]+)\)/g, 'url(#\u0001$1)')
+         .replace(/\b(xlink:href|href)="#([^"]+)"/g, '$1="#\u0001$2"');
+  }
+  var pl=LOGO_plan[sym];
+  if(pl===null) return s;
+  return pl.split("\u0001").join("g"+(++LOGO_n)+"-");
+}
+/* Algunos dibujos están hechos todos en negro (Arweave) o todos en blanco.
+   Sobre un fondo del mismo tono no se ven. A esos se les pone un disco de
+   fondo que contraste, y así se ven en cualquier tema. */
+var LOGO_tono={};
+function tonoDeLogo(sym, s){
+  if(LOGO_tono[sym]!==undefined) return LOGO_tono[sym];
+  var m=String(s).match(/fill="#([0-9a-fA-F]{3,8})"/g)||[];
+  var hay=0, osc=0, cla=0;
+  m.forEach(function(x){
+    var h=x.slice(7,-1);
+    if(h.length===3) h=h.charAt(0)+h.charAt(0)+h.charAt(1)+h.charAt(1)+h.charAt(2)+h.charAt(2);
+    if(h.length<6) return;
+    var r=parseInt(h.slice(0,2),16), g=parseInt(h.slice(2,4),16), b=parseInt(h.slice(4,6),16);
+    if(isNaN(r)||isNaN(g)||isNaN(b)) return;
+    hay++;
+    var L=(0.2126*r+0.7152*g+0.0722*b)/255;
+    if(L<0.20) osc++; else if(L>0.86) cla++;
+  });
+  var t = (hay>0&&osc===hay) ? " claro" : (hay>0&&cla===hay) ? " oscuro" : "";
+  LOGO_tono[sym]=t;
+  return t;
 }
 function icono(sym, tam){
   sym=String(sym||"").toUpperCase();
   var st=tam?' style="width:'+tam+'px;height:'+tam+'px"':'';
   var em=logoEmbebido(sym);
   if(em) return em.charAt(0)==="<"
-    ? '<span class="ic svg" data-sym="'+esc(sym)+'"'+st+'>'+em+'</span>'
+    ? '<span class="ic svg'+tonoDeLogo(sym,em)+'" data-sym="'+esc(sym)+'"'+st+'>'+em+'</span>'
     : '<img class="ic svg" data-sym="'+esc(sym)+'"'+st+' src="'+em+'" alt="'+esc(sym)+'">';
   if(DIBUJOS[sym]) return '<svg class="ic" data-sym="'+esc(sym)+'"'+st+' viewBox="0 0 32 32">'+DIBUJOS[sym]+'</svg>';
   var lg=logoDe(sym);
@@ -1400,7 +1520,7 @@ function bombearLogos(){
 }
 function traerLogo(sym, url){
   sym=String(sym||"").toUpperCase();
-  if(!sym || logoEmbebido(sym) || DIBUJOS[sym] || BD.logos[sym]) return Promise.resolve(false);
+  if(!sym || hayLogoEmbebido(sym) || DIBUJOS[sym] || BD.logos[sym]) return Promise.resolve(false);
   var antes=LOGO_pedido[sym];
   if(antes===true) return Promise.resolve(false);                 /* ya está en la cola */
   if(antes && Date.now()-antes<300000) return Promise.resolve(false); /* falló hace poco */
@@ -1426,7 +1546,7 @@ function buscarImagen(sym){
 }
 /* cuando llega un logo nuevo, se cambian los que estaban en pantalla sin repintar todo */
 function refrescarLogos(sym){
-  if(!logoDe(sym) && !logoEmbebido(sym)) return;
+  if(!logoDe(sym) && !hayLogoEmbebido(sym)) return;
   document.querySelectorAll('.ic[data-sym="'+sym+'"]').forEach(function(e){
     if(e.tagName==="IMG"||e.tagName==="svg") return;
     var tam=parseInt(e.style&&e.style.width,10)||0;
@@ -1478,7 +1598,7 @@ function abrirLogosEmbebidos(){
       var vistos={};
       document.querySelectorAll(".ic[data-sym]").forEach(function(e){
         var y=e.getAttribute("data-sym");
-        if(!y||vistos[y]||e.classList.contains("svg")||!logoEmbebido(y)) return;
+        if(!y||vistos[y]||e.classList.contains("svg")||!hayLogoEmbebido(y)) return;
         vistos[y]=1;
         document.querySelectorAll('.ic[data-sym="'+y+'"]').forEach(function(x){
           if(x.classList.contains("svg")) return;
@@ -2073,13 +2193,20 @@ function dibujar(estado){
   function yClamp(p){ return Math.max(0,Math.min(100, aY(estado,p))); }
   var hl="";
   if(!op.soloVer){
+    /* la zona ROJA va de la entrada al stop: es lo que arriesga.
+       la zona VERDE va de la entrada al objetivo: es lo que puede ganar.
+       Cada una lleva su porcentaje encima, como en TradingView. */
     if(val.entrada>0 && val.sl>0){
       var y1b=yClamp(val.entrada), y2b=yClamp(val.sl);
-      hl+='<div class="gsom riesgo" style="top:'+Math.min(y1b,y2b)+'%;height:'+Math.abs(y2b-y1b)+'%"></div>';
+      var dSl=Math.abs(val.sl-val.entrada)/val.entrada*100, altoR=Math.abs(y2b-y1b);
+      hl+='<div class="gsom riesgo" style="top:'+Math.min(y1b,y2b)+'%;height:'+altoR+'%">'+
+          (altoR>4?'<b>ARRIESGA '+pctS(dSl,2)+'</b>':'')+'</div>';
     }
     if(val.entrada>0 && val.tp>0){
       var y3=yClamp(val.entrada), y4=yClamp(val.tp);
-      hl+='<div class="gsom premio" style="top:'+Math.min(y3,y4)+'%;height:'+Math.abs(y4-y3)+'%"></div>';
+      var dTp=Math.abs(val.tp-val.entrada)/val.entrada*100, altoP=Math.abs(y4-y3);
+      hl+='<div class="gsom premio" style="top:'+Math.min(y3,y4)+'%;height:'+altoP+'%">'+
+          (altoP>4?'<b>GANA '+pctS(dTp,2)+'</b>':'')+'</div>';
     }
   }
   /* una raya por cada compra (Spot); si dos quedan pegadas, la etiqueta baja */
@@ -2168,13 +2295,16 @@ function dibujar(estado){
     } else if(val.entrada>0 && val.sl>0){
       var dist=Math.abs(val.entrada-val.sl)/val.entrada*100;
       var bien = lado==="SHORT" ? (val.sl>val.entrada) : (val.sl<val.entrada);
-      pie.innerHTML='<span>Su stop está a <b class="'+(bien?"":"dn")+'">'+pctS(dist,2)+
-        '</b> de la entrada'+(bien?"":" · <b class='dn'>del lado equivocado para un "+
-        (lado==="SHORT"?"CORTO":"LARGO")+"</b>")+'</span>'+
-        (val.tp>0?'<span>El objetivo está a <b>'+
-          pctS(Math.abs(val.tp-val.entrada)/val.entrada*100,2)+'</b></span>':'');
-    } else pie.innerHTML='<span class="mut">Arrastre la línea del <b>STOP</b> hasta donde '+
-      'quiera ponerlo y el lote se calcula solo.</span>';
+      var dtp = val.tp>0 ? Math.abs(val.tp-val.entrada)/val.entrada*100 : null;
+      var rel = (dtp!=null&&dist>0) ? dtp/dist : null;
+      pie.innerHTML='<span><i class="pt sl"></i>Arriesga <b class="'+(bien?"":"dn")+'">'+pctS(dist,2)+
+        '</b>'+(bien?"":" · <b class='dn'>el stop está del lado equivocado</b>")+'</span>'+
+        (dtp!=null?'<span><i class="pt tp"></i>Gana <b>'+pctS(dtp,2)+'</b></span>':'')+
+        (rel!=null?'<span>Relación <b>'+rel.toFixed(2).replace(".",",")+' a 1</b></span>':'')+
+        '<span class="mut">Puede mover las tres líneas con el dedo: lo que arrastre se escribe '+
+        'solo en las casillas.</span>';
+    } else pie.innerHTML='<span class="mut">Arrastre con el dedo la línea roja del <b>STOP</b> '+
+      'hasta donde quiera ponerlo y el dinero a poner se calcula solo.</span>';
   }
 }
 
@@ -2376,6 +2506,20 @@ function estadoOp(f){
   var perSl=(sl!=null&&ent>0)?margen*(signo*(sl-ent)/ent*100*apal)/100:null;
   var rr=(ganTp!=null&&perSl!=null&&perSl<0)?Math.abs(ganTp/perSl):null;
 
+  /* --- PROGRAMADA: la orden está puesta pero el precio todavía no llegó a la
+     entrada. No gana ni pierde nada: no ha entrado. Solo se mira cuánto falta. --- */
+  var programada = f.estado==="programada";
+  var falta=null, faltaPct=null, llego=false;
+  if(programada && ent>0 && f.sym){
+    var pp=precioDe(f.sym);
+    if(pp!=null){
+      falta=ent-pp;
+      faltaPct=(ent-pp)/pp*100;
+      /* en un largo se espera que BAJE a la entrada; en un corto, que SUBA */
+      llego = (f.lado==="SHORT") ? (pp>=ent) : (pp<=ent);
+    }
+  }
+
   var flot=null, pctFlot=null, enPeligro=null;
   if(sal==null && f.estado==="abierta" && ent>0 && f.sym){
     var pr=precioDe(f.sym);
@@ -2393,16 +2537,21 @@ function estadoOp(f){
     salida:sal, pctPrecio:pctPrecio, pct: pctMargen!=null?pctMargen/100:null,
     pctMargen:pctMargen, gan:gan, com:com, liq:liq, liquidado:liquidado, topado:topado,
     enPeligro:enPeligro, tp:tp, sl:sl, ganTp:ganTp, perSl:perSl, rr:rr,
-    flot:flot, pctFlot:pctFlot, abierta: f.estado==="abierta"};
+    flot:flot, pctFlot:pctFlot, abierta: f.estado==="abierta",
+    programada:programada, falta:falta, faltaPct:faltaPct, llego:llego};
 }
 
 function carteraFut(fuente){
   var lista=(fuente||[]).map(estadoOp);
-  var cerradas=lista.filter(function(e){ return !e.abierta&&e.pct!=null; });
+  /* las PROGRAMADAS no entran en ningún total: todavía no ha entrado en ellas */
+  var programadas=lista.filter(function(e){ return e.programada; });
+  var cerradas=lista.filter(function(e){ return !e.abierta&&!e.programada&&e.pct!=null; });
   var abiertas=lista.filter(function(e){ return e.abierta; });
   var t={n:cerradas.length, gan:0, pctAcum:0, ganadas:0, perdidas:0, neutras:0, nLiq:0,
-         margenAbierto:0, nAb:abiertas.length, flotante:0, comision:0, enRiesgo:0,
+         margenAbierto:0, nAb:abiertas.length, nProg:programadas.length,
+         margenProg:0, flotante:0, comision:0, enRiesgo:0,
          sinPrecioAb:0, bruto:0};
+  programadas.forEach(function(e){ t.margenProg+=e.margen; });
   var sg=0,ng=0,sp=0,np=0;
   cerradas.forEach(function(e){
     if(e.liquidado) t.nLiq++;
@@ -2469,7 +2618,8 @@ function carteraFut(fuente){
             gan:L.reduce(function(a,e){ return a+e.gan; },0)};
   }
   t.conPlan=res(conPlan); t.sinPlan=res(sinPlan);
-  return {lista:lista, cerradas:cerradas, abiertas:abiertas, tot:t};
+  return {lista:lista, cerradas:cerradas, abiertas:abiertas,
+          programadas:programadas, tot:t};
 }
 
 /* =====================================================================
@@ -2839,13 +2989,14 @@ function listaMonedasTel(lista, conVender){
       '<div class="cab2"><div style="min-width:0;flex:1"><b>'+esc(e.sym)+'</b> <span class="mut">'+esc(nombreDe(e.sym))+'</span>'+
         '<div class="mut" style="font-size:12px">ahora <b data-v="pr" data-s="'+esc(e.sym)+'">'+precio(e.precio)+'</b> '+
         '<span data-v="ch" data-s="'+esc(e.sym)+'" data-cls="" class="'+cl(chg)+'">'+(chg!=null?pct(chg,1):"")+'</span></div></div></div>'+
-      '<div class="q"><div class="l2">tiene <b>'+cant(e.cantidad)+' '+esc(e.sym)+'</b> · promedio <b>'+precio(e.promedio)+'</b> · puso <b>'+usd(e.costo)+'</b></div></div>'+
+      '<div class="q"><div class="l2">'+cant(e.cantidad)+' '+esc(e.sym)+' · promedio <b>'+precioC(e.promedio)+'</b> · puso <b>'+usd(e.costo)+'</b></div></div>'+
       '<div class="r"><span>Vale hoy</span><b data-v="spVal" data-s="'+esc(e.sym)+'">'+(e.valor!=null?usd(e.valor):"—")+'</b></div>'+
       '<div class="pg"><span>Ganancia si vende hoy</span><b><span class="'+(e.abierto>0?"gpill p":e.abierto<0?"gpill n":"gpill z")+'" '+
         'data-v="spGan" data-s="'+esc(e.sym)+'" data-cls="">'+
         (e.abierto!=null?(e.abierto>=0?"+":"−")+usd(e.abierto).replace("-",""):"—")+'</span> '+
         '<span class="gsub '+cl(e.abiertoPct)+'" style="display:inline" data-v="spGanP" data-s="'+esc(e.sym)+'" data-cls="">'+pct(e.abiertoPct)+'</span></b></div>'+
-      (conVender?'<div class="acc"><button class="b sm rj" data-vender="'+esc(e.sym)+'">Vender</button></div>':'')+
+      '<div class="acc"><span class="mut" style="margin-right:auto;font-size:11.5px;font-weight:600">toque para ver el detalle</span>'+
+      (conVender?'<button class="b sm" data-vender="'+esc(e.sym)+'">Vender</button>':'')+'</div>'+
     '</div>';
   }).join("")+'</div>';
 }
@@ -3149,11 +3300,11 @@ function pintarSpot(){
         D.total<0?"falta registrar lo que metió":"libre para comprar", 3)+
   '</div>';
 
-  /* ---- panel de registrar + moneda seleccionada ---- */
-  h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));'+
-     'gap:12px;margin-bottom:14px" id="spZona">'+
+  /* ---- panel de registrar ----
+     El resumen de una moneda NO vive aquí: ocupaba media pantalla sin que
+     usted lo pidiera. Ahora se abre al pulsar la moneda en la lista. */
+  h+='<div style="margin-bottom:14px" id="spZona">'+
      '<div class="caja" style="margin:0" id="spPanel">'+panelRegistro()+'</div>'+
-     '<div class="caja" style="margin:0" id="spDet">'+panelSeleccionada()+'</div>'+
   '</div>';
 
   /* ---- la tabla ---- */
@@ -3197,7 +3348,7 @@ function pintarSpot(){
         (e.abierto!=null?(e.abierto>=0?"+":"−")+usd(e.abierto).replace("-",""):"—")+'</span>'+
         '<span class="gsub '+cl(e.abiertoPct)+'" data-v="spGanP" data-s="'+esc(e.sym)+'" '+
         'data-cls="">'+pct(e.abiertoPct)+'</span></td>'+
-      '<td><button class="b sm rj" data-vender="'+esc(e.sym)+'">Vender</button></td></tr>';
+      '<td><button class="b sm" data-vender="'+esc(e.sym)+'">Vender</button></td></tr>';
   });
   h+='</tbody><tfoot><tr><td>TOTAL · '+vivas.length+' monedas</td><td></td><td></td>'+
     '<td class="opt"></td><td></td><td>'+usd(S.tot.costo)+'</td>'+
@@ -3523,8 +3674,6 @@ function engancharSpot(c){
     tr.onclick=function(ev){
       if(ev.target.closest("button")) return;
       SP.sel=tr.getAttribute("data-sym");
-      var d=document.getElementById("spDet");
-      if(d){ d.innerHTML=panelSeleccionada(); engancharDetalle(); }
       verMoneda(tr.getAttribute("data-sym"));
     };
     tr.onkeydown=function(ev){
@@ -4241,13 +4390,27 @@ function ambito(k){
 }
 
 /* el formulario vive aquí, para que no se pierda al abrir el buscador */
+/* FU.ya: null = todavía no lo ha dicho (se sugiere solo mirando el precio),
+   "si" = ya está dentro, "no" = la deja programada esperando el precio */
 var FU={ amb:"fut", sym:"", lado:"LONG", slModo:"precio", entrada:"", sl:"", tp:"", salida:"",
-         margenMano:"", plan:{}, animo:"", estr:"", nota:"", fecha:"", abierto:true };
+         margenMano:"", plan:{}, animo:"", estr:"", nota:"", fecha:"", abierto:true,
+         ya:null, detAbierto:false };
 
 function limpiarFU(amb){
   FU={ amb:amb, sym:FU.sym, lado:"LONG", slModo:FU.slModo||"precio", entrada:"", sl:"", tp:"",
-       salida:"", margenMano:"", plan:{}, animo:"", estr:FU.estr, nota:"", fecha:hoy(), abierto:true };
+       salida:"", margenMano:"", plan:{}, animo:"", estr:FU.estr, nota:"", fecha:hoy(),
+       abierto:true, ya:null, detAbierto:false };
 }
+/* mirando el precio de ahora: ¿ya está dentro o está esperando?
+   Una orden de COMPRA se deja por DEBAJO del precio; una de VENTA, por ENCIMA. */
+function sugerirYa(){
+  var e=num(FU.entrada), pr=FU.sym?precioDe(FU.sym):null;
+  if(!(e>0)||pr==null) return "si";
+  var dif=Math.abs(e-pr)/pr*100;
+  if(dif<0.05) return "si";                       /* está pegado al precio: ya entró */
+  return (FU.lado==="SHORT") ? (e>pr?"no":"si") : (e<pr?"no":"si");
+}
+function yaEntro(){ return FU.ya!=null ? FU.ya : sugerirYa(); }
 
 /* ---------------------------------------------------------------------
    LA FRANJA: las cuatro perillas, juntas y a la vista
@@ -4320,7 +4483,7 @@ function engancharFranja(box, A){
    --------------------------------------------------------------------- */
 function panelOperacion(A){
   var c=A.cfg;
-  return '<div class="caja"><h2><span class="ic">'+IC.regla+'</span>'+
+  return '<div class="caja opform"><h2><span class="ic">'+IC.regla+'</span>'+
     (A.k==="back"?"Nueva operación de prueba":"Nueva operación")+
     '<span class="sp"></span>'+
     '<div class="pill grande" id="fuL" style="max-width:280px">'+
@@ -4331,52 +4494,67 @@ function panelOperacion(A){
       '<div class="campo ancho"><label>Moneda</label>'+
         '<button class="selector" id="fuS" type="button"></button></div>'+
     '</div>'+
-    '<div class="campos dos" style="margin-top:11px">'+
-      '<div class="campo"><label>Fecha</label><input type="date" id="fuF" value="'+
-        esc(FU.fecha||hoy())+'"></div>'+
-      '<div class="campo"><label>Precio de entrada</label><div class="conBtn">'+
-        '<input id="fuE" inputmode="decimal" value="'+esc(FU.entrada)+'" placeholder="'+
-        esc(ejemploPrecio(FU.sym,1))+'">'+
-        '<button type="button" class="b" id="fuHoy" title="Pone el precio de este momento">precio de ahora</button></div></div>'+
+    /* las tres casillas de precio y el resultado, todo dentro del mismo bloque */
+    '<div class="opbloq">'+
+      '<div class="campos dos">'+
+        '<div class="campo"><label>Fecha</label><input type="date" id="fuF" value="'+
+          esc(FU.fecha||hoy())+'"></div>'+
+        '<div class="campo"><label><i class="pt ent"></i>Precio de entrada</label><div class="conBtn">'+
+          '<input id="fuE" inputmode="decimal" value="'+esc(FU.entrada)+'" placeholder="'+
+          esc(ejemploPrecio(FU.sym,1))+'">'+
+          '<button type="button" class="b" id="fuHoy" title="Pone el precio de este momento">precio de ahora</button></div></div>'+
+      '</div>'+
+      '<div class="campos dos" style="margin-top:11px">'+
+        '<div class="campo"><label><i class="pt sl"></i><span class="dn">STOP LOSS</span> '+
+          '<small>· donde sale perdiendo</small></label>'+
+          '<input id="fuSL" inputmode="decimal" value="'+esc(FU.sl)+'" placeholder="'+
+          esc(ejemploPrecio(FU.sym, FU.lado==="SHORT"?1.01:0.99))+'"></div>'+
+        '<div class="campo"><label><i class="pt tp"></i><span class="up">TAKE PROFIT</span> '+
+          '<small>· donde sale ganando</small></label>'+
+          '<input id="fuTP" inputmode="decimal" value="'+esc(FU.tp)+'" placeholder="'+
+          esc(ejemploPrecio(FU.sym, FU.lado==="SHORT"?0.98:1.02))+'"></div>'+
+      '</div>'+
+      '<div id="fuLote"></div>'+
     '</div>'+
-    '<div class="campos dos" style="margin-top:11px">'+
-      '<div class="campo"><label><span class="dn">STOP LOSS</span> <small>· el precio donde sale perdiendo</small></label>'+
-        '<input id="fuSL" inputmode="decimal" value="'+esc(FU.sl)+'" placeholder="'+
-        esc(ejemploPrecio(FU.sym, FU.lado==="SHORT"?1.01:0.99))+'"></div>'+
-      '<div class="campo"><label><span class="up">TAKE PROFIT</span> <small>· precio donde sale ganando (opcional)</small></label>'+
-        '<input id="fuTP" inputmode="decimal" value="'+esc(FU.tp)+'" placeholder="'+
-        esc(ejemploPrecio(FU.sym, FU.lado==="SHORT"?0.98:1.02))+'"></div>'+
-    '</div>'+
-    '<div class="cadena" id="fuLote"></div>'+
     '<div class="nota" id="fuAviso" style="display:none"></div>'+
     '<div id="fuGraf"></div>'+
-    '<div class="fsec">Antes de entrar <span class="mut" style="float:right;font-weight:600">marque lo que ya revisó</span></div>'+
-    '<div class="chk" id="fuChk">'+PLAN.map(function(x){
-      return '<button type="button" data-chk="'+x[0]+'" class="'+(FU.plan[x[0]]?"on":"")+'">'+
-        '<span class="cj">✓</span>'+esc(x[1])+'</button>';
-    }).join("")+'</div>'+
-    '<div class="animo" id="fuAnimo">'+
-      '<span class="mut" style="align-self:center;margin-right:4px">¿Cómo entra?</span>'+
-      ANIMOS.map(function(a){
-        return '<button type="button" data-an="'+esc(a)+'" class="'+(FU.animo===a?"on":"")+'">'+
-          esc(a)+'</button>'; }).join("")+'</div>'+
-    '<div class="campos" style="margin-top:12px">'+
-      '<div class="campo"><label>Estrategia</label><input id="fuEstr" style="font-family:inherit" '+
-        'value="'+esc(FU.estr)+'" placeholder="ADX + Konkorde" list="listaEstr"></div>'+
-      '<div class="campo"><label>Precio de salida <small>· solo si ya la cerró</small></label>'+
-        '<input id="fuX" inputmode="decimal" value="'+esc(FU.salida)+'" placeholder="déjelo vacío si sigue abierta"></div>'+
-      '<div class="campo ancho"><label>Nota — qué vio, cómo se sintió</label>'+
-        '<input id="fuNo" style="font-family:inherit" value="'+esc(FU.nota)+'" '+
-        'placeholder="entré por ruptura de rango…"></div>'+
-    '</div>'+
-    '<datalist id="listaEstr">'+estrategiasUsadas().map(function(x){
-      return '<option value="'+esc(x)+'">'; }).join("")+'</datalist>'+
+    /* ¿ya entró o está esperando que el precio llegue? */
+    '<div id="fuYa"></div>'+
     '<div class="nota" id="fuRes" style="display:none"></div>'+
-    '<div style="margin-top:12px;display:flex;gap:9px;flex-wrap:wrap">'+
+    '<div class="accReg">'+
       '<button class="b vd gr" id="fuOk" style="flex:1;min-width:190px">'+
       'Registrar operación</button>'+
       '<button class="b gh" id="fuLimpia">Limpiar</button>'+
-    '</div></div></div>';
+    '</div>'+
+    /* todo lo que NO es obligatorio queda aquí abajo, cerrado */
+    '<details class="opcional" id="fuDet"'+(FU.detAbierto?" open":"")+'>'+
+      '<summary>Detalles para su diario <span class="mut" style="font-weight:600">· opcional</span></summary>'+
+      '<div class="cuerpoOp">'+
+        '<div class="fsec" style="margin-top:0">Antes de entrar '+
+          '<span class="mut" style="float:right;font-weight:600">marque lo que ya revisó</span></div>'+
+        '<div class="chk" id="fuChk">'+PLAN.map(function(x){
+          return '<button type="button" data-chk="'+x[0]+'" class="'+(FU.plan[x[0]]?"on":"")+'">'+
+            '<span class="cj">✓</span>'+esc(x[1])+'</button>';
+        }).join("")+'</div>'+
+        '<div class="animo" id="fuAnimo">'+
+          '<span class="mut" style="align-self:center;margin-right:4px">¿Cómo entra?</span>'+
+          ANIMOS.map(function(a){
+            return '<button type="button" data-an="'+esc(a)+'" class="'+(FU.animo===a?"on":"")+'">'+
+              esc(a)+'</button>'; }).join("")+'</div>'+
+        '<div class="campos" style="margin-top:12px">'+
+          '<div class="campo"><label>Estrategia</label><input id="fuEstr" style="font-family:inherit" '+
+            'value="'+esc(FU.estr)+'" placeholder="ADX + Konkorde" list="listaEstr"></div>'+
+          '<div class="campo"><label>Precio de salida <small>· solo si ya la cerró</small></label>'+
+            '<input id="fuX" inputmode="decimal" value="'+esc(FU.salida)+'" placeholder="déjelo vacío si sigue abierta"></div>'+
+          '<div class="campo ancho"><label>Nota — qué vio, cómo se sintió</label>'+
+            '<input id="fuNo" style="font-family:inherit" value="'+esc(FU.nota)+'" '+
+            'placeholder="entré por ruptura de rango…"></div>'+
+        '</div>'+
+        '<datalist id="listaEstr">'+estrategiasUsadas().map(function(x){
+          return '<option value="'+esc(x)+'">'; }).join("")+'</datalist>'+
+      '</div>'+
+    '</details>'+
+    '</div></div>';
 }
 /* un precio de ejemplo para los huecos, sacado del precio de ahora */
 function ejemploPrecio(sym, factor){
@@ -4399,6 +4577,27 @@ function valoresFU(A){
   return {entrada:num(FU.entrada), sl:slAPrecio(A), tp:num(FU.tp)};
 }
 
+/* Se repinta solo cuando el contenido cambia de verdad. Si se repintara en cada
+   tecla, el botón que uno está a punto de pulsar desaparecería bajo el dedo. */
+var LOTE_html="", YA_html="";
+function ponerSiCambia(box, html, cual){
+  var ant = cual==="lote" ? LOTE_html : YA_html;
+  if(ant===html && box.innerHTML) return false;
+  if(cual==="lote") LOTE_html=html; else YA_html=html;
+  box.innerHTML=html;
+  return true;
+}
+function olvidarLote(){ LOTE_html=""; YA_html=""; }
+/* mientras el stop esté del lado equivocado, no se deja registrar */
+function botonRegistrar(puede, porque){
+  var b=document.getElementById("fuOk");
+  if(!b) return;
+  b.disabled=!puede;
+  b.textContent = puede ? "Registrar operación" : (porque||"Revise los datos");
+  b.classList.toggle("vd", !!puede);
+  b.classList.toggle("gh", !puede);
+}
+
 function recLote(A){
   var box=document.getElementById("fuLote");
   if(!box) return;
@@ -4413,36 +4612,75 @@ function recLote(A){
               : !(v.entrada>0) ? "Escriba el precio de entrada"
               : !(v.sl>0) ? "Escriba el stop loss, o arrastre su línea roja en la gráfica"
               : "Revise la entrada y el stop";
-    box.innerHTML=
+    ponerSiCambia(box,
       '<div class="lotazo falta"><div class="lz">'+
-        '<div class="le">CUÁNTO METER EN ESTA OPERACIÓN</div>'+
+        '<div class="le">CUÁNTO DINERO PONER</div>'+
         '<div class="lv">—</div>'+
-        '<div class="ls">'+esc(falta)+'</div></div></div>';
+        '<div class="ls">'+esc(falta)+'</div></div></div>', "lote");
     if(av){ av.style.display="none"; }
+    botonRegistrar(true);
+    recYa(A);
     return;
   }
-  box.innerHTML=
+
+  /* --- EL STOP DEL LADO EQUIVOCADO: aquí se para, no se da ningún número --- */
+  if(!R.ladoBien){
+    var esCorto=FU.lado==="SHORT";
+    var cambio=ponerSiCambia(box,
+      '<div class="lotazo mal"><div class="lz">'+
+        '<div class="le">REVISE EL STOP LOSS</div>'+
+        '<div class="lv">El stop está del lado equivocado</div>'+
+        '<div class="ls">En '+(esCorto?"una <b>VENTA (CORTO)</b> el stop loss va <b>POR ENCIMA</b>"
+                                      :"una <b>COMPRA (LARGO)</b> el stop loss va <b>POR DEBAJO</b>")+
+          ' del precio de entrada. Es el precio donde usted acepta salir perdiendo.<br>'+
+          'Usted escribió: entrada <b>'+precio(v.entrada)+'</b> · stop <b>'+precio(v.sl)+'</b>'+
+          ' (está '+(v.sl>v.entrada?"ARRIBA":"ABAJO")+').</div>'+
+        '<div class="larr">'+
+          '<button type="button" class="b sm vd" id="fuVoltea">Cambiar el stop y el objetivo de lugar</button>'+
+        '</div>'+
+      '</div></div>', "lote");
+    if(cambio){
+      var bv=document.getElementById("fuVoltea");
+      if(bv) bv.onclick=function(){ voltearStopTp(A); };
+    }
+    if(av){ av.style.display="none"; }
+    botonRegistrar(false, "Corrija el stop loss");
+    recYa(A);
+    return;
+  }
+  botonRegistrar(true);
+
+  var frase;
+  if(R.ganTp!=null&&R.tpBien){
+    frase='Arriesga <b class="dn">'+usdF(R.perdidaSL)+'</b> para ganar <b class="up">'+
+      usdF(R.ganTp)+'</b>'+
+      (R.rr!=null?' — '+R.rr.toFixed(1).replace(".",",")+' veces lo que arriesga.':'.');
+  } else {
+    frase='Arriesga <b class="dn">'+usdF(R.perdidaSL)+'</b>. '+
+      'Escriba el <b>take profit</b> y le digo cuánto gana si llega.';
+  }
+
+  ponerSiCambia(box,
     '<div class="lotazo"><div class="lz">'+
-      '<div class="le">CUÁNTO METER EN ESTA OPERACIÓN</div>'+
+      '<div class="le">CUÁNTO DINERO PONER</div>'+
       '<div class="lv">'+usdF(R.margen)+'</div>'+
-      '<div class="ls">con '+R.apal+'x · si salta el stop pierde <b class="dn">'+
-        usdF(R.perdidaSL)+'</b>, el '+pctS(R.perdidaSL/R.cartera*100,2)+' de su cartera</div>'+
-    '</div><div class="ld">'+
-      '<div><span>Lote (capital para operar)</span><b>'+usdF(R.posicion)+'</b>'+
-        '<i>'+cant(R.monedas)+' '+esc(sym)+'</i></div>'+
-      '<div><span>Arriesga</span><b>'+usdF(R.riesgo)+'</b>'+
-        '<i>'+pctS(R.riesgoPct)+' de '+usd(R.cartera)+'</i></div>'+
-      '<div><span>Distancia al stop</span><b>'+pctS(R.distPct,2)+'</b>'+
-        '<i>'+precio(v.entrada)+' → '+precio(v.sl)+'</i></div>'+
-      (R.ganTp!=null
-        ? '<div><span>Si pega el objetivo</span><b class="up">+'+usdF(R.ganTp)+'</b>'+
-          '<i>'+(R.rr!=null?("gana "+R.rr.toFixed(2).replace(".",",")+" por cada $1 que arriesga"):"")+'</i></div>'
-        : '<div><span>Lo liquidan en</span><b>'+precio(R.liq)+'</b><i>margen aislado</i></div>')+
-    '</div></div>';
+      '<div class="ls">Eso es lo que usted escribe en Binance, con '+R.apal+'x de apalancamiento.</div>'+
+    '</div>'+
+    '<div class="lfrase">'+frase+'</div>'+
+    '<div class="ld">'+
+      '<div><span>Tamaño de la operación</span><b>'+usdF(R.posicion)+'</b>'+
+        '<i>'+cant(R.monedas)+' '+esc(sym)+' · su dinero × '+R.apal+'</i></div>'+
+      '<div><span>Si llega al stop</span><b class="dn">−'+usdF(R.perdidaSL)+'</b>'+
+        '<i>en '+precio(v.sl)+' · el '+pctS(R.perdidaSL/R.cartera*100,2)+' de su cartera</i></div>'+
+      (R.ganTp!=null&&R.tpBien
+        ? '<div><span>Si llega al objetivo</span><b class="up">+'+usdF(R.ganTp)+'</b>'+
+          '<i>en '+precio(v.tp)+' · subiría a '+usd(R.cartera+R.ganTp)+'</i></div>'
+        : '<div><span>Si llega al objetivo</span><b>—</b><i>escriba el take profit</i></div>')+
+      '<div><span>Lo liquidan en</span><b>'+precio(R.liq)+'</b>'+
+        '<i>más allá de ahí pierde todo lo que puso</i></div>'+
+    '</div></div>', "lote");
 
   var p=[];
-  if(!R.ladoBien) p.push("<b>OJO:</b> en un "+(FU.lado==="SHORT"?"CORTO el stop va POR ENCIMA":
-    "LARGO el stop va POR DEBAJO")+" de la entrada. Así como está no le corta la pérdida.");
   if(R.liqAntes) p.push("<b>OJO:</b> con "+R.apal+"x lo liquidan a "+pctS(100/R.apal,1)+
     " y su stop está a "+pctS(R.distPct,1)+": <b>lo liquidarían antes</b> de que el stop alcance "+
     "a cerrarle. Baje el apalancamiento a <b>"+Math.max(1,R.apalMax)+"x</b> o menos.");
@@ -4479,6 +4717,47 @@ function recLote(A){
         (st.liquidado?" · <b class='dn'>a ese precio ya lo habrían liquidado</b>":"");
     } else res.style.display="none";
   }
+  recYa(A);
+}
+
+/* ---------------------------------------------------------------------
+   ¿YA ENTRÓ, O LA DEJA ESPERANDO?
+   Si todavía no llegó el precio, la operación no gana ni pierde nada:
+   queda programada y se activa sola cuando el precio llegue a la entrada.
+   --------------------------------------------------------------------- */
+function recYa(A){
+  var z=document.getElementById("fuYa");
+  if(!z) return;
+  var e=num(FU.entrada), pr=FU.sym?precioDe(FU.sym):null;
+  if(!(e>0)||num(FU.salida)!=null){ YA_html=""; z.innerHTML=""; return; }
+  var ya=yaEntro();
+  var dif = pr!=null ? (e-pr)/pr*100 : null;
+  var dicho;
+  if(pr==null) dicho="Todavía no hay precio en vivo de esa moneda.";
+  else if(ya==="no") dicho="Ahora está en <b>"+precio(pr)+"</b> y su entrada es <b>"+precio(e)+
+    "</b>: falta que "+(dif>0?"suba":"baje")+" <b>"+pctS(Math.abs(dif),2)+
+    "</b>. Mientras tanto no gana ni pierde nada; se activa sola cuando llegue.";
+  else dicho="Ahora está en <b>"+precio(pr)+"</b>, pegado a su entrada de <b>"+precio(e)+
+    "</b>: la operación empieza a contar de una vez.";
+  var cambio=ponerSiCambia(z,
+    '<div class="campo ancho" style="margin-top:13px"><label>¿Ya entró en esta operación?</label>'+
+    '<div class="pill" id="fuYaP">'+
+      '<button type="button" data-ya="si" class="'+(ya==="si"?"on v":"")+'">Sí, ya estoy dentro</button>'+
+      '<button type="button" data-ya="no" class="'+(ya==="no"?"on":"")+'">No, estoy esperando el precio</button>'+
+    '</div>'+
+    '<div class="mut" style="font-size:12px;margin-top:7px;line-height:1.5">'+dicho+'</div></div>', "ya");
+  if(cambio) z.querySelectorAll("[data-ya]").forEach(function(b){
+    b.onclick=function(){ FU.ya=b.getAttribute("data-ya"); recYa(A); };
+  });
+}
+/* cambia el stop y el objetivo de lugar, que es el error de siempre */
+function voltearStopTp(A){
+  var s=FU.sl, t=FU.tp;
+  FU.sl=t; FU.tp=s;
+  var L=document.getElementById("fuSL"), T=document.getElementById("fuTP");
+  if(L) L.value=FU.sl; if(T) T.value=FU.tp;
+  recLote(A); pintarLineas(A);
+  aviso("Listo: el stop loss y el objetivo quedaron cambiados de lugar.");
 }
 
 /* ---------------------------------------------------------------------
@@ -4547,6 +4826,9 @@ function pintarAmbito(k){
   /* ---- panel de registrar ---- */
   h+=panelOperacion(A);
 
+  /* ---- programadas: esperando el precio, sin contar nada todavía ---- */
+  if(F.programadas.length) h+=cajaProgramadas(F.programadas,k);
+
   /* ---- abiertas ---- */
   if(F.abiertas.length){
     h+='<div class="caja"><h2><span class="ic">'+IC.fut+'</span>Operaciones abiertas'+
@@ -4594,8 +4876,8 @@ function pintarBack(){ pintarAmbito("back"); }
 function tablaAbiertas(abiertas,k){
   return '<div class="env soloPC"><table><thead><tr>'+
     '<th>Moneda</th><th>Tipo</th><th>Entrada</th><th>Precio ahora</th>'+
-    '<th class="opt">Stop</th><th class="opt">Objetivo</th>'+
-    '<th>Margen</th><th>Si cierra ahora</th><th></th></tr></thead><tbody>'+
+    '<th class="opt">En el stop</th><th class="opt">En el objetivo</th>'+
+    '<th>Puso</th><th>Si cierra ahora</th><th></th></tr></thead><tbody>'+
     abiertas.map(function(e){
       var f=e.f, pr=precioDe(f.sym);
       return '<tr style="--fc:'+colDe(f.sym)+'">'+
@@ -4605,9 +4887,11 @@ function tablaAbiertas(abiertas,k){
           (f.lado==="SHORT"?"▼ CORTO":"▲ LARGO")+'</span><span class="sub">'+e.apal+'x</span></td>'+
         '<td>'+precio(e.entrada)+'</td>'+
         '<td><span data-v="pr" data-s="'+esc(f.sym)+'">'+precio(pr)+'</span></td>'+
-        '<td class="opt dn">'+(e.sl!=null?precio(e.sl):"—")+'</td>'+
-        '<td class="opt up">'+(e.tp!=null?precio(e.tp):"—")+'</td>'+
-        '<td>'+usdF(e.margen)+'<span class="sub">lote '+usdF(e.valor)+'</span></td>'+
+        '<td class="opt dn">'+(e.perSl!=null?("−"+usdF(Math.abs(e.perSl-e.com))):"—")+
+          '<span class="sub">'+(e.sl!=null?("en "+precio(e.sl)):"sin stop")+'</span></td>'+
+        '<td class="opt up">'+(e.ganTp!=null?("+"+usdF(e.ganTp-e.com)):"—")+
+          '<span class="sub">'+(e.tp!=null?("en "+precio(e.tp)):"sin objetivo")+'</span></td>'+
+        '<td>'+usdF(e.margen)+'<span class="sub">opera '+usdF(e.valor)+'</span></td>'+
         '<td><span class="'+(e.flot>0?"gpill p":e.flot<0?"gpill n":"gpill z")+'" data-v="futFlot" '+
           'data-f="'+esc(f.id)+'" data-cls="">'+
           (e.flot!=null?((e.flot>=0?"+":"−")+usdF(e.flot).replace("-","")):"sin precio")+'</span>'+
@@ -4631,10 +4915,14 @@ function filaAbierta(e,k){
       '<div class="kv" style="margin-top:0">'+
         '<div><span>Entró en</span><b>'+precio(e.entrada)+'</b></div>'+
         '<div><span>Precio ahora</span><b data-v="pr" data-s="'+esc(f.sym)+'">'+precio(pr)+'</b></div>'+
-        '<div><span>Stop loss</span><b class="dn">'+(e.sl!=null?precio(e.sl):"—")+'</b></div>'+
-        '<div><span>Objetivo</span><b class="up">'+(e.tp!=null?precio(e.tp):"—")+'</b></div>'+
-        '<div><span>Margen que puso</span><b>'+usdF(e.margen)+'</b></div>'+
-        '<div><span>Lote</span><b>'+usdF(e.valor)+'<small>'+cant(e.monedas)+' '+esc(f.sym)+'</small></b></div>'+
+        '<div><span>Dinero que puso</span><b>'+usdF(e.margen)+'</b></div>'+
+        '<div><span>Tamaño de la operación</span><b>'+usdF(e.valor)+'<small>'+cant(e.monedas)+' '+esc(f.sym)+'</small></b></div>'+
+        '<div><span>Si llega al objetivo</span><b class="up">'+
+          (e.ganTp!=null?("+"+usdF(e.ganTp-e.com)):"—")+
+          '<small>'+(e.tp!=null?("en "+precio(e.tp)):"escriba el objetivo")+'</small></b></div>'+
+        '<div><span>Si llega al stop</span><b class="dn">'+
+          (e.perSl!=null?("−"+usdF(Math.abs(e.perSl-e.com))):"—")+
+          '<small>'+(e.sl!=null?("en "+precio(e.sl)):"sin stop")+'</small></b></div>'+
       '</div>'+
       (riel!=null
         ? '<div class="riel" style="height:30px;margin:10px 0 0"><div class="via"></div>'+
@@ -4658,6 +4946,79 @@ function filaAbierta(e,k){
       'margen que puso.</div>':'')+
   '</div>';
 }
+/* ---------------------------------------------------------------------
+   OPERACIONES PROGRAMADAS — la orden está puesta, el precio todavía no llega.
+   Aquí NO se muestra ninguna ganancia: todavía no ha entrado.
+   --------------------------------------------------------------------- */
+function cajaProgramadas(progs, k){
+  return '<div class="caja"><h2><span class="ic">'+IC.alr+'</span>Operaciones programadas'+
+    '<span class="chip a">'+progs.length+'</span><span class="sp"></span>'+
+    '<span class="mut">esperando a que el precio llegue</span></h2>'+
+    '<div class="env soloPC"><table><thead><tr>'+
+    '<th>Moneda</th><th>Tipo</th><th>Entra en</th><th>Precio ahora</th>'+
+    '<th class="opt">Stop</th><th class="opt">Objetivo</th>'+
+    '<th>Pondrá</th><th>Falta</th><th></th></tr></thead><tbody>'+
+    progs.map(function(e){
+      var f=e.f, pr=precioDe(f.sym);
+      return '<tr style="--fc:'+colDe(f.sym)+'">'+
+        '<td><div class="cri">'+icono(f.sym,34)+'<div><b>'+esc(f.sym)+'</b>'+
+          '<span>N° '+esc(String(f.n||"—"))+(f.fecha?' · '+fechaCorta(f.fecha):'')+'</span></div></div></td>'+
+        '<td><span class="chip '+(f.lado==="SHORT"?"s":"l")+'">'+
+          (f.lado==="SHORT"?"▼ CORTO":"▲ LARGO")+'</span><span class="sub">'+e.apal+'x</span></td>'+
+        '<td>'+precio(e.entrada)+'</td>'+
+        '<td><span data-v="pr" data-s="'+esc(f.sym)+'">'+precio(pr)+'</span></td>'+
+        '<td class="opt dn">'+(e.sl!=null?precio(e.sl):"—")+'</td>'+
+        '<td class="opt up">'+(e.tp!=null?precio(e.tp):"—")+'</td>'+
+        '<td>'+usdF(e.margen)+'<span class="sub">cuando entre</span></td>'+
+        '<td><span class="espera"><i></i>ESPERANDO</span>'+
+          '<span class="sub">'+(e.faltaPct!=null
+            ? ("falta "+(e.faltaPct>0?"que suba ":"que baje ")+pctS(Math.abs(e.faltaPct),2))
+            : "sin precio")+'</span></td>'+
+        '<td><div style="display:flex;gap:7px;justify-content:flex-end">'+
+          '<button class="b sm vd" data-entrar="'+esc(f.id)+'" data-amb="'+k+'">Ya entré</button>'+
+          '<button class="b sm" data-edop="'+esc(f.id)+'" data-amb="'+k+'">Editar</button></div></td></tr>';
+    }).join("")+'</tbody></table></div>'+
+    '<div class="soloTel cp" style="padding-top:0">'+
+    progs.map(function(e){ return filaProgramada(e,k); }).join("")+'</div>'+
+    '<div class="cp" style="padding-top:0"><div class="mut" style="font-size:12px;line-height:1.5">'+
+    'Mientras esperan, estas operaciones <b>no suman ni restan nada</b> a su resultado ni a su '+
+    'cartera. En cuanto el precio toque la entrada se activan solas, le suena y le aviso.</div></div>'+
+    '</div>';
+}
+function filaProgramada(e,k){
+  var f=e.f, pr=precioDe(f.sym);
+  return '<div class="mv prog" style="--fc:'+colDe(f.sym)+'">'+
+    '<div class="lg">'+icono(f.sym,34)+'</div>'+
+    '<div class="cab2"><b>'+esc(f.sym)+'</b>'+
+      '<span class="chip '+(f.lado==="SHORT"?"s":"l")+'">'+(f.lado==="SHORT"?"▼ CORTO":"▲ LARGO")+'</span>'+
+      '<span class="chip a">'+e.apal+'x</span>'+
+      '<span class="espera"><i></i>ESPERANDO</span></div>'+
+    '<div class="q" style="flex:1 1 100%">'+
+      '<div class="l2">'+(e.faltaPct!=null
+        ? ("el precio tiene que "+(e.faltaPct>0?"subir":"bajar")+" hasta <b>"+precio(e.entrada)+
+           "</b> · ahora está en <b data-v=\"pr\" data-s=\""+esc(f.sym)+"\">"+precio(pr)+
+           "</b> · falta "+pctS(Math.abs(e.faltaPct),2))
+        : ("el precio tiene que llegar a <b>"+precio(e.entrada)+"</b>"))+'</div>'+
+    '</div>'+
+    '<div class="r"><span>Pondrá cuando entre</span><b>'+usdF(e.margen)+'</b></div>'+
+    '<div class="pg"><span>Stop y objetivo</span><b class="dn" style="font-size:14px">'+
+      (e.sl!=null?precio(e.sl):"—")+'</b>'+
+      '<span class="up">'+(e.tp!=null?precio(e.tp):"sin objetivo")+'</span></div>'+
+    '<div class="acc">'+
+      '<button class="b sm vd" data-entrar="'+esc(f.id)+'" data-amb="'+k+'">Ya entré</button>'+
+      '<button class="b sm" data-edop="'+esc(f.id)+'" data-amb="'+k+'">Editar</button></div>'+
+  '</div>';
+}
+/* pasarla a abierta a mano, sin esperar al precio */
+function activarOperacion(id,k){
+  var A=ambito(k);
+  var f=A.lista.filter(function(x){ return x.id===id; })[0];
+  if(!f){ aviso("Esa operación ya no existe.",true); return; }
+  f.estado="abierta"; f.horaEntrada=horaYa(); f.mod=Date.now();
+  guardar(); repintar();
+  aviso("Listo: la operación de "+esc(f.sym)+" ya cuenta como abierta.");
+}
+
 function cajaDisciplina(T){
   var a=T.conPlan, b=T.sinPlan;
   if(!a&&!b) return "";
@@ -4762,6 +5123,7 @@ function tablaHistorial(F,k,T){
    Enganchar la pantalla
    --------------------------------------------------------------------- */
 function engancharAmbito(c, A){
+  olvidarLote();                 /* la pantalla es nueva: nada que recordar */
   engancharFranja(c,A);
   var S=c.querySelector("#fuS");
   function pintaMon(){
@@ -4829,6 +5191,8 @@ function engancharAmbito(c, A){
     E.value=String(p).replace(".",","); FU.entrada=E.value;
     recLote(A); pintarLineas(A);
   };
+  var det=c.querySelector("#fuDet");
+  if(det) det.addEventListener("toggle", function(){ FU.detAbierto=det.open; });
   var lp=c.querySelector("#fuLimpia");
   if(lp) lp.onclick=function(){ limpiarFU(A.k); A.pinta(); };
   var ok=c.querySelector("#fuOk");
@@ -4840,6 +5204,9 @@ function engancharAmbito(c, A){
   if(mas) mas.onclick=function(){ FUT_cuantos+=50; A.pinta(); };
   c.querySelectorAll("[data-cerrarop]").forEach(function(b){
     b.onclick=function(){ cerrarOperacion(b.getAttribute("data-cerrarop"), b.getAttribute("data-amb")); };
+  });
+  c.querySelectorAll("[data-entrar]").forEach(function(b){
+    b.onclick=function(){ activarOperacion(b.getAttribute("data-entrar"), b.getAttribute("data-amb")); };
   });
   c.querySelectorAll("[data-edop]").forEach(function(b){
     b.onclick=function(){ editarOperacion(b.getAttribute("data-edop"), b.getAttribute("data-amb")); };
@@ -4899,11 +5266,12 @@ function guardarOperacion(A){
   var R=calcLote(c, v.entrada, v.sl, FU.lado, v.tp);
   if(!R.ok||!(R.margen>0)){ aviso("No se pudo calcular el lote. Revise la entrada y el stop.",true); return; }
   if(!R.ladoBien){
-    aviso("El stop está del lado equivocado para un "+(FU.lado==="SHORT"?"CORTO":"LARGO")+
-      ". Córrijalo antes de registrar.",true);
+    aviso("El stop está del lado equivocado para "+(FU.lado==="SHORT"?"una VENTA (CORTO)":
+      "una COMPRA (LARGO)")+". Use el botón para cambiarlo de lugar con el objetivo.",true);
     return;
   }
   if(sal!=null&&sal<=0){ aviso("El precio de salida debe ser mayor que cero, o déjelo vacío.",true); return; }
+  var esperando = sal==null && yaEntro()==="no";
   var lista=A.lista;
   var n=lista.reduce(function(m,x){ return Math.max(m,+x.n||0); },0)+1;
   var o={ id:idNuevo(), n:n, sym:String(FU.sym).toUpperCase(), lado:FU.lado,
@@ -4915,11 +5283,13 @@ function guardarOperacion(A){
     nota:(FU.nota||"").trim(), estr:(FU.estr||"").trim(), animo:FU.animo,
     plan:Object.assign({},FU.plan),
     riesgo:R.riesgo, cartera:c.cartera,
-    pct:null, estado: sal==null?"abierta":"cerrada", mod:Date.now() };
+    pct:null, estado: sal!=null?"cerrada":(esperando?"programada":"abierta"), mod:Date.now() };
   A.nuevo(o);
   guardar();
   var dicho;
-  if(sal==null) dicho="Operación abierta · metió "+usdF(R.margen)+", arriesga "+usdF(R.perdidaSL)+".";
+  if(esperando) dicho="Operación programada · no cuenta nada hasta que el precio llegue a "+
+    precio(v.entrada)+". Ahí se activa sola y le aviso.";
+  else if(sal==null) dicho="Operación abierta · metió "+usdF(R.margen)+", arriesga "+usdF(R.perdidaSL)+".";
   else {
     var st=estadoOp(o);
     dicho="Operación registrada · "+(st.gan>=0?"ganó ":"perdió ")+usdF(Math.abs(st.gan))+".";
@@ -5039,8 +5409,13 @@ function editarOperacion(id, k){
         (f.sl!=null?String(f.sl).replace(".",","):"")+'"></div>'+
       '<div class="campo"><label>Take profit</label><input id="eTP" inputmode="decimal" value="'+
         (f.tp!=null?String(f.tp).replace(".",","):"")+'"></div>'+
-      '<div class="campo"><label>Salida (vacío = abierta)</label><input id="eX" inputmode="decimal" '+
+      '<div class="campo"><label>Salida <small>· déjelo vacío si sigue abierta</small></label>'+
+        '<input id="eX" inputmode="decimal" '+
         'value="'+(f.salida!=null?String(f.salida).replace(".",","):"")+'"></div>'+
+      '<div class="campo"><label>¿Ya entró?</label><select id="eY">'+
+        '<option value="abierta"'+(f.estado!=="programada"?" selected":"")+'>Sí, ya está dentro</option>'+
+        '<option value="programada"'+(f.estado==="programada"?" selected":"")+'>No, esperando el precio</option>'+
+        '</select></div>'+
       '<div class="campo"><label>Comisión</label><input id="eK" inputmode="decimal" value="'+
         (f.com?String(+(+f.com).toFixed(6)).replace(".",","):"")+'" placeholder="sin comisión"></div>'+
       '<div class="campo ancho"><label>Estrategia</label><input id="eEs" style="font-family:inherit" '+
@@ -5083,7 +5458,8 @@ function editarOperacion(id, k){
         entrada:num(M.querySelector("#eE").value), sl:num(M.querySelector("#eSL").value),
         tp:num(M.querySelector("#eTP").value), salida:num(M.querySelector("#eX").value),
         com:num(M.querySelector("#eK").value)||0, lado:M.querySelector("#eL").value,
-        sym:f.sym, estado: num(M.querySelector("#eX").value)==null?"abierta":"cerrada"};
+        sym:f.sym, estado: num(M.querySelector("#eX").value)==null
+          ? (M.querySelector("#eY").value||"abierta") : "cerrada"};
     }
     function rec(){
       var d=leer(), r=M.querySelector("#eR");
@@ -5100,14 +5476,18 @@ function editarOperacion(id, k){
           ? '<div class="lc dest"><div class="e">'+(st.gan>=0?"GANÓ":"PERDIÓ")+'</div>'+
             '<div class="v '+cl(st.gan)+'">'+(st.gan>=0?"+":"−")+usdF(st.gan).replace("-","")+
             '</div><div class="s">sobre '+usdF(st.margen)+' que puso</div></div>'
-          : '<div class="lc"><div class="e">SI LA CIERRA AHORA</div><div class="v '+cl(st.flot)+'">'+
-            (st.flot!=null?((st.flot>=0?"+":"−")+usdF(st.flot).replace("-","")):"—")+
-            '</div><div class="s">con el precio de este momento</div></div>');
+          : (d.estado==="programada"
+            ? '<div class="lc"><div class="e">ESPERANDO</div><div class="v" style="font-size:16px">'+
+              precio(d.entrada)+'</div><div class="s">no gana ni pierde hasta que el precio llegue</div></div>'
+            : '<div class="lc"><div class="e">SI LA CIERRA AHORA</div><div class="v '+cl(st.flot)+'">'+
+              (st.flot!=null?((st.flot>=0?"+":"−")+usdF(st.flot).replace("-","")):"—")+
+              '</div><div class="s">con el precio de este momento</div></div>'));
     }
     ["#eM","#eA","#eE","#eSL","#eTP","#eX","#eK"].forEach(function(id2){
       M.querySelector(id2).addEventListener("input", rec);
     });
     M.querySelector("#eL").addEventListener("change", rec);
+    M.querySelector("#eY").addEventListener("change", rec);
     rec();
     M.querySelector("#eDel").onclick=function(){
       cerrar();
@@ -5139,7 +5519,7 @@ function editarOperacion(id, k){
       f.estr=M.querySelector("#eEs").value.trim();
       f.nota=M.querySelector("#eNo").value.trim();
       f.plan=plan; f.animo=animo;
-      f.estado = d.salida==null ? "abierta" : "cerrada";
+      f.estado = d.estado;
       if(f.estado==="cerrada"&&!f.cierre) f.cierre=hoy();
       f.pct=null; f.mod=Date.now();
       guardar(); cerrar(); repintar(); aviso("Guardada.");
@@ -5260,13 +5640,30 @@ function autoActivo(){ return BD.ajustes.autoCierre!==false; }
 
 var VIG_ultimo=0;
 function vigilarCierres(){
-  if(!autoActivo()) return;
   if(Date.now()-VIG_ultimo<900) return;          /* con una vez por segundo basta */
   VIG_ultimo=Date.now();
   var hechas=[];
 
-  /* --- futuros y pruebas --- */
+  /* --- operaciones PROGRAMADAS: se activan solas cuando el precio llega
+         a la entrada. Hasta ese momento no ganan ni pierden nada.
+         Esto pasa siempre, aunque el cierre automático esté apagado. --- */
   [["fut",BD.fut],["back",BD.back]].forEach(function(par){
+    (par[1]||[]).forEach(function(f){
+      if(f.estado!=="programada"||!f.sym) return;
+      var ent=+f.entrada||0; if(!(ent>0)) return;
+      var pr=precioDe(f.sym); if(pr==null) return;
+      /* en un corto se espera que el precio SUBA a la entrada; en un largo, que BAJE */
+      var llego = (f.lado==="SHORT") ? (pr>=ent) : (pr<=ent);
+      if(!llego) return;
+      f.estado="abierta"; f.horaEntrada=horaYa(); f.fecha=f.fecha||hoy(); f.mod=Date.now();
+      hechas.push({tipo:par[0], bueno:true,
+        texto:(par[0]==="back"?"[prueba] ":"")+f.sym+" op "+(f.n||"")+" ENTRÓ: el precio llegó a "+
+          precio(ent)+" · ahora la operación está abierta"});
+    });
+  });
+
+  /* --- futuros y pruebas: cierre automático (esto sí depende del interruptor) --- */
+  if(autoActivo()) [["fut",BD.fut],["back",BD.back]].forEach(function(par){
     (par[1]||[]).forEach(function(f){
       if(f.estado!=="abierta"||!f.sym) return;
       var pr=precioDe(f.sym); if(pr==null) return;
@@ -5287,8 +5684,8 @@ function vigilarCierres(){
     });
   });
 
-  /* --- ventas programadas de spot --- */
-  (BD.ordenes||[]).slice().forEach(function(o){
+  /* --- ventas programadas de spot (también con el interruptor puesto) --- */
+  if(autoActivo()) (BD.ordenes||[]).slice().forEach(function(o){
     var pr=precioDe(o.sym); if(pr==null) return;
     var toca = o.dir==="baja" ? pr<=o.precio : pr>=o.precio;
     if(!toca) return;
@@ -5541,7 +5938,7 @@ function pintarRes(){
         (e.abierto!=null?(e.abierto>=0?"+":"−")+usd(e.abierto).replace("-",""):"—")+'</span>'+
         '<span class="sub '+cl(e.abiertoPct)+'" data-v="spGanP" data-s="'+esc(e.sym)+'" '+
         'data-cls="sub">'+pct(e.abiertoPct)+'</span></td>'+
-        '<td><button class="b sm rj" data-vender="'+esc(e.sym)+'">Vender</button></td></tr>';
+        '<td><button class="b sm" data-vender="'+esc(e.sym)+'">Vender</button></td></tr>';
     });
     h+='</tbody><tfoot><tr><td colspan="2">'+plural(vivas.length,"moneda","monedas")+'</td>'+
       '<td></td><td></td><td class="opt"></td>'+
@@ -5552,6 +5949,9 @@ function pintarRes(){
       (vivas.length>8?'<div class="cp" style="padding-top:0"><span class="mut">y '+
         plural(vivas.length-8,"moneda","monedas")+' más.</span></div>':'')+'</div>';
   }
+
+  /* ---- futuros programados: esperando el precio, sin contar nada ---- */
+  if(F.programadas.length) h+=cajaProgramadas(F.programadas,"fut");
 
   /* ---- futuros abiertos, como tabla ---- */
   if(F.abiertas.length){
@@ -5598,6 +5998,9 @@ function pintarRes(){
   });
   c.querySelectorAll("[data-cerrarop]").forEach(function(b){
     b.onclick=function(){ cerrarOperacion(b.getAttribute("data-cerrarop"), b.getAttribute("data-amb")); };
+  });
+  c.querySelectorAll("[data-entrar]").forEach(function(b){
+    b.onclick=function(){ activarOperacion(b.getAttribute("data-entrar"), b.getAttribute("data-amb")); };
   });
   c.querySelectorAll("[data-edop]").forEach(function(b){
     b.onclick=function(){ editarOperacion(b.getAttribute("data-edop"), b.getAttribute("data-amb")); };
@@ -8729,7 +9132,114 @@ DIC.en={
 "Lote (capital para operar)":"Lot size (capital to trade)",
 "Distancia al stop":"Distance to the stop",
 "Si pega el objetivo":"If it hits the target",
-"margen aislado":"isolated margin"
+"margen aislado":"isolated margin",
+/* v15 · lote claro y operaciones programadas */
+"¿Ya entró?":"Already in?",
+"· déjelo vacío si sigue abierta":"· leave it empty if still open",
+"· donde sale ganando":"· where you exit with a profit",
+"· donde sale perdiendo":"· where you exit at a loss",
+"#x en":"#x on",
+"CUÁNTO DINERO PONER":"HOW MUCH MONEY TO PUT IN",
+"Detalles para su diario":"Details for your journal",
+"en $#":"at $#",
+"No, esperando el precio":"No, waiting for the price",
+"Si llega al objetivo":"If it reaches the target",
+"Si llega al stop":"If it reaches the stop",
+"Sí, ya está dentro":"Yes, already in",
+"Tamaño de la operación":"Size of the trade",
+"toque para ver el detalle":"tap to see the details",
+"# operación cerrada · # abierta":"# closed trade · # open",
+"Eso es lo que usted escribe en Binance, con #x de apalancamiento.":"That is what you type into Binance, with #x leverage.",
+"para ganar":"to win",
+"— # veces lo que arriesga.":"— # times what you risk.",
+"# @ · su dinero × #":"# @ · your money × #",
+"en $# · el #% de su cartera":"at $# · #% of your account",
+"en $# · subiría a $#":"at $# · would go up to $#",
+"más allá de ahí pierde todo lo que puso":"past that you lose everything you put in",
+"hoy @ está en $# un #% lejos de la entrada que escribió. Revise que no le falte o le sobre un número.":"today @ is at $# #% away from the entry you typed. Check that you have not added or dropped a digit.",
+"Arrastre para mover":"Drag to move",
+"STOP":"STOP",
+"OBJETIVO":"TARGET",
+"Gana":"Gains",
+"Relación":"Ratio",
+"Puede mover las tres líneas con el dedo: lo que arrastre se escribe solo en las casillas.":"You can move the three lines with your finger: whatever you drag writes itself into the boxes.",
+"¿Ya entró en esta operación?":"Are you already in this trade?",
+"Sí, ya estoy dentro":"Yes, I am already in",
+"No, estoy esperando el precio":"No, I am waiting for the price",
+"Ahora está en":"It is now at",
+", pegado a su entrada de":", right on your entry of",
+": la operación empieza a contar de una vez.":": the trade starts counting right away.",
+"Operaciones programadas":"Scheduled trades",
+"esperando a que el precio llegue":"waiting for the price to arrive",
+"Entra en":"Enters at",
+"Pondrá":"Will put in",
+"Falta":"Missing",
+"cuando entre":"when it enters",
+"ESPERANDO":"WAITING",
+"falta que baje #%":"it still has to fall #%",
+"falta que suba #%":"it still has to rise #%",
+"Ya entré":"I am in now",
+"el precio tiene que bajar hasta":"the price has to fall to",
+"el precio tiene que subir hasta":"the price has to rise to",
+"· ahora está en":"· it is now at",
+"· falta #%":"· #% to go",
+"Pondrá cuando entre":"Will put in when it enters",
+"Stop y objetivo":"Stop and target",
+"Mientras esperan, estas operaciones":"While they wait, these trades",
+"a su resultado ni a su cartera. En cuanto el precio toque la entrada se activan solas, le suena y le aviso.":"to your result or your account. As soon as the price touches the entry they activate by themselves, it beeps and I let you know.",
+"no suman ni restan nada":"add nothing and take nothing away",
+"y su entrada es":"and your entry is",
+": falta que baje":": it still has to fall",
+": falta que suba":": it still has to rise",
+". Mientras tanto no gana ni pierde nada; se activa sola cuando llegue.":". Meanwhile it neither gains nor loses anything; it opens by itself when the price gets there.",
+"REVISE EL STOP LOSS":"CHECK THE STOP LOSS",
+"El stop está del lado equivocado":"The stop is on the wrong side",
+"En una":"In a",
+"el stop loss va":"the stop loss goes",
+"del precio de entrada. Es el precio donde usted acepta salir perdiendo.":"the entry price. It is the price where you accept walking away at a loss.",
+"Usted escribió: entrada":"You typed: entry",
+"· stop":"· stop",
+"(está ARRIBA).":"(it is ABOVE).",
+"(está ABAJO).":"(it is BELOW).",
+"POR DEBAJO":"BELOW",
+"POR ENCIMA":"ABOVE",
+"VENTA (CORTO)":"SELL (SHORT)",
+"COMPRA (LARGO)":"BUY (LONG)",
+"Cambiar el stop y el objetivo de lugar":"Swap the stop and the target",
+"el stop está del lado equivocado":"the stop is on the wrong side",
+"Corrija el stop loss":"Fix the stop loss",
+"ARRIESGA #%":"RISKS #%",
+"GANA #%":"GAINS #%",
+"con #x lo liquidan a #% y su stop está a #%:":"with #x you get liquidated at #% and your stop is at #%:",
+"de que el stop alcance a cerrarle. Baje el apalancamiento a":"before the stop can close you out. Lower the leverage to",
+"o menos.":"or less.",
+"lo liquidarían antes":"you would be liquidated first",
+"el margen ($#) es más que toda su cartera ($#). Ese stop está demasiado cerca para este riesgo.":"the margin ($#) is more than your whole account ($#). That stop is too close for this risk.",
+". Escriba el":". Type the",
+"y le digo cuánto gana si llega.":"and I will tell you how much you make if it gets there.",
+"escriba el take profit":"type the take profit",
+"en un LARGO el objetivo va POR ENCIMA de la entrada.":"in a LONG the target goes ABOVE the entry.",
+"en un CORTO el objetivo va POR DEBAJO de la entrada.":"in a SHORT the target goes BELOW the entry.",
+"En esta prueba la cartera se mueve sola con los resultados":"In this test the account moves on its own with the results",
+"# operación cerrada · acierta el #%":"# closed trade · hits #%",
+"Marque un precio y le aviso cuando llegue.":"Mark a price and I will warn you when it gets there.",
+"Deje dicho \"vende tanto de tal moneda cuando llegue a tal precio\" y el programa lo registra solo cuando el precio en vivo llegue, con sonido y aviso.":"Say \"sell this much of that coin when it reaches that price\" and the program records it by itself when the live price gets there, with a sound and a warning.",
+"no gana ni pierde hasta que el precio llegue":"it neither gains nor loses until the price gets there",
+"Dinero que puso":"Money you put in",
+"opera $#":"trades $#",
+"sin objetivo":"no target",
+"sin stop":"no stop",
+"Arrastre con el dedo la línea roja del":"Drag the red line of the",
+"hasta donde quiera ponerlo y el dinero a poner se calcula solo.":"to wherever you want it and the money to put in works itself out.",
+"Operación programada · no cuenta nada hasta que el precio llegue a $#. Ahí se activa sola y le aviso.":"Trade scheduled · it counts for nothing until the price reaches $#. Then it opens by itself and I let you know.",
+"Listo: el stop loss y el objetivo quedaron cambiados de lugar.":"Done: the stop loss and the target have been swapped.",
+"Listo: la operación de @ ya cuenta como abierta.":"Done: the @ trade now counts as open.",
+"El stop está del lado equivocado para una VENTA (CORTO). Use el botón para cambiarlo de lugar con el objetivo.":"The stop is on the wrong side for a SELL (SHORT). Use the button to swap it with the target.",
+"El stop está del lado equivocado para una COMPRA (LARGO). Use el botón para cambiarlo de lugar con el objetivo.":"The stop is on the wrong side for a BUY (LONG). Use the button to swap it with the target.",
+"@ op # ENTRÓ: el precio llegó a $# · ahora la operación está abierta":"@ trade # ENTERED: the price reached $# · the trade is open now",
+"Mientras esperan, estas operaciones no suman ni restan nada a su resultado ni a su cartera. En cuanto el precio toque la entrada se activan solas, le suena y le aviso.":"While they wait, these trades add nothing and take nothing away from your result or your account. As soon as the price touches the entry they activate by themselves, it beeps and I let you know.",
+"En el stop":"At the stop",
+"En el objetivo":"At the target"
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
@@ -9205,7 +9715,114 @@ DIC.pt={
 "Lote (capital para operar)":"Lote (capital para operar)",
 "Distancia al stop":"Distância ao stop",
 "Si pega el objetivo":"Se atingir o alvo",
-"margen aislado":"margem isolada"
+"margen aislado":"margem isolada",
+/* v15 · lote claro y operaciones programadas */
+"¿Ya entró?":"Já entrou?",
+"· déjelo vacío si sigue abierta":"· deixe vazio se ainda estiver aberta",
+"· donde sale ganando":"· onde sai ganhando",
+"· donde sale perdiendo":"· onde sai perdendo",
+"#x en":"#x em",
+"CUÁNTO DINERO PONER":"QUANTO DINHEIRO COLOCAR",
+"Detalles para su diario":"Detalhes para o seu diário",
+"en $#":"em $#",
+"No, esperando el precio":"Não, esperando o preço",
+"Si llega al objetivo":"Se chegar ao alvo",
+"Si llega al stop":"Se chegar ao stop",
+"Sí, ya está dentro":"Sim, já está dentro",
+"Tamaño de la operación":"Tamanho da operação",
+"toque para ver el detalle":"toque para ver o detalhe",
+"# operación cerrada · # abierta":"# operação fechada · # aberta",
+"Eso es lo que usted escribe en Binance, con #x de apalancamiento.":"É isso que você escreve na Binance, com #x de alavancagem.",
+"para ganar":"para ganhar",
+"— # veces lo que arriesga.":"— # vezes o que arrisca.",
+"# @ · su dinero × #":"# @ · o seu dinheiro × #",
+"en $# · el #% de su cartera":"em $# · #% da sua carteira",
+"en $# · subiría a $#":"em $# · subiria para $#",
+"más allá de ahí pierde todo lo que puso":"depois disso perde tudo o que colocou",
+"hoy @ está en $# un #% lejos de la entrada que escribió. Revise que no le falte o le sobre un número.":"hoje @ está em $# #% longe da entrada que escreveu. Verifique se não falta ou sobra um número.",
+"Arrastre para mover":"Arraste para mover",
+"STOP":"STOP",
+"OBJETIVO":"ALVO",
+"Gana":"Ganha",
+"Relación":"Relação",
+"Puede mover las tres líneas con el dedo: lo que arrastre se escribe solo en las casillas.":"Pode mover as três linhas com o dedo: o que arrastar escreve-se sozinho nas caixas.",
+"¿Ya entró en esta operación?":"Já entrou nesta operação?",
+"Sí, ya estoy dentro":"Sim, já estou dentro",
+"No, estoy esperando el precio":"Não, estou esperando o preço",
+"Ahora está en":"Agora está em",
+", pegado a su entrada de":", colado à sua entrada de",
+": la operación empieza a contar de una vez.":": a operação começa a contar de imediato.",
+"Operaciones programadas":"Operações programadas",
+"esperando a que el precio llegue":"esperando que o preço chegue",
+"Entra en":"Entra em",
+"Pondrá":"Vai colocar",
+"Falta":"Falta",
+"cuando entre":"quando entrar",
+"ESPERANDO":"ESPERANDO",
+"falta que baje #%":"ainda tem de cair #%",
+"falta que suba #%":"ainda tem de subir #%",
+"Ya entré":"Já entrei",
+"el precio tiene que bajar hasta":"o preço tem de cair até",
+"el precio tiene que subir hasta":"o preço tem de subir até",
+"· ahora está en":"· agora está em",
+"· falta #%":"· faltam #%",
+"Pondrá cuando entre":"Vai colocar quando entrar",
+"Stop y objetivo":"Stop e alvo",
+"Mientras esperan, estas operaciones":"Enquanto esperam, estas operações",
+"a su resultado ni a su cartera. En cuanto el precio toque la entrada se activan solas, le suena y le aviso.":"ao seu resultado nem à sua carteira. Assim que o preço tocar a entrada ativam-se sozinhas, toca o som e eu aviso.",
+"no suman ni restan nada":"não somam nem subtraem nada",
+"y su entrada es":"e a sua entrada é",
+": falta que baje":": ainda tem de cair",
+": falta que suba":": ainda tem de subir",
+". Mientras tanto no gana ni pierde nada; se activa sola cuando llegue.":". Enquanto isso não ganha nem perde nada; abre-se sozinha quando chegar.",
+"REVISE EL STOP LOSS":"REVEJA O STOP LOSS",
+"El stop está del lado equivocado":"O stop está do lado errado",
+"En una":"Numa",
+"el stop loss va":"o stop loss vai",
+"del precio de entrada. Es el precio donde usted acepta salir perdiendo.":"do preço de entrada. É o preço onde aceita sair perdendo.",
+"Usted escribió: entrada":"Você escreveu: entrada",
+"· stop":"· stop",
+"(está ARRIBA).":"(está ACIMA).",
+"(está ABAJO).":"(está ABAIXO).",
+"POR DEBAJO":"ABAIXO",
+"POR ENCIMA":"ACIMA",
+"VENTA (CORTO)":"VENDA (CURTO)",
+"COMPRA (LARGO)":"COMPRA (LONGO)",
+"Cambiar el stop y el objetivo de lugar":"Trocar o stop e o alvo de lugar",
+"el stop está del lado equivocado":"o stop está do lado errado",
+"Corrija el stop loss":"Corrija o stop loss",
+"ARRIESGA #%":"ARRISCA #%",
+"GANA #%":"GANHA #%",
+"con #x lo liquidan a #% y su stop está a #%:":"com #x é liquidado a #% e o seu stop está a #%:",
+"de que el stop alcance a cerrarle. Baje el apalancamiento a":"antes de o stop conseguir fechar. Baixe a alavancagem para",
+"o menos.":"ou menos.",
+"lo liquidarían antes":"seria liquidado antes",
+"el margen ($#) es más que toda su cartera ($#). Ese stop está demasiado cerca para este riesgo.":"a margem ($#) é mais do que toda a sua carteira ($#). Esse stop está demasiado perto para este risco.",
+". Escriba el":". Escreva o",
+"y le digo cuánto gana si llega.":"e eu digo quanto ganha se chegar.",
+"escriba el take profit":"escreva o take profit",
+"en un LARGO el objetivo va POR ENCIMA de la entrada.":"num LONGO o alvo vai ACIMA da entrada.",
+"en un CORTO el objetivo va POR DEBAJO de la entrada.":"num CURTO o alvo vai ABAIXO da entrada.",
+"En esta prueba la cartera se mueve sola con los resultados":"Nesta prova a carteira move-se sozinha com os resultados",
+"# operación cerrada · acierta el #%":"# operação fechada · acerta #%",
+"Marque un precio y le aviso cuando llegue.":"Marque um preço e eu aviso quando chegar.",
+"Deje dicho \"vende tanto de tal moneda cuando llegue a tal precio\" y el programa lo registra solo cuando el precio en vivo llegue, con sonido y aviso.":"Deixe dito \"vende tanto de tal moeda quando chegar a tal preço\" e o programa regista-o sozinho quando o preço ao vivo chegar, com som e aviso.",
+"no gana ni pierde hasta que el precio llegue":"não ganha nem perde até o preço chegar",
+"Dinero que puso":"Dinheiro que colocou",
+"opera $#":"opera $#",
+"sin objetivo":"sem alvo",
+"sin stop":"sem stop",
+"Arrastre con el dedo la línea roja del":"Arraste com o dedo a linha vermelha do",
+"hasta donde quiera ponerlo y el dinero a poner se calcula solo.":"até onde quiser e o dinheiro a colocar calcula-se sozinho.",
+"Operación programada · no cuenta nada hasta que el precio llegue a $#. Ahí se activa sola y le aviso.":"Operação programada · não conta nada até o preço chegar a $#. Aí abre-se sozinha e eu aviso.",
+"Listo: el stop loss y el objetivo quedaron cambiados de lugar.":"Pronto: o stop loss e o alvo trocaram de lugar.",
+"Listo: la operación de @ ya cuenta como abierta.":"Pronto: a operação de @ já conta como aberta.",
+"El stop está del lado equivocado para una VENTA (CORTO). Use el botón para cambiarlo de lugar con el objetivo.":"O stop está do lado errado para uma VENDA (CURTO). Use o botão para o trocar com o alvo.",
+"El stop está del lado equivocado para una COMPRA (LARGO). Use el botón para cambiarlo de lugar con el objetivo.":"O stop está do lado errado para uma COMPRA (LONGO). Use o botão para o trocar com o alvo.",
+"@ op # ENTRÓ: el precio llegó a $# · ahora la operación está abierta":"@ op # ENTROU: o preço chegou a $# · agora a operação está aberta",
+"Mientras esperan, estas operaciones no suman ni restan nada a su resultado ni a su cartera. En cuanto el precio toque la entrada se activan solas, le suena y le aviso.":"Enquanto esperam, estas operações não somam nem subtraem nada ao seu resultado nem à sua carteira. Assim que o preço tocar a entrada ativam-se sozinhas, toca o som e eu aviso.",
+"En el stop":"No stop",
+"En el objetivo":"No alvo"
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
@@ -9681,7 +10298,114 @@ DIC.fr={
 "Lote (capital para operar)":"Lot (capital à engager)",
 "Distancia al stop":"Distance au stop",
 "Si pega el objetivo":"Si l'objectif est atteint",
-"margen aislado":"marge isolée"
+"margen aislado":"marge isolée",
+/* v15 · lote claro y operaciones programadas */
+"¿Ya entró?":"Déjà entré ?",
+"· déjelo vacío si sigue abierta":"· laissez vide si elle est encore ouverte",
+"· donde sale ganando":"· où vous sortez gagnant",
+"· donde sale perdiendo":"· où vous sortez perdant",
+"#x en":"#x sur",
+"CUÁNTO DINERO PONER":"COMBIEN D'ARGENT METTRE",
+"Detalles para su diario":"Détails pour votre journal",
+"en $#":"à $#",
+"No, esperando el precio":"Non, j'attends le prix",
+"Si llega al objetivo":"S'il atteint l'objectif",
+"Si llega al stop":"S'il atteint le stop",
+"Sí, ya está dentro":"Oui, déjà entré",
+"Tamaño de la operación":"Taille de la position",
+"toque para ver el detalle":"touchez pour voir le détail",
+"# operación cerrada · # abierta":"# opération fermée · # ouverte",
+"Eso es lo que usted escribe en Binance, con #x de apalancamiento.":"C'est ce que vous saisissez sur Binance, avec #x de levier.",
+"para ganar":"pour gagner",
+"— # veces lo que arriesga.":"— # fois ce que vous risquez.",
+"# @ · su dinero × #":"# @ · votre argent × #",
+"en $# · el #% de su cartera":"à $# · #% de votre portefeuille",
+"en $# · subiría a $#":"à $# · passerait à $#",
+"más allá de ahí pierde todo lo que puso":"au-delà vous perdez tout ce que vous avez mis",
+"hoy @ está en $# un #% lejos de la entrada que escribió. Revise que no le falte o le sobre un número.":"aujourd'hui @ est à $# #% de l'entrée que vous avez saisie. Vérifiez qu'il ne manque pas un chiffre.",
+"Arrastre para mover":"Glissez pour déplacer",
+"STOP":"STOP",
+"OBJETIVO":"OBJECTIF",
+"Gana":"Gagne",
+"Relación":"Rapport",
+"Puede mover las tres líneas con el dedo: lo que arrastre se escribe solo en las casillas.":"Vous pouvez déplacer les trois lignes au doigt : ce que vous faites glisser s'écrit tout seul dans les cases.",
+"¿Ya entró en esta operación?":"Êtes-vous déjà dans cette position ?",
+"Sí, ya estoy dentro":"Oui, je suis déjà dedans",
+"No, estoy esperando el precio":"Non, j'attends le prix",
+"Ahora está en":"Il est maintenant à",
+", pegado a su entrada de":", collé à votre entrée de",
+": la operación empieza a contar de una vez.":": la position commence à compter tout de suite.",
+"Operaciones programadas":"Positions programmées",
+"esperando a que el precio llegue":"en attente que le prix arrive",
+"Entra en":"Entre à",
+"Pondrá":"Mettra",
+"Falta":"Il manque",
+"cuando entre":"à l'entrée",
+"ESPERANDO":"EN ATTENTE",
+"falta que baje #%":"il doit encore baisser de #%",
+"falta que suba #%":"il doit encore monter de #%",
+"Ya entré":"J'y suis entré",
+"el precio tiene que bajar hasta":"le prix doit descendre jusqu'à",
+"el precio tiene que subir hasta":"le prix doit monter jusqu'à",
+"· ahora está en":"· il est maintenant à",
+"· falta #%":"· il reste #%",
+"Pondrá cuando entre":"Mettra à l'entrée",
+"Stop y objetivo":"Stop et objectif",
+"Mientras esperan, estas operaciones":"Pendant l'attente, ces positions",
+"a su resultado ni a su cartera. En cuanto el precio toque la entrada se activan solas, le suena y le aviso.":"à votre résultat ni à votre portefeuille. Dès que le prix touche l'entrée, elles s'activent toutes seules, ça sonne et je vous préviens.",
+"no suman ni restan nada":"n'ajoutent ni ne retirent rien",
+"y su entrada es":"et votre entrée est",
+": falta que baje":": il doit encore baisser de",
+": falta que suba":": il doit encore monter de",
+". Mientras tanto no gana ni pierde nada; se activa sola cuando llegue.":". En attendant, elle ne gagne ni ne perd rien ; elle s'ouvre toute seule quand le prix y arrive.",
+"REVISE EL STOP LOSS":"VÉRIFIEZ LE STOP LOSS",
+"El stop está del lado equivocado":"Le stop est du mauvais côté",
+"En una":"Dans une",
+"el stop loss va":"le stop loss se place",
+"del precio de entrada. Es el precio donde usted acepta salir perdiendo.":"du prix d'entrée. C'est le prix où vous acceptez de sortir en perte.",
+"Usted escribió: entrada":"Vous avez saisi : entrée",
+"· stop":"· stop",
+"(está ARRIBA).":"(il est AU-DESSUS).",
+"(está ABAJO).":"(il est EN DESSOUS).",
+"POR DEBAJO":"EN DESSOUS",
+"POR ENCIMA":"AU-DESSUS",
+"VENTA (CORTO)":"VENTE (COURT)",
+"COMPRA (LARGO)":"ACHAT (LONG)",
+"Cambiar el stop y el objetivo de lugar":"Échanger le stop et l'objectif",
+"el stop está del lado equivocado":"le stop est du mauvais côté",
+"Corrija el stop loss":"Corrigez le stop loss",
+"ARRIESGA #%":"RISQUE #%",
+"GANA #%":"GAGNE #%",
+"con #x lo liquidan a #% y su stop está a #%:":"avec #x vous êtes liquidé à #% et votre stop est à #% :",
+"de que el stop alcance a cerrarle. Baje el apalancamiento a":"avant que le stop puisse vous fermer. Baissez le levier à",
+"o menos.":"ou moins.",
+"lo liquidarían antes":"vous seriez liquidé avant",
+"el margen ($#) es más que toda su cartera ($#). Ese stop está demasiado cerca para este riesgo.":"la marge ($#) dépasse tout votre portefeuille ($#). Ce stop est trop proche pour ce risque.",
+". Escriba el":". Saisissez le",
+"y le digo cuánto gana si llega.":"et je vous dis combien vous gagnez s'il y arrive.",
+"escriba el take profit":"saisissez le take profit",
+"en un LARGO el objetivo va POR ENCIMA de la entrada.":"dans un LONG l'objectif va AU-DESSUS de l'entrée.",
+"en un CORTO el objetivo va POR DEBAJO de la entrada.":"dans un COURT l'objectif va EN DESSOUS de l'entrée.",
+"En esta prueba la cartera se mueve sola con los resultados":"Dans ce test le portefeuille évolue tout seul avec les résultats",
+"# operación cerrada · acierta el #%":"# opération fermée · réussit #%",
+"Marque un precio y le aviso cuando llegue.":"Indiquez un prix et je vous préviens quand il y arrive.",
+"Deje dicho \"vende tanto de tal moneda cuando llegue a tal precio\" y el programa lo registra solo cuando el precio en vivo llegue, con sonido y aviso.":"Dites \"vends tant de telle pièce quand elle atteint tel prix\" et le programme l'enregistre tout seul quand le prix en direct y arrive, avec un son et une alerte.",
+"no gana ni pierde hasta que el precio llegue":"elle ne gagne ni ne perd tant que le prix n'y est pas",
+"Dinero que puso":"Argent que vous avez mis",
+"opera $#":"opère $#",
+"sin objetivo":"sans objectif",
+"sin stop":"sans stop",
+"Arrastre con el dedo la línea roja del":"Faites glisser au doigt la ligne rouge du",
+"hasta donde quiera ponerlo y el dinero a poner se calcula solo.":"là où vous le voulez et l'argent à mettre se calcule tout seul.",
+"Operación programada · no cuenta nada hasta que el precio llegue a $#. Ahí se activa sola y le aviso.":"Position programmée · elle ne compte pour rien tant que le prix n'atteint pas $#. Ensuite elle s'ouvre toute seule et je vous préviens.",
+"Listo: el stop loss y el objetivo quedaron cambiados de lugar.":"Voilà : le stop loss et l'objectif ont été échangés.",
+"Listo: la operación de @ ya cuenta como abierta.":"Voilà : la position @ compte désormais comme ouverte.",
+"El stop está del lado equivocado para una VENTA (CORTO). Use el botón para cambiarlo de lugar con el objetivo.":"Le stop est du mauvais côté pour une VENTE (COURT). Utilisez le bouton pour l'échanger avec l'objectif.",
+"El stop está del lado equivocado para una COMPRA (LARGO). Use el botón para cambiarlo de lugar con el objetivo.":"Le stop est du mauvais côté pour un ACHAT (LONG). Utilisez le bouton pour l'échanger avec l'objectif.",
+"@ op # ENTRÓ: el precio llegó a $# · ahora la operación está abierta":"@ op # ENTRÉE : le prix a atteint $# · la position est maintenant ouverte",
+"Mientras esperan, estas operaciones no suman ni restan nada a su resultado ni a su cartera. En cuanto el precio toque la entrada se activan solas, le suena y le aviso.":"Pendant l'attente, ces positions n'ajoutent ni ne retirent rien à votre résultat ni à votre portefeuille. Dès que le prix touche l'entrée, elles s'activent toutes seules, ça sonne et je vous préviens.",
+"En el stop":"Au stop",
+"En el objetivo":"À l'objectif"
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
@@ -10157,7 +10881,114 @@ DIC.de={
 "Lote (capital para operar)":"Lot (Handelskapital)",
 "Distancia al stop":"Abstand zum Stop",
 "Si pega el objetivo":"Wenn das Ziel erreicht wird",
-"margen aislado":"isolierte Margin"
+"margen aislado":"isolierte Margin",
+/* v15 · lote claro y operaciones programadas */
+"¿Ya entró?":"Schon drin?",
+"· déjelo vacío si sigue abierta":"· leer lassen, wenn noch offen",
+"· donde sale ganando":"· wo Sie mit Gewinn aussteigen",
+"· donde sale perdiendo":"· wo Sie mit Verlust aussteigen",
+"#x en":"#x auf",
+"CUÁNTO DINERO PONER":"WIE VIEL GELD EINSETZEN",
+"Detalles para su diario":"Angaben für Ihr Tagebuch",
+"en $#":"bei $#",
+"No, esperando el precio":"Nein, warte auf den Kurs",
+"Si llega al objetivo":"Wenn es das Ziel erreicht",
+"Si llega al stop":"Wenn es den Stopp erreicht",
+"Sí, ya está dentro":"Ja, schon drin",
+"Tamaño de la operación":"Größe der Position",
+"toque para ver el detalle":"tippen für Einzelheiten",
+"# operación cerrada · # abierta":"# geschlossene Position · # offen",
+"Eso es lo que usted escribe en Binance, con #x de apalancamiento.":"Das tragen Sie bei Binance ein, mit #x Hebel.",
+"para ganar":"um zu gewinnen",
+"— # veces lo que arriesga.":"— # Mal so viel, wie Sie riskieren.",
+"# @ · su dinero × #":"# @ · Ihr Geld × #",
+"en $# · el #% de su cartera":"bei $# · #% Ihres Kapitals",
+"en $# · subiría a $#":"bei $# · stiege auf $#",
+"más allá de ahí pierde todo lo que puso":"darüber hinaus verlieren Sie alles Eingesetzte",
+"hoy @ está en $# un #% lejos de la entrada que escribió. Revise que no le falte o le sobre un número.":"heute steht @ bei $# #% von Ihrem eingetragenen Einstieg entfernt. Prüfen Sie, ob eine Ziffer fehlt oder zu viel ist.",
+"Arrastre para mover":"Zum Verschieben ziehen",
+"STOP":"STOPP",
+"OBJETIVO":"ZIEL",
+"Gana":"Gewinnt",
+"Relación":"Verhältnis",
+"Puede mover las tres líneas con el dedo: lo que arrastre se escribe solo en las casillas.":"Sie können die drei Linien mit dem Finger verschieben: Was Sie ziehen, trägt sich von selbst in die Felder ein.",
+"¿Ya entró en esta operación?":"Sind Sie in dieser Position schon drin?",
+"Sí, ya estoy dentro":"Ja, ich bin schon drin",
+"No, estoy esperando el precio":"Nein, ich warte auf den Kurs",
+"Ahora está en":"Jetzt steht er bei",
+", pegado a su entrada de":", direkt an Ihrem Einstieg von",
+": la operación empieza a contar de una vez.":": die Position zählt sofort.",
+"Operaciones programadas":"Geplante Positionen",
+"esperando a que el precio llegue":"warten, bis der Kurs ankommt",
+"Entra en":"Einstieg bei",
+"Pondrá":"Setzt ein",
+"Falta":"Es fehlt",
+"cuando entre":"beim Einstieg",
+"ESPERANDO":"WARTET",
+"falta que baje #%":"er muss noch #% fallen",
+"falta que suba #%":"er muss noch #% steigen",
+"Ya entré":"Bin jetzt drin",
+"el precio tiene que bajar hasta":"der Kurs muss fallen bis",
+"el precio tiene que subir hasta":"der Kurs muss steigen bis",
+"· ahora está en":"· jetzt steht er bei",
+"· falta #%":"· noch #%",
+"Pondrá cuando entre":"Setzt beim Einstieg ein",
+"Stop y objetivo":"Stopp und Ziel",
+"Mientras esperan, estas operaciones":"Während sie warten, zählen diese Positionen",
+"a su resultado ni a su cartera. En cuanto el precio toque la entrada se activan solas, le suena y le aviso.":"zu Ihrem Ergebnis oder Ihrem Kapital. Sobald der Kurs den Einstieg berührt, öffnen sie sich von selbst, es klingelt und ich sage Bescheid.",
+"no suman ni restan nada":"nichts hinzu und nichts weg",
+"y su entrada es":"und Ihr Einstieg liegt bei",
+": falta que baje":": er muss noch fallen",
+": falta que suba":": er muss noch steigen",
+". Mientras tanto no gana ni pierde nada; se activa sola cuando llegue.":". Solange gewinnt und verliert sie nichts; sie öffnet sich von selbst, sobald der Kurs ankommt.",
+"REVISE EL STOP LOSS":"PRÜFEN SIE DEN STOP-LOSS",
+"El stop está del lado equivocado":"Der Stopp steht auf der falschen Seite",
+"En una":"Bei einer",
+"el stop loss va":"gehört der Stop-Loss",
+"del precio de entrada. Es el precio donde usted acepta salir perdiendo.":"den Einstiegskurs. Es ist der Kurs, zu dem Sie mit Verlust aussteigen.",
+"Usted escribió: entrada":"Sie haben eingetragen: Einstieg",
+"· stop":"· Stopp",
+"(está ARRIBA).":"(er liegt DARÜBER).",
+"(está ABAJO).":"(er liegt DARUNTER).",
+"POR DEBAJO":"UNTER",
+"POR ENCIMA":"ÜBER",
+"VENTA (CORTO)":"VERKAUF (SHORT)",
+"COMPRA (LARGO)":"KAUF (LONG)",
+"Cambiar el stop y el objetivo de lugar":"Stopp und Ziel vertauschen",
+"el stop está del lado equivocado":"der Stopp steht auf der falschen Seite",
+"Corrija el stop loss":"Stop-Loss berichtigen",
+"ARRIESGA #%":"RISIKO #%",
+"GANA #%":"GEWINN #%",
+"con #x lo liquidan a #% y su stop está a #%:":"mit #x werden Sie bei #% liquidiert und Ihr Stopp liegt bei #%:",
+"de que el stop alcance a cerrarle. Baje el apalancamiento a":"bevor der Stopp schließen kann. Senken Sie den Hebel auf",
+"o menos.":"oder weniger.",
+"lo liquidarían antes":"Sie würden vorher liquidiert",
+"el margen ($#) es más que toda su cartera ($#). Ese stop está demasiado cerca para este riesgo.":"die Margin ($#) ist mehr als Ihr ganzes Kapital ($#). Dieser Stopp ist für dieses Risiko zu nah.",
+". Escriba el":". Tragen Sie den",
+"y le digo cuánto gana si llega.":"und ich sage Ihnen, wie viel Sie verdienen, wenn er ankommt.",
+"escriba el take profit":"Take-Profit eintragen",
+"en un LARGO el objetivo va POR ENCIMA de la entrada.":"bei einem LONG liegt das Ziel ÜBER dem Einstieg.",
+"en un CORTO el objetivo va POR DEBAJO de la entrada.":"bei einem SHORT liegt das Ziel UNTER dem Einstieg.",
+"En esta prueba la cartera se mueve sola con los resultados":"In diesem Test bewegt sich das Kapital mit den Ergebnissen",
+"# operación cerrada · acierta el #%":"# geschlossene Position · trifft #%",
+"Marque un precio y le aviso cuando llegue.":"Markieren Sie einen Kurs und ich sage Bescheid, wenn er erreicht ist.",
+"Deje dicho \"vende tanto de tal moneda cuando llegue a tal precio\" y el programa lo registra solo cuando el precio en vivo llegue, con sonido y aviso.":"Sagen Sie \"verkauf so viel von dieser Münze, wenn sie diesen Kurs erreicht\", und das Programm trägt es von selbst ein, sobald der Live-Kurs dort ist, mit Ton und Hinweis.",
+"no gana ni pierde hasta que el precio llegue":"gewinnt und verliert nichts, bis der Kurs ankommt",
+"Dinero que puso":"Eingesetztes Geld",
+"opera $#":"handelt $#",
+"sin objetivo":"ohne Ziel",
+"sin stop":"ohne Stopp",
+"Arrastre con el dedo la línea roja del":"Ziehen Sie mit dem Finger die rote Linie des",
+"hasta donde quiera ponerlo y el dinero a poner se calcula solo.":"dorthin, wo Sie ihn haben wollen, und das einzusetzende Geld rechnet sich von selbst aus.",
+"Operación programada · no cuenta nada hasta que el precio llegue a $#. Ahí se activa sola y le aviso.":"Position geplant · sie zählt nichts, bis der Kurs $# erreicht. Dann öffnet sie sich von selbst und ich sage Bescheid.",
+"Listo: el stop loss y el objetivo quedaron cambiados de lugar.":"Fertig: Stop-Loss und Ziel wurden vertauscht.",
+"Listo: la operación de @ ya cuenta como abierta.":"Fertig: die @-Position zählt jetzt als offen.",
+"El stop está del lado equivocado para una VENTA (CORTO). Use el botón para cambiarlo de lugar con el objetivo.":"Der Stopp steht für einen VERKAUF (SHORT) auf der falschen Seite. Mit der Taste tauschen Sie ihn mit dem Ziel.",
+"El stop está del lado equivocado para una COMPRA (LARGO). Use el botón para cambiarlo de lugar con el objetivo.":"Der Stopp steht für einen KAUF (LONG) auf der falschen Seite. Mit der Taste tauschen Sie ihn mit dem Ziel.",
+"@ op # ENTRÓ: el precio llegó a $# · ahora la operación está abierta":"@ Pos. # EINGESTIEGEN: der Kurs erreichte $# · die Position ist jetzt offen",
+"Mientras esperan, estas operaciones no suman ni restan nada a su resultado ni a su cartera. En cuanto el precio toque la entrada se activan solas, le suena y le aviso.":"Während sie warten, zählen diese Positionen nichts zu Ihrem Ergebnis oder Ihrem Kapital. Sobald der Kurs den Einstieg berührt, öffnen sie sich von selbst, es klingelt und ich sage Bescheid.",
+"En el stop":"Am Stopp",
+"En el objetivo":"Am Ziel"
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
@@ -10633,7 +11464,114 @@ DIC.it={
 "Lote (capital para operar)":"Lotto (capitale da operare)",
 "Distancia al stop":"Distanza dallo stop",
 "Si pega el objetivo":"Se centra l'obiettivo",
-"margen aislado":"margine isolato"
+"margen aislado":"margine isolato",
+/* v15 · lote claro y operaciones programadas */
+"¿Ya entró?":"Già dentro?",
+"· déjelo vacío si sigue abierta":"· lasci vuoto se è ancora aperta",
+"· donde sale ganando":"· dove esce in guadagno",
+"· donde sale perdiendo":"· dove esce in perdita",
+"#x en":"#x su",
+"CUÁNTO DINERO PONER":"QUANTO DENARO METTERE",
+"Detalles para su diario":"Dettagli per il suo diario",
+"en $#":"a $#",
+"No, esperando el precio":"No, aspetto il prezzo",
+"Si llega al objetivo":"Se arriva all'obiettivo",
+"Si llega al stop":"Se arriva allo stop",
+"Sí, ya está dentro":"Sì, è già dentro",
+"Tamaño de la operación":"Dimensione dell'operazione",
+"toque para ver el detalle":"tocchi per vedere il dettaglio",
+"# operación cerrada · # abierta":"# operazione chiusa · # aperta",
+"Eso es lo que usted escribe en Binance, con #x de apalancamiento.":"È quello che scrive su Binance, con #x di leva.",
+"para ganar":"per guadagnare",
+"— # veces lo que arriesga.":"— # volte ciò che rischia.",
+"# @ · su dinero × #":"# @ · il suo denaro × #",
+"en $# · el #% de su cartera":"a $# · #% del suo portafoglio",
+"en $# · subiría a $#":"a $# · salirebbe a $#",
+"más allá de ahí pierde todo lo que puso":"oltre quel punto perde tutto ciò che ha messo",
+"hoy @ está en $# un #% lejos de la entrada que escribió. Revise que no le falte o le sobre un número.":"oggi @ è a $# #% lontano dall'ingresso che ha scritto. Controlli che non manchi o avanzi una cifra.",
+"Arrastre para mover":"Trascini per spostare",
+"STOP":"STOP",
+"OBJETIVO":"OBIETTIVO",
+"Gana":"Guadagna",
+"Relación":"Rapporto",
+"Puede mover las tres líneas con el dedo: lo que arrastre se escribe solo en las casillas.":"Può muovere le tre linee con il dito: ciò che trascina si scrive da solo nelle caselle.",
+"¿Ya entró en esta operación?":"È già dentro in questa operazione?",
+"Sí, ya estoy dentro":"Sì, sono già dentro",
+"No, estoy esperando el precio":"No, sto aspettando il prezzo",
+"Ahora está en":"Ora è a",
+", pegado a su entrada de":", attaccato al suo ingresso di",
+": la operación empieza a contar de una vez.":": l'operazione comincia a contare subito.",
+"Operaciones programadas":"Operazioni programmate",
+"esperando a que el precio llegue":"in attesa che il prezzo arrivi",
+"Entra en":"Entra a",
+"Pondrá":"Metterà",
+"Falta":"Manca",
+"cuando entre":"quando entra",
+"ESPERANDO":"IN ATTESA",
+"falta que baje #%":"deve ancora scendere #%",
+"falta que suba #%":"deve ancora salire #%",
+"Ya entré":"Sono già entrato",
+"el precio tiene que bajar hasta":"il prezzo deve scendere fino a",
+"el precio tiene que subir hasta":"il prezzo deve salire fino a",
+"· ahora está en":"· ora è a",
+"· falta #%":"· mancano #%",
+"Pondrá cuando entre":"Metterà quando entra",
+"Stop y objetivo":"Stop e obiettivo",
+"Mientras esperan, estas operaciones":"Mentre aspettano, queste operazioni",
+"a su resultado ni a su cartera. En cuanto el precio toque la entrada se activan solas, le suena y le aviso.":"al suo risultato né al suo portafoglio. Appena il prezzo tocca l'ingresso si attivano da sole, suona e glielo dico.",
+"no suman ni restan nada":"non aggiungono né tolgono nulla",
+"y su entrada es":"e il suo ingresso è",
+": falta que baje":": deve ancora scendere",
+": falta que suba":": deve ancora salire",
+". Mientras tanto no gana ni pierde nada; se activa sola cuando llegue.":". Nel frattempo non guadagna né perde nulla; si apre da sola quando arriva.",
+"REVISE EL STOP LOSS":"CONTROLLI LO STOP LOSS",
+"El stop está del lado equivocado":"Lo stop è dalla parte sbagliata",
+"En una":"In una",
+"el stop loss va":"lo stop loss va",
+"del precio de entrada. Es el precio donde usted acepta salir perdiendo.":"del prezzo di ingresso. È il prezzo a cui accetta di uscire in perdita.",
+"Usted escribió: entrada":"Lei ha scritto: ingresso",
+"· stop":"· stop",
+"(está ARRIBA).":"(è SOPRA).",
+"(está ABAJO).":"(è SOTTO).",
+"POR DEBAJO":"SOTTO",
+"POR ENCIMA":"SOPRA",
+"VENTA (CORTO)":"VENDITA (CORTO)",
+"COMPRA (LARGO)":"ACQUISTO (LUNGO)",
+"Cambiar el stop y el objetivo de lugar":"Scambiare lo stop e l'obiettivo",
+"el stop está del lado equivocado":"lo stop è dalla parte sbagliata",
+"Corrija el stop loss":"Corregga lo stop loss",
+"ARRIESGA #%":"RISCHIA #%",
+"GANA #%":"GUADAGNA #%",
+"con #x lo liquidan a #% y su stop está a #%:":"con #x viene liquidato al #% e il suo stop è al #%:",
+"de que el stop alcance a cerrarle. Baje el apalancamiento a":"prima che lo stop riesca a chiuderla. Abbassi la leva a",
+"o menos.":"o meno.",
+"lo liquidarían antes":"verrebbe liquidato prima",
+"el margen ($#) es más que toda su cartera ($#). Ese stop está demasiado cerca para este riesgo.":"il margine ($#) è più di tutto il suo portafoglio ($#). Quello stop è troppo vicino per questo rischio.",
+". Escriba el":". Scriva il",
+"y le digo cuánto gana si llega.":"e le dico quanto guadagna se ci arriva.",
+"escriba el take profit":"scriva il take profit",
+"en un LARGO el objetivo va POR ENCIMA de la entrada.":"in un LUNGO l'obiettivo va SOPRA l'ingresso.",
+"en un CORTO el objetivo va POR DEBAJO de la entrada.":"in un CORTO l'obiettivo va SOTTO l'ingresso.",
+"En esta prueba la cartera se mueve sola con los resultados":"In questa prova il portafoglio si muove da solo con i risultati",
+"# operación cerrada · acierta el #%":"# operazione chiusa · indovina il #%",
+"Marque un precio y le aviso cuando llegue.":"Segni un prezzo e la avviso quando arriva.",
+"Deje dicho \"vende tanto de tal moneda cuando llegue a tal precio\" y el programa lo registra solo cuando el precio en vivo llegue, con sonido y aviso.":"Dica \"vendi tanto di quella moneta quando arriva a quel prezzo\" e il programma lo registra da solo quando il prezzo dal vivo ci arriva, con suono e avviso.",
+"no gana ni pierde hasta que el precio llegue":"non guadagna né perde finché il prezzo non arriva",
+"Dinero que puso":"Denaro che ha messo",
+"opera $#":"opera $#",
+"sin objetivo":"senza obiettivo",
+"sin stop":"senza stop",
+"Arrastre con el dedo la línea roja del":"Trascini con il dito la linea rossa dello",
+"hasta donde quiera ponerlo y el dinero a poner se calcula solo.":"dove vuole e il denaro da mettere si calcola da solo.",
+"Operación programada · no cuenta nada hasta que el precio llegue a $#. Ahí se activa sola y le aviso.":"Operazione programmata · non conta nulla finché il prezzo non arriva a $#. Lì si apre da sola e glielo dico.",
+"Listo: el stop loss y el objetivo quedaron cambiados de lugar.":"Fatto: lo stop loss e l'obiettivo si sono scambiati di posto.",
+"Listo: la operación de @ ya cuenta como abierta.":"Fatto: l'operazione di @ ora conta come aperta.",
+"El stop está del lado equivocado para una VENTA (CORTO). Use el botón para cambiarlo de lugar con el objetivo.":"Lo stop è dalla parte sbagliata per una VENDITA (CORTO). Usi il pulsante per scambiarlo con l'obiettivo.",
+"El stop está del lado equivocado para una COMPRA (LARGO). Use el botón para cambiarlo de lugar con el objetivo.":"Lo stop è dalla parte sbagliata per un ACQUISTO (LUNGO). Usi il pulsante per scambiarlo con l'obiettivo.",
+"@ op # ENTRÓ: el precio llegó a $# · ahora la operación está abierta":"@ op # È ENTRATA: il prezzo è arrivato a $# · ora l'operazione è aperta",
+"Mientras esperan, estas operaciones no suman ni restan nada a su resultado ni a su cartera. En cuanto el precio toque la entrada se activan solas, le suena y le aviso.":"Mentre aspettano, queste operazioni non aggiungono né tolgono nulla al suo risultato né al suo portafoglio. Appena il prezzo tocca l'ingresso si attivano da sole, suona e glielo dico.",
+"En el stop":"Allo stop",
+"En el objetivo":"All'obiettivo"
 };
 </script>
 </body>
