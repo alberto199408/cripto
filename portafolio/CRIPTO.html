@@ -913,7 +913,7 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por GitHub.
    ===================================================================== */
-var VERSION="16";
+var VERSION="17";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
 
 /* =====================================================================
@@ -7385,7 +7385,14 @@ function engancharNube(box){
 /* Cuando el programa se publique, aquí van las claves del proyecto y la
    persona que lo instale no tiene que escribir nada. Mientras tanto se
    pegan a mano en Ajustes. */
-var FB_FIJA = null;
+var FB_FIJA = {
+  apiKey: "AIzaSyC-wkhuuiokcfmvD3hGEuQJQH_32nyUXTo",
+  authDomain: "portafolio-cripto-6aae8.firebaseapp.com",
+  projectId: "portafolio-cripto-6aae8",
+  storageBucket: "portafolio-cripto-6aae8.firebasestorage.app",
+  messagingSenderId: "1072850850841",
+  appId: "1:1072850850841:web:323664a039f9a3be9e0688"
+};
 
 /* versiones de la librería de Google: se prueba la primera y, si algún día
    Google la retira, el programa sigue con la siguiente sin que nadie toque nada */
@@ -7714,7 +7721,9 @@ function panelCuenta(){
         '<button class="b vd gr" id="ctaEntra"'+(ctaPuede()?"":" disabled")+'>'+
         'Entrar con Google</button>'+
         '<button class="b" id="ctaAyuda">¿Cómo funciona esto?</button>'+
-        '<button class="b gh" id="ctaCambia">Cambiar las claves</button></div>';
+        /* el botón de cambiar claves solo sirve cuando se pegaron a mano */
+        ((FB_FIJA&&FB_FIJA.apiKey)?'':'<button class="b gh" id="ctaCambia">Cambiar las claves</button>')+
+        '</div>';
   } else {
     h+='<div class="campos"><div class="campo ancho">'+
       '<label>Claves de Firebase <small>· se pegan una sola vez</small></label>'+
