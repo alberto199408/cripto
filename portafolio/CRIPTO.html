@@ -762,6 +762,11 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
 .temas button .tn{display:block;font-size:12px;font-weight:700;margin-top:6px;padding-left:2px}
 .pasos{margin:0;padding-left:19px;font-size:13px;line-height:1.85;color:var(--t2)}
 .pasos b{color:var(--tx)}
+/* un trozo de texto para copiar tal cual (las reglas de Firebase) */
+.codigo{background:var(--b0);border:1px solid var(--ln);border-radius:10px;
+  padding:12px 14px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:12px;line-height:1.6;color:var(--tx);overflow-x:auto;margin:10px 0;
+  white-space:pre;-webkit-user-select:all;user-select:all}
 .fcalc{margin-top:10px;padding:11px 13px;border-radius:10px;background:var(--b0);
   border:1px solid var(--ln);font-size:13px;
   color:var(--t2);line-height:1.65}
@@ -908,7 +913,7 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por GitHub.
    ===================================================================== */
-var VERSION="15";
+var VERSION="16";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
 
 /* =====================================================================
@@ -7358,6 +7363,472 @@ function engancharNube(box){
   };
 }
 /* =====================================================================
+   29b · SU CUENTA — entrar con Google y que los datos lo sigan a usted
+   ---------------------------------------------------------------------
+   Esto es lo que hace falta para que el programa sea una aplicación de
+   verdad, de las que uno baja de la Play Store:
+
+     · la persona abre la aplicación vacía
+     · pulsa "Entrar con Google" y elige su correo
+     · desde ahí todo lo que registre se guarda en el cajón de su cuenta
+     · cambia de teléfono, vuelve a entrar con el mismo correo, y aparece todo
+
+   Es distinto de la nube de más arriba (Google Drive / OneDrive), que
+   guarda un archivo en SU propia nube. Aquí los datos van a una bodega
+   del programa, y cada persona solo puede ver lo suyo.
+
+   Las claves de Firebase NO son secretas: Google las deja a la vista en
+   cualquier página que use Firebase. Lo que protege los datos son las
+   reglas del cajón, que están escritas en la ayuda de aquí abajo.
+   ===================================================================== */
+
+/* Cuando el programa se publique, aquí van las claves del proyecto y la
+   persona que lo instale no tiene que escribir nada. Mientras tanto se
+   pegan a mano en Ajustes. */
+var FB_FIJA = null;
+
+/* versiones de la librería de Google: se prueba la primera y, si algún día
+   Google la retira, el programa sigue con la siguiente sin que nadie toque nada */
+var FBV_LISTA = ["12.11.0", "11.10.0", "10.14.1"];
+var CTA = { u:null, correo:"", nombre:"", foto:"", listo:false,
+            ocupado:false, error:"", hora:0, firma:"", reloj:null,
+            sdk:null, arrancado:false, bajando:false, cargando:null };
+
+function ctaCfg(){
+  if(!BD.ajustes) BD.ajustes={};
+  if(!BD.ajustes.cuenta||typeof BD.ajustes.cuenta!=="object") BD.ajustes.cuenta={};
+  return BD.ajustes.cuenta;
+}
+function ctaClaves(){
+  if(FB_FIJA && FB_FIJA.apiKey) return FB_FIJA;
+  var c=ctaCfg();
+  return (c.fb && c.fb.apiKey) ? c.fb : null;
+}
+function ctaHecha(){ return !!ctaClaves(); }
+function ctaDentro(){ return !!(CTA.u && CTA.u.uid); }
+/* Google no deja entrar con una cuenta desde un archivo del disco */
+function ctaPuede(){ return nubeHttps(); }
+
+/* --- lee el bloque de claves que Google muestra, venga como venga --- */
+function leerClavesFirebase(txt){
+  if(!txt) return null;
+  var s=String(txt).trim();
+  var o=null;
+  try{ o=JSON.parse(s); }catch(e){}
+  if(!o){
+    /* el bloque que Google enseña es javascript, no json: se saca a mano */
+    var r={};
+    ["apiKey","authDomain","projectId","storageBucket",
+     "messagingSenderId","appId"].forEach(function(k){
+      var m=s.match(new RegExp(k+'\\s*:\\s*["\']([^"\']+)["\']'));
+      if(m) r[k]=m[1];
+    });
+    if(r.apiKey) o=r;
+  }
+  if(!o||!o.apiKey||!o.projectId) return null;
+  return {apiKey:o.apiKey, authDomain:o.authDomain||(o.projectId+".firebaseapp.com"),
+          projectId:o.projectId, storageBucket:o.storageBucket||"",
+          messagingSenderId:o.messagingSenderId||"", appId:o.appId||""};
+}
+
+/* --- trae la librería de Google la primera vez que hace falta --- */
+function cargarFirebase(){
+  if(CTA.sdk) return Promise.resolve(CTA.sdk);
+  if(CTA.cargando) return CTA.cargando;
+  var cl=ctaClaves();
+  if(!cl) return Promise.reject(new Error("Todavía no están puestas las claves de Firebase."));
+  var ultimo=null;
+  function intentar(i){
+    if(i>=FBV_LISTA.length){
+      throw new Error("No se pudo traer la librería de Google. Revise que haya internet."+
+        (ultimo?(" ("+ultimo+")"):""));
+    }
+    var base="https://www.gstatic.com/firebasejs/"+FBV_LISTA[i]+"/";
+    return Promise.all([
+      import(base+"firebase-app.js"),
+      import(base+"firebase-auth.js"),
+      import(base+"firebase-firestore.js")
+    ]).catch(function(e){
+      ultimo=(e&&e.message)||"";
+      return intentar(i+1);
+    });
+  }
+  CTA.cargando=Promise.resolve().then(function(){ return intentar(0); }).then(function(m){
+    var app=m[0].initializeApp(cl);
+    CTA.sdk={app:app, A:m[1], F:m[2],
+             auth:m[1].getAuth(app), db:m[2].getFirestore(app)};
+    CTA.cargando=null;
+    return CTA.sdk;
+  }).catch(function(e){
+    CTA.cargando=null;
+    throw e;
+  });
+  return CTA.cargando;
+}
+
+/* --- entrar --- */
+function entrarConGoogle(){
+  if(!ctaPuede()){
+    aviso("Para entrar con Google el programa tiene que estar abierto desde su dirección de "+
+      "internet o instalado como aplicación, no desde un archivo del disco.",true);
+    return Promise.resolve(false);
+  }
+  CTA.error=""; CTA.ocupado=true; pintarCuenta();
+  return cargarFirebase().then(function(S){
+    var prov=new S.A.GoogleAuthProvider();
+    prov.setCustomParameters({prompt:"select_account"});
+    return S.A.signInWithPopup(S.auth, prov).catch(function(e){
+      var c=(e&&e.code)||"";
+      /* en el teléfono y dentro de la aplicación la ventanita no siempre abre */
+      if(/popup|cancelled|blocked|operation-not-supported/i.test(c)){
+        return S.A.signInWithRedirect(S.auth, prov);
+      }
+      throw e;
+    });
+  }).then(function(){
+    CTA.ocupado=false;
+    return true;
+  }).catch(function(e){
+    CTA.ocupado=false;
+    CTA.error=mensajeCuenta(e);
+    pintarCuenta();
+    aviso(CTA.error,true);
+    return false;
+  });
+}
+function salirDeCuenta(){
+  confirmar("Salir de la cuenta",
+    "Sus datos se quedan guardados en su cuenta y en este equipo. Al volver a entrar "+
+    "con el mismo correo aparecen otra vez.",
+    "Salir", function(){
+      if(!CTA.sdk){ CTA.u=null; pintarCuenta(); return; }
+      CTA.sdk.A.signOut(CTA.sdk.auth).then(function(){
+        CTA.u=null; CTA.correo=""; CTA.nombre=""; CTA.foto="";
+        var c=ctaCfg(); c.correo=""; c.uid=""; guardar();
+        pintarCuenta(); aviso("Salió de la cuenta.");
+      });
+    });
+}
+function mensajeCuenta(e){
+  var c=(e&&e.code)||"", m=(e&&e.message)||"No se pudo.";
+  if(/auth\/unauthorized-domain/.test(c))
+    return "Esta dirección no está autorizada en Firebase. En la consola de Firebase, "+
+           "en Authentication → Settings → Dominios autorizados, agregue «"+location.hostname+"».";
+  if(/auth\/operation-not-allowed/.test(c))
+    return "En Firebase falta prender «Google» como forma de entrar (Authentication → "+
+           "Sign-in method → Google).";
+  if(/auth\/popup-closed-by-user|auth\/cancelled-popup-request/.test(c))
+    return "Cerró la ventana antes de elegir la cuenta.";
+  if(/auth\/network-request-failed/.test(c))
+    return "No hay internet, o la conexión se cortó.";
+  if(/permission-denied|insufficient/i.test(c+m))
+    return "Firebase no deja guardar: faltan las reglas del cajón. Están en la ayuda de aquí abajo.";
+  if(/api-key-not-valid|invalid-api-key/i.test(c+m))
+    return "Las claves de Firebase están mal pegadas. Vuelva a copiarlas completas.";
+  return m;
+}
+
+/* --- qué se guarda: lo mismo de siempre, sin la clave de GitHub --- */
+function textoParaCuenta(){ return textoParaNube(); }
+function firmaCuenta(){ return firmaNube(); }
+
+function docDeCuenta(S){
+  return S.F.doc(S.db, "portafolios", CTA.u.uid);
+}
+function subirACuenta(forzar){
+  if(!ctaDentro()||CTA.ocupado) return Promise.resolve(false);
+  var f=firmaCuenta();
+  if(!forzar && f===CTA.firma) return Promise.resolve(false);
+  var txt=textoParaCuenta();
+  if(txt.length>900000){
+    CTA.error="Sus datos pesan más de lo que cabe en un cajón de Firebase. Avíseme.";
+    pintarCuenta(); return Promise.resolve(false);
+  }
+  CTA.ocupado=true; CTA.error=""; pintarCuenta();
+  return cargarFirebase().then(function(S){
+    return S.F.setDoc(docDeCuenta(S), {
+      datos: txt, equipo: nombreEquipo(), hora: Date.now(),
+      correo: CTA.correo||"", v: 7
+    });
+  }).then(function(){
+    CTA.ocupado=false; CTA.firma=f; CTA.hora=Date.now();
+    var c=ctaCfg(); c.hora=CTA.hora; guardar();
+    pintarCuenta(); return true;
+  }).catch(function(e){
+    CTA.ocupado=false; CTA.error=mensajeCuenta(e); pintarCuenta(); return false;
+  });
+}
+function bajarDeCuenta(){
+  if(!ctaDentro()) return Promise.resolve(null);
+  return cargarFirebase().then(function(S){
+    return S.F.getDoc(docDeCuenta(S));
+  }).then(function(d){
+    if(!d.exists()) return null;
+    var x=d.data()||{};
+    return x.datos||null;
+  });
+}
+
+/* --- al entrar: se juntan lo de la cuenta y lo de este equipo ---
+   Nada se pierde: de cada movimiento se queda el más reciente, y lo que
+   borró no vuelve a aparecer. Es la misma mezcla que usa GitHub. */
+function fusionarConCuenta(silencioso){
+  if(!ctaDentro()) return Promise.resolve(false);
+  CTA.bajando=true; pintarCuenta();
+  return bajarDeCuenta().then(function(txt){
+    CTA.bajando=false;
+    if(!txt){
+      /* la cuenta está vacía: es la primera vez. Se sube lo que haya aquí. */
+      return subirACuenta(true).then(function(){
+        if(!silencioso) aviso("Cuenta lista. Desde ahora todo se guarda solo.");
+        return true;
+      });
+    }
+    var r=null;
+    try{ r=JSON.parse(txt); }catch(e){}
+    if(!r||!Array.isArray(r.ops)){
+      CTA.error="Lo que había guardado en la cuenta no se pudo leer.";
+      pintarCuenta(); return false;
+    }
+    var antes=(BD.ops||[]).length+(BD.fut||[]).length+(BD.back||[]).length;
+    BD.borrados=limpiarBorrados((BD.borrados||[]).concat(r.borrados||[]));
+    BD.ops     = juntar(BD.ops,     r.ops,     BD.borrados);
+    BD.fut     = juntar(BD.fut,     r.fut,     BD.borrados);
+    BD.back    = juntar(BD.back,    r.back,    BD.borrados);
+    BD.pruebas = juntar(BD.pruebas, r.pruebas, BD.borrados);
+    BD.ordenes = juntar(BD.ordenes, r.ordenes, BD.borrados);
+    BD.alertas = juntarAlertas(BD.alertas, r.alertas, BD.borrados);
+    BD.monedas = Object.assign({}, r.monedas||{}, BD.monedas||{});
+    guardar();
+    var ahora=(BD.ops||[]).length+(BD.fut||[]).length+(BD.back||[]).length;
+    try{ repintar(); }catch(e){}
+    return subirACuenta(true).then(function(){
+      if(!silencioso){
+        var nuevos=ahora-antes;
+        aviso(nuevos>0
+          ? ("Listo: su cuenta trajo "+plural(nuevos,"registro","registros")+".")
+          : "Listo: su cuenta ya estaba al día.");
+      }
+      return true;
+    });
+  }).catch(function(e){
+    CTA.bajando=false;
+    CTA.error=mensajeCuenta(e); pintarCuenta();
+    if(!silencioso) aviso(CTA.error,true);
+    return false;
+  });
+}
+/* traer la copia de la cuenta y reemplazar lo de este equipo */
+function traerDeCuenta(){
+  if(!ctaDentro()){ aviso("Primero entre con su cuenta.",true); return; }
+  aviso("Bajando lo que tiene guardado en su cuenta…");
+  bajarDeCuenta().then(function(txt){
+    if(!txt){ aviso("Todavía no hay nada guardado en su cuenta.",true); return; }
+    confirmar("¿Traer lo de su cuenta?",
+      "Lo que tiene en este equipo se reemplaza por lo que está guardado en su cuenta. "+
+      "Si este equipo tiene cosas más nuevas, se pierden.",
+      "Traer la copia", function(){ restaurarTexto(txt,"su cuenta"); }, true);
+  }).catch(function(e){ aviso(mensajeCuenta(e),true); });
+}
+
+/* --- se sube solo cada vez que cambia algo --- */
+function programarCuenta(){
+  clearInterval(CTA.reloj);
+  CTA.firma=firmaCuenta();
+  if(!ctaDentro()||ctaCfg().auto===false) return;
+  CTA.reloj=setInterval(function(){
+    var f=firmaCuenta();
+    if(f===CTA.firma) return;
+    CTA.firma=f;
+    subirACuenta(false);
+  },20000);
+}
+
+/* --- al abrir el programa --- */
+function arrancarCuenta(){
+  if(CTA.arrancado) return;
+  if(!ctaHecha()||!ctaPuede()) return;
+  CTA.arrancado=true;
+  cargarFirebase().then(function(S){
+    S.A.getRedirectResult(S.auth).catch(function(){});
+    S.A.onAuthStateChanged(S.auth, function(u){
+      CTA.listo=true;
+      CTA.u=u||null;
+      CTA.correo=(u&&u.email)||"";
+      CTA.nombre=(u&&u.displayName)||"";
+      CTA.foto=(u&&u.photoURL)||"";
+      var c=ctaCfg();
+      c.correo=CTA.correo; c.uid=(u&&u.uid)||""; guardar();
+      pintarCuenta();
+      if(u) fusionarConCuenta(true).then(function(){ programarCuenta(); });
+      else clearInterval(CTA.reloj);
+    });
+  }).catch(function(e){
+    CTA.error=mensajeCuenta(e); pintarCuenta();
+  });
+}
+
+/* =====================================================================
+   LA PANTALLA DE LA CUENTA
+   ===================================================================== */
+function panelCuenta(){
+  var c=ctaCfg();
+  var hay=ctaHecha(), dentro=ctaDentro();
+  var chip = CTA.error ? '<span class="chip s">con problema</span>'
+           : CTA.ocupado||CTA.bajando ? '<span class="chip a">guardando…</span>'
+           : dentro ? '<span class="chip l">dentro</span>'
+           : hay ? '<span class="chip">sin entrar</span>'
+           : '<span class="chip">sin configurar</span>';
+  var h='<div class="caja" id="ctaCaja"><h2><span class="ic">'+IC.escudo+'</span>'+
+    'Su cuenta — entre con Google y sus datos lo siguen'+
+    '<span class="sp"></span>'+chip+'</h2><div class="cp">'+
+    '<p class="mut" style="margin:0 0 12px">Entre una vez con su correo de Google. Desde ahí '+
+    'todo lo que registre queda guardado en su cuenta. Si cambia de teléfono, borra la '+
+    'aplicación o entra desde la computadora, vuelve a entrar con el mismo correo y aparece todo.</p>';
+
+  if(!ctaPuede()) h+='<div class="nota ojo">Esta ventana está abierta desde un <b>archivo del '+
+    'disco</b>. Google no permite entrar con una cuenta así. Abra el programa desde su dirección '+
+    'de internet (<b>'+esc(nubeDireccion())+'</b>) o instálelo como aplicación.</div>';
+
+  if(dentro){
+    h+='<div class="mv" style="margin:0 0 12px">'+
+      (CTA.foto?'<img class="ic" src="'+esc(CTA.foto)+'" alt="">':'<div class="lg">'+
+        '<span class="ic"><span class="disco" style="background:var(--ac);color:var(--acInk)">'+
+        esc((CTA.correo||"?").charAt(0).toUpperCase())+'</span></span></div>')+
+      '<div class="q"><div class="l1">'+esc(CTA.nombre||"Su cuenta")+'</div>'+
+      '<div class="l2">'+esc(CTA.correo)+'</div></div>'+
+      '<div class="r"><span>Guardado por última vez</span><b>'+
+        (CTA.hora||c.hora ? hora(CTA.hora||c.hora) : "todavía no")+'</b></div></div>'+
+      (CTA.error?'<div class="nota mal">'+esc(CTA.error)+'</div>':'')+
+      '<div style="display:flex;gap:9px;flex-wrap:wrap">'+
+        '<button class="b vd" id="ctaSube">Guardar ahora</button>'+
+        '<button class="b" id="ctaJunta">Juntar con lo de la cuenta</button>'+
+        '<button class="b" id="ctaBaja">Traer lo de mi cuenta</button>'+
+        '<button class="b gh" id="ctaSale">Salir de la cuenta</button></div>'+
+      '<div class="chk" style="margin-top:12px"><button type="button" id="ctaAuto" class="'+
+        (c.auto!==false?"on":"")+'"><span class="cj">✓</span>Guardar solo cada vez que cambio algo'+
+        '</button></div>';
+  } else if(hay){
+    h+=(CTA.error?'<div class="nota mal">'+esc(CTA.error)+'</div>':'')+
+      '<div style="display:flex;gap:9px;flex-wrap:wrap">'+
+        '<button class="b vd gr" id="ctaEntra"'+(ctaPuede()?"":" disabled")+'>'+
+        'Entrar con Google</button>'+
+        '<button class="b" id="ctaAyuda">¿Cómo funciona esto?</button>'+
+        '<button class="b gh" id="ctaCambia">Cambiar las claves</button></div>';
+  } else {
+    h+='<div class="campos"><div class="campo ancho">'+
+      '<label>Claves de Firebase <small>· se pegan una sola vez</small></label>'+
+      '<textarea id="ctaFb" rows="5" style="font-family:ui-monospace,monospace;font-size:12px" '+
+      'placeholder=\'{ "apiKey": "…", "projectId": "…", "appId": "…" }\'></textarea></div></div>'+
+      '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:10px">'+
+        '<button class="b vd" id="ctaGuardaFb">Guardar las claves</button>'+
+        '<button class="b" id="ctaAyuda">¿De dónde saco las claves?</button></div>'+
+      (CTA.error?'<div class="nota mal">'+esc(CTA.error)+'</div>':'');
+  }
+  return h+'</div></div>';
+}
+function pintarCuenta(){
+  var v=document.getElementById("ctaCaja");
+  if(!v||!v.parentNode) return;
+  var d=document.createElement("div");
+  d.innerHTML=panelCuenta();
+  v.parentNode.replaceChild(d.firstChild, v);
+  var n=document.getElementById("ctaCaja");
+  if(n) engancharCuenta(n);
+}
+function engancharCuenta(box){
+  var x;
+  if((x=box.querySelector("#ctaEntra"))) x.onclick=function(){ entrarConGoogle(); };
+  if((x=box.querySelector("#ctaSale")))  x.onclick=salirDeCuenta;
+  if((x=box.querySelector("#ctaSube")))  x.onclick=function(){
+    subirACuenta(true).then(function(ok){ if(ok) aviso("Guardado en su cuenta."); });
+  };
+  if((x=box.querySelector("#ctaJunta"))) x.onclick=function(){ fusionarConCuenta(false); };
+  if((x=box.querySelector("#ctaBaja")))  x.onclick=traerDeCuenta;
+  if((x=box.querySelector("#ctaAyuda"))) x.onclick=ayudaCuenta;
+  if((x=box.querySelector("#ctaAuto")))  x.onclick=function(){
+    var c=ctaCfg(); c.auto=(c.auto===false); guardar();
+    x.className=(c.auto!==false)?"on":"";
+    programarCuenta();
+    if(c.auto!==false) subirACuenta(false);
+  };
+  if((x=box.querySelector("#ctaCambia"))) x.onclick=function(){
+    confirmar("Cambiar las claves de Firebase",
+      "Se borran las claves de este equipo y vuelve a salir la casilla para pegar otras. "+
+      "Sus datos no se tocan.", "Cambiarlas", function(){
+        var c=ctaCfg(); c.fb=null; guardar(); CTA.sdk=null; CTA.arrancado=false;
+        pintarCuenta();
+      }, true);
+  };
+  if((x=box.querySelector("#ctaGuardaFb"))) x.onclick=function(){
+    var t=(box.querySelector("#ctaFb")||{}).value||"";
+    var cl=leerClavesFirebase(t);
+    if(!cl){
+      CTA.error="Eso no son las claves. Copie el bloque completo que le muestra Firebase, "+
+        "desde la llave que abre hasta la que cierra.";
+      pintarCuenta(); return;
+    }
+    var c=ctaCfg(); c.fb=cl; guardar();
+    CTA.error=""; CTA.sdk=null; CTA.arrancado=false;
+    pintarCuenta();
+    aviso("Claves guardadas. Ahora pulse «Entrar con Google».");
+    arrancarCuenta();
+  };
+}
+
+/* --- la ayuda: el paso a paso, dentro del propio programa --- */
+function ayudaCuenta(){
+  var dom=location.hostname||"su dirección";
+  abrir('<div class="hoja ancha"><div class="hh"><h3>Su cuenta, paso a paso</h3>'+
+    '<button class="x" data-cerrar>×</button></div><div class="hb">'+
+
+    '<div class="fsec" style="margin-top:0">Qué es esto</div>'+
+    '<p class="mut">Firebase es una página de Google donde se crea la bodega en la que viven '+
+    'los datos. Usted no programa nada: entra, pulsa botones y al final copia un bloque de '+
+    'texto que pega aquí. Son unos 15 minutos y es gratis para empezar.</p>'+
+
+    '<div class="fsec">Paso 1 · crear el proyecto</div>'+
+    '<ol class="pasos"><li>Entre a <b>console.firebase.google.com</b> con su Gmail.</li>'+
+    '<li>Pulse <b>Crear un proyecto</b> y póngale un nombre, por ejemplo <b>Portafolio Cripto</b>.</li>'+
+    '<li>Si le pregunta por Google Analytics, puede decir que no. No hace falta.</li></ol>'+
+
+    '<div class="fsec">Paso 2 · prender la entrada con Google</div>'+
+    '<ol class="pasos"><li>En el menú de la izquierda busque <b>Authentication</b> y pulse '+
+    '<b>Comenzar</b>.</li>'+
+    '<li>En la lista elija <b>Google</b>, prenda el interruptor, escriba un correo de contacto '+
+    'y guarde.</li>'+
+    '<li>Entre a <b>Settings</b> → <b>Dominios autorizados</b> y agregue <b>'+esc(dom)+'</b>.</li></ol>'+
+
+    '<div class="fsec">Paso 3 · crear la bodega</div>'+
+    '<ol class="pasos"><li>En el menú busque <b>Firestore Database</b> y pulse <b>Crear base '+
+    'de datos</b>.</li>'+
+    '<li>Elija <b>modo producción</b> y la región que le quede más cerca.</li>'+
+    '<li>Entre a la pestaña <b>Reglas</b>, borre lo que hay y pegue esto tal cual:</li></ol>'+
+    '<pre class="codigo">rules_version = \'2\';\nservice cloud.firestore {\n'+
+    '  match /databases/{database}/documents {\n'+
+    '    match /portafolios/{uid} {\n'+
+    '      allow read, write: if request.auth != null\n'+
+    '                         &amp;&amp; request.auth.uid == uid;\n'+
+    '    }\n  }\n}</pre>'+
+    '<p class="mut">Esas tres líneas son las que hacen que <b>cada persona solo pueda ver lo '+
+    'suyo</b>. Sin ellas cualquiera podría leer los datos de los demás. Pulse <b>Publicar</b>.</p>'+
+
+    '<div class="fsec">Paso 4 · copiar las claves</div>'+
+    '<ol class="pasos"><li>Arriba a la izquierda pulse la <b>rueda dentada</b> → '+
+    '<b>Configuración del proyecto</b>.</li>'+
+    '<li>Baje hasta <b>Tus apps</b> y pulse el icono de <b>web</b> (dice <b>&lt;/&gt;</b>).</li>'+
+    '<li>Póngale un apodo, no marque hosting, y pulse registrar.</li>'+
+    '<li>Le muestra un bloque que empieza por <b>const firebaseConfig = {</b>. Copie desde la '+
+    'llave que abre hasta la que cierra y péguelo en la casilla de aquí atrás.</li></ol>'+
+
+    '<div class="fsec">¿Y esas claves no son peligrosas?</div>'+
+    '<p class="mut">No. Google las deja a la vista en toda página que use Firebase: están '+
+    'hechas para ser públicas. Lo que protege los datos son las reglas del paso 3. Su clave de '+
+    'GitHub, esa sí es secreta, y nunca sale de este equipo.</p>'+
+
+    '</div><div class="hf"><button class="b ac" data-cerrar>Entendido</button></div></div>');
+}
+/* =====================================================================
    25 · TEMA
    ===================================================================== */
 var TEMAS=[
@@ -7688,6 +8159,7 @@ function pintarDat(){
 
   panelIdioma()+
   panelPrograma()+
+  panelCuenta()+
   panelNube().replace('<div class="caja">','<div class="caja" id="nubeCaja">')+
   panelRespaldo()+
   panelSync()+
@@ -7909,6 +8381,7 @@ function panelSync(){
 }
 function engancharDat(box){
   var x;
+  var ct=box.querySelector("#ctaCaja"); if(ct) engancharCuenta(ct);
   var nb=box.querySelector("#nubeCaja"); if(nb) engancharNube(nb);
   var ic=box.querySelector("#idiCaja"); if(ic) engancharIdioma(ic);
   var bi=box.querySelector("#pInst"); if(bi) bi.onclick=instalarApp;
@@ -8446,6 +8919,7 @@ function arrancar(){
   try{ registrarAyudante(); }catch(e){}
   try{ aplicarIdioma(false); }catch(e){}
   try{ arrancarNube(); }catch(e){}
+  try{ arrancarCuenta(); }catch(e){}
   try{ prepararInstalar(); }catch(e){}
   setTimeout(function(){
     try{
@@ -9239,7 +9713,95 @@ DIC.en={
 "@ op # ENTRÓ: el precio llegó a $# · ahora la operación está abierta":"@ trade # ENTERED: the price reached $# · the trade is open now",
 "Mientras esperan, estas operaciones no suman ni restan nada a su resultado ni a su cartera. En cuanto el precio toque la entrada se activan solas, le suena y le aviso.":"While they wait, these trades add nothing and take nothing away from your result or your account. As soon as the price touches the entry they activate by themselves, it beeps and I let you know.",
 "En el stop":"At the stop",
-"En el objetivo":"At the target"
+"En el objetivo":"At the target",
+/* v16 · entrar con su cuenta */
+"Sin monedas todavía":"No coins yet",
+"Su cuenta — entre con Google y sus datos lo siguen":"Your account — sign in with Google and your data follows you",
+"Entre una vez con su correo de Google. Desde ahí todo lo que registre queda guardado en su cuenta. Si cambia de teléfono, borra la aplicación o entra desde la computadora, vuelve a entrar con el mismo correo y aparece todo.":"Sign in once with your Google address. From then on everything you record is kept in your account. If you change phone, delete the app or open it on the computer, sign in with the same address and everything comes back.",
+". Google no permite entrar con una cuenta así. Abra el programa desde su dirección de internet (":". Google does not allow signing in with an account that way. Open the program from its internet address (",
+"Claves de Firebase":"Firebase keys",
+"· se pegan una sola vez":"· pasted once and done",
+"Guardar las claves":"Save the keys",
+"¿De dónde saco las claves?":"Where do I get the keys?",
+"Su cuenta, paso a paso":"Your account, step by step",
+"Qué es esto":"What this is",
+"Firebase es una página de Google donde se crea la bodega en la que viven los datos. Usted no programa nada: entra, pulsa botones y al final copia un bloque de texto que pega aquí. Son unos # minutos y es gratis para empezar.":"Firebase is a Google page where you create the warehouse the data lives in. You do no programming: you sign in, press buttons and at the end you copy a block of text and paste it here. It takes about # minutes and it is free to start.",
+"Paso # · crear el proyecto":"Step # · create the project",
+"con su Gmail.":"with your Gmail.",
+"y póngale un nombre, por ejemplo":"and give it a name, for example",
+"Crear un proyecto":"Create a project",
+"Si le pregunta por Google Analytics, puede decir que no. No hace falta.":"If it asks about Google Analytics, you can say no. It is not needed.",
+"Paso # · prender la entrada con Google":"Step # · turn on signing in with Google",
+"En el menú de la izquierda busque":"In the left-hand menu look for",
+"En la lista elija":"From the list choose",
+", prenda el interruptor, escriba un correo de contacto y guarde.":", flip the switch on, type a contact address and save.",
+"su dirección":"your address",
+"Paso # · crear la bodega":"Step # · create the warehouse",
+"En el menú busque":"In the menu look for",
+"Crear base de datos":"Create database",
+"Elija":"Choose",
+"y la región que le quede más cerca.":"and whichever region is closest to you.",
+"modo producción":"production mode",
+"Entre a la pestaña":"Go to the tab",
+", borre lo que hay y pegue esto tal cual:":", delete what is there and paste this exactly:",
+"Reglas":"Rules",
+"Esas tres líneas son las que hacen que":"Those three lines are what make",
+". Sin ellas cualquiera podría leer los datos de los demás. Pulse":". Without them anyone could read other people's data. Press",
+"cada persona solo pueda ver lo suyo":"each person can only see their own",
+"Paso # · copiar las claves":"Step # · copy the keys",
+"Arriba a la izquierda pulse la":"At the top left press the",
+"Configuración del proyecto":"Project settings",
+"Baje hasta":"Scroll down to",
+"y pulse el icono de":"and press the icon for",
+"Póngale un apodo, no marque hosting, y pulse registrar.":"Give it a nickname, do not tick hosting, and press register.",
+"Le muestra un bloque que empieza por":"It shows you a block that starts with",
+". Copie desde la llave que abre hasta la que cierra y péguelo en la casilla de aquí atrás.":". Copy from the opening brace to the closing one and paste it in the box back there.",
+"¿Y esas claves no son peligrosas?":"And aren't those keys dangerous?",
+"No. Google las deja a la vista en toda página que use Firebase: están hechas para ser públicas. Lo que protege los datos son las reglas del paso # Su clave de GitHub, esa sí es secreta, y nunca sale de este equipo.":"No. Google leaves them in plain sight on every page that uses Firebase: they are meant to be public. What protects the data are the rules in step #. Your GitHub key is the secret one, and it never leaves this device.",
+"sin entrar":"not signed in",
+"sin configurar":"not set up",
+"Entrar con Google":"Sign in with Google",
+"¿Cómo funciona esto?":"How does this work?",
+"Cambiar las claves":"Change the keys",
+"con problema":"with a problem",
+"Las claves de Firebase están mal pegadas. Vuelva a copiarlas completas.":"The Firebase keys are pasted wrong. Copy them again, whole.",
+"Guardado por última vez":"Last saved",
+"Guardar ahora":"Save now",
+"Juntar con lo de la cuenta":"Merge with what is in the account",
+"Traer lo de mi cuenta":"Bring down what is in my account",
+"Salir de la cuenta":"Sign out",
+"Guardar solo cada vez que cambio algo":"Save by itself every time I change something",
+"guardando…":"saving…",
+"dentro":"signed in",
+"Su cuenta":"Your account",
+"todavía no":"not yet",
+"Salir":"Sign out",
+"Sus datos se quedan guardados en su cuenta y en este equipo. Al volver a entrar con el mismo correo aparecen otra vez.":"Your data stays saved in your account and on this device. When you sign in again with the same address it comes back.",
+"Salió de la cuenta.":"Signed out.",
+"Guardado en su cuenta.":"Saved to your account.",
+"Cuenta lista. Desde ahora todo se guarda solo.":"Account ready. From now on everything saves by itself.",
+"Listo: su cuenta trajo # registro.":"Done: your account brought # record.",
+"Listo: su cuenta trajo # registros.":"Done: your account brought # records.",
+"Listo: su cuenta ya estaba al día.":"Done: your account was already up to date.",
+"Claves guardadas. Ahora pulse «Entrar con Google».":"Keys saved. Now press \"Sign in with Google\".",
+"Eso no son las claves. Copie el bloque completo que le muestra Firebase, desde la llave que abre hasta la que cierra.":"Those are not the keys. Copy the whole block Firebase shows you, from the opening brace to the closing one.",
+"Cambiar las claves de Firebase":"Change the Firebase keys",
+"Se borran las claves de este equipo y vuelve a salir la casilla para pegar otras. Sus datos no se tocan.":"The keys are removed from this device and the box to paste new ones comes back. Your data is not touched.",
+"Cambiarlas":"Change them",
+"¿Traer lo de su cuenta?":"Bring down what is in your account?",
+"Lo que tiene en este equipo se reemplaza por lo que está guardado en su cuenta. Si este equipo tiene cosas más nuevas, se pierden.":"What you have on this device is replaced by what is saved in your account. If this device has newer things, they are lost.",
+"Bajando lo que tiene guardado en su cuenta…":"Downloading what is saved in your account…",
+"Todavía no hay nada guardado en su cuenta.":"There is nothing saved in your account yet.",
+"Primero entre con su cuenta.":"Sign in with your account first.",
+"Para entrar con Google el programa tiene que estar abierto desde su dirección de internet o instalado como aplicación, no desde un archivo del disco.":"To sign in with Google the program has to be open from its internet address or installed as an app, not from a file on the disk.",
+"No se pudo traer la librería de Google. Revise que haya internet.":"Google's library could not be fetched. Check that there is internet.",
+"Todavía no están puestas las claves de Firebase.":"The Firebase keys are not in place yet.",
+"Cerró la ventana antes de elegir la cuenta.":"You closed the window before choosing the account.",
+"No hay internet, o la conexión se cortó.":"There is no internet, or the connection dropped.",
+"Firebase no deja guardar: faltan las reglas del cajón. Están en la ayuda de aquí abajo.":"Firebase will not let it save: the drawer rules are missing. They are in the help below.",
+"Lo que había guardado en la cuenta no se pudo leer.":"What was saved in the account could not be read.",
+"Sus datos pesan más de lo que cabe en un cajón de Firebase. Avíseme.":"Your data is bigger than what fits in a Firebase drawer. Let me know.",
+"su cuenta":"your account"
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
@@ -9822,7 +10384,95 @@ DIC.pt={
 "@ op # ENTRÓ: el precio llegó a $# · ahora la operación está abierta":"@ op # ENTROU: o preço chegou a $# · agora a operação está aberta",
 "Mientras esperan, estas operaciones no suman ni restan nada a su resultado ni a su cartera. En cuanto el precio toque la entrada se activan solas, le suena y le aviso.":"Enquanto esperam, estas operações não somam nem subtraem nada ao seu resultado nem à sua carteira. Assim que o preço tocar a entrada ativam-se sozinhas, toca o som e eu aviso.",
 "En el stop":"No stop",
-"En el objetivo":"No alvo"
+"En el objetivo":"No alvo",
+/* v16 · entrar con su cuenta */
+"Sin monedas todavía":"Ainda sem moedas",
+"Su cuenta — entre con Google y sus datos lo siguen":"A sua conta — entre com a Google e os seus dados seguem-no",
+"Entre una vez con su correo de Google. Desde ahí todo lo que registre queda guardado en su cuenta. Si cambia de teléfono, borra la aplicación o entra desde la computadora, vuelve a entrar con el mismo correo y aparece todo.":"Entre uma vez com o seu endereço da Google. A partir daí tudo o que registar fica guardado na sua conta. Se mudar de telemóvel, apagar a aplicação ou entrar pelo computador, entre com o mesmo endereço e aparece tudo.",
+". Google no permite entrar con una cuenta así. Abra el programa desde su dirección de internet (":". A Google não permite entrar com uma conta assim. Abra o programa a partir do seu endereço de internet (",
+"Claves de Firebase":"Chaves do Firebase",
+"· se pegan una sola vez":"· colam-se uma só vez",
+"Guardar las claves":"Guardar as chaves",
+"¿De dónde saco las claves?":"Onde consigo as chaves?",
+"Su cuenta, paso a paso":"A sua conta, passo a passo",
+"Qué es esto":"O que é isto",
+"Firebase es una página de Google donde se crea la bodega en la que viven los datos. Usted no programa nada: entra, pulsa botones y al final copia un bloque de texto que pega aquí. Son unos # minutos y es gratis para empezar.":"O Firebase é uma página da Google onde se cria o armazém onde vivem os dados. Você não programa nada: entra, carrega em botões e no fim copia um bloco de texto que cola aqui. São uns # minutos e é grátis para começar.",
+"Paso # · crear el proyecto":"Passo # · criar o projeto",
+"con su Gmail.":"com o seu Gmail.",
+"y póngale un nombre, por ejemplo":"e dê-lhe um nome, por exemplo",
+"Crear un proyecto":"Criar um projeto",
+"Si le pregunta por Google Analytics, puede decir que no. No hace falta.":"Se perguntar pelo Google Analytics, pode dizer que não. Não faz falta.",
+"Paso # · prender la entrada con Google":"Passo # · ligar a entrada com a Google",
+"En el menú de la izquierda busque":"No menu da esquerda procure",
+"En la lista elija":"Na lista escolha",
+", prenda el interruptor, escriba un correo de contacto y guarde.":", ligue o interruptor, escreva um endereço de contacto e guarde.",
+"su dirección":"o seu endereço",
+"Paso # · crear la bodega":"Passo # · criar o armazém",
+"En el menú busque":"No menu procure",
+"Crear base de datos":"Criar base de dados",
+"Elija":"Escolha",
+"y la región que le quede más cerca.":"e a região que lhe fique mais perto.",
+"modo producción":"modo produção",
+"Entre a la pestaña":"Entre no separador",
+", borre lo que hay y pegue esto tal cual:":", apague o que está lá e cole isto tal e qual:",
+"Reglas":"Regras",
+"Esas tres líneas son las que hacen que":"Essas três linhas são o que faz com que",
+". Sin ellas cualquiera podría leer los datos de los demás. Pulse":". Sem elas qualquer um poderia ler os dados dos outros. Carregue em",
+"cada persona solo pueda ver lo suyo":"cada pessoa só possa ver o que é seu",
+"Paso # · copiar las claves":"Passo # · copiar as chaves",
+"Arriba a la izquierda pulse la":"Em cima à esquerda carregue na",
+"Configuración del proyecto":"Definições do projeto",
+"Baje hasta":"Desça até",
+"y pulse el icono de":"e carregue no ícone de",
+"Póngale un apodo, no marque hosting, y pulse registrar.":"Dê-lhe uma alcunha, não marque hosting, e carregue em registar.",
+"Le muestra un bloque que empieza por":"Mostra-lhe um bloco que começa por",
+". Copie desde la llave que abre hasta la que cierra y péguelo en la casilla de aquí atrás.":". Copie desde a chaveta que abre até à que fecha e cole-a na caixa aqui atrás.",
+"¿Y esas claves no son peligrosas?":"E essas chaves não são perigosas?",
+"No. Google las deja a la vista en toda página que use Firebase: están hechas para ser públicas. Lo que protege los datos son las reglas del paso # Su clave de GitHub, esa sí es secreta, y nunca sale de este equipo.":"Não. A Google deixa-as à vista em qualquer página que use Firebase: são feitas para serem públicas. O que protege os dados são as regras do passo #. A sua chave do GitHub, essa sim é secreta, e nunca sai deste equipamento.",
+"sin entrar":"sem entrar",
+"sin configurar":"sem configurar",
+"Entrar con Google":"Entrar com a Google",
+"¿Cómo funciona esto?":"Como funciona isto?",
+"Cambiar las claves":"Mudar as chaves",
+"con problema":"com problema",
+"Las claves de Firebase están mal pegadas. Vuelva a copiarlas completas.":"As chaves do Firebase estão mal coladas. Volte a copiá-las completas.",
+"Guardado por última vez":"Guardado pela última vez",
+"Guardar ahora":"Guardar agora",
+"Juntar con lo de la cuenta":"Juntar com o da conta",
+"Traer lo de mi cuenta":"Trazer o da minha conta",
+"Salir de la cuenta":"Sair da conta",
+"Guardar solo cada vez que cambio algo":"Guardar sozinho sempre que mudo alguma coisa",
+"guardando…":"a guardar…",
+"dentro":"dentro",
+"Su cuenta":"A sua conta",
+"todavía no":"ainda não",
+"Salir":"Sair",
+"Sus datos se quedan guardados en su cuenta y en este equipo. Al volver a entrar con el mismo correo aparecen otra vez.":"Os seus dados ficam guardados na sua conta e neste equipamento. Ao voltar a entrar com o mesmo endereço aparecem outra vez.",
+"Salió de la cuenta.":"Saiu da conta.",
+"Guardado en su cuenta.":"Guardado na sua conta.",
+"Cuenta lista. Desde ahora todo se guarda solo.":"Conta pronta. A partir de agora tudo se guarda sozinho.",
+"Listo: su cuenta trajo # registro.":"Pronto: a sua conta trouxe # registo.",
+"Listo: su cuenta trajo # registros.":"Pronto: a sua conta trouxe # registos.",
+"Listo: su cuenta ya estaba al día.":"Pronto: a sua conta já estava em dia.",
+"Claves guardadas. Ahora pulse «Entrar con Google».":"Chaves guardadas. Agora carregue em «Entrar com a Google».",
+"Eso no son las claves. Copie el bloque completo que le muestra Firebase, desde la llave que abre hasta la que cierra.":"Isso não são as chaves. Copie o bloco completo que o Firebase lhe mostra, desde a chaveta que abre até à que fecha.",
+"Cambiar las claves de Firebase":"Mudar as chaves do Firebase",
+"Se borran las claves de este equipo y vuelve a salir la casilla para pegar otras. Sus datos no se tocan.":"As chaves são apagadas deste equipamento e volta a aparecer a caixa para colar outras. Os seus dados não se tocam.",
+"Cambiarlas":"Mudá-las",
+"¿Traer lo de su cuenta?":"Trazer o da sua conta?",
+"Lo que tiene en este equipo se reemplaza por lo que está guardado en su cuenta. Si este equipo tiene cosas más nuevas, se pierden.":"O que tem neste equipamento é substituído pelo que está guardado na sua conta. Se este equipamento tiver coisas mais novas, perdem-se.",
+"Bajando lo que tiene guardado en su cuenta…":"A trazer o que tem guardado na sua conta…",
+"Todavía no hay nada guardado en su cuenta.":"Ainda não há nada guardado na sua conta.",
+"Primero entre con su cuenta.":"Primeiro entre com a sua conta.",
+"Para entrar con Google el programa tiene que estar abierto desde su dirección de internet o instalado como aplicación, no desde un archivo del disco.":"Para entrar com a Google o programa tem de estar aberto a partir do seu endereço de internet ou instalado como aplicação, não a partir de um ficheiro do disco.",
+"No se pudo traer la librería de Google. Revise que haya internet.":"Não foi possível trazer a biblioteca da Google. Verifique se há internet.",
+"Todavía no están puestas las claves de Firebase.":"As chaves do Firebase ainda não estão postas.",
+"Cerró la ventana antes de elegir la cuenta.":"Fechou a janela antes de escolher a conta.",
+"No hay internet, o la conexión se cortó.":"Não há internet, ou a ligação caiu.",
+"Firebase no deja guardar: faltan las reglas del cajón. Están en la ayuda de aquí abajo.":"O Firebase não deixa guardar: faltam as regras da gaveta. Estão na ajuda aqui abaixo.",
+"Lo que había guardado en la cuenta no se pudo leer.":"O que estava guardado na conta não se conseguiu ler.",
+"Sus datos pesan más de lo que cabe en un cajón de Firebase. Avíseme.":"Os seus dados pesam mais do que cabe numa gaveta do Firebase. Avise-me.",
+"su cuenta":"a sua conta"
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
@@ -10405,7 +11055,95 @@ DIC.fr={
 "@ op # ENTRÓ: el precio llegó a $# · ahora la operación está abierta":"@ op # ENTRÉE : le prix a atteint $# · la position est maintenant ouverte",
 "Mientras esperan, estas operaciones no suman ni restan nada a su resultado ni a su cartera. En cuanto el precio toque la entrada se activan solas, le suena y le aviso.":"Pendant l'attente, ces positions n'ajoutent ni ne retirent rien à votre résultat ni à votre portefeuille. Dès que le prix touche l'entrée, elles s'activent toutes seules, ça sonne et je vous préviens.",
 "En el stop":"Au stop",
-"En el objetivo":"À l'objectif"
+"En el objetivo":"À l'objectif",
+/* v16 · entrar con su cuenta */
+"Sin monedas todavía":"Pas encore de pièces",
+"Su cuenta — entre con Google y sus datos lo siguen":"Votre compte — connectez-vous avec Google et vos données vous suivent",
+"Entre una vez con su correo de Google. Desde ahí todo lo que registre queda guardado en su cuenta. Si cambia de teléfono, borra la aplicación o entra desde la computadora, vuelve a entrar con el mismo correo y aparece todo.":"Connectez-vous une fois avec votre adresse Google. À partir de là, tout ce que vous enregistrez reste dans votre compte. Si vous changez de téléphone, supprimez l'application ou ouvrez-la sur l'ordinateur, reconnectez-vous avec la même adresse et tout réapparaît.",
+". Google no permite entrar con una cuenta así. Abra el programa desde su dirección de internet (":". Google n'autorise pas la connexion à un compte de cette façon. Ouvrez le programme depuis son adresse internet (",
+"Claves de Firebase":"Clés de Firebase",
+"· se pegan una sola vez":"· à coller une seule fois",
+"Guardar las claves":"Enregistrer les clés",
+"¿De dónde saco las claves?":"Où trouver les clés ?",
+"Su cuenta, paso a paso":"Votre compte, pas à pas",
+"Qué es esto":"Ce que c'est",
+"Firebase es una página de Google donde se crea la bodega en la que viven los datos. Usted no programa nada: entra, pulsa botones y al final copia un bloque de texto que pega aquí. Son unos # minutos y es gratis para empezar.":"Firebase est une page de Google où l'on crée l'entrepôt dans lequel vivent les données. Vous ne programmez rien : vous entrez, vous appuyez sur des boutons et à la fin vous copiez un bloc de texte que vous collez ici. Cela prend environ # minutes et c'est gratuit pour commencer.",
+"Paso # · crear el proyecto":"Étape # · créer le projet",
+"con su Gmail.":"avec votre Gmail.",
+"y póngale un nombre, por ejemplo":"et donnez-lui un nom, par exemple",
+"Crear un proyecto":"Créer un projet",
+"Si le pregunta por Google Analytics, puede decir que no. No hace falta.":"S'il vous demande Google Analytics, vous pouvez dire non. Ce n'est pas nécessaire.",
+"Paso # · prender la entrada con Google":"Étape # · activer la connexion avec Google",
+"En el menú de la izquierda busque":"Dans le menu de gauche cherchez",
+"En la lista elija":"Dans la liste choisissez",
+", prenda el interruptor, escriba un correo de contacto y guarde.":", activez l'interrupteur, saisissez une adresse de contact et enregistrez.",
+"su dirección":"votre adresse",
+"Paso # · crear la bodega":"Étape # · créer l'entrepôt",
+"En el menú busque":"Dans le menu cherchez",
+"Crear base de datos":"Créer une base de données",
+"Elija":"Choisissez",
+"y la región que le quede más cerca.":"et la région la plus proche de chez vous.",
+"modo producción":"mode production",
+"Entre a la pestaña":"Allez dans l'onglet",
+", borre lo que hay y pegue esto tal cual:":", effacez ce qui s'y trouve et collez ceci tel quel :",
+"Reglas":"Règles",
+"Esas tres líneas son las que hacen que":"Ces trois lignes sont ce qui fait que",
+". Sin ellas cualquiera podría leer los datos de los demás. Pulse":". Sans elles, n'importe qui pourrait lire les données des autres. Appuyez sur",
+"cada persona solo pueda ver lo suyo":"chaque personne ne voie que ce qui lui appartient",
+"Paso # · copiar las claves":"Étape # · copier les clés",
+"Arriba a la izquierda pulse la":"En haut à gauche appuyez sur la",
+"Configuración del proyecto":"Paramètres du projet",
+"Baje hasta":"Descendez jusqu'à",
+"y pulse el icono de":"et appuyez sur l'icône",
+"Póngale un apodo, no marque hosting, y pulse registrar.":"Donnez-lui un surnom, ne cochez pas hosting, et appuyez sur enregistrer.",
+"Le muestra un bloque que empieza por":"Il vous montre un bloc qui commence par",
+". Copie desde la llave que abre hasta la que cierra y péguelo en la casilla de aquí atrás.":". Copiez de l'accolade ouvrante à l'accolade fermante et collez-le dans la case précédente.",
+"¿Y esas claves no son peligrosas?":"Et ces clés ne sont-elles pas dangereuses ?",
+"No. Google las deja a la vista en toda página que use Firebase: están hechas para ser públicas. Lo que protege los datos son las reglas del paso # Su clave de GitHub, esa sí es secreta, y nunca sale de este equipo.":"Non. Google les laisse en clair sur toute page qui utilise Firebase : elles sont faites pour être publiques. Ce qui protège les données, ce sont les règles de l'étape #. Votre clé GitHub, elle, est secrète et ne quitte jamais cet appareil.",
+"sin entrar":"non connecté",
+"sin configurar":"non configuré",
+"Entrar con Google":"Se connecter avec Google",
+"¿Cómo funciona esto?":"Comment ça marche ?",
+"Cambiar las claves":"Changer les clés",
+"con problema":"avec un problème",
+"Las claves de Firebase están mal pegadas. Vuelva a copiarlas completas.":"Les clés de Firebase sont mal collées. Recopiez-les en entier.",
+"Guardado por última vez":"Enregistré pour la dernière fois",
+"Guardar ahora":"Enregistrer maintenant",
+"Juntar con lo de la cuenta":"Fusionner avec ce qui est dans le compte",
+"Traer lo de mi cuenta":"Récupérer ce qui est dans mon compte",
+"Salir de la cuenta":"Se déconnecter",
+"Guardar solo cada vez que cambio algo":"Enregistrer tout seul chaque fois que je change quelque chose",
+"guardando…":"enregistrement…",
+"dentro":"connecté",
+"Su cuenta":"Votre compte",
+"todavía no":"pas encore",
+"Salir":"Se déconnecter",
+"Sus datos se quedan guardados en su cuenta y en este equipo. Al volver a entrar con el mismo correo aparecen otra vez.":"Vos données restent enregistrées dans votre compte et sur cet appareil. En vous reconnectant avec la même adresse, elles réapparaissent.",
+"Salió de la cuenta.":"Vous êtes déconnecté.",
+"Guardado en su cuenta.":"Enregistré dans votre compte.",
+"Cuenta lista. Desde ahora todo se guarda solo.":"Compte prêt. À partir de maintenant tout s'enregistre tout seul.",
+"Listo: su cuenta trajo # registro.":"Voilà : votre compte a apporté # enregistrement.",
+"Listo: su cuenta trajo # registros.":"Voilà : votre compte a apporté # enregistrements.",
+"Listo: su cuenta ya estaba al día.":"Voilà : votre compte était déjà à jour.",
+"Claves guardadas. Ahora pulse «Entrar con Google».":"Clés enregistrées. Appuyez maintenant sur « Se connecter avec Google ».",
+"Eso no son las claves. Copie el bloque completo que le muestra Firebase, desde la llave que abre hasta la que cierra.":"Ce ne sont pas les clés. Copiez le bloc entier que Firebase vous montre, de l'accolade ouvrante à la fermante.",
+"Cambiar las claves de Firebase":"Changer les clés de Firebase",
+"Se borran las claves de este equipo y vuelve a salir la casilla para pegar otras. Sus datos no se tocan.":"Les clés sont effacées de cet appareil et la case pour en coller d'autres réapparaît. Vos données ne sont pas touchées.",
+"Cambiarlas":"Les changer",
+"¿Traer lo de su cuenta?":"Récupérer ce qui est dans votre compte ?",
+"Lo que tiene en este equipo se reemplaza por lo que está guardado en su cuenta. Si este equipo tiene cosas más nuevas, se pierden.":"Ce que vous avez sur cet appareil est remplacé par ce qui est enregistré dans votre compte. Si cet appareil a des choses plus récentes, elles sont perdues.",
+"Bajando lo que tiene guardado en su cuenta…":"Téléchargement de ce qui est enregistré dans votre compte…",
+"Todavía no hay nada guardado en su cuenta.":"Il n'y a encore rien d'enregistré dans votre compte.",
+"Primero entre con su cuenta.":"Connectez-vous d'abord avec votre compte.",
+"Para entrar con Google el programa tiene que estar abierto desde su dirección de internet o instalado como aplicación, no desde un archivo del disco.":"Pour se connecter avec Google, le programme doit être ouvert depuis son adresse internet ou installé comme application, pas depuis un fichier du disque.",
+"No se pudo traer la librería de Google. Revise que haya internet.":"La bibliothèque de Google n'a pas pu être récupérée. Vérifiez qu'il y a internet.",
+"Todavía no están puestas las claves de Firebase.":"Les clés de Firebase ne sont pas encore en place.",
+"Cerró la ventana antes de elegir la cuenta.":"Vous avez fermé la fenêtre avant de choisir le compte.",
+"No hay internet, o la conexión se cortó.":"Il n'y a pas d'internet, ou la connexion a été coupée.",
+"Firebase no deja guardar: faltan las reglas del cajón. Están en la ayuda de aquí abajo.":"Firebase refuse d'enregistrer : les règles du tiroir manquent. Elles sont dans l'aide ci-dessous.",
+"Lo que había guardado en la cuenta no se pudo leer.":"Ce qui était enregistré dans le compte n'a pas pu être lu.",
+"Sus datos pesan más de lo que cabe en un cajón de Firebase. Avíseme.":"Vos données pèsent plus que ce qui tient dans un tiroir Firebase. Faites-le-moi savoir.",
+"su cuenta":"votre compte"
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
@@ -10988,7 +11726,95 @@ DIC.de={
 "@ op # ENTRÓ: el precio llegó a $# · ahora la operación está abierta":"@ Pos. # EINGESTIEGEN: der Kurs erreichte $# · die Position ist jetzt offen",
 "Mientras esperan, estas operaciones no suman ni restan nada a su resultado ni a su cartera. En cuanto el precio toque la entrada se activan solas, le suena y le aviso.":"Während sie warten, zählen diese Positionen nichts zu Ihrem Ergebnis oder Ihrem Kapital. Sobald der Kurs den Einstieg berührt, öffnen sie sich von selbst, es klingelt und ich sage Bescheid.",
 "En el stop":"Am Stopp",
-"En el objetivo":"Am Ziel"
+"En el objetivo":"Am Ziel",
+/* v16 · entrar con su cuenta */
+"Sin monedas todavía":"Noch keine Münzen",
+"Su cuenta — entre con Google y sus datos lo siguen":"Ihr Konto — mit Google anmelden und Ihre Daten folgen Ihnen",
+"Entre una vez con su correo de Google. Desde ahí todo lo que registre queda guardado en su cuenta. Si cambia de teléfono, borra la aplicación o entra desde la computadora, vuelve a entrar con el mismo correo y aparece todo.":"Melden Sie sich einmal mit Ihrer Google-Adresse an. Ab dann bleibt alles, was Sie eintragen, in Ihrem Konto. Wenn Sie das Handy wechseln, die App löschen oder sie am Computer öffnen, melden Sie sich mit derselben Adresse an und alles ist wieder da.",
+". Google no permite entrar con una cuenta así. Abra el programa desde su dirección de internet (":". Google erlaubt die Kontoanmeldung so nicht. Öffnen Sie das Programm über seine Internetadresse (",
+"Claves de Firebase":"Firebase-Schlüssel",
+"· se pegan una sola vez":"· nur einmal einfügen",
+"Guardar las claves":"Schlüssel speichern",
+"¿De dónde saco las claves?":"Woher bekomme ich die Schlüssel?",
+"Su cuenta, paso a paso":"Ihr Konto, Schritt für Schritt",
+"Qué es esto":"Was das ist",
+"Firebase es una página de Google donde se crea la bodega en la que viven los datos. Usted no programa nada: entra, pulsa botones y al final copia un bloque de texto que pega aquí. Son unos # minutos y es gratis para empezar.":"Firebase ist eine Google-Seite, auf der das Lager entsteht, in dem die Daten liegen. Sie programmieren nichts: Sie melden sich an, drücken Knöpfe und kopieren am Ende einen Textblock, den Sie hier einfügen. Das dauert etwa # Minuten und der Anfang ist kostenlos.",
+"Paso # · crear el proyecto":"Schritt # · das Projekt anlegen",
+"con su Gmail.":"mit Ihrem Gmail.",
+"y póngale un nombre, por ejemplo":"und geben Sie ihm einen Namen, zum Beispiel",
+"Crear un proyecto":"Projekt erstellen",
+"Si le pregunta por Google Analytics, puede decir que no. No hace falta.":"Wenn es nach Google Analytics fragt, können Sie Nein sagen. Es wird nicht gebraucht.",
+"Paso # · prender la entrada con Google":"Schritt # · die Anmeldung mit Google einschalten",
+"En el menú de la izquierda busque":"Suchen Sie im linken Menü",
+"En la lista elija":"Wählen Sie aus der Liste",
+", prenda el interruptor, escriba un correo de contacto y guarde.":", legen Sie den Schalter um, tragen Sie eine Kontaktadresse ein und speichern Sie.",
+"su dirección":"Ihre Adresse",
+"Paso # · crear la bodega":"Schritt # · das Lager anlegen",
+"En el menú busque":"Suchen Sie im Menü",
+"Crear base de datos":"Datenbank erstellen",
+"Elija":"Wählen Sie",
+"y la región que le quede más cerca.":"und die Region, die Ihnen am nächsten liegt.",
+"modo producción":"Produktionsmodus",
+"Entre a la pestaña":"Gehen Sie auf den Reiter",
+", borre lo que hay y pegue esto tal cual:":", löschen Sie, was dort steht, und fügen Sie genau das ein:",
+"Reglas":"Regeln",
+"Esas tres líneas son las que hacen que":"Diese drei Zeilen sorgen dafür, dass",
+". Sin ellas cualquiera podría leer los datos de los demás. Pulse":". Ohne sie könnte jeder die Daten der anderen lesen. Drücken Sie",
+"cada persona solo pueda ver lo suyo":"jede Person nur das Eigene sieht",
+"Paso # · copiar las claves":"Schritt # · die Schlüssel kopieren",
+"Arriba a la izquierda pulse la":"Drücken Sie oben links auf das",
+"Configuración del proyecto":"Projekteinstellungen",
+"Baje hasta":"Scrollen Sie hinunter zu",
+"y pulse el icono de":"und drücken Sie das Symbol für",
+"Póngale un apodo, no marque hosting, y pulse registrar.":"Geben Sie ihm einen Spitznamen, Hosting nicht ankreuzen, und drücken Sie Registrieren.",
+"Le muestra un bloque que empieza por":"Es zeigt Ihnen einen Block, der beginnt mit",
+". Copie desde la llave que abre hasta la que cierra y péguelo en la casilla de aquí atrás.":". Kopieren Sie von der öffnenden bis zur schließenden Klammer und fügen Sie es in das Feld dahinter ein.",
+"¿Y esas claves no son peligrosas?":"Und sind diese Schlüssel nicht gefährlich?",
+"No. Google las deja a la vista en toda página que use Firebase: están hechas para ser públicas. Lo que protege los datos son las reglas del paso # Su clave de GitHub, esa sí es secreta, y nunca sale de este equipo.":"Nein. Google zeigt sie auf jeder Seite, die Firebase nutzt, offen an: Sie sind dafür gemacht, öffentlich zu sein. Die Daten schützen die Regeln aus Schritt #. Ihr GitHub-Schlüssel ist der geheime, und er verlässt dieses Gerät nie.",
+"sin entrar":"nicht angemeldet",
+"sin configurar":"nicht eingerichtet",
+"Entrar con Google":"Mit Google anmelden",
+"¿Cómo funciona esto?":"Wie funktioniert das?",
+"Cambiar las claves":"Schlüssel ändern",
+"con problema":"mit Problem",
+"Las claves de Firebase están mal pegadas. Vuelva a copiarlas completas.":"Die Firebase-Schlüssel sind falsch eingefügt. Kopieren Sie sie noch einmal vollständig.",
+"Guardado por última vez":"Zuletzt gespeichert",
+"Guardar ahora":"Jetzt speichern",
+"Juntar con lo de la cuenta":"Mit dem im Konto zusammenführen",
+"Traer lo de mi cuenta":"Holen, was in meinem Konto liegt",
+"Salir de la cuenta":"Vom Konto abmelden",
+"Guardar solo cada vez que cambio algo":"Von selbst speichern, sobald ich etwas ändere",
+"guardando…":"speichert…",
+"dentro":"angemeldet",
+"Su cuenta":"Ihr Konto",
+"todavía no":"noch nicht",
+"Salir":"Abmelden",
+"Sus datos se quedan guardados en su cuenta y en este equipo. Al volver a entrar con el mismo correo aparecen otra vez.":"Ihre Daten bleiben in Ihrem Konto und auf diesem Gerät gespeichert. Wenn Sie sich mit derselben Adresse wieder anmelden, sind sie wieder da.",
+"Salió de la cuenta.":"Vom Konto abgemeldet.",
+"Guardado en su cuenta.":"In Ihrem Konto gespeichert.",
+"Cuenta lista. Desde ahora todo se guarda solo.":"Konto bereit. Ab jetzt speichert sich alles von selbst.",
+"Listo: su cuenta trajo # registro.":"Fertig: Ihr Konto hat # Eintrag gebracht.",
+"Listo: su cuenta trajo # registros.":"Fertig: Ihr Konto hat # Einträge gebracht.",
+"Listo: su cuenta ya estaba al día.":"Fertig: Ihr Konto war schon auf dem neuesten Stand.",
+"Claves guardadas. Ahora pulse «Entrar con Google».":"Schlüssel gespeichert. Drücken Sie jetzt „Mit Google anmelden\".",
+"Eso no son las claves. Copie el bloque completo que le muestra Firebase, desde la llave que abre hasta la que cierra.":"Das sind nicht die Schlüssel. Kopieren Sie den ganzen Block, den Firebase anzeigt, von der öffnenden bis zur schließenden Klammer.",
+"Cambiar las claves de Firebase":"Die Firebase-Schlüssel ändern",
+"Se borran las claves de este equipo y vuelve a salir la casilla para pegar otras. Sus datos no se tocan.":"Die Schlüssel werden von diesem Gerät gelöscht und das Feld zum Einfügen neuer erscheint wieder. Ihre Daten bleiben unberührt.",
+"Cambiarlas":"Ändern",
+"¿Traer lo de su cuenta?":"Holen, was in Ihrem Konto liegt?",
+"Lo que tiene en este equipo se reemplaza por lo que está guardado en su cuenta. Si este equipo tiene cosas más nuevas, se pierden.":"Was Sie auf diesem Gerät haben, wird durch das ersetzt, was in Ihrem Konto gespeichert ist. Hat dieses Gerät Neueres, geht es verloren.",
+"Bajando lo que tiene guardado en su cuenta…":"Lade, was in Ihrem Konto gespeichert ist…",
+"Todavía no hay nada guardado en su cuenta.":"In Ihrem Konto ist noch nichts gespeichert.",
+"Primero entre con su cuenta.":"Melden Sie sich zuerst mit Ihrem Konto an.",
+"Para entrar con Google el programa tiene que estar abierto desde su dirección de internet o instalado como aplicación, no desde un archivo del disco.":"Zum Anmelden mit Google muss das Programm über seine Internetadresse geöffnet oder als App installiert sein, nicht aus einer Datei auf der Festplatte.",
+"No se pudo traer la librería de Google. Revise que haya internet.":"Die Google-Bibliothek konnte nicht geladen werden. Prüfen Sie die Internetverbindung.",
+"Todavía no están puestas las claves de Firebase.":"Die Firebase-Schlüssel sind noch nicht eingetragen.",
+"Cerró la ventana antes de elegir la cuenta.":"Sie haben das Fenster geschlossen, bevor Sie das Konto gewählt haben.",
+"No hay internet, o la conexión se cortó.":"Es gibt kein Internet, oder die Verbindung ist abgebrochen.",
+"Firebase no deja guardar: faltan las reglas del cajón. Están en la ayuda de aquí abajo.":"Firebase lässt das Speichern nicht zu: Die Regeln der Schublade fehlen. Sie stehen in der Hilfe unten.",
+"Lo que había guardado en la cuenta no se pudo leer.":"Was im Konto gespeichert war, konnte nicht gelesen werden.",
+"Sus datos pesan más de lo que cabe en un cajón de Firebase. Avíseme.":"Ihre Daten sind größer als eine Firebase-Schublade fasst. Sagen Sie mir Bescheid.",
+"su cuenta":"Ihrem Konto"
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
@@ -11571,7 +12397,95 @@ DIC.it={
 "@ op # ENTRÓ: el precio llegó a $# · ahora la operación está abierta":"@ op # È ENTRATA: il prezzo è arrivato a $# · ora l'operazione è aperta",
 "Mientras esperan, estas operaciones no suman ni restan nada a su resultado ni a su cartera. En cuanto el precio toque la entrada se activan solas, le suena y le aviso.":"Mentre aspettano, queste operazioni non aggiungono né tolgono nulla al suo risultato né al suo portafoglio. Appena il prezzo tocca l'ingresso si attivano da sole, suona e glielo dico.",
 "En el stop":"Allo stop",
-"En el objetivo":"All'obiettivo"
+"En el objetivo":"All'obiettivo",
+/* v16 · entrar con su cuenta */
+"Sin monedas todavía":"Ancora nessuna moneta",
+"Su cuenta — entre con Google y sus datos lo siguen":"Il suo account — entri con Google e i suoi dati la seguono",
+"Entre una vez con su correo de Google. Desde ahí todo lo que registre queda guardado en su cuenta. Si cambia de teléfono, borra la aplicación o entra desde la computadora, vuelve a entrar con el mismo correo y aparece todo.":"Entri una volta con il suo indirizzo Google. Da lì tutto quello che registra resta salvato nel suo account. Se cambia telefono, cancella l'applicazione o entra dal computer, rientri con lo stesso indirizzo e riappare tutto.",
+". Google no permite entrar con una cuenta así. Abra el programa desde su dirección de internet (":". Google non permette di entrare con un account così. Apra il programma dal suo indirizzo internet (",
+"Claves de Firebase":"Chiavi di Firebase",
+"· se pegan una sola vez":"· si incollano una sola volta",
+"Guardar las claves":"Salvare le chiavi",
+"¿De dónde saco las claves?":"Dove prendo le chiavi?",
+"Su cuenta, paso a paso":"Il suo account, passo passo",
+"Qué es esto":"Che cos'è",
+"Firebase es una página de Google donde se crea la bodega en la que viven los datos. Usted no programa nada: entra, pulsa botones y al final copia un bloque de texto que pega aquí. Son unos # minutos y es gratis para empezar.":"Firebase è una pagina di Google dove si crea il magazzino in cui vivono i dati. Lei non programma nulla: entra, preme pulsanti e alla fine copia un blocco di testo che incolla qui. Sono circa # minuti ed è gratis per iniziare.",
+"Paso # · crear el proyecto":"Passo # · creare il progetto",
+"con su Gmail.":"con il suo Gmail.",
+"y póngale un nombre, por ejemplo":"e gli dia un nome, per esempio",
+"Crear un proyecto":"Creare un progetto",
+"Si le pregunta por Google Analytics, puede decir que no. No hace falta.":"Se le chiede di Google Analytics, può dire di no. Non serve.",
+"Paso # · prender la entrada con Google":"Passo # · accendere l'ingresso con Google",
+"En el menú de la izquierda busque":"Nel menù di sinistra cerchi",
+"En la lista elija":"Nell'elenco scelga",
+", prenda el interruptor, escriba un correo de contacto y guarde.":", accenda l'interruttore, scriva un indirizzo di contatto e salvi.",
+"su dirección":"il suo indirizzo",
+"Paso # · crear la bodega":"Passo # · creare il magazzino",
+"En el menú busque":"Nel menù cerchi",
+"Crear base de datos":"Creare database",
+"Elija":"Scelga",
+"y la región que le quede más cerca.":"e la regione che le è più vicina.",
+"modo producción":"modalità produzione",
+"Entre a la pestaña":"Entri nella scheda",
+", borre lo que hay y pegue esto tal cual:":", cancelli quello che c'è e incolli questo così com'è:",
+"Reglas":"Regole",
+"Esas tres líneas son las que hacen que":"Quelle tre righe sono ciò che fa sì che",
+". Sin ellas cualquiera podría leer los datos de los demás. Pulse":". Senza di esse chiunque potrebbe leggere i dati degli altri. Prema",
+"cada persona solo pueda ver lo suyo":"ogni persona possa vedere solo il suo",
+"Paso # · copiar las claves":"Passo # · copiare le chiavi",
+"Arriba a la izquierda pulse la":"In alto a sinistra prema la",
+"Configuración del proyecto":"Impostazioni del progetto",
+"Baje hasta":"Scenda fino a",
+"y pulse el icono de":"e prema l'icona di",
+"Póngale un apodo, no marque hosting, y pulse registrar.":"Gli dia un soprannome, non spunti hosting, e prema registra.",
+"Le muestra un bloque que empieza por":"Le mostra un blocco che comincia con",
+". Copie desde la llave que abre hasta la que cierra y péguelo en la casilla de aquí atrás.":". Copi dalla parentesi che apre fino a quella che chiude e lo incolli nella casella qui dietro.",
+"¿Y esas claves no son peligrosas?":"E quelle chiavi non sono pericolose?",
+"No. Google las deja a la vista en toda página que use Firebase: están hechas para ser públicas. Lo que protege los datos son las reglas del paso # Su clave de GitHub, esa sí es secreta, y nunca sale de este equipo.":"No. Google le lascia in vista su ogni pagina che usa Firebase: sono fatte per essere pubbliche. Ciò che protegge i dati sono le regole del passo #. La sua chiave di GitHub, quella sì è segreta, e non esce mai da questo apparecchio.",
+"sin entrar":"non entrato",
+"sin configurar":"non configurato",
+"Entrar con Google":"Entrare con Google",
+"¿Cómo funciona esto?":"Come funziona?",
+"Cambiar las claves":"Cambiare le chiavi",
+"con problema":"con problema",
+"Las claves de Firebase están mal pegadas. Vuelva a copiarlas completas.":"Le chiavi di Firebase sono incollate male. Le ricopi per intero.",
+"Guardado por última vez":"Salvato l'ultima volta",
+"Guardar ahora":"Salvare adesso",
+"Juntar con lo de la cuenta":"Unire con quello dell'account",
+"Traer lo de mi cuenta":"Portare quello del mio account",
+"Salir de la cuenta":"Uscire dall'account",
+"Guardar solo cada vez que cambio algo":"Salvare da solo ogni volta che cambio qualcosa",
+"guardando…":"salvataggio…",
+"dentro":"dentro",
+"Su cuenta":"Il suo account",
+"todavía no":"non ancora",
+"Salir":"Uscire",
+"Sus datos se quedan guardados en su cuenta y en este equipo. Al volver a entrar con el mismo correo aparecen otra vez.":"I suoi dati restano salvati nel suo account e in questo apparecchio. Rientrando con lo stesso indirizzo riappaiono.",
+"Salió de la cuenta.":"È uscito dall'account.",
+"Guardado en su cuenta.":"Salvato nel suo account.",
+"Cuenta lista. Desde ahora todo se guarda solo.":"Account pronto. Da adesso tutto si salva da solo.",
+"Listo: su cuenta trajo # registro.":"Fatto: il suo account ha portato # registrazione.",
+"Listo: su cuenta trajo # registros.":"Fatto: il suo account ha portato # registrazioni.",
+"Listo: su cuenta ya estaba al día.":"Fatto: il suo account era già aggiornato.",
+"Claves guardadas. Ahora pulse «Entrar con Google».":"Chiavi salvate. Ora prema «Entrare con Google».",
+"Eso no son las claves. Copie el bloque completo que le muestra Firebase, desde la llave que abre hasta la que cierra.":"Quelle non sono le chiavi. Copi il blocco completo che le mostra Firebase, dalla parentesi che apre a quella che chiude.",
+"Cambiar las claves de Firebase":"Cambiare le chiavi di Firebase",
+"Se borran las claves de este equipo y vuelve a salir la casilla para pegar otras. Sus datos no se tocan.":"Le chiavi si cancellano da questo apparecchio e riappare la casella per incollarne altre. I suoi dati non si toccano.",
+"Cambiarlas":"Cambiarle",
+"¿Traer lo de su cuenta?":"Portare quello del suo account?",
+"Lo que tiene en este equipo se reemplaza por lo que está guardado en su cuenta. Si este equipo tiene cosas más nuevas, se pierden.":"Quello che ha in questo apparecchio viene sostituito da quello salvato nel suo account. Se questo apparecchio ha cose più nuove, si perdono.",
+"Bajando lo que tiene guardado en su cuenta…":"Sto scaricando quello che ha salvato nel suo account…",
+"Todavía no hay nada guardado en su cuenta.":"Non c'è ancora niente salvato nel suo account.",
+"Primero entre con su cuenta.":"Prima entri con il suo account.",
+"Para entrar con Google el programa tiene que estar abierto desde su dirección de internet o instalado como aplicación, no desde un archivo del disco.":"Per entrare con Google il programma deve essere aperto dal suo indirizzo internet o installato come applicazione, non da un file del disco.",
+"No se pudo traer la librería de Google. Revise que haya internet.":"Non si è potuta scaricare la libreria di Google. Controlli che ci sia internet.",
+"Todavía no están puestas las claves de Firebase.":"Le chiavi di Firebase non sono ancora messe.",
+"Cerró la ventana antes de elegir la cuenta.":"Ha chiuso la finestra prima di scegliere l'account.",
+"No hay internet, o la conexión se cortó.":"Non c'è internet, o la connessione è caduta.",
+"Firebase no deja guardar: faltan las reglas del cajón. Están en la ayuda de aquí abajo.":"Firebase non lascia salvare: mancano le regole del cassetto. Sono nell'aiuto qui sotto.",
+"Lo que había guardado en la cuenta no se pudo leer.":"Quello che era salvato nell'account non si è potuto leggere.",
+"Sus datos pesan más de lo que cabe en un cajón de Firebase. Avíseme.":"I suoi dati pesano più di quanto entra in un cassetto di Firebase. Me lo faccia sapere.",
+"su cuenta":"il suo account"
 };
 </script>
 </body>
