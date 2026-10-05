@@ -18,7 +18,11 @@
    Las letras se calculan solas a partir del fondo: nunca quedan ilegibles.
    ===================================================================== */
 :root{
-  --fz:15px; --rad:14px;
+  --fz:15px; --rad:16px;
+  /* escala de espacios y de letras: todo el programa usa estos y nada más */
+  --e1:4px; --e2:8px; --e3:12px; --e4:16px; --e5:24px; --e6:32px; --e7:48px;
+  --f1:11px; --f2:12px; --f3:13px; --f4:15px; --f5:17px; --f6:21px; --f7:28px; --f8:40px;
+  --anchoMax:1460px;
   --b0:#070B12; --b1:#0E1420; --b2:#151D2C; --b3:#1D2738; --ln:#273348;
   --tx:#F2F6FC; --t2:#B7C3D6; --t3:#8593A8;
   --ac:#10E0A0; --ac2:#6BFFD0; --ojoTx:#FFBE7B; --acInk:#04120C; --acTx:#10E0A0;
@@ -28,8 +32,18 @@
   --sombra:0 10px 30px rgba(0,0,0,.35);
 }
 *{box-sizing:border-box}
+/* ---------- cada pestaña con su color ---------- */
+body{--vac:var(--ac);--vacTx:var(--acTx);--vacInk:var(--acInk)}
+body{--vacL:var(--ac2);--vacD:var(--ac);--vacF:var(--ac)}
+body[data-v="res"] {--vac:var(--c1);--vacTx:var(--c1Tx);--vacInk:var(--c1Ink);--vacL:var(--c1L);--vacD:var(--c1D);--vacF:var(--c1F)}
+body[data-v="spot"]{--vac:var(--c2);--vacTx:var(--c2Tx);--vacInk:var(--c2Ink);--vacL:var(--c2L);--vacD:var(--c2D);--vacF:var(--c2F)}
+body[data-v="fut"] {--vac:var(--c3);--vacTx:var(--c3Tx);--vacInk:var(--c3Ink);--vacL:var(--c3L);--vacD:var(--c3D);--vacF:var(--c3F)}
+body[data-v="back"]{--vac:var(--c4);--vacTx:var(--c4Tx);--vacInk:var(--c4Ink);--vacL:var(--c4L);--vacD:var(--c4D);--vacF:var(--c4F)}
+body[data-v="alr"] {--vac:var(--c5);--vacTx:var(--c5Tx);--vacInk:var(--c5Ink);--vacL:var(--c5L);--vacD:var(--c5D);--vacF:var(--c5F)}
+body[data-v="dat"] {--vac:var(--c6);--vacTx:var(--c6Tx);--vacInk:var(--c6Ink);--vacL:var(--c6L);--vacD:var(--c6D);--vacF:var(--c6F)}
 html,body{margin:0;height:100%}
-body{background:var(--b0);color:var(--tx);font-size:var(--fz);
+body{background:color-mix(in srgb,var(--vacD) 5%,var(--b0));color:var(--tx);font-size:var(--fz);
+  -webkit-font-smoothing:antialiased;transition:background .4s ease;
   font-family:"Segoe UI Variable Text","Segoe UI",Roboto,system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
   font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;
   font-synthesis:none;text-rendering:optimizeSpeed;overflow-x:hidden}
@@ -41,47 +55,77 @@ b,strong{color:var(--tx)}
 
 /* ---------- marca de agua ---------- */
 #marca{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;display:grid;place-items:center}
-#marca .ma{width:min(62vh,600px);height:min(62vh,600px);opacity:var(--maOp);
+#marca .ma{width:min(52vh,520px);height:min(52vh,520px);opacity:calc(var(--maOp) * .55);
   transition:opacity 1.2s ease}
 #marca .ma svg,#marca .ma img{width:100%;height:100%;display:block}
 
 /* ---------- armazón ---------- */
-#app{display:flex;min-height:100vh;position:relative;z-index:1}
-aside{width:200px;flex:none;background:var(--b1);border-right:1px solid var(--ln);
-  display:flex;flex-direction:column;padding:16px 12px;gap:5px;
-  padding-top:max(16px,env(safe-area-inset-top));position:sticky;top:0;height:100vh}
-aside .logo{display:flex;align-items:center;gap:11px;padding:4px 8px 20px}
-aside .logo .d{width:42px;height:42px;border-radius:12px;flex:none;overflow:hidden;background:var(--b2);
-  box-shadow:0 6px 18px color-mix(in srgb,var(--ac) 35%,transparent)}
-aside .logo .d img{width:100%;height:100%;display:block}
-aside .logo b{font-size:15px;line-height:1.2;display:block}
-aside .logo span{font-size:11px;color:var(--t3);letter-spacing:.08em}
-aside nav{display:flex;flex-direction:column;gap:4px}
-aside nav button{display:flex;align-items:center;gap:11px;background:none;border:0;color:var(--t2);
-  padding:11px 13px;border-radius:10px;cursor:pointer;font-family:inherit;font-size:14px;
-  font-weight:600;text-align:left;width:100%;transition:.14s}
-aside nav button:hover{background:var(--b2);color:var(--tx)}
-aside nav button.on{background:color-mix(in srgb,var(--ac) 16%,transparent);color:var(--acTx);
-  box-shadow:inset 3px 0 0 var(--ac)}
-aside nav button svg{width:18px;height:18px;flex:none}
-aside nav button .bg{margin-left:auto;background:var(--dn);color:#fff;font-size:11px;
-  font-weight:700;padding:2px 7px;border-radius:99px}
-aside .pie{margin-top:auto;padding:13px;border-radius:12px;background:var(--b2);
-  border:1px solid var(--ln);text-align:center}
-aside .pie b{display:block;font-size:17px;font-weight:700}
-aside .pie span{font-size:11px;color:var(--t3);letter-spacing:.08em}
+#app{display:flex;min-height:100vh;position:relative;z-index:1;
+  background-color:color-mix(in srgb,var(--vacD) 5%,var(--b0));
+  background-image:
+    radial-gradient(1000px 440px at 16% -16%, color-mix(in srgb,var(--vacD) 13%,transparent), transparent 70%),
+    radial-gradient(800px 400px at 100% 0%, color-mix(in srgb,var(--vacD) 7%,transparent), transparent 65%);
+  transition:background-color .4s ease}
 
-main{flex:1;min-width:0;padding:18px 22px calc(40px + env(safe-area-inset-bottom))}
-.encab{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:16px}
-.encab h1{font-size:28px;font-weight:700;letter-spacing:0;line-height:1.1}
-.encab p{margin:3px 0 0;font-size:13px;color:var(--t2)}
+/* ---------- barra lateral ---------- */
+aside{width:228px;flex:none;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--vacD) 10%,var(--b1)),
+                                     color-mix(in srgb,var(--vacD) 4%,var(--b0)));
+  border-right:1px solid color-mix(in srgb,var(--vac) 16%,var(--ln));display:flex;flex-direction:column;
+  padding:var(--e5) var(--e3) var(--e4);gap:var(--e1);
+  padding-top:max(var(--e5),env(safe-area-inset-top));position:sticky;top:0;height:100vh}
+aside .logo{display:flex;align-items:center;gap:var(--e3);padding:0 var(--e2) var(--e6)}
+aside .logo .d{width:46px;height:46px;border-radius:14px;flex:none;overflow:hidden;background:var(--b2);
+  box-shadow:0 8px 24px color-mix(in srgb,var(--vac) 45%,transparent)}
+aside .logo .d img{width:100%;height:100%;display:block}
+aside .logo b{font-size:var(--f4);line-height:1.25;display:block;letter-spacing:-.01em}
+aside .logo span{font-size:10px;color:var(--t3);letter-spacing:.14em;font-weight:600}
+aside nav{display:flex;flex-direction:column;gap:var(--e1)}
+aside nav button{display:flex;align-items:center;gap:var(--e3);background:none;border:0;color:var(--t2);
+  padding:11px var(--e3);border-radius:12px;cursor:pointer;font-family:inherit;font-size:var(--f3);
+  font-weight:600;text-align:left;width:100%;transition:.16s;position:relative}
+aside nav button .np{width:30px;height:30px;border-radius:9px;flex:none;display:grid;place-items:center;
+  background:var(--b2);color:var(--t2);transition:.16s}
+aside nav button:hover{background:var(--b2);color:var(--tx)}
+aside nav button:hover .np{color:var(--tx)}
+aside nav button.on{background:color-mix(in srgb,var(--nc) 15%,transparent);color:var(--tx);font-weight:700}
+aside nav button.on .np{background:var(--nc);color:var(--ncInk);
+  box-shadow:0 5px 16px color-mix(in srgb,var(--nc) 55%,transparent)}
+aside nav button svg{width:17px;height:17px;flex:none}
+aside nav button .bg{margin-left:auto;background:var(--dn);color:var(--dnInk);font-size:10px;
+  font-weight:800;padding:2px 7px;border-radius:99px}
+aside .pie{margin-top:auto;padding:var(--e4);border-radius:14px;
+  background:linear-gradient(145deg,var(--vac),var(--vacF));color:var(--vacInk);
+  border:1px solid transparent;text-align:center;
+  box-shadow:0 10px 26px color-mix(in srgb,var(--vac) 42%,transparent)}
+aside .pie b{color:var(--vacInk)} aside .pie span{color:var(--vacInk)}
+aside .pie b{display:block;font-size:var(--f6);font-weight:800;letter-spacing:-.02em;color:var(--vacInk)}
+aside .pie span{font-size:10px;color:var(--vacInk);letter-spacing:.12em;font-weight:700}
+
+/* ---------- zona de trabajo ---------- */
+main{flex:1;min-width:0;padding:var(--e5) var(--e5) calc(var(--e7) + env(safe-area-inset-bottom))}
+main>*{max-width:var(--anchoMax);margin-left:auto;margin-right:auto}
+.encab{display:flex;align-items:center;gap:var(--e4);flex-wrap:wrap;margin-bottom:var(--e5)}
+.encab .tit{display:flex;align-items:center;gap:var(--e4);min-width:0}
+.encab .gic{width:62px;height:62px;flex:none;display:grid;place-items:center;border-radius:19px;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--vac) 34%,var(--b1)),
+                                     color-mix(in srgb,var(--vac) 12%,var(--b1)));
+  border:1px solid color-mix(in srgb,var(--vac) 48%,transparent);
+  box-shadow:0 14px 38px color-mix(in srgb,var(--vac) 34%,transparent),
+             inset 0 1px 0 color-mix(in srgb,#fff 14%,transparent)}
+.encab .gic svg{width:36px;height:36px}
+.encab h1{font-size:var(--f7);font-weight:800;letter-spacing:-.025em;line-height:1.05}
+.encab p{margin:4px 0 0;font-size:var(--f3);color:var(--t2);line-height:1.4}
 .encab .der{margin-left:auto;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
-.encab .estado,.encab .acciones{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.encab .estado,.encab .acciones{display:flex;align-items:center;gap:var(--e2);flex-wrap:wrap}
+.encab .der{min-width:0;max-width:100%}
+.encab .acciones .b{max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .met .v.chica{font-size:19px}
 
 /* ---------- indicadores de la cabecera ---------- */
-.pulso,.syn{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--t2);
-  padding:7px 12px;border-radius:99px;background:var(--b1);border:1px solid var(--ln);white-space:nowrap}
+.pulso,.syn{display:inline-flex;align-items:center;gap:7px;font-size:var(--f2);color:var(--t2);
+  padding:8px 13px;border-radius:99px;background:var(--b1);border:1px solid var(--ln);white-space:nowrap;
+  font-weight:600}
 .pulso i,.syn i{width:7px;height:7px;border-radius:50%;background:var(--t3);flex:none}
 .pulso.on i{background:var(--up);animation:late 1.6s infinite}
 .pulso.mal i,.syn.mal i{background:var(--dn)}
@@ -90,76 +134,111 @@ main{flex:1;min-width:0;padding:18px 22px calc(40px + env(safe-area-inset-bottom
 @keyframes late{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.8)}}
 
 /* ---------- botones ---------- */
-.b{background:var(--b2);color:var(--tx);border:1px solid var(--ln);padding:9px 14px;
-  border-radius:9px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;
-  transition:.14s;display:inline-flex;align-items:center;gap:7px;justify-content:center;
+.b{background:color-mix(in srgb,var(--vacD) 11%,var(--b2));color:var(--tx);
+  border:1px solid color-mix(in srgb,var(--vac) 20%,var(--ln));padding:10px 15px;
+  border-radius:11px;cursor:pointer;font-family:inherit;font-size:var(--f3);font-weight:700;
+  transition:.16s;display:inline-flex;align-items:center;gap:7px;justify-content:center;
   white-space:nowrap}
-.b:hover{border-color:var(--acTx);color:var(--acTx)}
+.b:hover{border-color:var(--vacTx);color:var(--vacTx);background:var(--b3)}
 .b:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
 .b:disabled{opacity:.42;cursor:default;pointer-events:none}
-.b.sm{padding:6px 11px;font-size:12px;border-radius:8px}
-.b.ac{background:var(--ac);border-color:transparent;color:var(--acInk);font-weight:700}
+.b.sm{padding:7px 12px;font-size:var(--f2);border-radius:9px}
+.b.ac{background:linear-gradient(135deg,var(--vac),var(--vacF));
+  border-color:transparent;color:var(--vacInk);font-weight:700;
+  box-shadow:0 6px 18px color-mix(in srgb,var(--vac) 38%,transparent)}
+.b.ac:hover{color:var(--vacInk);filter:brightness(1.07)}
 .b.ac:hover{filter:brightness(1.08);color:var(--acInk)}
-.b.vd{background:color-mix(in srgb,var(--up) 22%,var(--b1));border-color:color-mix(in srgb,var(--up) 55%,transparent);
-  color:var(--upTx);font-weight:700}
-.b.rj{background:color-mix(in srgb,var(--dn) 20%,var(--b1));border-color:color-mix(in srgb,var(--dn) 55%,transparent);
-  color:var(--dnTx);font-weight:700}
-.b.vd:hover{background:color-mix(in srgb,var(--up) 34%,var(--b1));color:var(--upTx)}
-.b.rj:hover{background:color-mix(in srgb,var(--dn) 32%,var(--b1));color:var(--dnTx)}
+.b.vd{background:linear-gradient(135deg,var(--upG),var(--upF));border-color:transparent;
+  color:var(--upInk);font-weight:700;box-shadow:0 6px 18px color-mix(in srgb,var(--up) 34%,transparent)}
+.b.vd:hover{color:var(--upInk);filter:brightness(1.07)}
+.b.rj{background:linear-gradient(135deg,var(--dnG),var(--dnF));border-color:transparent;
+  color:var(--dnInk);font-weight:700;box-shadow:0 6px 18px color-mix(in srgb,var(--dn) 30%,transparent)}
+.b.rj:hover{color:var(--dnInk);filter:brightness(1.07)}
+
 .b.gr{padding:12px 16px;font-size:14px}
 .b.gh{background:none;border-color:var(--ln);color:var(--t2)}
 .b svg{width:15px;height:15px}
 
 /* ---------- caja ---------- */
-.caja{background:var(--b1);border:1px solid var(--ln);border-radius:var(--rad);
-  margin-bottom:14px;overflow:hidden}
-.caja>h2{padding:14px 17px;font-size:16px;font-weight:700;display:flex;align-items:center;
-  gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--ln);color:var(--tx)}
+.caja{background:color-mix(in srgb,var(--vacD) 4%,var(--b1));
+  border:1px solid color-mix(in srgb,var(--vac) 15%,var(--ln));border-radius:var(--rad);
+  margin-bottom:var(--e4);overflow:hidden;
+  box-shadow:0 4px 22px rgba(0,0,0,.30), inset 0 1px 0 color-mix(in srgb,#fff 6%,transparent)}
+.caja>h2{padding:var(--e4) var(--e5);font-size:var(--f5);font-weight:700;display:flex;align-items:center;
+  gap:var(--e3);flex-wrap:wrap;color:var(--tx);letter-spacing:-.01em;
+  border-bottom:1px solid color-mix(in srgb,var(--vac) 22%,var(--ln));
+  background:linear-gradient(180deg,color-mix(in srgb,var(--vacD) 14%,transparent),transparent)}
 .caja>h2 .sp{flex:1}
-.caja>h2 .ic{width:24px;height:24px;border-radius:7px;flex:none;display:grid;place-items:center;
-  background:var(--b2);color:var(--t2)}
-.caja>h2 .ic svg{width:14px;height:14px}
-.caja>h2 .mut{font-weight:500;font-size:12px}
-.cp{padding:15px 17px}
+.caja>h2 .ic{width:36px;height:36px;border-radius:12px;flex:none;display:grid;place-items:center;
+  background:linear-gradient(145deg,var(--vac),var(--vacF));color:var(--vacInk);
+  box-shadow:0 5px 16px color-mix(in srgb,var(--vac) 45%,transparent)}
+.caja>h2 .ic svg{width:18px;height:18px}
+.caja>h2 .mut{font-weight:500;font-size:var(--f2)}
+.cp{padding:var(--e5)}
+.caja>.env{margin:0}
 
 /* ---------- tarjetas de cifras, cada una con su color ---------- */
-.mets{display:grid;grid-template-columns:repeat(auto-fit,minmax(176px,1fr));gap:10px;margin-bottom:14px}
-.met{position:relative;overflow:hidden;border-radius:var(--rad);padding:12px 14px;
-  background:var(--b1);border:1px solid var(--ln);min-width:0}
-.met .cab{display:flex;align-items:center;gap:7px;margin-bottom:7px}
-.met .cab .ico{width:18px;height:18px;display:grid;place-items:center;flex:none;color:var(--t2)}
+.mets{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:var(--e3);
+  margin-bottom:var(--e4)}
+.met{--c:var(--vac);--cF:var(--vacF);--cInk:var(--vacInk);position:relative;overflow:hidden;
+  border-radius:var(--rad);padding:var(--e4) var(--e4) 15px;min-width:0;
+  background:linear-gradient(150deg,var(--c),var(--cF));
+  box-shadow:0 10px 26px color-mix(in srgb,var(--c) 26%,transparent),
+             inset 0 1px 0 color-mix(in srgb,#fff 26%,transparent)}
+.met::after{content:"";position:absolute;right:-42px;top:-52px;width:140px;height:140px;border-radius:50%;
+  background:color-mix(in srgb,#fff 12%,transparent);pointer-events:none}
+.met .cab{display:flex;align-items:center;gap:var(--e2);margin-bottom:var(--e2);position:relative}
+.met .cab .ico{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;flex:none;
+  background:color-mix(in srgb,var(--cInk) 16%,transparent);color:var(--cInk)}
 .met .cab .ico svg{width:16px;height:16px}
-.met .cab span{font-size:12px;color:var(--t2);font-weight:600;line-height:1.25}
-.met .v{font-size:23px;font-weight:700;letter-spacing:0;
-  font-variant-numeric:tabular-nums;line-height:1.1;color:var(--tx);position:relative;
+.met .cab span{font-size:var(--f2);color:var(--cInk);font-weight:700;line-height:1.25}
+.met .v{font-size:var(--f7);font-weight:800;letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums;line-height:1.05;color:var(--cInk);position:relative;
   overflow-wrap:anywhere}
-.met .v small{font-size:12px;font-weight:600;color:var(--t3);margin-left:5px}
-.met .s{font-size:12px;color:var(--t2);margin-top:4px;position:relative;line-height:1.35}
-.met .msp{position:absolute;right:10px;bottom:10px;width:64px;height:22px;opacity:.55}
+.met .v.chica{font-size:var(--f6)}
+.met .v small{font-size:var(--f2);font-weight:700;color:var(--cInk);margin-left:5px}
+.met .v .up,.met .v .dn,.met .v span{color:var(--cInk)}
+.met .s{font-size:var(--f2);color:var(--cInk);margin-top:5px;position:relative;
+  line-height:1.4;font-weight:600}
+.met .msp{position:absolute;right:var(--e3);bottom:var(--e3);width:68px;height:24px;opacity:.5}
 .met .msp svg{width:100%;height:100%;overflow:visible}
-.met.sube{border-top:2px solid var(--up)} .met.baja{border-top:2px solid var(--dn)}
+.met.p1{--c:var(--c1);--cF:var(--c1F);--cInk:var(--c1Ink)}
+.met.p2{--c:var(--c2);--cF:var(--c2F);--cInk:var(--c2Ink)}
+.met.p3{--c:var(--c3);--cF:var(--c3F);--cInk:var(--c3Ink)}
+.met.p4{--c:var(--c4);--cF:var(--c4F);--cInk:var(--c4Ink)}
+.met.p5{--c:var(--c5);--cF:var(--c5F);--cInk:var(--c5Ink)}
+.met.p6{--c:var(--c6);--cF:var(--c6F);--cInk:var(--c6Ink)}
+.met.gana{--c:var(--upG);--cF:var(--upF);--cInk:var(--upInk)}
+.met.pierde{--c:var(--dnG);--cF:var(--dnF);--cInk:var(--dnInk)}
 
 /* ---------- hero: la cifra grande ---------- */
-.cima{display:grid;grid-template-columns:minmax(290px,1fr) minmax(0,1.6fr);gap:12px;margin-bottom:14px}
-.cima .mets{margin:0;align-content:start;grid-template-columns:repeat(3,1fr)}
+.cima{display:grid;grid-template-columns:minmax(330px,1fr) minmax(0,1.65fr);gap:var(--e3);
+  margin-bottom:var(--e4);align-items:stretch}
+.cima .mets{margin:0;align-content:stretch;grid-template-columns:repeat(3,1fr)}
+.cima .hero{display:flex;flex-direction:column}
+.cima .hz{flex:1}
 @media(max-width:1250px){ .cima{grid-template-columns:1fr} .cima .mets{grid-template-columns:repeat(3,1fr)} }
-.hero{border-radius:var(--rad);overflow:hidden;position:relative;margin-bottom:14px;
-  border:1px solid var(--ln);border-top:3px solid var(--up);background:var(--b1)}
-.hero.pierde{border-top-color:var(--dn)}
+.hero{border-radius:var(--rad);overflow:hidden;position:relative;margin-bottom:var(--e4);
+  border:1px solid color-mix(in srgb,var(--up) 38%,var(--ln));
+  background:linear-gradient(150deg,color-mix(in srgb,var(--up) 20%,var(--b1)),
+                                    color-mix(in srgb,var(--vac) 8%,var(--b1)) 62%);
+  box-shadow:0 14px 38px rgba(0,0,0,.34), inset 0 1px 0 color-mix(in srgb,#fff 9%,transparent)}
+.hero.pierde{border-color:color-mix(in srgb,var(--dn) 34%,var(--ln));
+  background:linear-gradient(150deg,color-mix(in srgb,var(--dn) 14%,var(--b1)),var(--b1) 62%)}
 .hero .hlin{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:13px;color:var(--t2)}
 .hero .hlin b{color:var(--tx)}
 .cima .hero{margin:0}
-.hero .hfondo{position:absolute;left:0;right:0;bottom:0;height:40%;opacity:.12;pointer-events:none}
+.hero .hfondo{position:absolute;left:0;right:0;bottom:0;height:58%;opacity:.55;pointer-events:none}
 .hero .hfondo svg{width:100%;height:100%;display:block}
-.hz{position:relative;display:flex;gap:18px;flex-wrap:wrap;padding:19px 21px}
+.hz{position:relative;display:flex;gap:var(--e5);flex-wrap:wrap;padding:var(--e5) var(--e5) var(--e5)}
 .hprin{flex:1;min-width:250px}
-.he{font-size:11px;letter-spacing:.08em;color:var(--t2);font-weight:700;margin-bottom:7px}
-.hv{font-size:44px;font-weight:700;letter-spacing:-.01em;line-height:1;color:var(--tx)}
+.he{font-size:var(--f1);letter-spacing:.12em;color:var(--t2);font-weight:700;margin-bottom:var(--e2)}
+.hv{font-size:var(--f8);font-weight:800;letter-spacing:-.035em;line-height:1;color:var(--tx)}
 .hv small{font-size:14px;font-weight:600;color:var(--t3);margin-left:7px}
-.hg{display:flex;align-items:center;gap:10px;margin-top:11px;flex-wrap:wrap}
+.hg{display:flex;align-items:center;gap:var(--e3);margin-top:var(--e4);flex-wrap:wrap}
 .gp2{font-size:15px;font-weight:700}
-.gch{font-size:13px;font-weight:700;padding:4px 10px;
-  border-radius:7px;background:var(--b2);border:1px solid var(--ln)}
+.gch{font-size:var(--f3);font-weight:700;padding:6px 12px;
+  border-radius:9px;background:var(--b2);border:1px solid var(--ln)}
 .meta{margin-top:13px;max-width:430px}
 .meta .mb{height:9px;border-radius:5px;background:var(--b0);overflow:hidden;border:1px solid var(--ln)}
 .meta .mb i{display:block;height:100%;background:linear-gradient(90deg,var(--ac),var(--up));
@@ -167,50 +246,65 @@ main{flex:1;min-width:0;padding:18px 22px calc(40px + env(safe-area-inset-bottom
 .meta .mt{font-size:12px;color:var(--t2);margin-top:5px}
 
 /* ---------- cápsulas de ganancia y chips ---------- */
-.gpill{display:inline-block;padding:4px 10px;border-radius:8px;font-weight:700;
-  font-size:13px;line-height:1.25;white-space:nowrap}
+.gpill{display:inline-block;padding:5px 11px;border-radius:9px;font-weight:700;
+  font-size:var(--f3);line-height:1.25;white-space:nowrap}
 .gpill.p{background:var(--up);color:var(--upInk)}
 .gpill.n{background:var(--dn);color:var(--dnInk)}
 .gpill.z{background:var(--b3);color:var(--t2)}
 .gsub{display:block;font-size:11px;margin-top:3px;font-weight:700}
-.chip{display:inline-block;padding:3px 9px;border-radius:6px;font-size:12px;font-weight:700;
-  white-space:nowrap}
-.chip.l{background:color-mix(in srgb,var(--up) 22%,transparent);color:var(--upTx)}
-.chip.s{background:color-mix(in srgb,var(--dn) 20%,transparent);color:var(--dnTx)}
-.chip.a{background:color-mix(in srgb,var(--ac) 20%,transparent);color:var(--acTx)}
+.chip{display:inline-block;padding:4px 10px;border-radius:999px;font-size:var(--f2);font-weight:700;
+  white-space:nowrap;letter-spacing:.01em}
+.chip.v{background:var(--vac);color:var(--vacInk)}
+.chip.l{background:color-mix(in srgb,var(--up) 22%,var(--b1));color:var(--upTx)}
+.chip.s{background:color-mix(in srgb,var(--dn) 20%,var(--b1));color:var(--dnTx)}
+.chip.a{background:color-mix(in srgb,var(--vac) 22%,var(--b1));color:var(--vacTx)}
 .chip.g{background:var(--b3);color:var(--t2)}
 
 /* ---------- tablas ---------- */
 .env{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse}
-thead tr{background:var(--b2)}
-thead th{text-align:right;padding:11px 10px;font-weight:700;white-space:nowrap;
-  border-bottom:1px solid var(--ln)}
-thead th:first-child{text-align:left}
-thead th .cap{display:inline-block;background:var(--b0);border:1px solid var(--ln);
-  border-radius:999px;padding:5px 11px;font-size:11px;font-weight:700;color:var(--t2);
-  letter-spacing:.02em;white-space:nowrap}
-thead th.ord{cursor:pointer;user-select:none}
-thead th.ord:hover .cap{color:var(--tx);border-color:var(--acTx)}
-thead th.ord.act .cap{color:var(--acTx);border-color:color-mix(in srgb,var(--ac) 55%,transparent);
-  background:color-mix(in srgb,var(--ac) 12%,var(--b0))}
-tbody td{padding:12px 10px;text-align:right;font-size:13px;
-  font-variant-numeric:tabular-nums;border-bottom:1px solid var(--ln);white-space:nowrap;color:var(--tx)}
-tbody td:first-child{text-align:left;font-family:inherit}
+thead tr{background:color-mix(in srgb,var(--vacD) 18%,var(--b2))}
+thead th{text-align:right;padding:13px var(--e4);font-weight:700;white-space:nowrap;
+  border-bottom:1px solid color-mix(in srgb,var(--vac) 24%,var(--ln));
+  font-size:var(--f1);letter-spacing:.1em;text-transform:uppercase;color:var(--t2)}
+thead th:first-child{text-align:left;padding-left:var(--e5)}
+thead th:last-child{padding-right:var(--e5)}
+thead th .cap{display:inline-block;white-space:nowrap}
+thead th.ord{cursor:pointer;user-select:none;transition:color .14s}
+thead th.ord:hover{color:var(--tx)}
+thead th.ord.act{color:var(--vacTx)}
+tbody td{padding:15px var(--e4);text-align:right;font-size:var(--f4);font-weight:600;
+  font-variant-numeric:tabular-nums;border-bottom:1px solid color-mix(in srgb,var(--ln) 60%,transparent);
+  white-space:nowrap;color:var(--tx)}
+tbody td:first-child{text-align:left;font-family:inherit;padding-left:var(--e5)}
+tbody td:last-child{padding-right:var(--e5)}
 tbody tr:last-child td{border-bottom:0}
-tbody tr.cl{cursor:pointer;transition:background .12s}
-tbody tr.cl:hover{background:color-mix(in srgb,var(--ac) 9%,transparent)}
-tbody tr:nth-child(even){background:color-mix(in srgb,var(--b2) 45%,transparent)}
+tbody tr.cl{cursor:pointer;transition:background .14s}
+tbody tr.cl:hover{background:color-mix(in srgb,var(--vac) 11%,transparent)}
 tbody tr td:first-child{position:relative}
-tbody tr.cl td:first-child::before{content:"";position:absolute;left:0;top:6px;bottom:6px;
-  width:3px;border-radius:3px;background:var(--fc,transparent)}
-tfoot td{padding:12px 10px;border-top:2px solid var(--ln);background:var(--b2);
-  font-size:14px;text-align:right;font-variant-numeric:tabular-nums;
-  font-weight:700;color:var(--tx)}
-tfoot td:first-child{text-align:left;font-family:inherit;font-size:13px;color:var(--t2)}
-.vacio{padding:42px 20px;text-align:center;color:var(--t2)}
-.vacio b{display:block;color:var(--tx);font-size:17px;margin-bottom:8px}
-.vacio p{margin:0 auto 16px;max-width:430px;line-height:1.6;font-size:14px}
+tbody tr.cl td:first-child::before{content:"";position:absolute;left:0;top:10px;bottom:10px;
+  width:4px;border-radius:0 4px 4px 0;background:var(--fc,transparent)}
+.sub{display:block;font-size:var(--f2);font-weight:500;color:var(--t2);margin-top:2px}
+tfoot td{padding:15px var(--e4);border-top:1px solid color-mix(in srgb,var(--vac) 28%,var(--ln));
+  background:color-mix(in srgb,var(--vacD) 16%,var(--b2));
+  font-size:var(--f4);text-align:right;font-variant-numeric:tabular-nums;
+  font-weight:800;color:var(--tx)}
+tfoot td:first-child{text-align:left;font-family:inherit;font-size:var(--f2);color:var(--t2);
+  letter-spacing:.08em;text-transform:uppercase;padding-left:var(--e5)}
+tfoot td:last-child{padding-right:var(--e5)}
+/* la celda de la moneda */
+.cri b{font-size:var(--f4);font-weight:700;display:block;line-height:1.2}
+.cri span{font-size:var(--f2);color:var(--t2);font-weight:500}
+.vacio{padding:var(--e7) var(--e5);text-align:center;color:var(--t2)}
+.vacio .vic{width:96px;height:96px;margin:0 auto var(--e5);display:grid;place-items:center;
+  border-radius:28px;
+  background:linear-gradient(150deg,color-mix(in srgb,var(--vac) 26%,var(--b2)),var(--b2));
+  border:1px solid color-mix(in srgb,var(--vac) 30%,transparent);
+  box-shadow:0 16px 40px color-mix(in srgb,var(--vac) 22%,transparent)}
+.vacio .vic svg{width:52px;height:52px}
+.vacio b{display:block;color:var(--tx);font-size:var(--f6);margin-bottom:var(--e2);
+  font-weight:700;letter-spacing:-.02em}
+.vacio p{margin:0 auto var(--e5);max-width:460px;line-height:1.65;font-size:var(--f4);color:var(--t2)}
 
 /* ---------- moneda con su logo ---------- */
 .cri{display:flex;align-items:center;gap:10px}
@@ -228,14 +322,18 @@ tfoot td:first-child{text-align:left;font-family:inherit;font-size:13px;color:va
 .casita{display:inline-flex;align-items:center;gap:5px}
 
 /* ---------- formularios ---------- */
-label{display:block;font-size:12px;font-weight:700;color:var(--t2);margin-bottom:6px;
-  letter-spacing:.03em}
+label{display:block;font-size:var(--f2);font-weight:700;color:var(--t2);margin-bottom:7px;
+  letter-spacing:.01em}
 label small{font-weight:500;color:var(--t3);letter-spacing:0;font-size:11px}
-input,select,textarea{width:100%;background:var(--b0);color:var(--tx);border:1px solid var(--ln);
-  border-radius:9px;padding:10px 12px;font-size:14px}
+input,select,textarea{width:100%;background:color-mix(in srgb,var(--vacD) 8%,var(--b0));
+  color:var(--tx);border:1px solid color-mix(in srgb,var(--vac) 18%,var(--ln));
+  border-radius:11px;padding:12px 14px;font-size:var(--f4);font-weight:600;transition:.14s}
+input:hover,select:hover,textarea:hover{border-color:color-mix(in srgb,var(--vac) 45%,var(--ln))}
 input::placeholder{color:var(--t3);opacity:1}
 select,textarea{font-family:inherit}
-input:focus,select:focus,textarea:focus{outline:2px solid var(--ac);outline-offset:1px;border-color:var(--acTx)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--vac);outline-offset:1px;
+  border-color:var(--vacTx);background:var(--b1)}
+input::placeholder{font-weight:500;font-style:italic}
 input:disabled{opacity:.6}
 input[type=color]{padding:3px;height:42px;cursor:pointer}
 input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);height:30px}
@@ -305,6 +403,31 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
 .franja .sw.on i::after{left:16px;background:var(--upInk)}
 .franja .sw span{font-size:13px;font-weight:600;color:var(--t2);line-height:1.3}
 .franja .sw.on span{color:var(--tx)}
+
+/* ---------- la caja grande: cuánto meter ---------- */
+.lotazo{margin-top:var(--e4);border-radius:var(--rad);overflow:hidden;
+  border:1px solid color-mix(in srgb,var(--up) 42%,var(--ln));
+  background:linear-gradient(150deg,color-mix(in srgb,var(--up) 22%,var(--b1)),
+                                    color-mix(in srgb,var(--up) 7%,var(--b1)) 70%);
+  box-shadow:0 10px 30px color-mix(in srgb,var(--up) 15%,transparent)}
+.lotazo.falta{border-color:var(--ln);background:var(--b0);box-shadow:none}
+.lotazo .lz{padding:var(--e5) var(--e5) var(--e4)}
+.lotazo .le{font-size:var(--f1);letter-spacing:.14em;font-weight:800;color:var(--t2);margin-bottom:var(--e2)}
+.lotazo .lv{font-size:var(--f8);font-weight:800;letter-spacing:-.035em;line-height:1;color:var(--tx)}
+.lotazo.falta .lv{color:var(--t3)}
+.lotazo .ls{font-size:var(--f3);color:var(--t2);margin-top:var(--e3);line-height:1.5}
+.lotazo .ls b{color:var(--tx)}
+.lotazo .ld{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  border-top:1px solid color-mix(in srgb,var(--up) 26%,var(--ln))}
+.lotazo .ld>div{padding:var(--e4) var(--e5);min-width:0;
+  border-right:1px solid color-mix(in srgb,var(--up) 18%,var(--ln))}
+.lotazo .ld>div:last-child{border-right:0}
+.lotazo .ld span{display:block;font-size:var(--f2);color:var(--t2);font-weight:600;margin-bottom:3px}
+.lotazo .ld b{display:block;font-size:var(--f6);font-weight:800;color:var(--tx);
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.lotazo .ld i{display:block;font-style:normal;font-size:var(--f2);color:var(--t2);margin-top:2px}
+@media(max-width:900px){ .lotazo .ld>div{border-right:0;
+  border-bottom:1px solid color-mix(in srgb,var(--up) 18%,var(--ln))} }
 
 /* ---------- la cadena del lote: se lee de arriba hacia abajo ---------- */
 .cadena{margin-top:12px;border:1px solid var(--ln);border-radius:11px;background:var(--b0);overflow:hidden}
@@ -474,18 +597,18 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
 .spark{width:62px;height:22px;display:block;overflow:visible}
 
 /* ---------- fila inferior de tarjetas ---------- */
-.inf{display:grid;grid-template-columns:repeat(auto-fit,minmax(248px,1fr));gap:12px}
+.inf{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:var(--e3);align-items:start}
 .inf .caja{margin:0}
 .ancha2{grid-column:span 2;min-width:280px}
-.rank{display:flex;align-items:center;gap:11px;padding:3px 0}
+.rank{display:flex;align-items:center;gap:var(--e3);padding:var(--e1) 0}
 .rank .ic{width:30px;height:30px}
 .rank b{font-size:14px;font-weight:700}
 .rank .pc{margin-left:auto;text-align:right}
 .rank .pc b{display:block;font-size:16px;font-weight:700}
 .rank .pc span{font-size:12px;color:var(--t2)}
-.mpg{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.mpg{display:grid;grid-template-columns:1fr 1fr;gap:var(--e3)}
 .mp{background:var(--b0);border:1px solid var(--ln);border-left:3px solid var(--fc);
-  border-radius:11px;padding:11px 12px;min-width:0}
+  border-radius:13px;padding:var(--e4);min-width:0}
 .mpt{font-size:11px;letter-spacing:.08em;color:var(--t2);font-weight:700;margin-bottom:7px}
 .mpc{display:flex;align-items:center;gap:9px;margin-bottom:7px}
 .mpc .ic{width:27px;height:27px}
@@ -591,9 +714,11 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
     gap:0;border-right:0;border-top:1px solid var(--ln);background:var(--b1)}
   aside .logo,aside .pie{display:none}
   aside nav{flex-direction:row;gap:0;width:100%}
-  aside nav button{flex:1;flex-direction:column;justify-content:center;gap:3px;padding:7px 2px 5px;
-    font-size:10.5px;font-weight:600;border-radius:9px;text-align:center;min-width:0;position:relative}
-  aside nav button svg{width:21px;height:21px}
+  aside nav button{flex:1;flex-direction:column;justify-content:center;gap:2px;padding:6px 1px 4px;
+    font-size:9.5px;font-weight:600;border-radius:10px;text-align:center;min-width:0;position:relative;
+    letter-spacing:-.02em}
+  aside nav button .np{width:28px;height:28px;border-radius:9px}
+  aside nav button svg{width:18px;height:18px}
   aside nav button span.tx{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   aside nav button.on{box-shadow:none;background:color-mix(in srgb,var(--ac) 14%,transparent)}
   aside nav button .bg{position:absolute;top:3px;right:calc(50% - 20px);margin:0}
@@ -643,6 +768,11 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
   .kv{gap:6px 12px}
   .rosca svg{width:120px;height:120px}
 }
+@media(max-width:560px){
+  .conBtn{flex-wrap:wrap}
+  .conBtn input{flex:1 1 100%}
+  .conBtn .b{flex:1 1 100%;min-height:38px}
+}
 @media(max-width:520px){
   .campos{grid-template-columns:1fr}
   .campos.dos{grid-template-columns:1fr 1fr}
@@ -668,9 +798,12 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
   </aside>
   <main>
     <div class="encab">
-      <div>
-        <h1 id="titulo">Resumen</h1>
-        <p id="subt"></p>
+      <div class="tit">
+        <span class="gic" id="gic"></span>
+        <div>
+          <h1 id="titulo">Resumen</h1>
+          <p id="subt"></p>
+        </div>
       </div>
       <div class="der">
         <div class="estado">
@@ -704,7 +837,7 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por GitHub.
    ===================================================================== */
-var VERSION="13";
+var VERSION="14";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
 
 /* =====================================================================
@@ -2526,8 +2659,57 @@ var IC={
   mas:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
   regla:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="10" rx="2"/><path d="M6 7v3M10 7v5M14 7v3M18 7v5"/></svg>'
 };
-var MENU=[["res","Resumen"],["spot","Spot"],["fut","Futuros"],["back","Pruebas"],
+var MENU=[["res","Resumen"],["spot","Spot"],["fut","Futuros"],["back","Backtesting"],
           ["alr","Alertas"],["dat","Ajustes"]];
+/* el color de cada pestaña, para el menú y para toda la pantalla */
+var COLOR_VISTA={res:1, spot:2, fut:3, back:4, alr:5, dat:6};
+function gradId(){ return "g"+Math.random().toString(36).slice(2,8); }
+/* los dibujos grandes del encabezado: a color, con volumen */
+function iconoGrande(v){
+  var a=gradId(), b=gradId();
+  var D={
+    res:'<rect x="4" y="22" width="9" height="16" rx="2.5" fill="url(#'+a+')"/>'+
+        '<rect x="17.5" y="13" width="9" height="25" rx="2.5" fill="url(#'+b+')"/>'+
+        '<rect x="31" y="5" width="9" height="33" rx="2.5" fill="url(#'+a+')"/>'+
+        '<path d="M6 20 L21 11 L35 4" fill="none" stroke="#fff" stroke-width="2.6" '+
+        'stroke-linecap="round" stroke-linejoin="round" opacity=".92"/>'+
+        '<circle cx="35" cy="4.5" r="3.6" fill="#fff"/>',
+    spot:'<ellipse cx="22" cy="12" rx="15" ry="5.5" fill="url(#'+a+')"/>'+
+        '<path d="M7 12v7c0 3 6.7 5.5 15 5.5s15-2.5 15-5.5v-7" fill="url(#'+b+')"/>'+
+        '<ellipse cx="22" cy="19" rx="15" ry="5.5" fill="url(#'+a+')" opacity=".55"/>'+
+        '<path d="M7 24v7c0 3 6.7 5.5 15 5.5s15-2.5 15-5.5v-7" fill="url(#'+b+')"/>'+
+        '<ellipse cx="22" cy="24" rx="15" ry="5.5" fill="url(#'+a+')" opacity=".75"/>'+
+        '<text x="22" y="16" text-anchor="middle" font-size="9" font-weight="800" fill="#fff" opacity=".9">$</text>',
+    fut:'<path d="M13 38V16" stroke="url(#'+a+')" stroke-width="5" stroke-linecap="round"/>'+
+        '<path d="M13 16l-6 7h12z" fill="url(#'+a+')"/>'+
+        '<path d="M31 6v22" stroke="url(#'+b+')" stroke-width="5" stroke-linecap="round"/>'+
+        '<path d="M31 28l6-7H25z" fill="url(#'+b+')"/>'+
+        '<rect x="9" y="30" width="8" height="9" rx="2" fill="url(#'+a+')" opacity=".5"/>'+
+        '<rect x="27" y="5" width="8" height="9" rx="2" fill="url(#'+b+')" opacity=".5"/>',
+    back:'<rect x="5" y="26" width="7" height="13" rx="2" fill="url(#'+a+')"/>'+
+        '<rect x="15" y="18" width="7" height="21" rx="2" fill="url(#'+b+')"/>'+
+        '<rect x="25" y="22" width="7" height="17" rx="2" fill="url(#'+a+')"/>'+
+        '<rect x="35" y="10" width="7" height="29" rx="2" fill="url(#'+b+')"/>'+
+        '<path d="M6 5a12 12 0 1 1-1.5 9" fill="none" stroke="#fff" stroke-width="2.4" '+
+        'stroke-linecap="round" opacity=".85"/><path d="M3 4v6h6" fill="none" stroke="#fff" '+
+        'stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>',
+    alr:'<path d="M35 28c0-11-2.5-17-13-17S9 17 9 28c0 4-3 5-3 5h32s-3-1-3-5z" fill="url(#'+a+')"/>'+
+        '<path d="M18 36a4.5 4.5 0 0 0 8 0z" fill="url(#'+b+')"/>'+
+        '<circle cx="22" cy="7" r="3" fill="url(#'+b+')"/>'+
+        '<path d="M14 24c0-6 2-9 8-9" fill="none" stroke="#fff" stroke-width="2.2" '+
+        'stroke-linecap="round" opacity=".55"/>',
+    dat:'<circle cx="22" cy="22" r="8" fill="none" stroke="url(#'+b+')" stroke-width="4.5"/>'+
+        '<g stroke="url(#'+a+')" stroke-width="4.6" stroke-linecap="round">'+
+        '<path d="M22 4v5M22 35v5M40 22h-5M9 22H4M34.7 9.3l-3.5 3.5M12.8 31.2l-3.5 3.5'+
+        'M34.7 34.7l-3.5-3.5M12.8 12.8 9.3 9.3"/></g>'
+  };
+  return '<svg viewBox="0 0 44 44" fill="none" aria-hidden="true">'+
+    '<defs><linearGradient id="'+a+'" x1="0" y1="0" x2="1" y2="1">'+
+    '<stop offset="0" stop-color="var(--vacL)"/><stop offset="1" stop-color="var(--vac)"/></linearGradient>'+
+    '<linearGradient id="'+b+'" x1="1" y1="0" x2="0" y2="1">'+
+    '<stop offset="0" stop-color="var(--vac)"/><stop offset="1" stop-color="var(--vacD)"/></linearGradient></defs>'+
+    (D[v]||D.res)+'</svg>';
+}
 var TITULOS={res:"Resumen", spot:"Spot", fut:"Futuros", back:"Backtesting",
              alr:"Alertas de precio", dat:"Configuración"};
 var SUBTIT={
@@ -2542,7 +2724,10 @@ var SUBTIT={
 function pintarMenu(){
   var n=document.getElementById("nav"), son=alertasQueSonaron().length;
   n.innerHTML=MENU.map(function(m){
-    return '<button data-ir="'+m[0]+'" class="'+(vista===m[0]?"on":"")+'">'+IC[m[0]]+
+    var c=COLOR_VISTA[m[0]]||1;
+    return '<button data-ir="'+m[0]+'" class="'+(vista===m[0]?"on":"")+
+      '" style="--nc:var(--c'+c+');--ncInk:var(--c'+c+'Ink)">'+
+      '<span class="np">'+IC[m[0]]+'</span>'+
       '<span class="tx">'+m[1]+'</span>'+
       (m[0]==="alr"&&son?'<span class="bg">'+son+'</span>':'')+'</button>';
   }).join("");
@@ -2552,12 +2737,13 @@ function pintarMenu(){
 }
 /* tarjeta de cifra: todas iguales; solo el signo del dinero lleva color */
 function met(ico, etiqueta, valor, clase, sub, color, serie){
-  var borde = clase==="up" ? " sube" : clase==="dn" ? " baja" : "";
+  var paleta = typeof color==="number" ? (" p"+(((color-1)%6)+1))
+             : color==="gana" ? " gana" : color==="pierde" ? " pierde" : "";
   var largo = String(valor).replace(/<[^>]*>/g,"").length;
-  return '<div class="met'+borde+'"><div class="cab"><div class="ico">'+ico+'</div>'+
+  return '<div class="met'+paleta+'"><div class="cab"><div class="ico">'+ico+'</div>'+
     '<span>'+esc(etiqueta)+'</span></div><div class="v '+(clase||"")+(largo>=12?" chica":"")+'">'+valor+'</div>'+
     (sub?'<div class="s">'+sub+'</div>':'')+
-    (serie&&serie.length>2?'<div class="msp">'+sparkSvg(serie,"var(--t3)")+'</div>':'')+'</div>';
+    (serie&&serie.length>2?'<div class="msp">'+sparkSvg(serie,"currentColor")+'</div>':'')+'</div>';
 }
 /* la misma tarjeta pero con el valor "vivo" (se mueve con el precio) */
 function metViva(ico, etiqueta, valorHtml, sub, color, serie){
@@ -2668,9 +2854,10 @@ function engancharListaTel(c){
     d.onclick=function(ev){ if(ev.target.closest("button")) return; verMoneda(d.getAttribute("data-ver")); };
   });
 }
-function cajaVacia(tit, txt, boton){
-  return '<div class="caja"><div class="vacio"><b>'+esc(tit)+'</b><p>'+esc(txt)+'</p>'+
-    (boton||"")+'</div></div>';
+function cajaVacia(tit, txt, boton, icono2){
+  return '<div class="caja"><div class="vacio">'+
+    '<div class="vic">'+(icono2||iconoGrande(vista))+'</div>'+
+    '<b>'+esc(tit)+'</b><p>'+esc(txt)+'</p>'+(boton||"")+'</div></div>';
 }
 
 /* =====================================================================
@@ -2949,19 +3136,17 @@ function pintarSpot(){
   /* ---- las cinco cifras de arriba ---- */
   h+='<div class="mets">'+
     met(IC.banco,"Dinero que puso", usd(S.tot.costo),"",
-        plural(vivas.length,"moneda","monedas")+" en el portafolio")+
+        plural(vivas.length,"moneda","monedas")+" en el portafolio", 1)+
     met(IC.torta,"Vale hoy",'<span data-v="total">'+usd(S.tot.valor)+'</span>',"",
-        ch?("en 24 h "+pct(ch.pct,2)):"al precio de ahora", null, serieTot())+
+        ch?("en 24 h "+pct(ch.pct,2)):"al precio de ahora", 6, serieTot())+
     met(IC.dolar,"Ganancia si vende hoy",
-        '<span class="'+cl(S.tot.abierto)+'">'+(S.tot.abierto>=0?"+":"−")+
-        usd(S.tot.abierto).replace("-","")+'</span>',"",
-        pct(S.tot.abiertoPct)+" de lo que puso")+
+        (S.tot.abierto>=0?"+":"−")+usd(S.tot.abierto).replace("-",""),"",
+        pct(S.tot.abiertoPct)+" de lo que puso", S.tot.abierto>=0?"gana":"pierde")+
     met(IC.sube,"Ya ganado en ventas",
-        '<span class="'+cl(S.tot.realizado)+'">'+(S.tot.realizado>=0?"+":"−")+
-        usd(S.tot.realizado).replace("-","")+'</span>',"",
-        plural(nVentasSpot(),"venta hecha","ventas hechas"))+
-    met(IC.dolar,"USDT disponible", usd(D.total<0?0:D.total),
-        D.total>0?"up":"", D.total<0?"falta registrar lo que metió":"libre para comprar")+
+        (S.tot.realizado>=0?"+":"−")+usd(S.tot.realizado).replace("-",""),"",
+        plural(nVentasSpot(),"venta hecha","ventas hechas"), 4)+
+    met(IC.dolar,"USDT disponible", usd(D.total<0?0:D.total),"",
+        D.total<0?"falta registrar lo que metió":"libre para comprar", 3)+
   '</div>';
 
   /* ---- panel de registrar + moneda seleccionada ---- */
@@ -3092,7 +3277,7 @@ function panelRegistro(){
             '<button type="button" class="b" id="spHoy" title="Pone el precio de este momento">precio de ahora</button></div></div>'+
           '<div class="campo"><label>Fecha</label><input type="date" id="spF" value="'+hoy()+'"></div>'+
           '<div class="campo"><label>Comisión (USD)</label>'+
-            '<input id="spK" inputmode="decimal" placeholder="0"></div>'+
+            '<input id="spK" inputmode="decimal" placeholder="déjelo vacío si no pagó"></div>'+
         '</div>'+
         '<div class="lote" style="margin-top:11px">'+
           '<div class="lc dest"><div class="e">RECIBE</div><div class="v" id="spRecibe">—</div>'+
@@ -3105,7 +3290,7 @@ function panelRegistro(){
       : /* ---- COMPRA: lo que uno sabe es cuántos dólares pone ---- */
         '<div class="campos dos" style="margin-top:11px">'+
           '<div class="campo"><label>Cuánto puso (USD)</label>'+
-            '<input id="spM" inputmode="decimal" placeholder="200"></div>'+
+            '<input id="spM" inputmode="decimal" placeholder="ej. 200"></div>'+
           '<div class="campo"><label>Precio por moneda</label><div class="conBtn">'+
             '<input id="spP" inputmode="decimal" placeholder="'+esc(ejemploPrecio(SP.sym,1))+'">'+
             '<button type="button" class="b" id="spHoy" title="Pone el precio de este momento">precio de ahora</button></div></div>'+
@@ -3113,7 +3298,7 @@ function panelRegistro(){
             '<input id="spC" inputmode="decimal" placeholder="sale del monto y el precio"></div>'+
           '<div class="campo"><label>Fecha</label><input type="date" id="spF" value="'+hoy()+'"></div>'+
           '<div class="campo"><label>Comisión (USD)</label>'+
-            '<input id="spK" inputmode="decimal" placeholder="0"></div>'+
+            '<input id="spK" inputmode="decimal" placeholder="déjelo vacío si no pagó"></div>'+
         '</div>')+
     '<div class="campos" style="margin-top:11px">'+
       '<div class="campo ancho"><label>Dónde '+(esV?"vendió":"compró")+'</label>'+
@@ -3124,7 +3309,7 @@ function panelRegistro(){
     '</div>'+
     '<div class="nota" id="spR">Elija la moneda y escriba cuántos dólares.</div>'+
     '<div style="margin-top:12px;display:flex;gap:9px;flex-wrap:wrap">'+
-      '<button class="b '+(esV?"rj":"ac")+' gr" id="spOk" style="flex:1;min-width:170px">'+
+      '<button class="b '+(esV?"rj":"vd")+' gr" id="spOk" style="flex:1;min-width:170px">'+
       (esV?"Registrar venta":"Registrar compra")+'</button>'+
       '<button class="b gh" id="spLimpia">Limpiar</button>'+
     '</div></div>';
@@ -3249,7 +3434,7 @@ function tarjetaMejorPeor(conP){
       '<div class="mps">'+(e.abierto>=0?"+":"−")+usd(e.abierto).replace("-","")+
       ' · puso '+usd(e.costo)+'</div></div>';
   }
-  return '<div class="caja"><h2><span class="ic">'+IC.diana+'</span>La que más sube y la que más baja</h2>'+
+  return '<div class="caja"><h2><span class="ic">'+IC.diana+'</span>Mejor y peor moneda</h2>'+
     '<div class="cp mpg">'+lado(mj,"MEJOR")+lado(pr,"PEOR")+'</div></div>';
 }
 function tarjetaCasas(){
@@ -3269,6 +3454,29 @@ function tarjetaCasas(){
         (por[k]/tot*100).toFixed(0)+'% de lo invertido</div></div>'+
         '<div class="pc"><b>'+usd(por[k])+'</b></div></div>';
     }).join("")+'</div></div>';
+}
+/* una venta sin su compra registrada hace que el programa cuente la venta entera
+   como ganancia: aquí se avisa para que el número no engañe */
+function ventasSinCompra(){
+  var R=resultadoDeOps(), malas=[];
+  BD.ops.forEach(function(o){
+    if(o.tipo!=="venta"||esEstable(o.sym)) return;
+    var r=R[o.id];
+    if(!r||r.gan==null||r.sinCosto||r.recortada) malas.push(o);
+  });
+  return malas;
+}
+function avisoVentasSinCompra(){
+  var m;
+  try{ m=ventasSinCompra(); }catch(e){ return ""; }
+  if(!m.length) return "";
+  var syms={}; m.forEach(function(o){ syms[o.sym]=1; });
+  return '<div class="alerta"><div class="t"><b>'+
+    plural(m.length,"venta sin su compra","ventas sin su compra")+'</b><span>'+
+    'Vendió '+Object.keys(syms).join(", ")+' pero no tiene registrada la compra. '+
+    'Sin saber lo que le costó, el programa cuenta esa venta entera como ganancia y el '+
+    '«ya ganado» le sale inflado. Registre esas compras y el número cuadra.'+
+    '</span></div><button class="b" onclick="irA(\'spot\')">Ver movimientos</button></div>';
 }
 function alertaPrecios(){
   var vivas={};
@@ -3317,8 +3525,8 @@ function engancharSpot(c){
       SP.sel=tr.getAttribute("data-sym");
       var d=document.getElementById("spDet");
       if(d){ d.innerHTML=panelSeleccionada(); engancharDetalle(); }
+      verMoneda(tr.getAttribute("data-sym"));
     };
-    tr.ondblclick=function(){ verMoneda(tr.getAttribute("data-sym")); };
     tr.onkeydown=function(ev){
       if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); verMoneda(tr.getAttribute("data-sym")); }
     };
@@ -3609,7 +3817,7 @@ function venderMoneda(sym){
       '<div class="campo"><label>Precio de venta</label>'+
         '<input id="vPr" inputmode="decimal" value="'+(pr!=null?String(pr).replace(".",","):"")+'"></div>'+
       '<div class="campo"><label>Fecha</label><input type="date" id="vF" value="'+hoy()+'"></div>'+
-      '<div class="campo"><label>Comisión</label><input id="vK" inputmode="decimal" placeholder="0"></div>'+
+      '<div class="campo"><label>Comisión</label><input id="vK" inputmode="decimal" placeholder="sin comisión"></div>'+
       '<div class="campo"><label>Cantidad exacta</label><input id="vEx" inputmode="decimal"></div>'+
       '<div class="campo ancho"><label>Dónde vendió</label><select id="vCa">'+
         Object.keys(CASAS).map(function(k){
@@ -3694,7 +3902,7 @@ function editarOp(id){
       '<div class="campo"><label>Precio</label><input id="eP" inputmode="decimal" value="'+
         String(o.precio).replace(".",",")+'"></div>'+
       '<div class="campo"><label>Comisión</label><input id="eK" inputmode="decimal" value="'+
-        (o.com?String(o.com).replace(".",","):"")+'" placeholder="0"></div>'+
+        (o.com?String(o.com).replace(".",","):"")+'" placeholder="sin comisión"></div>'+
       '<div class="campo ancho"><label>Dónde</label><select id="eCa">'+
         Object.keys(CASAS).map(function(k){
           return '<option value="'+k+'"'+((o.casa||"BINANCE")===k?" selected":"")+'>'+
@@ -3837,8 +4045,9 @@ function verMoneda(sym){
         '<div class="mps">'+fechaCorta(peo.o.fecha)+' a '+precio(peo.o.precio)+'</div>'+
         '<div class="mpv dn">'+pct(peo.r,1)+'</div></div></div>'
       : '')+
-    '<div class="fsec">Compras y ventas</div>'+
-    (e.ops.length?filasMov(e,sym):'<div class="mut">Todavía no hay movimientos.</div>')+
+    '<div class="fsec">Sus compras, una por una</div>'+
+    tablaCompras(e, compras, sym)+
+    (ventas.length?'<div class="fsec">Sus ventas</div>'+filasMov(e,sym,true):'')+
     '</div><div class="hf">'+
     (e.ops.length?'<button class="b gh" id="mQuit" style="margin-right:auto">Quitar esta moneda</button>':'')+
     '<button class="b vd" id="mCom">Comprar más</button>'+
@@ -3936,10 +4145,41 @@ function simulador(e, sym){
       '<div class="lc"><div class="e">GANANCIA</div><div class="v" id="simG">—</div></div>'+
     '</div></div></div>';
 }
-function filasMov(e, sym){
+/* las compras como en su hoja: fecha, cantidad, precio y lo invertido, con su total */
+function tablaCompras(e, compras, sym){
+  if(!compras.length) return '<div class="mut">Todavía no ha registrado compras de '+esc(sym)+'.</div>';
+  var tc=0, ti=0;
+  var filas=compras.slice().sort(function(a,b){ return (a.fecha||"")<(b.fecha||"")?-1:1; })
+    .map(function(o,i){
+      var inv=(+o.cant||0)*(+o.precio||0)+(+o.com||0);
+      tc+=(+o.cant||0); ti+=inv;
+      var vale = e.precio!=null ? (+o.cant||0)*e.precio : null;
+      var dif  = (vale!=null) ? vale-inv : null;
+      return '<tr><td>'+(i+1)+'</td><td>'+(o.fecha?fechaCorta(o.fecha):"—")+'</td>'+
+        '<td>'+cant(o.cant)+'</td><td>'+precio(o.precio)+'</td><td>'+usd(inv)+'</td>'+
+        '<td>'+(vale!=null?usd(vale):"—")+'</td>'+
+        '<td>'+(dif!=null?'<span class="'+(dif>0?"gpill p":dif<0?"gpill n":"gpill z")+'">'+
+          (dif>=0?"+":"−")+usd(dif).replace("-","")+'</span>':"—")+'</td>'+
+        '<td><button class="b sm" data-ed="'+esc(o.id)+'">Editar</button></td></tr>';
+    }).join("");
+  var valeT = e.precio!=null ? tc*e.precio : null;
+  return '<div class="env"><table><thead><tr><th>N°</th><th>Fecha</th><th>Cantidad comprada</th>'+
+    '<th>Precio de compra</th><th>Invertido</th><th>Vale hoy</th><th>Diferencia</th><th></th></tr></thead>'+
+    '<tbody>'+filas+'</tbody><tfoot><tr><td colspan="2">Total</td>'+
+    '<td>'+cant(tc)+'</td><td>'+precio(e.promedio)+'</td><td>'+usd(ti)+'</td>'+
+    '<td>'+(valeT!=null?usd(valeT):"—")+'</td>'+
+    '<td>'+(valeT!=null?'<span class="'+(valeT-ti>0?"gpill p":valeT-ti<0?"gpill n":"gpill z")+'">'+
+      (valeT-ti>=0?"+":"−")+usd(valeT-ti).replace("-","")+'</span>':"—")+'</td><td></td></tr></tfoot>'+
+    '</table></div>'+
+    '<div class="mut" style="margin-top:var(--e3)">La fila de abajo es el total: '+cant(tc)+' '+esc(sym)+
+    ' por '+usd(ti)+', que da un precio promedio de <b>'+precio(e.promedio)+'</b>.</div>';
+}
+function filasMov(e, sym, soloVentas){
   var maxT=Math.max.apply(null, e.ops.map(function(o){
     return (+o.cant||0)*(+o.precio||0); }))||1;
-  return e.ops.slice().reverse().map(function(o){
+  return e.ops.slice().reverse().filter(function(o){
+    return soloVentas ? o.tipo==="venta" : true;
+  }).map(function(o){
     var v=o.tipo==="venta";
     var bruto=(+o.cant||0)*(+o.precio||0), tot=v?bruto-(+o.com||0):bruto+(+o.com||0);
     var p=String(o.fecha||"").split("-");
@@ -4100,14 +4340,9 @@ function panelOperacion(A){
         '<button type="button" class="b" id="fuHoy" title="Pone el precio de este momento">precio de ahora</button></div></div>'+
     '</div>'+
     '<div class="campos dos" style="margin-top:11px">'+
-      '<div class="campo"><label><span class="dn">STOP LOSS</span> <small>· precio donde sale perdiendo</small></label>'+
+      '<div class="campo"><label><span class="dn">STOP LOSS</span> <small>· el precio donde sale perdiendo</small></label>'+
         '<input id="fuSL" inputmode="decimal" value="'+esc(FU.sl)+'" placeholder="'+
-        esc(FU.slModo==="precio"?ejemploPrecio(FU.sym, FU.lado==="SHORT"?1.01:0.99)
-            :FU.slModo==="pp"?"1":"10")+'">'+
-        '<div class="modos" id="fuSM">'+
-        [["precio","en precio ($)"],["pp","en % del precio"],["pm","en % del margen"]].map(function(x){
-          return '<button type="button" data-sm="'+x[0]+'" class="'+(FU.slModo===x[0]?"on":"")+'">'+
-            x[1]+'</button>'; }).join("")+'</div></div>'+
+        esc(ejemploPrecio(FU.sym, FU.lado==="SHORT"?1.01:0.99))+'"></div>'+
       '<div class="campo"><label><span class="up">TAKE PROFIT</span> <small>· precio donde sale ganando (opcional)</small></label>'+
         '<input id="fuTP" inputmode="decimal" value="'+esc(FU.tp)+'" placeholder="'+
         esc(ejemploPrecio(FU.sym, FU.lado==="SHORT"?0.98:1.02))+'"></div>'+
@@ -4138,7 +4373,7 @@ function panelOperacion(A){
       return '<option value="'+esc(x)+'">'; }).join("")+'</datalist>'+
     '<div class="nota" id="fuRes" style="display:none"></div>'+
     '<div style="margin-top:12px;display:flex;gap:9px;flex-wrap:wrap">'+
-      '<button class="b ac" id="fuOk" style="flex:1;min-width:190px;padding:12px">'+
+      '<button class="b vd gr" id="fuOk" style="flex:1;min-width:190px">'+
       'Registrar operación</button>'+
       '<button class="b gh" id="fuLimpia">Limpiar</button>'+
     '</div></div></div>';
@@ -4158,16 +4393,8 @@ function estrategiasUsadas(){
 }
 
 /* convierte lo escrito en el stop a un precio de verdad */
-function slAPrecio(A){
-  var ent=num(FU.entrada), v=num(FU.sl);
-  if(ent==null||v==null||ent<=0) return null;
-  var baja = FU.lado!=="SHORT";
-  if(FU.slModo==="precio") return v;
-  var dist;
-  if(FU.slModo==="pp") dist=v/100;
-  else dist=(v/Math.max(1,A.cfg.apal))/100;      /* % del margen */
-  return baja ? ent*(1-dist) : ent*(1+dist);
-}
+/* el stop se escribe siempre como precio, igual que en su hoja de Excel */
+function slAPrecio(A){ return num(FU.sl); }
 function valoresFU(A){
   return {entrada:num(FU.entrada), sl:slAPrecio(A), tp:num(FU.tp)};
 }
@@ -4180,45 +4407,38 @@ function recLote(A){
   var av=document.getElementById("fuAviso");
   var sal=num(FU.salida);
   var sym=FU.sym||"monedas";
-  function fila(n, et, sub, val, val2, clase){
-    return '<div class="fila'+(clase?" "+clase:"")+'"><span class="n">'+n+'</span>'+
-      '<span class="e">'+et+(sub?'<small>'+sub+'</small>':'')+'</span>'+
-      '<span class="v">'+val+(val2?'<small>'+val2+'</small>':'')+'</span></div>';
-  }
+
   if(!R.ok){
-    var falta = !(R.cartera>0) ? "escriba arriba cuánto es su cartera"
-              : !(v.entrada>0) ? "escriba el precio de entrada"
-              : !(v.sl>0) ? "escriba el stop loss" : "revise la entrada y el stop";
+    var falta = !(R.cartera>0) ? "Escriba arriba cuánto es su cartera"
+              : !(v.entrada>0) ? "Escriba el precio de entrada"
+              : !(v.sl>0) ? "Escriba el stop loss, o arrastre su línea roja en la gráfica"
+              : "Revise la entrada y el stop";
     box.innerHTML=
-      fila(1,"Arriesga por operación", pctS(R.riesgoPct)+" de "+usd(R.cartera), usdF(R.riesgo))+
-      fila(2,"Diferencia entrada – stop loss","lo que se mueve el precio hasta el stop","—",falta,"falta")+
-      fila(3,"Capital para operar (lote)","arriesga ÷ diferencia","—","","dest falta")+
-      fila(4,"Capital sin apalancamiento (margen)","lote ÷ "+R.apal+"x","—","","falta");
-    if(av){
-      av.style.display="";
-      av.className="nota";
-      av.innerHTML = !(R.cartera>0)
-        ? "Escriba arriba <b>cuánto es su cartera</b> para que pueda calcularle el lote."
-        : "Escriba el <b>precio de entrada</b> y el <b>stop loss</b>: el lote y el margen salen solos.";
-    }
+      '<div class="lotazo falta"><div class="lz">'+
+        '<div class="le">CUÁNTO METER EN ESTA OPERACIÓN</div>'+
+        '<div class="lv">—</div>'+
+        '<div class="ls">'+esc(falta)+'</div></div></div>';
+    if(av){ av.style.display="none"; }
     return;
   }
-  var difUsd=Math.abs(v.entrada-v.sl);
   box.innerHTML=
-    fila(1,"Arriesga por operación", pctS(R.riesgoPct)+" de "+usd(R.cartera), usdF(R.riesgo))+
-    fila(2,"Diferencia entrada – stop loss", precio(v.entrada)+" → "+precio(v.sl),
-         precio(difUsd), pctS(R.distPct,2)+" del precio")+
-    fila(3,"Capital para operar (lote)", usdF(R.riesgo)+" ÷ "+pctS(R.distPct,2),
-         usdF(R.posicion), cant(R.monedas)+" "+esc(sym), "dest")+
-    fila(4,"Capital sin apalancamiento (margen)", "lote ÷ "+R.apal+"x · es lo que deja amarrado",
-         usdF(R.margen))+
-    fila(5,"Si salta el stop, pierde", "riesgo + comisiones",
-         '<span class="dn">−'+usdF(R.perdidaSL).replace("-","")+'</span>', pctS(R.perdidaSL/R.cartera*100,2)+" de la cartera")+
-    (R.ganTp!=null
-      ? fila(6,"Si pega el objetivo, gana", R.rr!=null?("gana "+R.rr.toFixed(2).replace(".",",")+" por cada $1 que arriesga"):"",
-             '<span class="'+cl(R.ganTp)+'">'+(R.ganTp>=0?"+":"−")+usdF(R.ganTp).replace("-","")+'</span>')
-      : "")+
-    fila(R.ganTp!=null?7:6,"Lo liquidan en", "con margen aislado y "+R.apal+"x", precio(R.liq));
+    '<div class="lotazo"><div class="lz">'+
+      '<div class="le">CUÁNTO METER EN ESTA OPERACIÓN</div>'+
+      '<div class="lv">'+usdF(R.margen)+'</div>'+
+      '<div class="ls">con '+R.apal+'x · si salta el stop pierde <b class="dn">'+
+        usdF(R.perdidaSL)+'</b>, el '+pctS(R.perdidaSL/R.cartera*100,2)+' de su cartera</div>'+
+    '</div><div class="ld">'+
+      '<div><span>Lote (capital para operar)</span><b>'+usdF(R.posicion)+'</b>'+
+        '<i>'+cant(R.monedas)+' '+esc(sym)+'</i></div>'+
+      '<div><span>Arriesga</span><b>'+usdF(R.riesgo)+'</b>'+
+        '<i>'+pctS(R.riesgoPct)+' de '+usd(R.cartera)+'</i></div>'+
+      '<div><span>Distancia al stop</span><b>'+pctS(R.distPct,2)+'</b>'+
+        '<i>'+precio(v.entrada)+' → '+precio(v.sl)+'</i></div>'+
+      (R.ganTp!=null
+        ? '<div><span>Si pega el objetivo</span><b class="up">+'+usdF(R.ganTp)+'</b>'+
+          '<i>'+(R.rr!=null?("gana "+R.rr.toFixed(2).replace(".",",")+" por cada $1 que arriesga"):"")+'</i></div>'
+        : '<div><span>Lo liquidan en</span><b>'+precio(R.liq)+'</b><i>margen aislado</i></div>')+
+    '</div></div>';
 
   var p=[];
   if(!R.ladoBien) p.push("<b>OJO:</b> en un "+(FU.lado==="SHORT"?"CORTO el stop va POR ENCIMA":
@@ -4271,7 +4491,7 @@ function pintarAmbito(k){
     c.innerHTML=cajaVacia("Todavía no tiene ninguna prueba",
       "Una prueba es como una de sus hojas BACK TESTI: tiene su propia cartera y sus propias "+
       "operaciones, y nunca se mezcla con su dinero de verdad. Puede tener varias y compararlas.",
-      '<button class="b ac" onclick="nuevaPrueba()">+ Crear la primera prueba</button>');
+      '<button class="b vd gr" onclick="nuevaPrueba()">+ Crear mi primera prueba</button>');
     return;
   }
   FU.amb=k;
@@ -4303,23 +4523,25 @@ function pintarAmbito(k){
     '<div class="mets">'+
       met(IC.diana,"Operaciones acertadas",
           T.decididas?(T.ganadas+" de "+T.decididas):"—","",
-          T.aciertos!=null?(T.aciertos.toFixed(0)+"% de acierto"):"todavía no ha cerrado ninguna")+
+          T.aciertos!=null?(T.aciertos.toFixed(0)+"% de acierto"):"todavía no ha cerrado ninguna", 1)+
       met(IC.dolar,"Promedio por operación",
-          T.porOperacion==null?"—":((T.porOperacion>=0?"+":"−")+usdF(T.porOperacion).replace("-","")),
-          cl(T.porOperacion),
-          T.n?("lo que gana o pierde cada vez, en "+plural(T.n,"operación cerrada","operaciones cerradas")):"todavía no ha cerrado ninguna")+
+          T.porOperacion==null?"—":((T.porOperacion>=0?"+":"−")+usdF(T.porOperacion).replace("-","")),"",
+          T.n?("lo que gana o pierde cada vez, en "+plural(T.n,"operación cerrada","operaciones cerradas")):"todavía no ha cerrado ninguna",
+          T.porOperacion==null?6:(T.porOperacion>=0?"gana":"pierde"))+
       met(IC.sube,"Ganancia promedio al acertar",
-          T.ganaUsd==null?"—":("+"+usdF(T.ganaUsd)),"up",
-          T.pierdeUsd!=null?("pérdida promedio al fallar: "+usdF(T.pierdeUsd)):"todavía no ha fallado ninguna")+
-      met(IC.banco,"Comisiones pagadas", usdF(T.comision), T.comision>0?"dn":"",
+          T.ganaUsd==null?"—":("+"+usdF(T.ganaUsd)),"",
+          T.pierdeUsd!=null?("pérdida promedio al fallar: "+usdF(T.pierdeUsd)):"todavía no ha fallado ninguna",
+          T.ganaUsd==null?6:"gana")+
+      met(IC.banco,"Comisiones pagadas", usdF(T.comision), "",
           (T.bruto>0 && T.comision>0)
             ? (T.comision>=T.bruto ? "se comieron toda la ganancia"
                : "de cada $100 que ganó, "+usdF(T.comision/T.bruto*100)+" fueron a comisiones")
-            : "lo que le cobró la casa de cambio")+
+            : "lo que le cobró la casa de cambio", 5)+
       (T.nAb?met(IC.mov,"Abiertas: si cierra ahora", '<span data-v="futTot" class="'+cl(T.flotante)+'">'+
           (T.flotante>=0?"+":"−")+usdF(T.flotante).replace("-","")+'</span>',"",
           plural(T.nAb,"operación abierta","operaciones abiertas")+" · con el precio de este momento"+
-                 (T.enRiesgo?" · "+T.enRiesgo+" a punto de liquidar":"")):"")+
+                 (T.enRiesgo?" · "+T.enRiesgo+" a punto de liquidar":""),
+          T.flotante>=0?"gana":"pierde"):"")+
     '</div></div>';
 
   /* ---- panel de registrar ---- */
@@ -4327,9 +4549,10 @@ function pintarAmbito(k){
 
   /* ---- abiertas ---- */
   if(F.abiertas.length){
-    h+='<div class="caja"><h2><span class="ic">'+IC.fut+'</span>Abiertas ahora'+
-      '<span class="chip a">'+F.abiertas.length+'</span><span class="sp"></span>'+
-      '<span class="envivo"><i></i>EN VIVO</span></h2><div class="cp">'+
+    h+='<div class="caja"><h2><span class="ic">'+IC.fut+'</span>Operaciones abiertas'+
+      '<span class="chip v">'+F.abiertas.length+'</span><span class="sp"></span>'+
+      '<span class="envivo"><i></i>EN VIVO</span></h2>'+
+      tablaAbiertas(F.abiertas,k)+'<div class="soloTel cp" style="padding-top:0">'+
       F.abiertas.map(function(e){ return filaAbierta(e,k); }).join("")+'</div></div>';
   }
 
@@ -4367,6 +4590,34 @@ function pintarAmbito(k){
 function pintarFut(){ pintarAmbito("fut"); }
 function pintarBack(){ pintarAmbito("back"); }
 
+/* las operaciones abiertas, en tabla: una línea por operación */
+function tablaAbiertas(abiertas,k){
+  return '<div class="env soloPC"><table><thead><tr>'+
+    '<th>Moneda</th><th>Tipo</th><th>Entrada</th><th>Precio ahora</th>'+
+    '<th class="opt">Stop</th><th class="opt">Objetivo</th>'+
+    '<th>Margen</th><th>Si cierra ahora</th><th></th></tr></thead><tbody>'+
+    abiertas.map(function(e){
+      var f=e.f, pr=precioDe(f.sym);
+      return '<tr style="--fc:'+colDe(f.sym)+'">'+
+        '<td><div class="cri">'+icono(f.sym,34)+'<div><b>'+esc(f.sym)+'</b>'+
+          '<span>N° '+esc(String(f.n||"—"))+(f.fecha?' · '+fechaCorta(f.fecha):'')+'</span></div></div></td>'+
+        '<td><span class="chip '+(f.lado==="SHORT"?"s":"l")+'">'+
+          (f.lado==="SHORT"?"▼ CORTO":"▲ LARGO")+'</span><span class="sub">'+e.apal+'x</span></td>'+
+        '<td>'+precio(e.entrada)+'</td>'+
+        '<td><span data-v="pr" data-s="'+esc(f.sym)+'">'+precio(pr)+'</span></td>'+
+        '<td class="opt dn">'+(e.sl!=null?precio(e.sl):"—")+'</td>'+
+        '<td class="opt up">'+(e.tp!=null?precio(e.tp):"—")+'</td>'+
+        '<td>'+usdF(e.margen)+'<span class="sub">lote '+usdF(e.valor)+'</span></td>'+
+        '<td><span class="'+(e.flot>0?"gpill p":e.flot<0?"gpill n":"gpill z")+'" data-v="futFlot" '+
+          'data-f="'+esc(f.id)+'" data-cls="">'+
+          (e.flot!=null?((e.flot>=0?"+":"−")+usdF(e.flot).replace("-","")):"sin precio")+'</span>'+
+          '<span class="sub '+cl(e.pctFlot)+'" data-v="futFlotP" data-f="'+esc(f.id)+'" data-cls="sub">'+
+          (e.pctFlot!=null?pct(e.pctFlot,1)+" del margen":"")+'</span></td>'+
+        '<td><div style="display:flex;gap:7px;justify-content:flex-end">'+
+          '<button class="b sm ac" data-cerrarop="'+esc(f.id)+'" data-amb="'+k+'">Cerrar</button>'+
+          '<button class="b sm" data-edop="'+esc(f.id)+'" data-amb="'+k+'">Editar</button></div></td></tr>';
+    }).join("")+'</tbody></table></div>';
+}
 function filaAbierta(e,k){
   var f=e.f, pr=precioDe(f.sym);
   var riel=posicionRiel(e);
@@ -4541,29 +4792,6 @@ function engancharAmbito(c, A){
       recLote(A); montarGraf(A);
     };
   });
-  c.querySelectorAll("[data-sm]").forEach(function(b){
-    b.onclick=function(){
-      var nuevo=b.getAttribute("data-sm");
-      /* al cambiar de modo se traduce lo que ya estaba escrito */
-      var pActual=slAPrecio(A), ent=num(FU.entrada);
-      FU.slModo=nuevo;
-      if(pActual!=null&&ent>0){
-        var dist=Math.abs(ent-pActual)/ent;
-        FU.sl = nuevo==="precio" ? paraCasilla(redondearPrecio(pActual))
-              : nuevo==="pp" ? paraCasilla(+(dist*100).toFixed(3))
-              : paraCasilla(+(dist*100*A.cfg.apal).toFixed(2));
-        var el=document.getElementById("fuSL");
-        if(el) el.value=FU.sl;
-      }
-      c.querySelectorAll("[data-sm]").forEach(function(x){
-        x.className = x.getAttribute("data-sm")===nuevo ? "on" : "";
-      });
-      var sl2=document.getElementById("fuSL");
-      if(sl2) sl2.placeholder = nuevo==="precio" ? ejemploPrecio(FU.sym, FU.lado==="SHORT"?1.01:0.99)
-                                : nuevo==="pp" ? "1" : "10";
-      recLote(A); montarGraf(A);
-    };
-  });
   c.querySelectorAll("[data-chk]").forEach(function(b){
     b.onclick=function(){
       var k2=b.getAttribute("data-chk");
@@ -4627,20 +4855,25 @@ function montarGraf(A){
   montarGrafica(g, {
     sym:FU.sym,
     lado:function(){ return FU.lado; },
-    valores:function(){ return valoresFU(A); },
+    /* las tres líneas existen desde el primer momento: si una casilla está vacía,
+       se coloca cerca del precio de ahora para que usted pueda arrastrarla */
+    valores:function(){
+      var v=valoresFU(A), pr=precioDe(FU.sym);
+      if(pr==null) return v;
+      var corto=FU.lado==="SHORT";
+      if(!(v.entrada>0)) v.entrada=pr;
+      var base=v.entrada;
+      if(!(v.sl>0))  v.sl = corto ? base*1.02 : base*0.98;
+      if(!(v.tp>0))  v.tp = corto ? base*0.96 : base*1.04;
+      return v;
+    },
     alMover:function(campo, p){
       p=redondearPrecio(p);
-      var ent=num(FU.entrada);
       if(campo==="entrada"){
         FU.entrada=paraCasilla(p);
         var E=document.getElementById("fuE"); if(E) E.value=FU.entrada;
       } else if(campo==="sl"){
-        if(FU.slModo==="precio") FU.sl=paraCasilla(p);
-        else if(ent>0){
-          var d=Math.abs(ent-p)/ent*100;
-          FU.sl = FU.slModo==="pp" ? paraCasilla(+d.toFixed(3))
-                                   : paraCasilla(+(d*A.cfg.apal).toFixed(2));
-        }
+        FU.sl=paraCasilla(p);
         var L=document.getElementById("fuSL"); if(L) L.value=FU.sl;
       } else if(campo==="tp"){
         FU.tp=paraCasilla(p);
@@ -4717,7 +4950,7 @@ function cerrarOperacion(id, k){
         (pr!=null?String(pr).replace(".",","):"")+'"></div>'+
       '<div class="campo"><label>Fecha de cierre</label><input type="date" id="cF" value="'+hoy()+'"></div>'+
       '<div class="campo"><label>Comisión total</label><input id="cK" inputmode="decimal" value="'+
-        (f.com?String(+(+f.com).toFixed(6)).replace(".",","):"")+'" placeholder="0"></div>'+
+        (f.com?String(+(+f.com).toFixed(6)).replace(".",","):"")+'" placeholder="sin comisión"></div>'+
     '</div>'+
     '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:11px">'+
       (st.sl!=null?'<button class="b rj sm" id="cSl">Me saltó el stop ('+precio(st.sl)+')</button>':'')+
@@ -4809,7 +5042,7 @@ function editarOperacion(id, k){
       '<div class="campo"><label>Salida (vacío = abierta)</label><input id="eX" inputmode="decimal" '+
         'value="'+(f.salida!=null?String(f.salida).replace(".",","):"")+'"></div>'+
       '<div class="campo"><label>Comisión</label><input id="eK" inputmode="decimal" value="'+
-        (f.com?String(+(+f.com).toFixed(6)).replace(".",","):"")+'" placeholder="0"></div>'+
+        (f.com?String(+(+f.com).toFixed(6)).replace(".",","):"")+'" placeholder="sin comisión"></div>'+
       '<div class="campo ancho"><label>Estrategia</label><input id="eEs" style="font-family:inherit" '+
         'value="'+esc(f.estr||"")+'" list="listaEstr2"></div>'+
       '<div class="campo ancho"><label>Nota</label><input id="eNo" style="font-family:inherit" '+
@@ -4976,7 +5209,7 @@ function borrarPrueba(){
   if(!p){ aviso("No hay ninguna prueba.",true); return; }
   var n=opsDePrueba(p.id).length;
   confirmar("Borrar la prueba","Se borra <b>"+esc(p.nombre)+"</b> con sus <b>"+n+
-    "</b> "+pal(opsDePrueba(id).length,"operación","operaciones")+" de prueba, en todos sus equipos. Su dinero de verdad no se toca.",
+    "</b> "+pal(n,"operación","operaciones")+" de prueba, en todos sus equipos. Su dinero de verdad no se toca.",
     "Borrar la prueba", function(){
       opsDePrueba(p.id).forEach(function(o){ anotarBorrado(o.id); });
       BD.back=BD.back.filter(function(o){ return o.prueba!==p.id; });
@@ -5149,7 +5382,7 @@ function programarVenta(symIni){
         '<div class="rapidos">'+[25,50,75,100].map(function(p){
           return '<button type="button" data-rp="'+p+'">'+(p===100?"TODO":p+"%")+'</button>'; }).join("")+
         '</div></div>'+
-      '<div class="campo"><label>Comisión (USD, opcional)</label><input id="ovK" inputmode="decimal" placeholder="0"></div>'+
+      '<div class="campo"><label>Comisión (USD, opcional)</label><input id="ovK" inputmode="decimal" placeholder="sin comisión"></div>'+
     '</div>'+
     '<div class="nota" id="ovR">Cuando el precio en vivo llegue ahí, la venta queda registrada sola '+
     'en este programa, le suena y le avisa. La orden de verdad la pone usted en Binance.</div>'+
@@ -5259,111 +5492,93 @@ function pintarRes(){
   var totalTodo = S.tot.valor + T.margenAbierto + T.flotante + (D.total>0?D.total:0);
   var ganTodo = S.tot.abierto + S.tot.realizado + T.gan + T.flotante;
 
-  var h=alertaPrecios()+avisoAlertas();
+  var h=alertaPrecios()+avisoAlertas()+avisoVentasSinCompra();
 
   h+='<div class="cima">'+heroGrande("TODO SU DINERO", totalTodo, ganTodo, "sumando spot y futuros", ch, serieTot())+
     '<div class="mets">'+
       met(IC.spot,"Spot: vale hoy",'<span data-v="total">'+usd(S.tot.valor)+'</span>',"",
-          plural(vivas.length,"moneda","monedas")+" · "+pct(S.tot.abiertoPct,1)+" sobre lo que puso", null, serieTot())+
+          plural(vivas.length,"moneda","monedas")+" · "+pct(S.tot.abiertoPct,1)+" sobre lo que puso", 2, serieTot())+
       met(IC.fut,"Futuros: resultado",
-          '<span class="'+cl(T.gan)+'">'+(T.gan>=0?"+":"−")+usdF(T.gan).replace("-","")+'</span>',cl(T.gan),
-          plural(T.n,"operación cerrada","operaciones cerradas")+(T.aciertos!=null?" · acierta el "+T.aciertos.toFixed(0)+"%":""))+
+          (T.gan>=0?"+":"−")+usdF(T.gan).replace("-",""),"",
+          plural(T.n,"operación cerrada","operaciones cerradas")+(T.aciertos!=null?" · acierta el "+T.aciertos.toFixed(0)+"%":""),
+          T.gan>=0?"gana":"pierde")+
       met(IC.mov,"Futuros abiertos", T.nAb?usdF(T.margenAbierto):"—","",
-          T.nAb?(plural(T.nAb,"operación","operaciones")+" · margen puesto"):"nada abierto")+
-      met(IC.dolar,"USDT disponible", usd(D.total<0?0:D.total), D.total>0?"up":"",
-          D.total<0?"falta registrar lo que metió":"para comprar")+
+          T.nAb?(plural(T.nAb,"operación","operaciones")+" · margen puesto"):"nada abierto", 3)+
+      met(IC.dolar,"USDT disponible", usd(D.total<0?0:D.total),"",
+          D.total<0?"falta registrar lo que metió":"para comprar", 6)+
       met(IC.sube,"Ya ganado en ventas",
-          '<span class="'+cl(S.tot.realizado)+'">'+(S.tot.realizado>=0?"+":"−")+
-          usd(S.tot.realizado).replace("-","")+'</span>',"", plural(nVentasSpot(),"venta","ventas"))+
-      met(IC.banco,"Comisiones", usdF(comisionesTotales()),"","spot y futuros")+
+          (S.tot.realizado>=0?"+":"−")+usd(S.tot.realizado).replace("-",""),"",
+          plural(nVentasSpot(),"venta","ventas"), 4)+
+      met(IC.banco,"Comisiones", usdF(comisionesTotales()),"","spot y futuros", 5)+
     '</div></div>';
 
   /* ---- sus monedas ---- */
   if(vivas.length){
-    h+='<div class="caja"><h2><span class="ic">'+IC.spot+'</span>Sus monedas'+
+    h+='<div class="caja"><h2><span class="ic">'+IC.spot+'</span>Sus criptomonedas'+
+      '<span class="chip v">'+vivas.length+'</span>'+
       '<span class="sp"></span><button class="b sm" onclick="irA(\'spot\')">Ver todo</button></h2>'+
       '<div class="env soloPC"><table><thead><tr>'+
-      '<th><span class="cap">Cripto</span></th><th><span class="cap">Cantidad</span></th>'+
-      '<th><span class="cap">Promedio</span></th><th><span class="cap">Precio ahora</span></th>'+
-      '<th class="opt"><span class="cap">7 días</span></th>'+
-      '<th><span class="cap">Vale hoy</span></th><th><span class="cap">Ganancia</span></th>'+
+      '<th>Moneda</th><th>Cantidad</th>'+
+      '<th>Precio promedio</th><th>Precio ahora</th>'+
+      '<th class="opt">7 días</th>'+
+      '<th>Vale hoy</th><th>Ganancia</th>'+
       '<th></th></tr></thead><tbody>';
     vivas.slice(0,8).forEach(function(e){
       h+='<tr class="cl" tabindex="0" role="button" data-sym="'+esc(e.sym)+'" '+
         'style="--fc:'+colDe(e.sym)+'">'+
-        '<td><div class="cri">'+icono(e.sym)+'<div><b>'+esc(e.sym)+'</b><span>'+
+        '<td><div class="cri">'+icono(e.sym,38)+'<div><b>'+esc(e.sym)+'</b><span>'+
         esc(nombreDe(e.sym))+'</span></div></div></td>'+
-        '<td>'+cant(e.cantidad)+'</td><td>'+precio(e.promedio)+'</td>'+
+        '<td>'+cant(e.cantidad)+'<span class="sub">'+esc(e.sym)+'</span></td>'+
+        '<td>'+precio(e.promedio)+'<span class="sub">en '+plural(e.nCompras,"compra","compras")+'</span></td>'+
         '<td><span data-v="pr" data-s="'+esc(e.sym)+'">'+precio(e.precio)+'</span>'+
-        '<br><span style="font-size:11px" data-v="ch" data-s="'+esc(e.sym)+'" data-cls="">'+
+        '<span class="sub '+cl(cambioDe(e.sym))+'" data-v="ch" data-s="'+esc(e.sym)+'" data-cls="sub">'+
         (cambioDe(e.sym)!=null?pct(cambioDe(e.sym),1):"—")+'</span></td>'+
         '<td class="opt"><span data-v="spark" data-s="'+esc(e.sym)+'"></span></td>'+
         '<td><span data-v="spVal" data-s="'+esc(e.sym)+'">'+
-        (e.valor!=null?usd(e.valor):"—")+'</span></td>'+
+        (e.valor!=null?usd(e.valor):"—")+'</span><span class="sub">puso '+usd(e.costo)+'</span></td>'+
         '<td><span class="'+(e.abierto>0?"gpill p":e.abierto<0?"gpill n":"gpill z")+'" '+
         'data-v="spGan" data-s="'+esc(e.sym)+'" data-cls="">'+
         (e.abierto!=null?(e.abierto>=0?"+":"−")+usd(e.abierto).replace("-",""):"—")+'</span>'+
-        '<span class="gsub '+cl(e.abiertoPct)+'" data-v="spGanP" data-s="'+esc(e.sym)+'" '+
-        'data-cls="">'+pct(e.abiertoPct)+'</span></td>'+
+        '<span class="sub '+cl(e.abiertoPct)+'" data-v="spGanP" data-s="'+esc(e.sym)+'" '+
+        'data-cls="sub">'+pct(e.abiertoPct)+'</span></td>'+
         '<td><button class="b sm rj" data-vender="'+esc(e.sym)+'">Vender</button></td></tr>';
     });
-    h+='</tbody></table></div>'+listaMonedasTel(vivas.slice(0,8), true)+
+    h+='</tbody><tfoot><tr><td colspan="2">'+plural(vivas.length,"moneda","monedas")+'</td>'+
+      '<td></td><td></td><td class="opt"></td>'+
+      '<td><span data-v="total">'+usd(S.tot.valor)+'</span></td>'+
+      '<td><span class="'+(S.tot.abierto>0?"gpill p":S.tot.abierto<0?"gpill n":"gpill z")+'">'+
+      (S.tot.abierto>=0?"+":"−")+usd(S.tot.abierto).replace("-","")+'</span></td><td></td></tr></tfoot>'+
+      '</table></div>'+listaMonedasTel(vivas.slice(0,8), true)+
       (vivas.length>8?'<div class="cp" style="padding-top:0"><span class="mut">y '+
         plural(vivas.length-8,"moneda","monedas")+' más.</span></div>':'')+'</div>';
   }
 
-  /* ---- futuros abiertos ---- */
+  /* ---- futuros abiertos, como tabla ---- */
   if(F.abiertas.length){
-    h+='<div class="caja"><h2><span class="ic">'+IC.fut+'</span>Futuros abiertos'+
-      '<span class="chip a">'+F.abiertas.length+'</span><span class="sp"></span>'+
+    h+='<div class="caja"><h2><span class="ic">'+IC.fut+'</span>Operaciones abiertas'+
+      '<span class="chip v">'+F.abiertas.length+'</span><span class="sp"></span>'+
       '<span class="envivo"><i></i>EN VIVO</span>'+
-      '<button class="b sm" onclick="irA(\'fut\')">Ver futuros</button></h2><div class="cp">'+
+      '<button class="b sm" onclick="irA(\'fut\')">Ver futuros</button></h2>'+
+      tablaAbiertas(F.abiertas,"fut")+
+      '<div class="soloTel cp" style="padding-top:0">'+
       F.abiertas.map(function(e){ return filaAbierta(e,"fut"); }).join("")+'</div></div>';
   }
 
-  /* ---- fila de tarjetas ---- */
+  /* ---- abajo: reparto grande y, al lado, dónde compró y alertas ---- */
   h+='<div class="inf">';
-  h+=tarjetaUsdt(D);
-  var conP=vivas.filter(function(e){ return e.abiertoPct!=null; })
-                .sort(function(a,b){ return b.abiertoPct-a.abiertoPct; });
-  if(conP.length>1) h+=tarjetaMejorPeor(conP);
-  if(T.n||T.nAb){
-    h+='<div class="caja"><h2><span class="ic">'+IC.diana+'</span>Futuros</h2><div class="cp">'+
-      '<div class="mono '+cl(T.gan)+'" style="font-size:26px;font-weight:700">'+
-      (T.gan>=0?"+":"−")+usd(T.gan).replace("-","")+'</div>'+
-      '<div class="mut" style="margin-top:4px">'+plural(T.n,"operación cerrada","operaciones cerradas")+
-      (T.aciertos!=null?" · acertó "+T.ganadas+" de "+T.decididas:"")+
-      (T.porOperacion!=null?" · promedio "+(T.porOperacion>=0?"+":"−")+usdF(T.porOperacion).replace("-","")+" por operación":"")+'</div>'+
-      (T.nAb?'<div class="mut" style="margin-top:3px">'+plural(T.nAb,"abierta","abiertas")+' con '+
-        usdF(T.margenAbierto)+' de margen · si las cierra ahora: <b class="'+cl(T.flotante)+'" data-v="futTot">'+
-        (T.flotante>=0?"+":"−")+usdF(T.flotante).replace("-","")+'</b></div>':'')+
-      '<button class="b sm" style="margin-top:10px" onclick="irA(\'fut\')">Ver futuros</button>'+
-      '</div></div>';
-  }
-  if(BD.pruebas.length){
-    var mejor=null;
-    BD.pruebas.forEach(function(p){
-      var TT=carteraFut(opsDePrueba(p.id)).tot;
-      if(!mejor||TT.gan>mejor.T.gan) mejor={p:p,T:TT};
-    });
-    h+='<div class="caja"><h2><span class="ic">'+IC.back+'</span>Backtesting</h2><div class="cp">'+
-      '<div class="mut">'+plural(BD.pruebas.length,"prueba","pruebas")+' · '+plural(BD.back.length,"operación","operaciones")+' de prueba</div>'+
-      (mejor?'<div class="mono '+cl(mejor.T.gan)+'" style="font-size:22px;font-weight:700;'+
-        'margin-top:6px">'+(mejor.T.gan>=0?"+":"−")+usdF(mejor.T.gan).replace("-","")+'</div>'+
-        '<div class="mut">la mejor es <b>'+esc(mejor.p.nombre)+'</b>'+
-        (mejor.T.aciertos!=null?" · "+mejor.T.aciertos.toFixed(0)+"% acertadas":"")+'</div>':'')+
-      '<button class="b sm" style="margin-top:10px" onclick="irA(\'back\')">Ver pruebas</button>'+
-      '</div></div>';
-  }
-  h+=tarjetaAlertas();
-  h+=tarjetaCasas();
   if(vivas.length) h+='<div class="caja ancha2"><h2><span class="ic">'+IC.torta+
-    '</span>Cómo está repartido</h2><div class="cp">'+
+    '</span>Cómo está repartido su dinero</h2><div class="cp">'+
     rosca(vivas.filter(function(e){ return e.valor>0; })
                .sort(function(a,b){ return b.valor-a.valor; })
                .map(function(e){ return {v:e.valor,color:colDe(e.sym),et:e.sym}; }),
           usd(S.tot.valor).replace("$",""),"USD")+
-    '<p class="mut" style="margin:12px 0 0">'+esc(textoResumen(S,vivas,ch))+'</p></div></div>';
+    '<p class="mut" style="margin:var(--e4) 0 0">'+esc(textoResumen(S,vivas,ch))+'</p></div></div>';
+  h+=tarjetaUsdt(D);
+  var conP=vivas.filter(function(e){ return e.abiertoPct!=null; })
+                .sort(function(a,b){ return b.abiertoPct-a.abiertoPct; });
+  if(conP.length>1) h+=tarjetaMejorPeor(conP);
+  h+=tarjetaCasas();
+  h+=tarjetaAlertas();
   h+='</div>';
 
   c.innerHTML=h;
@@ -5373,6 +5588,7 @@ function pintarRes(){
       if(ev.target.closest("button")) return;
       verMoneda(tr.getAttribute("data-sym"));
     };
+    tr.style.cursor="pointer";
     tr.onkeydown=function(ev){
       if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); verMoneda(tr.getAttribute("data-sym")); }
     };
@@ -5468,9 +5684,11 @@ function pintarAlr(){
     '<span class="sp"></span><button class="b ac sm" onclick="nuevaAlerta()">+ Nueva alerta</button>'+
     '</h2><div class="cp">';
   if(!lista.length){
-    h+='<div class="vacio"><b>Sin alertas</b><p>Marque un precio y el programa le avisa cuando '+
-      'la moneda llegue ahí. Se revisa con cada precio que llega, al segundo.</p>'+
-      '<button class="b ac" onclick="nuevaAlerta()">+ Crear la primera</button></div>';
+    h+='<div class="vacio"><div class="vic">'+iconoGrande("alr")+'</div>'+
+      '<b>Todavía no tiene ninguna alerta</b><p>Marque el precio al que quiere entrar o salir '+
+      'y el programa le avisa en cuanto la moneda llegue ahí, con sonido. Se revisa con cada '+
+      'precio que llega, al segundo.</p>'+
+      '<button class="b vd gr" onclick="nuevaAlerta()">+ Crear mi primera alerta</button></div>';
   } else {
     lista.forEach(function(a,i){
       var p=precioDe(a.sym);
@@ -6761,7 +6979,9 @@ var TEMAS=[
   {n:"Papel",      bg:"#FBF7EF", ac:"#B45309"},
   {n:"Celeste",    bg:"#E8F3FF", ac:"#1D4ED8"}
 ];
-var TARJETAS_FABRICA=["#16D98A","#F5A524","#9B6BFF","#3B82F6","#EC4899","#22B8E6"];
+/* un color por pestaña: Resumen, Spot, Futuros, Backtesting, Alertas, Ajustes */
+/* Ninguno es verde ni rojo: esos dos quedan reservados para ganar y perder */
+var TARJETAS_FABRICA=["#4F7CFF","#22C8E6","#8B5CF6","#D946C8","#FB923C","#94A3B8"];
 function temaFabrica(){
   return {bg:"#0E1420", ac:"#10E0A0", up:"#16D98A", dn:"#FF4D6A",
           c:TARJETAS_FABRICA.slice(), fz:15, rad:14};
@@ -6863,12 +7083,36 @@ function aplicarTema(){
   R.setProperty("--ojoTx",legible("#FFBE7B",peor,4.6,hacia));
   R.setProperty("--up",up); R.setProperty("--dn",dn);
   R.setProperty("--upTx",upTx); R.setProperty("--dnTx",dnTx);
-  R.setProperty("--upInk",tintaPara(up)); R.setProperty("--dnInk",tintaPara(dn));
-  t.c.forEach(function(c,i){
+
+  /* las tarjetas son un degradado de dos tonos del mismo color. Primero se elige la
+     letra (blanca o negra) y después se corren LOS DOS tonos en sentido contrario a
+     esa letra hasta que se lea igual de bien arriba que abajo. */
+  function tonosDeTarjeta(c){
     var cc=legible(c,b1,2.4);
-    R.setProperty("--c"+(i+1), cc);
-    R.setProperty("--c"+(i+1)+"Ink", tintaPara(cc));
+    var ink=tintaPara(cc);
+    var contra = (ink==="#FFFFFF") ? "#000000" : "#FFFFFF";
+    var a=cc, k=0;
+    while(contraste(ink,a)<4.8 && k<28){ a=mezclar(a,contra,0.05); k++; }
+    var f=mezclar(a,contra,0.17);
+    return {c:a, f:f, ink:ink};
+  }
+  t.c.forEach(function(c,i){
+    var T2=tonosDeTarjeta(c);
+    R.setProperty("--c"+(i+1), T2.c);
+    R.setProperty("--c"+(i+1)+"F", T2.f);
+    R.setProperty("--c"+(i+1)+"Ink", T2.ink);
     R.setProperty("--c"+(i+1)+"Tx", legible(mezclar(c,hacia,0.14),peor,4.6,hacia));
+  });
+  [["up",t.up],["dn",t.dn]].forEach(function(x){
+    var T2=tonosDeTarjeta(x[1]);
+    R.setProperty("--"+x[0]+"G", T2.c);
+    R.setProperty("--"+x[0]+"F", T2.f);
+    R.setProperty("--"+x[0]+"Ink", T2.ink);
+  });
+  /* variantes del color de cada pestaña, para los dibujos y degradados */
+  t.c.forEach(function(c,i){
+    R.setProperty("--c"+(i+1)+"L", aclarar(legible(c,b1,2.4),0.28));
+    R.setProperty("--c"+(i+1)+"D", oscurecer(legible(c,b1,2.4),0.22));
   });
   R.setProperty("--fz",t.fz+"px");
   R.setProperty("--rad",t.rad+"px");
@@ -7025,7 +7269,7 @@ function pintarDat(){
         return '<option value="'+x+'"'+(+a.cada===x?" selected":"")+'>'+
           (x<60?x+" segundos":(x/60)+" minuto"+(x>60?"s":""))+'</option>'; }).join("")+'</select></div>'+
     '<div class="campo"><label>Meta de portafolio (USD)</label>'+
-      '<input id="aMeta" inputmode="decimal" placeholder="500" value="'+(a.meta||"")+'"></div>'+
+      '<input id="aMeta" inputmode="decimal" placeholder="ej. 500" value="'+(a.meta||"")+'"></div>'+
     '<div class="campo"><label>Casa de cambio por defecto</label><select id="aCasa">'+
       Object.keys(CASAS).map(function(k){
         return '<option value="'+k+'"'+((a.casa||"BINANCE")===k?" selected":"")+'>'+
@@ -7714,6 +7958,11 @@ function repintar(){
   repintarCabecera();
 }
 function repintarCabecera(){
+  var app=document.getElementById("app");
+  if(app) app.setAttribute("data-v", vista);
+  try{ document.body.setAttribute("data-v", vista); }catch(e){}
+  var g=document.getElementById("gic");
+  if(g) g.innerHTML=iconoGrande(vista);
   var t=document.getElementById("titulo");
   if(t) t.textContent=TITULOS[vista]||"Portafolio Cripto";
   var s=document.getElementById("subt");
@@ -8446,7 +8695,41 @@ DIC.en={
 "escriba el stop loss":"type the stop loss",
 "por operación":"per trade",
 "En promedio, cada operación le deja":"On average, each trade leaves you",
-"tiene":"you hold"
+"tiene":"you hold",
+/* v14 · pantalla nueva */
+"· el precio donde sale perdiendo":"· the price where you exit at a loss",
+"Cantidad comprada":"Amount bought",
+"Cómo está repartido su dinero":"How your money is split",
+"CUÁNTO METER EN ESTA OPERACIÓN":"HOW MUCH TO PUT IN THIS TRADE",
+"déjelo vacío si no pagó":"leave empty if you paid none",
+"Diferencia":"Difference",
+"Escriba arriba cuánto es su cartera":"Type your account size above",
+"Escriba el precio de entrada":"Type the entry price",
+"Escriba el stop loss, o arrastre su línea roja en la gráfica":"Type the stop loss, or drag its red line on the chart",
+"Revise la entrada y el stop":"Check the entry and the stop",
+"Invertido":"Invested",
+"La fila de abajo es el total: # @ por $# que da un precio promedio de":"The bottom row is the total: # @ for $# which gives an average price of",
+"lote $#":"lot $#",
+"Mejor y peor moneda":"Best and worst coin",
+"Operaciones abiertas":"Open trades",
+"Precio de compra":"Buy price",
+"Se cobra al entrar y al salir":"Charged on entry and on exit",
+"Si cierra ahora":"If you close now",
+"sin comisión":"no fee",
+"Stop":"Stop",
+"Sus compras, una por una":"Your purchases, one by one",
+"Sus criptomonedas":"Your coins",
+"Sus ventas":"Your sales",
+"Tipo":"Type",
+"Total":"Total",
+"Todavía no tiene ninguna alerta":"You have no alerts yet",
+"+ Crear mi primera alerta":"+ Create my first alert",
+"+ Crear mi primera prueba":"+ Create my first backtest",
+"Ver movimientos":"See movements",
+"Lote (capital para operar)":"Lot size (capital to trade)",
+"Distancia al stop":"Distance to the stop",
+"Si pega el objetivo":"If it hits the target",
+"margen aislado":"isolated margin"
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
@@ -8888,7 +9171,41 @@ DIC.pt={
 "escriba el stop loss":"escreva o stop loss",
 "por operación":"por operação",
 "En promedio, cada operación le deja":"Em média, cada operação deixa-lhe",
-"tiene":"tem"
+"tiene":"tem",
+/* v14 · pantalla nueva */
+"· el precio donde sale perdiendo":"· o preço onde sai a perder",
+"Cantidad comprada":"Quantidade comprada",
+"Cómo está repartido su dinero":"Como está repartido o seu dinheiro",
+"CUÁNTO METER EN ESTA OPERACIÓN":"QUANTO COLOCAR NESTA OPERAÇÃO",
+"déjelo vacío si no pagó":"deixe vazio se não pagou",
+"Diferencia":"Diferença",
+"Escriba arriba cuánto es su cartera":"Escreva acima quanto é a sua carteira",
+"Escriba el precio de entrada":"Escreva o preço de entrada",
+"Escriba el stop loss, o arrastre su línea roja en la gráfica":"Escreva o stop loss, ou arraste a sua linha vermelha no gráfico",
+"Revise la entrada y el stop":"Reveja a entrada e o stop",
+"Invertido":"Investido",
+"La fila de abajo es el total: # @ por $# que da un precio promedio de":"A linha de baixo é o total: # @ por $# que dá um preço médio de",
+"lote $#":"lote $#",
+"Mejor y peor moneda":"Melhor e pior moeda",
+"Operaciones abiertas":"Operações abertas",
+"Precio de compra":"Preço de compra",
+"Se cobra al entrar y al salir":"Cobra-se ao entrar e ao sair",
+"Si cierra ahora":"Se fechar agora",
+"sin comisión":"sem comissão",
+"Stop":"Stop",
+"Sus compras, una por una":"As suas compras, uma a uma",
+"Sus criptomonedas":"As suas criptomoedas",
+"Sus ventas":"As suas vendas",
+"Tipo":"Tipo",
+"Total":"Total",
+"Todavía no tiene ninguna alerta":"Ainda não tem nenhum alerta",
+"+ Crear mi primera alerta":"+ Criar o meu primeiro alerta",
+"+ Crear mi primera prueba":"+ Criar o meu primeiro teste",
+"Ver movimientos":"Ver movimentos",
+"Lote (capital para operar)":"Lote (capital para operar)",
+"Distancia al stop":"Distância ao stop",
+"Si pega el objetivo":"Se atingir o alvo",
+"margen aislado":"margem isolada"
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
@@ -9330,7 +9647,41 @@ DIC.fr={
 "escriba el stop loss":"indiquez le stop loss",
 "por operación":"par opération",
 "En promedio, cada operación le deja":"En moyenne, chaque opération vous laisse",
-"tiene":"vous avez"
+"tiene":"vous avez",
+/* v14 · pantalla nueva */
+"· el precio donde sale perdiendo":"· le prix où vous sortez en perte",
+"Cantidad comprada":"Quantité achetée",
+"Cómo está repartido su dinero":"Comment votre argent est réparti",
+"CUÁNTO METER EN ESTA OPERACIÓN":"COMBIEN ENGAGER SUR CETTE OPÉRATION",
+"déjelo vacío si no pagó":"laissez vide si vous n'avez rien payé",
+"Diferencia":"Différence",
+"Escriba arriba cuánto es su cartera":"Indiquez votre capital ci-dessus",
+"Escriba el precio de entrada":"Indiquez le prix d'entrée",
+"Escriba el stop loss, o arrastre su línea roja en la gráfica":"Indiquez le stop loss, ou faites glisser sa ligne rouge sur le graphique",
+"Revise la entrada y el stop":"Vérifiez l'entrée et le stop",
+"Invertido":"Investi",
+"La fila de abajo es el total: # @ por $# que da un precio promedio de":"La ligne du bas est le total : # @ pour $# ce qui donne un prix moyen de",
+"lote $#":"lot $#",
+"Mejor y peor moneda":"Meilleure et pire crypto",
+"Operaciones abiertas":"Opérations ouvertes",
+"Precio de compra":"Prix d'achat",
+"Se cobra al entrar y al salir":"Prélevée à l'entrée et à la sortie",
+"Si cierra ahora":"Si vous fermez maintenant",
+"sin comisión":"sans commission",
+"Stop":"Stop",
+"Sus compras, una por una":"Vos achats, un par un",
+"Sus criptomonedas":"Vos cryptos",
+"Sus ventas":"Vos ventes",
+"Tipo":"Type",
+"Total":"Total",
+"Todavía no tiene ninguna alerta":"Vous n'avez encore aucune alerte",
+"+ Crear mi primera alerta":"+ Créer ma première alerte",
+"+ Crear mi primera prueba":"+ Créer mon premier test",
+"Ver movimientos":"Voir les mouvements",
+"Lote (capital para operar)":"Lot (capital à engager)",
+"Distancia al stop":"Distance au stop",
+"Si pega el objetivo":"Si l'objectif est atteint",
+"margen aislado":"marge isolée"
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
@@ -9772,7 +10123,41 @@ DIC.de={
 "escriba el stop loss":"geben Sie den Stop-Loss ein",
 "por operación":"pro Trade",
 "En promedio, cada operación le deja":"Im Schnitt bringt Ihnen jeder Trade",
-"tiene":"Sie halten"
+"tiene":"Sie halten",
+/* v14 · pantalla nueva */
+"· el precio donde sale perdiendo":"· der Preis, zu dem Sie mit Verlust aussteigen",
+"Cantidad comprada":"Gekaufte Menge",
+"Cómo está repartido su dinero":"Wie Ihr Geld verteilt ist",
+"CUÁNTO METER EN ESTA OPERACIÓN":"WIE VIEL IN DIESEN TRADE",
+"déjelo vacío si no pagó":"leer lassen, wenn keine angefallen ist",
+"Diferencia":"Differenz",
+"Escriba arriba cuánto es su cartera":"Geben Sie oben Ihre Kontogröße ein",
+"Escriba el precio de entrada":"Geben Sie den Einstiegspreis ein",
+"Escriba el stop loss, o arrastre su línea roja en la gráfica":"Geben Sie den Stop-Loss ein oder ziehen Sie seine rote Linie im Chart",
+"Revise la entrada y el stop":"Prüfen Sie Einstieg und Stop",
+"Invertido":"Investiert",
+"La fila de abajo es el total: # @ por $# que da un precio promedio de":"Die untere Zeile ist die Summe: # @ für $#, was einen Durchschnittspreis ergibt von",
+"lote $#":"Lot $#",
+"Mejor y peor moneda":"Bester und schlechtester Coin",
+"Operaciones abiertas":"Offene Trades",
+"Precio de compra":"Kaufpreis",
+"Se cobra al entrar y al salir":"Wird beim Ein- und Ausstieg berechnet",
+"Si cierra ahora":"Wenn Sie jetzt schließen",
+"sin comisión":"keine Gebühr",
+"Stop":"Stop",
+"Sus compras, una por una":"Ihre Käufe, einer nach dem anderen",
+"Sus criptomonedas":"Ihre Coins",
+"Sus ventas":"Ihre Verkäufe",
+"Tipo":"Typ",
+"Total":"Gesamt",
+"Todavía no tiene ninguna alerta":"Sie haben noch keine Alarme",
+"+ Crear mi primera alerta":"+ Meinen ersten Alarm erstellen",
+"+ Crear mi primera prueba":"+ Meinen ersten Test erstellen",
+"Ver movimientos":"Bewegungen ansehen",
+"Lote (capital para operar)":"Lot (Handelskapital)",
+"Distancia al stop":"Abstand zum Stop",
+"Si pega el objetivo":"Wenn das Ziel erreicht wird",
+"margen aislado":"isolierte Margin"
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
@@ -10214,7 +10599,41 @@ DIC.it={
 "escriba el stop loss":"scriva lo stop loss",
 "por operación":"per operazione",
 "En promedio, cada operación le deja":"In media, ogni operazione le lascia",
-"tiene":"ha"
+"tiene":"ha",
+/* v14 · pantalla nueva */
+"· el precio donde sale perdiendo":"· il prezzo dove esce in perdita",
+"Cantidad comprada":"Quantità comprata",
+"Cómo está repartido su dinero":"Come è ripartito il suo denaro",
+"CUÁNTO METER EN ESTA OPERACIÓN":"QUANTO METTERE IN QUESTA OPERAZIONE",
+"déjelo vacío si no pagó":"lo lasci vuoto se non ha pagato",
+"Diferencia":"Differenza",
+"Escriba arriba cuánto es su cartera":"Scriva sopra quanto è il suo capitale",
+"Escriba el precio de entrada":"Scriva il prezzo di entrata",
+"Escriba el stop loss, o arrastre su línea roja en la gráfica":"Scriva lo stop loss, o trascini la sua linea rossa sul grafico",
+"Revise la entrada y el stop":"Controlli l'entrata e lo stop",
+"Invertido":"Investito",
+"La fila de abajo es el total: # @ por $# que da un precio promedio de":"La riga in basso è il totale: # @ per $# che dà un prezzo medio di",
+"lote $#":"lotto $#",
+"Mejor y peor moneda":"Migliore e peggiore moneta",
+"Operaciones abiertas":"Operazioni aperte",
+"Precio de compra":"Prezzo di acquisto",
+"Se cobra al entrar y al salir":"Si paga all'entrata e all'uscita",
+"Si cierra ahora":"Se chiude ora",
+"sin comisión":"senza commissione",
+"Stop":"Stop",
+"Sus compras, una por una":"I suoi acquisti, uno per uno",
+"Sus criptomonedas":"Le sue criptomonete",
+"Sus ventas":"Le sue vendite",
+"Tipo":"Tipo",
+"Total":"Totale",
+"Todavía no tiene ninguna alerta":"Non ha ancora nessun avviso",
+"+ Crear mi primera alerta":"+ Crea il mio primo avviso",
+"+ Crear mi primera prueba":"+ Crea il mio primo test",
+"Ver movimientos":"Vedi movimenti",
+"Lote (capital para operar)":"Lotto (capitale da operare)",
+"Distancia al stop":"Distanza dallo stop",
+"Si pega el objetivo":"Se centra l'obiettivo",
+"margen aislado":"margine isolato"
 };
 </script>
 </body>
