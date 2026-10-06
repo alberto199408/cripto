@@ -1024,6 +1024,24 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
 .rescN{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
 .rescN i{font-style:normal;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;
   background:var(--b2);color:var(--t2)}
+/* ---------- qué está pasando con la cuenta, a la vista ---------- */
+.estCta{margin:0 0 12px;border:1px solid var(--ln);border-radius:12px;background:var(--b0);
+  overflow:hidden}
+.estF{display:flex;justify-content:space-between;gap:12px;padding:8px 13px;
+  border-bottom:1px solid var(--ln);font-size:12.5px}
+.estF:last-of-type{border-bottom:0}
+.estF span{color:var(--t2);font-weight:600}
+.estF b{color:var(--tx);font-weight:700;text-align:right}
+.estF.ok b{color:var(--upTx)} .estF.mal b{color:var(--dnTx)} .estF.ojo b{color:var(--ojoTx)}
+.bitac{border-top:1px solid var(--ln)}
+.bitac summary{cursor:pointer;padding:8px 13px;font-size:12px;font-weight:700;color:var(--t2)}
+.bitac>div{padding:0 13px 9px;display:grid;gap:3px}
+.bitac>div>div{display:flex;gap:9px;font-size:11.5px;color:var(--tx)}
+.bitac i{font-style:normal;color:var(--t3);font-variant-numeric:tabular-nums;flex:none}
+.estF b i{font-style:normal}
+.estF b i+i::before{content:" · ";color:var(--t3)}
+.bitac>div>div span{flex:1}
+.bitac>div>div b{font-weight:600;color:var(--t2)}
 </style>
 </head>
 <body>
@@ -1075,7 +1093,7 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por GitHub.
    ===================================================================== */
-var VERSION="24";
+var VERSION="25";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -1401,11 +1419,14 @@ function firmaAjustes(){
    ===================================================================== */
 var DESFASE_RELOJ=0;
 function ahoraReal(){ return Date.now()+DESFASE_RELOJ; }
-function ponerDesfase(horaDelServidor){
-  var s=+horaDelServidor||0;
-  if(!s) return;
-  var d=s-Date.now();
-  /* se queda con el desvío más reciente, pero sin saltos absurdos */
+/* recibe la DIFERENCIA: hora del servidor menos hora local, en milisegundos.
+   Positiva = este reloj atrasa; negativa = adelanta. */
+function ponerDesfase(diferenciaMs){
+  var d=+diferenciaMs;
+  if(!isFinite(d)) return;
+  /* un desvío de menos de un segundo no vale la pena; uno de más de un
+     año es un error de medida, no un reloj */
+  if(Math.abs(d)<1000) { DESFASE_RELOJ=0; return; }
   if(Math.abs(d)<1000*60*60*24*365) DESFASE_RELOJ=d;
 }
 var AJ_VIAJA=null;
@@ -7450,7 +7471,7 @@ function gh(ruta, opciones){
       var dd=r.headers.get("date");
       if(dd){
         /* GitHub también sirve para poner el reloj en hora */
-        try{ ponerDesfase(new Date(dd).getTime()); }catch(e){}
+        try{ ponerDesfase(new Date(dd).getTime()-Date.now()); }catch(e){}
         var dif=Math.abs(new Date(dd).getTime()-Date.now());
         if(dif>5*60000 && !RELOJ_avisado){
           RELOJ_avisado=true;
@@ -8627,7 +8648,32 @@ var FB_FIJA = {
 var FBV_LISTA = ["12.11.0", "11.10.0", "10.14.1"];
 var CTA = { u:null, correo:"", nombre:"", foto:"", listo:false,
             ocupado:false, error:"", hora:0, firma:"", reloj:null,
-            sdk:null, arrancado:false, bajando:false, cargando:null };
+            sdk:null, arrancado:false, bajando:false, cargando:null,
+            /* para VER qué pasa, no para suponerlo */
+            misHoras:[], pendiente:false, ultimaSubida:0, subidaMs:0,
+            ultimoRecibido:0, recibidoDe:"", escuchaViva:false, bitacora:[] };
+/* la bitácora: las últimas cosas que pasaron con la cuenta, con su hora */
+function anotarSync(m, x){
+  try{
+    CTA.bitacora.unshift({t:Date.now(), m:String(m), x:x==null?"":String(x)});
+    if(CTA.bitacora.length>10) CTA.bitacora.length=10;
+    if(vista==="dat") pintarCuentaPronto();
+  }catch(e){}
+}
+var CTA_pinta=null;
+function pintarCuentaPronto(){
+  clearTimeout(CTA_pinta);
+  CTA_pinta=setTimeout(function(){ try{ pintarCuenta(); }catch(e){} }, 150);
+}
+function haceCuanto(t){
+  if(!t) return "nunca";
+  var s=Math.round((Date.now()-t)/1000);
+  if(s<2) return "ahora mismo";
+  if(s<60) return "hace "+s+" s";
+  var m=Math.round(s/60);
+  if(m<60) return "hace "+m+" min";
+  return "hace "+Math.round(m/60)+" h";
+}
 
 function ctaCfg(){
   if(!BD.ajustes) BD.ajustes={};
@@ -8693,8 +8739,18 @@ function cargarFirebase(){
   }
   CTA.cargando=Promise.resolve().then(function(){ return intentar(0); }).then(function(m){
     var app=m[0].initializeApp(cl);
-    CTA.sdk={app:app, A:m[1], F:m[2],
-             auth:m[1].getAuth(app), db:m[2].getFirestore(app)};
+    /* El canal de Firestore. El que trae de fábrica (streaming) se traba
+       en algunos navegadores (Brave, por ejemplo) y detrás de algunos
+       antivirus y proxies: la escucha y las subidas se quedan colgadas
+       minutos. Con el canal clásico (long polling) funciona en todos. */
+    var db;
+    try{
+      db=m[2].initializeFirestore(app, {experimentalForceLongPolling:true});
+      CTA.canal="clásico";
+    }catch(e){
+      db=m[2].getFirestore(app); CTA.canal="de fábrica";
+    }
+    CTA.sdk={app:app, A:m[1], F:m[2], auth:m[1].getAuth(app), db:db};
     CTA.cargando=null;
     return CTA.sdk;
   }).catch(function(e){
@@ -8865,32 +8921,52 @@ function docDeCuenta(S){
   return S.F.doc(S.db, "portafolios", CTA.u.uid);
 }
 function subirACuenta(forzar){
-  if(!ctaDentro()||CTA.ocupado) return Promise.resolve(false);
+  if(!ctaDentro()) return Promise.resolve(false);
   var f=firmaCuenta();
   if(!forzar && f===CTA.firma) return Promise.resolve(false);
+  /* si hay una subida en curso, NO se tira esta: se apunta para ir en
+     cuanto termine. Antes se descartaba en silencio y el cambio se quedaba
+     en este aparato hasta que algún reloj lo recogiera. */
+  if(CTA.ocupado){ CTA.pendiente=true; anotarSync("subida en cola (hay una en curso)"); return Promise.resolve(false); }
   var txt=textoParaCuenta();
   if(txt.length>900000){
     CTA.error="Sus datos pesan más de lo que cabe en un cajón de Firebase. Avíseme.";
     pintarCuenta(); return Promise.resolve(false);
   }
-  CTA.ocupado=true; CTA.error=""; pintarCuenta();
-  /* se apunta la hora exacta que se escribe, para que la escucha reconozca
-     lo nuestro y no se avise a uno mismo de sus propios cambios */
-  var cuando=ahoraReal();
-  CTA.visto=Math.max(CTA.visto||0, cuando);
+  CTA.ocupado=true; CTA.error=""; pintarCuentaPronto();
+  var inicio=Date.now();
+  /* se apunta la hora exacta que se escribe: así la escucha reconoce lo
+     nuestro por IDENTIDAD, no comparando relojes */
+  var cuando=ahoraReal(), local=Date.now();
+  CTA.misHoras.push(cuando); if(CTA.misHoras.length>30) CTA.misHoras.shift();
+  anotarSync("subiendo…");
+  /* perro guardián: si Google no contesta en 20 s, se suelta el turno para
+     que lo que venga detrás no se quede esperando para siempre */
+  var vivo=true;
+  var guardian=setTimeout(function(){
+    if(!vivo) return;
+    CTA.ocupado=false; anotarSync("Google tardó más de 20 s en contestar; se sigue");
+    if(CTA.pendiente){ CTA.pendiente=false; subirPronto(); }
+  }, 20000);
+  function soltar(){
+    vivo=false; clearTimeout(guardian); CTA.ocupado=false;
+    if(CTA.pendiente){ CTA.pendiente=false; subirPronto(); }
+  }
   return cargarFirebase().then(function(S){
-    var paq={ datos: txt, equipo: nombreEquipo(), hora: cuando,
+    var paq={ datos: txt, equipo: nombreEquipo(), hora: cuando, hl: local,
               correo: CTA.correo||"", v: 7 };
-    /* el reloj del servidor de Google: con él se corrige el de este aparato */
     try{ if(S.F.serverTimestamp) paq.hs=S.F.serverTimestamp(); }catch(e){}
     return S.F.setDoc(docDeCuenta(S), paq);
   }).then(function(){
-    CTA.ocupado=false; CTA.firma=f; CTA.hora=cuando;
+    CTA.firma=f; CTA.hora=cuando;
+    CTA.ultimaSubida=Date.now(); CTA.subidaMs=Date.now()-inicio;
     var c=ctaCfg(); c.hora=CTA.hora;
     try{ localStorage.setItem(LLAVE, JSON.stringify(BD)); }catch(e){}
-    pintarCuenta(); return true;
+    anotarSync("subido en "+(CTA.subidaMs/1000).toFixed(1).replace(".",",")+" s");
+    soltar(); pintarCuentaPronto(); return true;
   }).catch(function(e){
-    CTA.ocupado=false; CTA.error=mensajeCuenta(e); pintarCuenta(); return false;
+    CTA.error=mensajeCuenta(e); anotarSync("falló la subida", CTA.error);
+    soltar(); pintarCuentaPronto(); return false;
   });
 }
 function bajarDeCuenta(){
@@ -8900,7 +8976,6 @@ function bajarDeCuenta(){
   }).then(function(d){
     if(!d.exists()) return null;
     var x=d.data()||{};
-    try{ if(x.hs&&x.hs.toMillis) ponerDesfase(x.hs.toMillis()); }catch(e){}
     return x.datos||null;
   });
 }
@@ -9032,35 +9107,52 @@ function escucharCuenta(){
   if(!ctaDentro()||ctaCfg().auto===false) return;
   cargarFirebase().then(function(S){
     if(!ctaDentro()) return;
-    if(!S.F.onSnapshot) return;                  /* librería vieja: queda como estaba */
-    CTA.callar=S.F.onSnapshot(docDeCuenta(S), function(d){
+    if(!S.F.onSnapshot){ anotarSync("esta librería no sabe escuchar"); return; }
+    anotarSync("escucha conectada", "canal "+(CTA.canal||"?"));
+    CTA.escuchaViva=true;
+    CTA.callar=S.F.onSnapshot(docDeCuenta(S), {includeMetadataChanges:false}, function(d){
       try{
         if(!d.exists()) return;
-        /* lo que acabamos de escribir nosotros no se vuelve a bajar */
+        /* el eco local de lo que acabamos de escribir, antes de que Google lo confirme */
         if(d.metadata && d.metadata.hasPendingWrites) return;
         var x=d.data()||{};
-        /* se pone el reloj en hora con el del servidor */
-        try{ if(x.hs&&x.hs.toMillis) ponerDesfase(x.hs.toMillis()); }catch(e){}
         if(!x.datos) return;
         var hora=+x.hora||0;
-        if(hora && hora<=(CTA.visto||0)) return;
-        if(x.equipo===nombreEquipo() && Math.abs(hora-(CTA.hora||0))<2000) return;
-        CTA.visto=hora||Date.now();
-        var r=null; try{ r=JSON.parse(x.datos); }catch(e){ return; }
+        /* ¿es nuestro? Se sabe por IDENTIDAD (equipo + la hora exacta que
+           escribimos), no comparando relojes. Antes, si el reloj de un
+           aparato iba adelantado, el otro tiraba sus cambios creyendo que
+           "ya los había visto". */
+        var esMio = x.equipo===nombreEquipo() && CTA.misHoras.indexOf(hora)>=0;
+        if(esMio){
+          /* la confirmación de Google de lo nuestro trae su reloj: con la hora
+             local que escribimos al lado, se mide el desvío de ESTE aparato */
+          try{ if(x.hs&&x.hs.toMillis&&x.hl) ponerDesfase(x.hs.toMillis()-(+x.hl)); }catch(e){}
+          anotarSync("Google confirmó mi subida"); if(DESFASE_RELOJ) anotarSync("reloj corregido", Math.round(DESFASE_RELOJ/1000)+" s");
+          return;
+        }
+        /* todo lo demás se procesa SIEMPRE. Juntar es inofensivo si ya lo teníamos. */
+        CTA.ultimoRecibido=Date.now(); CTA.recibidoDe=x.equipo||"";
+        var r=null; try{ r=JSON.parse(x.datos); }catch(e){ anotarSync("llegó algo que no se pudo leer"); return; }
         var antesF=firmaCuenta();
         var nuevos=aplicarDeCuenta(r);
-        if(firmaCuenta()!==antesF){
-          CTA.hora=Date.now();
+        var cambio=firmaCuenta()!==antesF;
+        anotarSync(cambio?"recibido de":"recibido de (ya lo tenía)", x.equipo||"otro equipo");
+        if(cambio){
           aviso(nuevos>0
             ? ("Llegaron "+plural(nuevos,"registro nuevo","registros nuevos")+" desde "+
                esc(x.equipo||"su otro equipo")+".")
             : "Se actualizó con los cambios de "+esc(x.equipo||"su otro equipo")+".");
           try{ pintarMenu(); }catch(e){}
-        }
-      }catch(e){}
-    }, function(){ CTA.callar=null; reengancharEscucha(); });
-  }).catch(function(){ reengancharEscucha(); });
+        } else pintarCuentaPronto();
+      }catch(e){ anotarSync("error al recibir", (e&&e.message)||""); }
+    }, function(e){
+      CTA.callar=null; CTA.escuchaViva=false;
+      anotarSync("se cayó la escucha, se reengancha en 4 s", (e&&e.message)||"");
+      reengancharEscucha();
+    });
+  }).catch(function(e){ CTA.escuchaViva=false; anotarSync("no se pudo escuchar", (e&&e.message)||""); reengancharEscucha(); });
 }
+function callarCuentaYAnotar(){ callarCuenta(); CTA.escuchaViva=false; }
 
 /* =====================================================================
    SUBIR AL INSTANTE
@@ -9075,9 +9167,10 @@ function subirPronto(){
   if(!ctaDentro()||ctaCfg().auto===false) return;
   clearTimeout(CTA_pronto);
   CTA_pronto=setTimeout(function(){
-    var f=firmaCuenta();
-    if(f===CTA.firma) return;          /* no cambió nada de verdad */
-    CTA.firma=f;
+    /* OJO con esto: aquí NO se toca CTA.firma. subirACuenta() la compara
+       para decidir si hay algo que subir, y la pone él solo cuando Google
+       confirma. Ponerla antes era decirle "ya está subido" sin haber subido:
+       la subida automática llevaba muerta desde la v17 por esto mismo. */
     subirACuenta(false);
   }, 300);
 }
@@ -9085,14 +9178,11 @@ function subirPronto(){
 /* --- el reloj de respaldo, por si alguna subida se cayó --- */
 function programarCuenta(){
   clearInterval(CTA.reloj);
-  CTA.firma=firmaCuenta();
   if(!ctaDentro()||ctaCfg().auto===false) return;
-  CTA.reloj=setInterval(function(){
-    var f=firmaCuenta();
-    if(f===CTA.firma) return;
-    CTA.firma=f;
-    subirACuenta(false);
-  },20000);
+  /* el reloj de respaldo: si alguna subida inmediata se perdió (se fue la
+     luz, se cerró la pestaña a medias), cada 20 s se comprueba otra vez.
+     Igual que arriba: aquí no se toca CTA.firma. */
+  CTA.reloj=setInterval(function(){ subirACuenta(false); },20000);
 }
 
 /* --- al abrir el programa --- */
@@ -9122,6 +9212,37 @@ function arrancarCuenta(){
 /* =====================================================================
    LA PANTALLA DE LA CUENTA
    ===================================================================== */
+/* LO QUE ESTÁ PASANDO con la cuenta, a la vista. Para no adivinar:
+   cuándo subió, cuánto tardó, cuándo recibió y de quién, y si la escucha
+   está viva. Abajo, lo último que pasó, con su hora. */
+function estadoCuenta(){
+  var viva=CTA.escuchaViva && !!CTA.callar;
+  function seg(x){ return x?'<i>'+x+'</i>':''; }
+  var filas=[
+    ["Escucha", seg(viva?"viva":"caída")+(viva&&CTA.canal?seg("canal "+esc(CTA.canal)):""), viva?"ok":"mal"],
+    ["Última subida", CTA.ultimaSubida
+       ? seg(haceCuanto(CTA.ultimaSubida))+(CTA.subidaMs?seg("tardó "+(CTA.subidaMs/1000).toFixed(1).replace(".",",")+" s"):"")
+       : seg("todavía no"), CTA.ocupado?"ojo":""],
+    ["Último recibido", CTA.ultimoRecibido
+       ? seg(haceCuanto(CTA.ultimoRecibido))+(CTA.recibidoDe?seg("desde")+seg(esc(CTA.recibidoDe)):"")
+       : seg("todavía nada"), ""],
+    ["Reloj de este aparato", DESFASE_RELOJ
+       ? seg((DESFASE_RELOJ>0?"atrasa ":"adelanta ")+Math.abs(Math.round(DESFASE_RELOJ/1000))+" s")+seg("corregido")
+       : seg("en hora"), ""]
+  ];
+  return '<div class="estCta">'+
+    filas.map(function(f){
+      return '<div class="estF '+(f[2]||"")+'"><span>'+esc(f[0])+'</span><b>'+f[1]+'</b></div>';
+    }).join("")+
+    (CTA.bitacora.length
+      ? '<details class="bitac"><summary>Lo último que pasó</summary><div>'+
+        CTA.bitacora.map(function(x){
+          return '<div><i>'+esc(hora(x.t))+'</i><span>'+esc(x.m)+'</span>'+
+            (x.x?'<b>'+esc(x.x)+'</b>':'')+'</div>';
+        }).join("")+'</div></details>'
+      : '')+
+  '</div>';
+}
 function panelCuenta(){
   var c=ctaCfg();
   var hay=ctaHecha(), dentro=ctaDentro();
@@ -9151,6 +9272,7 @@ function panelCuenta(){
       '<div class="r"><span>Guardado por última vez</span><b>'+
         (CTA.hora||c.hora ? hora(CTA.hora||c.hora) : "todavía no")+'</b></div></div>'+
       (CTA.error?'<div class="nota mal">'+esc(CTA.error)+'</div>':'')+
+      estadoCuenta()+
       '<div style="display:flex;gap:9px;flex-wrap:wrap">'+
         '<button class="b vd" id="ctaSube">Guardar ahora</button>'+
         '<button class="b" id="ctaJunta">Juntar con lo de la cuenta</button>'+
@@ -11770,7 +11892,54 @@ DIC.en={
 "# nov #:#":"# Nov #:#",
 "# dic #:#":"# Dec #:#",
 "# pruebas":"# tests",
-"# prueba":"# test"
+"# prueba":"# test",
+
+/* --- v25: el estado de la cuenta a la vista --- */
+"Escucha":"Listening",
+"viva":"live",
+"caída":"down",
+"canal clásico":"classic channel",
+"canal de fábrica":"default channel",
+"Última subida":"Last upload",
+"Último recibido":"Last received",
+"Reloj de este aparato":"This device’s clock",
+"en hora":"on time",
+"corregido":"corrected",
+"adelanta # s":"runs # s fast",
+"atrasa # s":"runs # s slow",
+"todavía nada":"nothing yet",
+"desde":"from",
+"hace # s":"# s ago",
+"hace # min":"# min ago",
+"hace # h":"# h ago",
+"ahora mismo":"just now",
+"nunca":"never",
+"tardó # s":"took # s",
+"# s":"# s",
+"Lo último que pasó":"What happened last",
+"escucha conectada":"listening connected",
+"subiendo…":"uploading…",
+"subido en # s":"uploaded in # s",
+"Google confirmó mi subida":"Google confirmed my upload",
+"reloj corregido":"clock corrected",
+"recibido de":"received from",
+"recibido de (ya lo tenía)":"received from (already had it)",
+"subida en cola (hay una en curso)":"upload queued (one in progress)",
+"Google tardó más de # s en contestar; se sigue":"Google took more than # s to answer; carrying on",
+"falló la subida":"upload failed",
+"se cayó la escucha, se reengancha en # s":"listening dropped, reconnecting in # s",
+"no se pudo escuchar":"could not listen",
+"error al recibir":"error while receiving",
+"esta librería no sabe escuchar":"this library cannot listen",
+"llegó algo que no se pudo leer":"something arrived that could not be read",
+"sin red":"no network",
+"otro equipo":"another device",
+"Llegaron # registros nuevos desde teléfono.":"# new records arrived from the phone.",
+"Llegaron # registros nuevos desde computadora.":"# new records arrived from the computer.",
+"Llegó # registro nuevo desde teléfono.":"# new record arrived from the phone.",
+"Llegó # registro nuevo desde computadora.":"# new record arrived from the computer.",
+"Se actualizó con los cambios de teléfono.":"Updated with the changes from the phone.",
+"Se actualizó con los cambios de computadora.":"Updated with the changes from the computer."
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
@@ -12680,7 +12849,54 @@ DIC.pt={
 "# nov #:#":"# nov #:#",
 "# dic #:#":"# dez #:#",
 "# pruebas":"# testes",
-"# prueba":"# teste"
+"# prueba":"# teste",
+
+/* --- v25: el estado de la cuenta a la vista --- */
+"Escucha":"Escuta",
+"viva":"ativa",
+"caída":"caída",
+"canal clásico":"canal clássico",
+"canal de fábrica":"canal de fábrica",
+"Última subida":"Último envio",
+"Último recibido":"Último recebido",
+"Reloj de este aparato":"Relógio deste aparelho",
+"en hora":"certo",
+"corregido":"corrigido",
+"adelanta # s":"adianta # s",
+"atrasa # s":"atrasa # s",
+"todavía nada":"ainda nada",
+"desde":"de",
+"hace # s":"há # s",
+"hace # min":"há # min",
+"hace # h":"há # h",
+"ahora mismo":"agora mesmo",
+"nunca":"nunca",
+"tardó # s":"demorou # s",
+"# s":"# s",
+"Lo último que pasó":"O que aconteceu por último",
+"escucha conectada":"escuta ligada",
+"subiendo…":"a enviar…",
+"subido en # s":"enviado em # s",
+"Google confirmó mi subida":"A Google confirmou o meu envio",
+"reloj corregido":"relógio corrigido",
+"recibido de":"recebido de",
+"recibido de (ya lo tenía)":"recebido de (já o tinha)",
+"subida en cola (hay una en curso)":"envio em fila (há um em curso)",
+"Google tardó más de # s en contestar; se sigue":"A Google demorou mais de # s a responder; continua-se",
+"falló la subida":"o envio falhou",
+"se cayó la escucha, se reengancha en # s":"a escuta caiu, volta a ligar em # s",
+"no se pudo escuchar":"não foi possível escutar",
+"error al recibir":"erro ao receber",
+"esta librería no sabe escuchar":"esta biblioteca não sabe escutar",
+"llegó algo que no se pudo leer":"chegou algo que não se conseguiu ler",
+"sin red":"sem rede",
+"otro equipo":"outro equipamento",
+"Llegaron # registros nuevos desde teléfono.":"Chegaram # registos novos do telemóvel.",
+"Llegaron # registros nuevos desde computadora.":"Chegaram # registos novos do computador.",
+"Llegó # registro nuevo desde teléfono.":"Chegou # registo novo do telemóvel.",
+"Llegó # registro nuevo desde computadora.":"Chegou # registo novo do computador.",
+"Se actualizó con los cambios de teléfono.":"Atualizou-se com as alterações do telemóvel.",
+"Se actualizó con los cambios de computadora.":"Atualizou-se com as alterações do computador."
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
@@ -13590,7 +13806,54 @@ DIC.fr={
 "# nov #:#":"# nov. #:#",
 "# dic #:#":"# déc. #:#",
 "# pruebas":"# tests",
-"# prueba":"# test"
+"# prueba":"# test",
+
+/* --- v25: el estado de la cuenta a la vista --- */
+"Escucha":"Écoute",
+"viva":"active",
+"caída":"coupée",
+"canal clásico":"canal classique",
+"canal de fábrica":"canal par défaut",
+"Última subida":"Dernier envoi",
+"Último recibido":"Dernière réception",
+"Reloj de este aparato":"Horloge de cet appareil",
+"en hora":"à l’heure",
+"corregido":"corrigée",
+"adelanta # s":"avance de # s",
+"atrasa # s":"retarde de # s",
+"todavía nada":"rien encore",
+"desde":"depuis",
+"hace # s":"il y a # s",
+"hace # min":"il y a # min",
+"hace # h":"il y a # h",
+"ahora mismo":"à l’instant",
+"nunca":"jamais",
+"tardó # s":"a pris # s",
+"# s":"# s",
+"Lo último que pasó":"Ce qui s’est passé en dernier",
+"escucha conectada":"écoute connectée",
+"subiendo…":"envoi…",
+"subido en # s":"envoyé en # s",
+"Google confirmó mi subida":"Google a confirmé mon envoi",
+"reloj corregido":"horloge corrigée",
+"recibido de":"reçu de",
+"recibido de (ya lo tenía)":"reçu de (déjà présent)",
+"subida en cola (hay una en curso)":"envoi en attente (un en cours)",
+"Google tardó más de # s en contestar; se sigue":"Google a mis plus de # s à répondre ; on continue",
+"falló la subida":"l’envoi a échoué",
+"se cayó la escucha, se reengancha en # s":"écoute coupée, reconnexion dans # s",
+"no se pudo escuchar":"écoute impossible",
+"error al recibir":"erreur à la réception",
+"esta librería no sabe escuchar":"cette bibliothèque ne sait pas écouter",
+"llegó algo que no se pudo leer":"quelque chose est arrivé qui n’a pu être lu",
+"sin red":"pas de réseau",
+"otro equipo":"un autre appareil",
+"Llegaron # registros nuevos desde teléfono.":"# nouveaux enregistrements sont arrivés du téléphone.",
+"Llegaron # registros nuevos desde computadora.":"# nouveaux enregistrements sont arrivés de l’ordinateur.",
+"Llegó # registro nuevo desde teléfono.":"# nouvel enregistrement est arrivé du téléphone.",
+"Llegó # registro nuevo desde computadora.":"# nouvel enregistrement est arrivé de l’ordinateur.",
+"Se actualizó con los cambios de teléfono.":"Mis à jour avec les changements du téléphone.",
+"Se actualizó con los cambios de computadora.":"Mis à jour avec les changements de l’ordinateur."
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
@@ -14500,7 +14763,54 @@ DIC.de={
 "# nov #:#":"# Nov. #:#",
 "# dic #:#":"# Dez. #:#",
 "# pruebas":"# Tests",
-"# prueba":"# Test"
+"# prueba":"# Test",
+
+/* --- v25: el estado de la cuenta a la vista --- */
+"Escucha":"Verbindung",
+"viva":"aktiv",
+"caída":"unterbrochen",
+"canal clásico":"klassischer Kanal",
+"canal de fábrica":"Standardkanal",
+"Última subida":"Letzter Upload",
+"Último recibido":"Zuletzt empfangen",
+"Reloj de este aparato":"Uhr dieses Geräts",
+"en hora":"richtig",
+"corregido":"korrigiert",
+"adelanta # s":"geht # s vor",
+"atrasa # s":"geht # s nach",
+"todavía nada":"noch nichts",
+"desde":"von",
+"hace # s":"vor # s",
+"hace # min":"vor # Min.",
+"hace # h":"vor # Std.",
+"ahora mismo":"gerade eben",
+"nunca":"nie",
+"tardó # s":"dauerte # s",
+"# s":"# s",
+"Lo último que pasó":"Was zuletzt passiert ist",
+"escucha conectada":"Verbindung hergestellt",
+"subiendo…":"wird hochgeladen…",
+"subido en # s":"hochgeladen in # s",
+"Google confirmó mi subida":"Google hat meinen Upload bestätigt",
+"reloj corregido":"Uhr korrigiert",
+"recibido de":"empfangen von",
+"recibido de (ya lo tenía)":"empfangen von (schon vorhanden)",
+"subida en cola (hay una en curso)":"Upload in Warteschlange (einer läuft)",
+"Google tardó más de # s en contestar; se sigue":"Google brauchte über # s zum Antworten; es geht weiter",
+"falló la subida":"Upload fehlgeschlagen",
+"se cayó la escucha, se reengancha en # s":"Verbindung unterbrochen, Neuverbindung in # s",
+"no se pudo escuchar":"Verbindung nicht möglich",
+"error al recibir":"Fehler beim Empfang",
+"esta librería no sabe escuchar":"diese Bibliothek kann nicht zuhören",
+"llegó algo que no se pudo leer":"es kam etwas an, das nicht gelesen werden konnte",
+"sin red":"kein Netz",
+"otro equipo":"ein anderes Gerät",
+"Llegaron # registros nuevos desde teléfono.":"# neue Einträge sind vom Telefon eingetroffen.",
+"Llegaron # registros nuevos desde computadora.":"# neue Einträge sind vom Computer eingetroffen.",
+"Llegó # registro nuevo desde teléfono.":"# neuer Eintrag ist vom Telefon eingetroffen.",
+"Llegó # registro nuevo desde computadora.":"# neuer Eintrag ist vom Computer eingetroffen.",
+"Se actualizó con los cambios de teléfono.":"Mit den Änderungen vom Telefon aktualisiert.",
+"Se actualizó con los cambios de computadora.":"Mit den Änderungen vom Computer aktualisiert."
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
@@ -15410,7 +15720,54 @@ DIC.it={
 "# nov #:#":"# nov #:#",
 "# dic #:#":"# dic #:#",
 "# pruebas":"# prove",
-"# prueba":"# prova"
+"# prueba":"# prova",
+
+/* --- v25: el estado de la cuenta a la vista --- */
+"Escucha":"Ascolto",
+"viva":"attivo",
+"caída":"caduto",
+"canal clásico":"canale classico",
+"canal de fábrica":"canale predefinito",
+"Última subida":"Ultimo invio",
+"Último recibido":"Ultimo ricevuto",
+"Reloj de este aparato":"Orologio di questo apparecchio",
+"en hora":"in orario",
+"corregido":"corretto",
+"adelanta # s":"avanti di # s",
+"atrasa # s":"indietro di # s",
+"todavía nada":"ancora niente",
+"desde":"da",
+"hace # s":"# s fa",
+"hace # min":"# min fa",
+"hace # h":"# h fa",
+"ahora mismo":"proprio ora",
+"nunca":"mai",
+"tardó # s":"ci ha messo # s",
+"# s":"# s",
+"Lo último que pasó":"Le ultime cose successe",
+"escucha conectada":"ascolto collegato",
+"subiendo…":"invio in corso…",
+"subido en # s":"inviato in # s",
+"Google confirmó mi subida":"Google ha confermato il mio invio",
+"reloj corregido":"orologio corretto",
+"recibido de":"ricevuto da",
+"recibido de (ya lo tenía)":"ricevuto da (già presente)",
+"subida en cola (hay una en curso)":"invio in coda (uno in corso)",
+"Google tardó más de # s en contestar; se sigue":"Google ci ha messo più di # s a rispondere; si continua",
+"falló la subida":"invio fallito",
+"se cayó la escucha, se reengancha en # s":"ascolto caduto, si riaggancia tra # s",
+"no se pudo escuchar":"impossibile ascoltare",
+"error al recibir":"errore nella ricezione",
+"esta librería no sabe escuchar":"questa libreria non sa ascoltare",
+"llegó algo que no se pudo leer":"è arrivato qualcosa che non si è potuto leggere",
+"sin red":"senza rete",
+"otro equipo":"un altro dispositivo",
+"Llegaron # registros nuevos desde teléfono.":"Sono arrivati # registri nuovi dal telefono.",
+"Llegaron # registros nuevos desde computadora.":"Sono arrivati # registri nuovi dal computer.",
+"Llegó # registro nuevo desde teléfono.":"È arrivato # registro nuovo dal telefono.",
+"Llegó # registro nuevo desde computadora.":"È arrivato # registro nuovo dal computer.",
+"Se actualizó con los cambios de teléfono.":"Aggiornato con le modifiche del telefono.",
+"Se actualizó con los cambios de computadora.":"Aggiornato con le modifiche del computer."
 };
 </script>
 </body>
