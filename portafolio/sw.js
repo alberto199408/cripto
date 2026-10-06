@@ -1,9 +1,9 @@
 /* =====================================================================
-   AYUDANTE DEL TELÉFONO · Portafolio Cripto v11
+   AYUDANTE DEL TELÉFONO · Mi Portafolio Cripto v19
    Guarda el programa para que abra sin internet y, cuando usted publica
    una versión nueva, la trae solo la próxima vez que lo abra con internet.
    ===================================================================== */
-var CAJA = "cripto-v18";
+var CAJA = "cripto-v19";
 var ARCHIVOS = ["./", "./index.html", "./CRIPTO.html", "./manifest.webmanifest", "./icono-192.png", "./icono-512.png", "./icono-mask-192.png", "./icono-mask-512.png"];
 
 self.addEventListener("install", function (ev) {
@@ -51,4 +51,45 @@ self.addEventListener("fetch", function (ev) {
 /* cuando usted pulsa "Actualizar ahora" en el aviso */
 self.addEventListener("message", function (ev) {
   if (ev.data && ev.data.tipo === "actualizar") self.skipWaiting();
+});
+
+/* =====================================================================
+   AVISOS CON LA APLICACIÓN CERRADA
+   Cuando el vigilante de precios manda un aviso, el teléfono despierta
+   este ayudante aunque la aplicación esté cerrada. Aquí se muestra la
+   notificación y, si la persona la toca, se abre el programa.
+   ===================================================================== */
+self.addEventListener("push", function (ev) {
+  var d = {};
+  try { d = ev.data ? ev.data.json() : {}; } catch (e) {
+    try { d = { cuerpo: ev.data.text() }; } catch (e2) { d = {}; }
+  }
+  var n = d.notification || d;
+  var titulo = n.title || n.titulo || "Mi Portafolio Cripto";
+  var cuerpo = n.body || n.cuerpo || "";
+  ev.waitUntil(self.registration.showNotification(titulo, {
+    body: cuerpo,
+    icon: "./icono-192.png",
+    badge: "./icono-192.png",
+    tag: (d.data && d.data.tag) || n.tag || ("aviso-" + Date.now()),
+    vibrate: [220, 90, 220],
+    data: { ir: (d.data && d.data.ir) || n.ir || "alr" },
+    requireInteraction: false
+  }));
+});
+
+self.addEventListener("notificationclick", function (ev) {
+  ev.notification.close();
+  var ir = (ev.notification.data && ev.notification.data.ir) || "alr";
+  ev.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(function (l) {
+      for (var i = 0; i < l.length; i++) {
+        if (l[i].url.indexOf("CRIPTO.html") >= 0 && "focus" in l[i]) {
+          l[i].postMessage({ tipo: "irA", vista: ir });
+          return l[i].focus();
+        }
+      }
+      if (self.clients.openWindow) return self.clients.openWindow("./CRIPTO.html#" + ir);
+    })
+  );
 });

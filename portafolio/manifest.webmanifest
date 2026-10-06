@@ -1,7 +1,7 @@
 {
-  "name": "Portafolio Cripto",
-  "short_name": "Portafolio",
-  "description": "Spot, futuros y backtesting con el lote calculado desde su stop loss.",
+  "name": "Mi Portafolio Cripto",
+  "short_name": "Mi Portafolio",
+  "description": "Spot, futuros y backtesting con el lote calculado desde su stop loss. Más de 1.500 criptomonedas con su logo.",
   "start_url": "CRIPTO.html",
   "scope": "./",
   "display": "standalone",
