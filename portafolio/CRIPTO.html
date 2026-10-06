@@ -1071,7 +1071,7 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por GitHub.
    ===================================================================== */
-var VERSION="19";
+var VERSION="20";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -2960,6 +2960,8 @@ function cfgReal(){
 function guardarCfgReal(c){
   BD.ajustes.cartera=c.cartera; BD.ajustes.riesgo=c.riesgo;
   BD.ajustes.apal=c.apal; BD.ajustes.comPct=c.com;
+  /* su cartera y su riesgo son SUYOS, no del aparato: viajan con la cuenta */
+  try{ marcarAjustesMios(); }catch(e){}
   guardar();
 }
 function pruebaActiva(){
@@ -6841,9 +6843,18 @@ function pintarRes(){
   var totalTodo = S.tot.valor + T.margenAbierto + T.flotante + (D.total>0?D.total:0);
   var ganTodo = S.tot.abierto + S.tot.realizado + T.gan + T.flotante;
 
-  var h=alertaPrecios()+avisoAlertas()+avisoVentasSinCompra();
+  var h=alertaPrecios()+avisoAlertas()+avisoVentasSinCompra()+avisoFaltaUsdt(L);
 
-  h+='<div class="cima">'+heroGrande("TODO SU DINERO", totalTodo, ganTodo, "sumando spot y futuros", ch, serieTot())+
+  /* De dónde sale la ganancia o la pérdida grande de arriba. Sin esto,
+     ver «$9.975» de total y «−$1.861.460» de pérdida no se entiende:
+     lo de futuros es dinero que ya salió, no lo que queda hoy. */
+  var ganSpot=S.tot.abierto+S.tot.realizado, ganFut=T.gan+T.flotante;
+  function conSigno(x){ return (x>=0?"+":"−")+usd(Math.abs(x)); }
+  var deDonde = (ganSpot||ganFut)
+    ? ("spot "+conSigno(ganSpot)+" · futuros "+conSigno(ganFut))
+    : "sumando spot y futuros";
+
+  h+='<div class="cima">'+heroGrande("TODO SU DINERO", totalTodo, ganTodo, deDonde, ch, serieTot())+
     '<div class="mets">'+
       met(IC.spot,"Spot: vale hoy",'<span data-v="total">'+usd(S.tot.valor)+'</span>',"",
           plural(vivas.length,"moneda","monedas")+" · "+pct(S.tot.abiertoPct,1)+" sobre lo que puso", 2,
@@ -6859,8 +6870,7 @@ function pintarRes(){
          Antes decía "USDT disponible" en una pantalla donde también hay futuros,
          y no se entendía de qué hablaba. */
       met(IC.dolar,"Saldo disponible", usd(L.total),"",
-          "<b>"+usd(L.spot)+"</b> en spot · <b>"+usd(L.fut)+"</b> en futuros"+
-          (L.descubierto>0 ? "<br>anote el dinero que metió desde fuera" : ""), 6,
+          "<b>"+usd(L.spot)+"</b> en spot · <b>"+usd(L.fut)+"</b> en futuros", 6,
           null, "f:saldo")+
       met(IC.sube,"Ya ganado en ventas",
           (S.tot.realizado>=0?"+":"−")+usd(S.tot.realizado).replace("-",""),"",
@@ -7256,6 +7266,19 @@ function hojaComisiones(){
       irAParte("histFut");
     };
   });
+}
+
+/* El aviso de «falta anotar el USDT que metió» va en su propia banda, arriba.
+   Antes colgaba debajo del Saldo disponible y se leía como si la cifra grande
+   estuviera mal — dos cosas distintas pegadas. */
+function avisoFaltaUsdt(L){
+  if(!L || !(L.descubierto>0)) return "";
+  return '<div class="alerta" style="background:color-mix(in srgb,#FF9F3C 11%,var(--b1));'+
+    'border-color:color-mix(in srgb,#FF9F3C 42%,transparent)"><div class="t">'+
+    '<b>Falta anotar '+usd(L.descubierto)+' que metió desde fuera</b>'+
+    '<span>Según lo registrado gastó más de lo que le entró. Pasa cuando mandó dinero '+
+    'del banco a la casa de cambio y todavía no lo anotó aquí. Anótelo y la cuenta cuadra.</span>'+
+    '</div><button class="b ac" onclick="moverUsdt(\'compra\')">Metí USDT</button></div>';
 }
 /* =====================================================================
    21 · SINCRONIZAR PC Y TELÉFONO  (igual que siempre, no se cambió nada)
@@ -8593,7 +8616,31 @@ function mensajeCuenta(e){
 
 /* --- qué se guarda: lo mismo de siempre, sin la clave de GitHub --- */
 function textoParaCuenta(){ return textoParaNube(); }
-function firmaCuenta(){ return firmaNube(); }
+/* La firma dice "aquí cambió algo". Además de los movimientos, mira los
+   ajustes de operar: su cartera y su riesgo son SUYOS, no del aparato, y
+   tienen que viajar igual que lo demás. */
+var AJUSTES_MIOS=["cartera","riesgo","apal","comPct","meta","casa"];
+function firmaCuenta(){
+  var a=BD.ajustes||{};
+  return firmaNube()+"|"+JSON.stringify(AJUSTES_MIOS.map(function(k){ return a[k]; }));
+}
+/* se llama cada vez que usted cambia la cartera, el riesgo, etc. */
+function marcarAjustesMios(){
+  BD.ajustes.operMod=Date.now();
+}
+/* de los dos equipos se queda el más reciente, igual que con los movimientos */
+function juntarAjustesMios(remoto){
+  if(!remoto||typeof remoto!=="object") return false;
+  var local=BD.ajustes||{};
+  var lm=+local.operMod||0, rm=+remoto.operMod||0;
+  if(!(rm>lm)) return false;
+  var cambio=false;
+  AJUSTES_MIOS.forEach(function(k){
+    if(remoto[k]!==undefined && remoto[k]!==local[k]){ local[k]=remoto[k]; cambio=true; }
+  });
+  local.operMod=rm;
+  return cambio;
+}
 
 function docDeCuenta(S){
   return S.F.doc(S.db, "portafolios", CTA.u.uid);
@@ -8653,21 +8700,9 @@ function fusionarConCuenta(silencioso){
       CTA.error="Lo que había guardado en la cuenta no se pudo leer.";
       pintarCuenta(); return false;
     }
-    var antes=(BD.ops||[]).length+(BD.fut||[]).length+(BD.back||[]).length;
-    BD.borrados=limpiarBorrados((BD.borrados||[]).concat(r.borrados||[]));
-    BD.ops     = juntar(BD.ops,     r.ops,     BD.borrados);
-    BD.fut     = juntar(BD.fut,     r.fut,     BD.borrados);
-    BD.back    = juntar(BD.back,    r.back,    BD.borrados);
-    BD.pruebas = juntar(BD.pruebas, r.pruebas, BD.borrados);
-    BD.ordenes = juntar(BD.ordenes, r.ordenes, BD.borrados);
-    BD.alertas = juntarAlertas(BD.alertas, r.alertas, BD.borrados);
-    BD.monedas = Object.assign({}, r.monedas||{}, BD.monedas||{});
-    guardar();
-    var ahora=(BD.ops||[]).length+(BD.fut||[]).length+(BD.back||[]).length;
-    try{ repintar(); }catch(e){}
+    var nuevos=aplicarDeCuenta(r);
     return subirACuenta(true).then(function(){
       if(!silencioso){
-        var nuevos=ahora-antes;
         aviso(nuevos>0
           ? ("Listo: su cuenta trajo "+plural(nuevos,"registro","registros")+".")
           : "Listo: su cuenta ya estaba al día.");
@@ -8692,6 +8727,70 @@ function traerDeCuenta(){
       "Si este equipo tiene cosas más nuevas, se pierden.",
       "Traer la copia", function(){ restaurarTexto(txt,"su cuenta"); }, true);
   }).catch(function(e){ aviso(mensajeCuenta(e),true); });
+}
+
+/* --- junta lo que vino de la cuenta con lo de este equipo ---
+   Devuelve cuántos registros nuevos llegaron. No se pierde nada: de cada
+   movimiento queda el más reciente y lo borrado no revive. */
+function aplicarDeCuenta(r){
+  if(!r||!Array.isArray(r.ops)) return 0;
+  var antes=(BD.ops||[]).length+(BD.fut||[]).length+(BD.back||[]).length;
+  BD.borrados=limpiarBorrados((BD.borrados||[]).concat(r.borrados||[]));
+  BD.ops     = juntar(BD.ops,     r.ops,     BD.borrados);
+  BD.fut     = juntar(BD.fut,     r.fut,     BD.borrados);
+  BD.back    = juntar(BD.back,    r.back,    BD.borrados);
+  BD.pruebas = juntar(BD.pruebas, r.pruebas, BD.borrados);
+  BD.ordenes = juntar(BD.ordenes, r.ordenes, BD.borrados);
+  BD.alertas = juntarAlertas(BD.alertas, r.alertas, BD.borrados);
+  BD.monedas = Object.assign({}, r.monedas||{}, BD.monedas||{});
+  juntarAjustesMios(r.ajustes);
+  guardar();
+  var ahora=(BD.ops||[]).length+(BD.fut||[]).length+(BD.back||[]).length;
+  try{ repintar(); }catch(e){}
+  return ahora-antes;
+}
+
+/* =====================================================================
+   ESCUCHAR LA CUENTA — lo que cambia en el teléfono llega aquí SOLO
+   Antes este equipo solo SUBÍA lo suyo; para recibir lo del otro había
+   que cerrar y volver a abrir. Ahora Google avisa en cuanto algo cambia
+   y llega en un segundo, sin pulsar nada.
+   ===================================================================== */
+function callarCuenta(){
+  try{ if(CTA.callar) CTA.callar(); }catch(e){}
+  CTA.callar=null;
+}
+function escucharCuenta(){
+  callarCuenta();
+  if(!ctaDentro()||ctaCfg().auto===false) return;
+  cargarFirebase().then(function(S){
+    if(!ctaDentro()) return;
+    if(!S.F.onSnapshot) return;                  /* librería vieja: queda como estaba */
+    CTA.callar=S.F.onSnapshot(docDeCuenta(S), function(d){
+      try{
+        if(!d.exists()) return;
+        /* lo que acabamos de escribir nosotros no se vuelve a bajar */
+        if(d.metadata && d.metadata.hasPendingWrites) return;
+        var x=d.data()||{};
+        if(!x.datos) return;
+        var hora=+x.hora||0;
+        if(hora && hora<=(CTA.visto||0)) return;
+        if(x.equipo===nombreEquipo() && Math.abs(hora-(CTA.hora||0))<2000) return;
+        CTA.visto=hora||Date.now();
+        var r=null; try{ r=JSON.parse(x.datos); }catch(e){ return; }
+        var antesF=firmaCuenta();
+        var nuevos=aplicarDeCuenta(r);
+        if(firmaCuenta()!==antesF){
+          CTA.hora=Date.now();
+          aviso(nuevos>0
+            ? ("Llegaron "+plural(nuevos,"registro nuevo","registros nuevos")+" desde "+
+               esc(x.equipo||"su otro equipo")+".")
+            : "Se actualizó con los cambios de "+esc(x.equipo||"su otro equipo")+".");
+          try{ pintarMenu(); }catch(e){}
+        }
+      }catch(e){}
+    }, function(){ CTA.callar=null; });
+  }).catch(function(){});
 }
 
 /* --- se sube solo cada vez que cambia algo --- */
@@ -8723,8 +8822,8 @@ function arrancarCuenta(){
       var c=ctaCfg();
       c.correo=CTA.correo; c.uid=(u&&u.uid)||""; guardar();
       pintarCuenta();
-      if(u) fusionarConCuenta(true).then(function(){ programarCuenta(); });
-      else clearInterval(CTA.reloj);
+      if(u) fusionarConCuenta(true).then(function(){ programarCuenta(); escucharCuenta(); });
+      else { clearInterval(CTA.reloj); callarCuenta(); }
     });
   }).catch(function(e){
     CTA.error=mensajeCuenta(e); pintarCuenta();
@@ -10227,7 +10326,13 @@ function arrancar(){
       }
     }catch(e){}
   }, 6000);
-  document.getElementById("bRef").onclick=function(){ traerPrecios(false); conectarVivo(); };
+  /* «Actualizar» trae los precios Y lo que haya cambiado en su otro equipo:
+     antes solo traía los precios y eso confundía. */
+  document.getElementById("bRef").onclick=function(){
+    traerPrecios(false); conectarVivo();
+    try{ if(ctaDentro()) fusionarConCuenta(true); }catch(e){}
+    try{ if(gitCfg().token) sincronizar(true); }catch(e){}
+  };
   document.getElementById("bSave").onclick=guardarYSincronizar;
   pintarBotonGuardar();
   repintar();
@@ -11279,7 +11384,20 @@ DIC.en={
 "nov #":"Nov #",
 "# nov #":"# Nov #",
 "dic #":"Dec #",
-"# dic #":"# Dec #"
+"# dic #":"# Dec #",
+
+/* --- v20: los cambios llegan solos entre equipos --- */
+"Falta anotar $# que metió desde fuera":"$# you put in from outside is still to be recorded",
+"Mi Portafolio":"My Portfolio",
+"Según lo registrado gastó más de lo que le entró. Pasa cuando mandó dinero del banco a la casa de cambio y todavía no lo anotó aquí. Anótelo y la cuenta cuadra.":"According to what is recorded you spent more than came in. That happens when you sent money from the bank to the exchange and have not written it down here yet. Write it down and the balance adds up.",
+"compras −$#":"purchases −$#",
+"spot +$# · futuros +$#":"spot +$# · futures +$#",
+"spot +$# · futuros −$#":"spot +$# · futures −$#",
+"spot −$# · futuros +$#":"spot −$# · futures +$#",
+"spot −$# · futuros −$#":"spot −$# · futures −$#",
+"Llegaron # registros nuevos desde @.":"# new records arrived from @.",
+"Llegó # registro nuevo desde @.":"# new record arrived from @.",
+"Se actualizó con los cambios de @.":"Updated with the changes from @."
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
@@ -12128,7 +12246,20 @@ DIC.pt={
 "nov #":"nov #",
 "# nov #":"# nov #",
 "dic #":"dez #",
-"# dic #":"# dez #"
+"# dic #":"# dez #",
+
+/* --- v20: los cambios llegan solos entre equipos --- */
+"Falta anotar $# que metió desde fuera":"Falta anotar $# que colocou de fora",
+"Mi Portafolio":"A Minha Carteira",
+"Según lo registrado gastó más de lo que le entró. Pasa cuando mandó dinero del banco a la casa de cambio y todavía no lo anotó aquí. Anótelo y la cuenta cuadra.":"Segundo o registado gastou mais do que lhe entrou. Acontece quando enviou dinheiro do banco para a corretora e ainda não o anotou aqui. Anote-o e a conta fecha.",
+"compras −$#":"compras −$#",
+"spot +$# · futuros +$#":"spot +$# · futuros +$#",
+"spot +$# · futuros −$#":"spot +$# · futuros −$#",
+"spot −$# · futuros +$#":"spot −$# · futuros +$#",
+"spot −$# · futuros −$#":"spot −$# · futuros −$#",
+"Llegaron # registros nuevos desde @.":"Chegaram # registos novos de @.",
+"Llegó # registro nuevo desde @.":"Chegou # registo novo de @.",
+"Se actualizó con los cambios de @.":"Atualizou-se com as alterações de @."
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
@@ -12977,7 +13108,20 @@ DIC.fr={
 "nov #":"nov. #",
 "# nov #":"# nov. #",
 "dic #":"déc. #",
-"# dic #":"# déc. #"
+"# dic #":"# déc. #",
+
+/* --- v20: los cambios llegan solos entre equipos --- */
+"Falta anotar $# que metió desde fuera":"Il reste à noter $# apportés de l’extérieur",
+"Mi Portafolio":"Mon Portefeuille",
+"Según lo registrado gastó más de lo que le entró. Pasa cuando mandó dinero del banco a la casa de cambio y todavía no lo anotó aquí. Anótelo y la cuenta cuadra.":"D’après ce qui est enregistré vous avez dépensé plus qu’il n’est entré. Cela arrive quand vous avez envoyé de l’argent de la banque vers la plateforme sans le noter ici. Notez-le et le compte tombe juste.",
+"compras −$#":"achats −$#",
+"spot +$# · futuros +$#":"spot +$# · futures +$#",
+"spot +$# · futuros −$#":"spot +$# · futures −$#",
+"spot −$# · futuros +$#":"spot −$# · futures +$#",
+"spot −$# · futuros −$#":"spot −$# · futures −$#",
+"Llegaron # registros nuevos desde @.":"# nouveaux enregistrements sont arrivés de @.",
+"Llegó # registro nuevo desde @.":"# nouvel enregistrement est arrivé de @.",
+"Se actualizó con los cambios de @.":"Mis à jour avec les changements de @."
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
@@ -13826,7 +13970,20 @@ DIC.de={
 "nov #":"Nov. #",
 "# nov #":"# Nov. #",
 "dic #":"Dez. #",
-"# dic #":"# Dez. #"
+"# dic #":"# Dez. #",
+
+/* --- v20: los cambios llegan solos entre equipos --- */
+"Falta anotar $# que metió desde fuera":"$# von außen eingezahlt sind noch einzutragen",
+"Mi Portafolio":"Mein Portfolio",
+"Según lo registrado gastó más de lo que le entró. Pasa cuando mandó dinero del banco a la casa de cambio y todavía no lo anotó aquí. Anótelo y la cuenta cuadra.":"Nach dem Eingetragenen haben Sie mehr ausgegeben, als hereinkam. Das passiert, wenn Sie Geld von der Bank zur Börse geschickt und es hier noch nicht eingetragen haben. Tragen Sie es ein, und die Rechnung stimmt.",
+"compras −$#":"Käufe −$#",
+"spot +$# · futuros +$#":"Spot +$# · Futures +$#",
+"spot +$# · futuros −$#":"Spot +$# · Futures −$#",
+"spot −$# · futuros +$#":"Spot −$# · Futures +$#",
+"spot −$# · futuros −$#":"Spot −$# · Futures −$#",
+"Llegaron # registros nuevos desde @.":"# neue Einträge sind von @ eingetroffen.",
+"Llegó # registro nuevo desde @.":"# neuer Eintrag ist von @ eingetroffen.",
+"Se actualizó con los cambios de @.":"Mit den Änderungen von @ aktualisiert."
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
@@ -14675,7 +14832,20 @@ DIC.it={
 "nov #":"nov #",
 "# nov #":"# nov #",
 "dic #":"dic #",
-"# dic #":"# dic #"
+"# dic #":"# dic #",
+
+/* --- v20: los cambios llegan solos entre equipos --- */
+"Falta anotar $# que metió desde fuera":"Manca annotare $# che ha messo da fuori",
+"Mi Portafolio":"Il Mio Portafoglio",
+"Según lo registrado gastó más de lo que le entró. Pasa cuando mandó dinero del banco a la casa de cambio y todavía no lo anotó aquí. Anótelo y la cuenta cuadra.":"Secondo quanto registrato ha speso più di quanto le è entrato. Succede quando ha mandato soldi dalla banca all’exchange e non l’ha ancora annotato qui. Lo annoti e il conto torna.",
+"compras −$#":"acquisti −$#",
+"spot +$# · futuros +$#":"spot +$# · futures +$#",
+"spot +$# · futuros −$#":"spot +$# · futures −$#",
+"spot −$# · futuros +$#":"spot −$# · futures +$#",
+"spot −$# · futuros −$#":"spot −$# · futures −$#",
+"Llegaron # registros nuevos desde @.":"Sono arrivati # registri nuovi da @.",
+"Llegó # registro nuevo desde @.":"È arrivato # registro nuovo da @.",
+"Se actualizó con los cambios de @.":"Aggiornato con le modifiche di @."
 };
 </script>
 </body>
