@@ -1020,6 +1020,10 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
 @media (prefers-reduced-motion:reduce){
   #bienve,.bvCaja{animation:none}
 }
+/* los números de la copia de rescate, cada uno en su pastilla */
+.rescN{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.rescN i{font-style:normal;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;
+  background:var(--b2);color:var(--t2)}
 </style>
 </head>
 <body>
@@ -1071,7 +1075,7 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por GitHub.
    ===================================================================== */
-var VERSION="20";
+var VERSION="24";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -1385,12 +1389,41 @@ function firmaAjustes(){
   try{ return JSON.stringify([Object.assign({},BD.ajustes,{mod:0,git:0,verChk:0}), BD.tema]); }
   catch(e){ return ""; }
 }
+/* =====================================================================
+   LA HORA DE VERDAD
+   Cuando dos equipos cambian la misma cosa, gana el que la cambió último.
+   Pero "último" se medía con el reloj de cada aparato: si el reloj de su
+   computadora va tres minutos adelantado, la computadora ganaba siempre,
+   aunque usted hubiera cambiado el teléfono después.
+   Ahora se mide con el reloj del servidor de Google. Cada vez que este
+   aparato habla con la cuenta, apunta cuánto se desvía su reloj y corrige.
+   Así "el último manda" es verdad de verdad, aunque su reloj esté mal.
+   ===================================================================== */
+var DESFASE_RELOJ=0;
+function ahoraReal(){ return Date.now()+DESFASE_RELOJ; }
+function ponerDesfase(horaDelServidor){
+  var s=+horaDelServidor||0;
+  if(!s) return;
+  var d=s-Date.now();
+  /* se queda con el desvío más reciente, pero sin saltos absurdos */
+  if(Math.abs(d)<1000*60*60*24*365) DESFASE_RELOJ=d;
+}
+var AJ_VIAJA=null;
 function guardar(){
   if(BD.ajustes){
     var f=firmaAjustes();
     if(AJ_FIRMA===null) AJ_FIRMA=f;
-    else if(f!==AJ_FIRMA){ AJ_FIRMA=f; BD.ajustes.mod=Date.now(); }
-    if(!BD.ajustes.mod) BD.ajustes.mod=Date.now();
+    else if(f!==AJ_FIRMA){ AJ_FIRMA=f; BD.ajustes.mod=ahoraReal(); }
+    if(!BD.ajustes.mod) BD.ajustes.mod=ahoraReal();
+    /* y por separado, la hora de lo que SÍ viaja a sus otros equipos:
+       así cambiar el idioma o los colores también llega al otro aparato,
+       pero poner la clave de GitHub de este equipo no molesta a nadie */
+    try{
+      var g=JSON.stringify([ajustesQueViajan(BD.ajustes), BD.tema]);
+      if(AJ_VIAJA===null) AJ_VIAJA=g;
+      else if(g!==AJ_VIAJA){ AJ_VIAJA=g; BD.ajustes.operMod=ahoraReal(); }
+      if(!BD.ajustes.operMod) BD.ajustes.operMod=ahoraReal();
+    }catch(e){}
   }
   try{ if(typeof GUARDADO_HORA!=="undefined" && GUARDADO_HORA){ GUARDADO_HORA=""; pintarBotonGuardar(); } }catch(e){}
   try{ localStorage.setItem(LLAVE, JSON.stringify(BD)); GUARDA_FALLA=false; }
@@ -1409,6 +1442,9 @@ function guardar(){
       }
     }
   }
+  /* y se manda a la cuenta en cuanto se puede, no cuando toque el reloj:
+     así el otro equipo lo ve casi al instante */
+  try{ subirPronto(); }catch(e){}
 }
 function cargar(){
   var t=null;
@@ -4216,7 +4252,7 @@ function guardarMovimiento(){
     }
   }
   BD.ops.push({id:idNuevo(), sym:String(SP.sym).toUpperCase(), tipo:SP.tipo, cant:c, precio:p,
-               com:k, fecha:f, nota:n, casa:SP.casa, mod:Date.now()});
+               com:k, fecha:f, nota:n, casa:SP.casa, mod:ahoraReal()});
   BD.ajustes.casa=SP.casa;
   guardar();
   var gan=null;
@@ -4255,7 +4291,7 @@ function moverUsdt(tipo){
       if(m==null||m<=0){ aviso("Escriba cuántos dólares.",true); return; }
       BD.ops.push({id:idNuevo(), sym:"USDT", tipo:tipo, cant:m, precio:1, com:0,
         fecha:M.querySelector("#uF").value||hoy(), nota:M.querySelector("#uN").value.trim(),
-        casa:SP.casa||"BINANCE", mod:Date.now()});
+        casa:SP.casa||"BINANCE", mod:ahoraReal()});
       guardar(); cerrar(); pintarSpot(); repintarCabecera();
       aviso(tipo==="compra"?("Registrados "+usd(m)+" de USDT que metió."):("Registrado el retiro de "+usd(m)+"."));
     };
@@ -4346,7 +4382,7 @@ function venderMoneda(sym){
       if(c>e.cantidad+1e-9){ aviso("No puede vender más de lo que tiene.",true); return; }
       var ca=(M.querySelector("#vCa")||{}).value||BD.ajustes.casa||"BINANCE";
       BD.ops.push({id:idNuevo(), sym:String(sym).toUpperCase(), tipo:"venta", cant:c, precio:p,
-        com:k, fecha:M.querySelector("#vF").value||hoy(), nota:"", casa:ca, mod:Date.now()});
+        com:k, fecha:M.querySelector("#vF").value||hoy(), nota:"", casa:ca, mod:ahoraReal()});
       BD.ajustes.casa=ca;
       guardar(); cerrar(); repintar();
       var g=(p-e.promedio)*c-k;
@@ -4428,7 +4464,7 @@ function editarOp(id){
       o.fecha=M.querySelector("#eF").value||hoy();
       o.casa=M.querySelector("#eCa").value;
       o.nota=M.querySelector("#eN").value.trim();
-      o.mod=Date.now();
+      o.mod=ahoraReal();
       guardar(); cerrar(); repintar(); aviso("Guardado.");
     };
   });
@@ -4694,7 +4730,7 @@ function ambito(k){
       guardarCfg: function(c){
         if(!p) return;
         p.capital=c.cartera0!=null?c.cartera0:p.capital;
-        p.riesgo=c.riesgo; p.apal=c.apal; p.com=c.com; p.mod=Date.now();
+        p.riesgo=c.riesgo; p.apal=c.apal; p.com=c.com; p.mod=ahoraReal();
         guardar();
       },
       nuevo: function(o){ o.prueba=p?p.id:""; BD.back.push(o); },
@@ -5387,7 +5423,7 @@ function activarOperacion(id,k){
   var A=ambito(k);
   var f=A.lista.filter(function(x){ return x.id===id; })[0];
   if(!f){ aviso("Esa operación ya no existe.",true); return; }
-  f.estado="abierta"; f.horaEntrada=horaYa(); f.mod=Date.now();
+  f.estado="abierta"; f.horaEntrada=horaYa(); f.mod=ahoraReal();
   guardar(); repintar();
   aviso("Listo: la operación de "+esc(f.sym)+" ya cuenta como abierta.");
 }
@@ -5705,7 +5741,7 @@ function guardarOperacion(A){
     nota:(FU.nota||"").trim(), estr:(FU.estr||"").trim(), animo:FU.animo,
     plan:Object.assign({},FU.plan),
     riesgo:R.riesgo, cartera:c.cartera,
-    pct:null, estado: sal!=null?"cerrada":(esperando?"programada":"abierta"), mod:Date.now() };
+    pct:null, estado: sal!=null?"cerrada":(esperando?"programada":"abierta"), mod:ahoraReal() };
   A.nuevo(o);
   guardar();
   var dicho;
@@ -5793,7 +5829,7 @@ function cerrarOperacion(id, k){
       f.salida=x; f.estado="cerrada"; f.pct=null;
       f.cierre=M.querySelector("#cF").value||hoy();
       f.com=num(M.querySelector("#cK").value)||0;
-      f.mod=Date.now();
+      f.mod=ahoraReal();
       guardar(); cerrar(); repintar();
       var s2=estadoOp(f);
       aviso("Cerrada · "+(s2.gan>=0?"ganó ":"perdió ")+usdF(Math.abs(s2.gan))+".");
@@ -5944,7 +5980,7 @@ function editarOperacion(id, k){
       f.plan=plan; f.animo=animo;
       f.estado = d.estado;
       if(f.estado==="cerrada"&&!f.cierre) f.cierre=hoy();
-      f.pct=null; f.mod=Date.now();
+      f.pct=null; f.mod=ahoraReal();
       guardar(); cerrar(); repintar(); aviso("Guardada.");
     };
   });
@@ -5982,7 +6018,7 @@ function nuevaPrueba(){
              riesgo:num(M.querySelector("#pR").value)||1,
              apal:num(M.querySelector("#pA").value)||10,
              com:num(M.querySelector("#pK").value)||0,
-             crece:M.querySelector("#pG").value==="1", mod:Date.now()};
+             crece:M.querySelector("#pG").value==="1", mod:ahoraReal()};
       BD.pruebas.push(p);
       BD.ajustes.prueba=p.id;
       guardar(); cerrar(); irA("back");
@@ -6003,7 +6039,7 @@ function renombrarPrueba(){
     M.querySelector("#rOk").onclick=function(){
       var n=M.querySelector("#rN").value.trim();
       if(!n){ aviso("Escriba un nombre.",true); return; }
-      p.nombre=n; p.mod=Date.now(); guardar(); cerrar(); pintarBack(); aviso("Listo.");
+      p.nombre=n; p.mod=ahoraReal(); guardar(); cerrar(); pintarBack(); aviso("Listo.");
     };
   });
 }
@@ -6014,6 +6050,7 @@ function borrarPrueba(){
   confirmar("Borrar la prueba","Se borra <b>"+esc(p.nombre)+"</b> con sus <b>"+n+
     "</b> "+pal(n,"operación","operaciones")+" de prueba, en todos sus equipos. Su dinero de verdad no se toca.",
     "Borrar la prueba", function(){
+      copiaDeRescate("borrar la prueba "+(p.nombre||""));
       opsDePrueba(p.id).forEach(function(o){ anotarBorrado(o.id); });
       BD.back=BD.back.filter(function(o){ return o.prueba!==p.id; });
       BD.pruebas=BD.pruebas.filter(function(x){ return x.id!==p.id; });
@@ -6078,7 +6115,7 @@ function vigilarCierres(){
       /* en un corto se espera que el precio SUBA a la entrada; en un largo, que BAJE */
       var llego = (f.lado==="SHORT") ? (pr>=ent) : (pr<=ent);
       if(!llego) return;
-      f.estado="abierta"; f.horaEntrada=horaYa(); f.fecha=f.fecha||hoy(); f.mod=Date.now();
+      f.estado="abierta"; f.horaEntrada=horaYa(); f.fecha=f.fecha||hoy(); f.mod=ahoraReal();
       hechas.push({tipo:par[0], bueno:true,
         texto:(par[0]==="back"?"[prueba] ":"")+f.sym+" op "+(f.n||"")+" ENTRÓ: el precio llegó a "+
           precio(ent)+" · ahora la operación está abierta"});
@@ -6099,7 +6136,7 @@ function vigilarCierres(){
       }
       if(!toco) return;
       f.salida=toco.p; f.estado="cerrada"; f.cierre=hoy(); f.pct=null;
-      f.auto=toco.q; f.horaCierre=horaYa(); f.mod=Date.now();
+      f.auto=toco.q; f.horaCierre=horaYa(); f.mod=ahoraReal();
       var st=estadoOp(f);
       hechas.push({tipo:par[0], texto:(par[0]==="back"?"[prueba] ":"")+f.sym+" op "+(f.n||"")+
         " tocó el "+toco.q+" en "+precio(toco.p)+" · "+(st.gan>=0?"ganó ":"perdió ")+
@@ -6123,7 +6160,7 @@ function vigilarCierres(){
     var prom=e.promedio||0;
     BD.ops.push({id:idNuevo(), sym:o.sym, tipo:"venta", cant:c, precio:o.precio, com:+o.com||0,
       fecha:hoy(), nota:"venta programada · se cumplió a las "+horaYa(),
-      casa:BD.ajustes.casa||"BINANCE", auto:true, mod:Date.now()});
+      casa:BD.ajustes.casa||"BINANCE", auto:true, mod:ahoraReal()});
     var g=(o.precio-prom)*c-(+o.com||0);
     hechas.push({tipo:"spot", texto:"Se vendieron "+cant(c)+" "+o.sym+" a "+precio(o.precio)+
       " (venta programada) · "+(g>=0?"ganó ":"perdió ")+usd(Math.abs(g)), bueno:g>=0});
@@ -6258,7 +6295,7 @@ function programarVenta(symIni){
       if(c>ee.cantidad+1e-9){ aviso("No tiene tantas "+ee.sym+".",true); return; }
       BD.ordenes=BD.ordenes||[];
       BD.ordenes.push({id:idNuevo(), sym:ee.sym, dir:dir, precio:p, cant:c,
-        com:num(M.querySelector("#ovK").value)||0, creada:ahora(), mod:Date.now()});
+        com:num(M.querySelector("#ovK").value)||0, creada:ahora(), mod:ahoraReal()});
       guardar(); cerrar(); repintar(); conectarVivo();
       pedirPermisoAvisos();
       aviso("Venta programada: "+cant(c)+" "+ee.sym+" cuando "+(dir==="sube"?"suba a ":"baje a ")+precio(p)+".");
@@ -6320,7 +6357,7 @@ function cfgAvisos(){
 function ponAvisos(cambios){
   var a=cfgAvisos();
   Object.keys(cambios).forEach(function(k){ a[k]=cambios[k]; });
-  BD.ajustes.mod=Date.now();
+  BD.ajustes.mod=ahoraReal();
   guardar();
 }
 
@@ -6517,10 +6554,10 @@ function vigilarAlertas(){
     var p=precioDe(a.sym); if(p==null) return;
     var son = a.dir==="sube" ? p>=a.precio : p<=a.precio;
     if(son && !a.sono){
-      a.sono=1; a.cuando=Date.now(); a.mod=Date.now(); cambio=true;
+      a.sono=1; a.cuando=Date.now(); a.mod=ahoraReal(); cambio=true;
       nuevas.push(a.sym+" "+(a.dir==="sube"?"llegó a":"bajó a")+" "+precio(a.precio));
     } else if(!son && a.sono){
-      a.sono=0; a.mod=Date.now(); cambio=true;    /* se rearma para la próxima */
+      a.sono=0; a.mod=ahoraReal(); cambio=true;    /* se rearma para la próxima */
     }
   });
   if(!cambio) return;
@@ -7006,7 +7043,7 @@ function alertasQueSonaron(){
   var cambio=false;
   var r=(BD.alertas||[]).filter(function(a){
     var son=alertaSuena(a);
-    if(!son&&a.visto){ a.visto=0; a.mod=Date.now(); cambio=true; }
+    if(!son&&a.visto){ a.visto=0; a.mod=ahoraReal(); cambio=true; }
     return son&&!a.visto;
   });
   if(cambio){ try{ guardar(); }catch(e){} }
@@ -7091,7 +7128,7 @@ function pintarAlr(){
   c.querySelectorAll("[data-avis]").forEach(function(b){
     b.onclick=function(){
       var a=BD.alertas[+b.getAttribute("data-avis")];
-      if(a){ a.visto=Date.now(); a.mod=Date.now(); }
+      if(a){ a.visto=Date.now(); a.mod=ahoraReal(); }
       guardar(); pintarAlr(); pintarMenu();
       aviso("Listo. No le vuelvo a avisar de esa hasta que el precio se devuelva y la cruce otra vez.");
     };
@@ -7169,7 +7206,7 @@ function nuevaAlerta(){
         aviso("Esa alerta ya existe.",true); return;
       }
       BD.alertas.push({id:idNuevo(), sym:String(s).toUpperCase(), dir:dir, precio:p,
-                       visto:0, mod:Date.now()});
+                       visto:0, mod:ahoraReal()});
       guardar(); cerrar(); irA("alr"); pintarMenu(); conectarVivo();
       try{ avisarAlVigilante(); }catch(e){}
       aviso("Alerta creada para "+s+".");
@@ -7296,17 +7333,106 @@ function firmaDatos(){
       j:BD.ajustes&&BD.ajustes.mod, t:BD.tema});
   }catch(e){ return String(Date.now()); }
 }
+/* =====================================================================
+   LA LISTA DE BORRADOS
+   Sirve para que lo que usted borra en un equipo no le reaparezca desde
+   el otro. Antes se recortaba a los 600 más recientes POR CANTIDAD: si
+   usted borraba más de 600 cosas, las primeras se caían de la lista y
+   esos registros VOLVÍAN A APARECER solos desde el otro equipo.
+   Ahora se recortan por TIEMPO: un borrado manda durante 120 días, que
+   es de sobra para que todos sus equipos se enteren.
+   ===================================================================== */
+var BORRADO_DIAS=120, BORRADO_TOPE=4000;
 function limpiarBorrados(l){
-  var por={};
+  var corte=Date.now()-BORRADO_DIAS*86400000, por={};
   (l||[]).forEach(function(x){ if(x&&x.id) por[x.id]=Math.max(por[x.id]||0, +x.t||0); });
   return Object.keys(por).map(function(k){ return {id:k,t:por[k]}; })
-    .sort(function(a,b){ return a.t-b.t; }).slice(-600);
+    .filter(function(x){ return x.t>=corte; })
+    .sort(function(a,b){ return a.t-b.t; }).slice(-BORRADO_TOPE);
 }
 function anotarBorrado(id){
   if(!id) return;
   BD.borrados=BD.borrados||[];
-  BD.borrados.push({id:id, t:Date.now()});
-  if(BD.borrados.length>900) BD.borrados=BD.borrados.slice(-600);
+  BD.borrados.push({id:id, t:ahoraReal()});
+  if(BD.borrados.length>BORRADO_TOPE+500) BD.borrados=limpiarBorrados(BD.borrados);
+}
+
+/* =====================================================================
+   LA COPIA DE RESCATE — nada se destruye sin una vuelta atrás
+   Antes, un borrado era una bala sin retorno: se anotaba el registro en
+   la lista de borrados, viajaba a todos los equipos y se acabó.
+   Ahora, antes de cualquier borrado grande (y antes de una mezcla que
+   vaya a quitar cosas), el programa se guarda SOLO una copia completa
+   en este aparato. Esa copia no viaja a ningún lado y siempre se puede
+   volver a ella.
+   ===================================================================== */
+var LLAVE_RESCATE="portafolio-cripto-rescate";
+function copiaDeRescate(porque){
+  try{
+    var limpio=Object.assign({}, BD, {logos:{}, histTot:[]});
+    localStorage.setItem(LLAVE_RESCATE, JSON.stringify({
+      cuando:Date.now(), porque:String(porque||""), v:VERSION,
+      equipo:nombreEquipo(), datos:JSON.stringify(limpio)
+    }));
+    return true;
+  }catch(e){ return false; }
+}
+function leerRescate(){
+  try{
+    var t=localStorage.getItem(LLAVE_RESCATE);
+    if(!t) return null;
+    var r=JSON.parse(t);
+    return (r&&r.datos)?r:null;
+  }catch(e){ return null; }
+}
+function cuantoHayEnRescate(){
+  var r=leerRescate(); if(!r) return null;
+  try{
+    var d=JSON.parse(r.datos);
+    return {cuando:r.cuando, porque:r.porque,
+            ops:(d.ops||[]).length, fut:(d.fut||[]).length,
+            back:(d.back||[]).length, pruebas:(d.pruebas||[]).length,
+            alertas:(d.alertas||[]).length};
+  }catch(e){ return null; }
+}
+function volverAlRescate(){
+  var r=leerRescate();
+  if(!r){ aviso("No hay ninguna copia de rescate guardada en este aparato.",true); return; }
+  var c=cuantoHayEnRescate();
+  confirmar("Volver a la copia de rescate",
+    "Se vuelve a como estaba el <b>"+fechaHora(r.cuando)+"</b>"+
+    (r.porque?" (antes de: "+esc(r.porque)+")":"")+".<br><br>"+
+    "Trae <b>"+c.ops+"</b> movimientos de spot, <b>"+c.fut+"</b> de futuros, <b>"+c.back+
+    "</b> de prueba y <b>"+c.pruebas+"</b> pruebas.<br><br>"+
+    "<b>Lo borrado vuelve.</b> Se quita de la lista de borrados para que no lo maten otra vez "+
+    "desde su otro equipo.",
+    "Sí, volver ahí", function(){
+      try{
+        copiaDeRescate("antes de volver al rescate");
+        var d=JSON.parse(r.datos);
+        /* vuelven los registros Y se levanta su sentencia de muerte */
+        var ids={};
+        ["ops","fut","back","pruebas","ordenes","alertas"].forEach(function(k){
+          (d[k]||[]).forEach(function(x){ if(x&&x.id) ids[x.id]=1; });
+          BD[k]=d[k]||[];
+        });
+        BD.borrados=(BD.borrados||[]).filter(function(b){ return !ids[b.id]; });
+        /* y se les pone fecha de ahora, para que ganen en la próxima mezcla */
+        var t=Date.now();
+        ["ops","fut","back","pruebas","ordenes","alertas"].forEach(function(k){
+          (BD[k]||[]).forEach(function(x){ if(x) x.mod=t; });
+        });
+        guardar(); repintar();
+        aviso("Listo: volvió a como estaba el "+fechaHora(r.cuando)+".");
+      }catch(e){ aviso("No se pudo leer la copia de rescate.",true); }
+    });
+}
+function fechaHora(t){
+  try{
+    var d=new Date(+t||0);
+    return ("0"+d.getDate()).slice(-2)+" "+(MESES[d.getMonth()]||"")+" "+
+           ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2);
+  }catch(e){ return "—"; }
 }
 function gitCfg(){ return (BD.ajustes&&BD.ajustes.git)||{}; }
 
@@ -7323,6 +7449,8 @@ function gh(ruta, opciones){
     try{
       var dd=r.headers.get("date");
       if(dd){
+        /* GitHub también sirve para poner el reloj en hora */
+        try{ ponerDesfase(new Date(dd).getTime()); }catch(e){}
         var dif=Math.abs(new Date(dd).getTime()-Date.now());
         if(dif>5*60000 && !RELOJ_avisado){
           RELOJ_avisado=true;
@@ -7398,22 +7526,43 @@ function nombreEquipo(){
   var u=(navigator.userAgent||"");
   return /Android|iPhone|iPad|Mobile/i.test(u) ? "teléfono" : "computadora";
 }
+/* el número de un registro que llegó sin número. Se arma con TODO lo que
+   tiene dentro, no con cuatro campos: así dos registros distintos nunca
+   acaban con el mismo número (las pruebas, por ejemplo, no tienen ni
+   símbolo ni fecha y antes salían todas con el mismo). */
+function idDeApuro(x){
+  var t="";
+  try{ t=JSON.stringify(x); }catch(e){ t=String(x); }
+  var h=5381;
+  for(var i=0;i<t.length;i++) h=((h*33)^t.charCodeAt(i))>>>0;
+  return "v_"+h.toString(36)+"_"+t.length;
+}
 function juntar(local, remoto, borrados){
   var por={}, fuera={};
   (borrados||[]).forEach(function(b){ fuera[b.id]=Math.max(fuera[b.id]||0, b.t||0); });
   function meter(arr){
     (arr||[]).forEach(function(x){
       if(!x) return;
-      if(!x.id) x.id="v_"+[x.tipo||x.lado||"", x.sym||"", x.fecha||"",
-                           x.cant!=null?x.cant:x.monto, x.precio!=null?x.precio:x.entrada].join("_");
+      var id=x.id || idDeApuro(x);
+      if(!x.id) x.id=id;
       var m=+x.mod||0;
-      if(fuera[x.id]&&fuera[x.id]>=m) return;
-      var y=por[x.id];
-      if(!y||m>(+y.mod||0)) por[x.id]=x;
+      if(fuera[id]&&fuera[id]>=m) return;
+      var y=por[id];
+      if(!y||m>(+y.mod||0)) por[id]=x;
     });
   }
   meter(local); meter(remoto);
   return Object.keys(por).map(function(k){ return por[k]; });
+}
+/* cuántos registros de los que hay AQUÍ se van a perder en esta mezcla.
+   Sirve para guardar una copia de rescate antes, y para avisarle. */
+function loQueSePierde(local, remoto, borrados){
+  var antes={}, n=0;
+  (local||[]).forEach(function(x){ if(x) antes[x.id||idDeApuro(x)]=1; });
+  var queda={};
+  juntar(local, remoto, borrados).forEach(function(x){ queda[x.id]=1; });
+  Object.keys(antes).forEach(function(k){ if(!queda[k]) n++; });
+  return n;
 }
 function sincronizar(silencioso, reintento){
   var g=gitCfg();
@@ -7429,6 +7578,16 @@ function sincronizar(silencioso, reintento){
     var d=r.datos;
     if(d){
       var bor=limpiarBorrados((BD.borrados||[]).concat(d.borrados||[]));
+      /* igual que con la cuenta: si esta mezcla va a quitarle cosas, copia
+         de rescate primero y aviso después. Nada se pierde en silencio. */
+      var pierde=loQueSePierde(BD.ops,d.ops,bor)+loQueSePierde(BD.fut,d.fut,bor)+
+                 loQueSePierde(BD.back,d.back,bor)+loQueSePierde(BD.pruebas,d.pruebas,bor);
+      if(pierde>0){
+        copiaDeRescate("sincronizar con GitHub");
+        try{ aviso("<b>Ojo:</b> al sincronizar se quitaron "+pierde+" "+
+          pal(pierde,"registro","registros")+" que estaban borrados en su otro equipo. "+
+          "Guardé una copia de rescate: en Ajustes puede volver atrás.", true); }catch(e){}
+      }
       BD.ops=juntar(BD.ops, d.ops, bor);
       BD.fut=juntar(BD.fut, d.fut, bor);
       BD.back=juntar(BD.back, d.back, bor);
@@ -7438,20 +7597,13 @@ function sincronizar(silencioso, reintento){
       BD.borrados=bor;
       if(!BD.sembrado&&d.sembrado) BD.sembrado=d.sembrado;
       if(d.monedas) BD.monedas=Object.assign({}, d.monedas, BD.monedas);
-      if(d.ajustes){
-        var mio=+BD.ajustes.mod||0, suyo=+d.ajustes.mod||0;
-        if(suyo>mio){
-          var tk=BD.ajustes.git;
-          BD.ajustes=Object.assign({}, d.ajustes, {git:tk});
-          if(d.tema) BD.tema=d.tema;
-          aplicarTema();
-        }
-      }
-      if(d.manuales) Object.keys(d.manuales).forEach(function(x){
-        var mio2=BD.precios[x], suyo2=d.manuales[x];
-        if(!mio2||!mio2.mano||(+suyo2.t||0)>(+mio2.t||0))
-          BD.precios[x]=Object.assign({}, suyo2, {mano:true});
-      });
+      /* Los ajustes se juntan CAMPO POR CAMPO, no de un bloque.
+         Antes, si el otro equipo tenía la fecha más nueva, se reemplazaba
+         TODO: le pisaba el idioma, los colores, el nombre del equipo y la
+         configuración de la nube de este aparato. Ahora solo viaja lo que
+         es suyo de verdad (cartera, riesgo, apalancamiento, comisión…) y
+         lo del aparato se queda donde está. Misma regla que en la cuenta. */
+      juntarAjustesMios(d.ajustes, d.tema, d.manuales);
       BD.ops.sort(function(a,b){
         var fa=a.fecha||"", fb=b.fecha||"";
         if(fa!==fb) return fa<fb?-1:1;
@@ -8614,29 +8766,96 @@ function mensajeCuenta(e){
   return m;
 }
 
-/* --- qué se guarda: lo mismo de siempre, sin la clave de GitHub --- */
-function textoParaCuenta(){ return textoParaNube(); }
-/* La firma dice "aquí cambió algo". Además de los movimientos, mira los
-   ajustes de operar: su cartera y su riesgo son SUYOS, no del aparato, y
-   tienen que viajar igual que lo demás. */
-var AJUSTES_MIOS=["cartera","riesgo","apal","comPct","meta","casa"];
+/* --- qué se guarda en la cuenta ---
+   Todos sus datos, y de los ajustes solo lo que viaja. Lo del aparato
+   (la clave de GitHub, los permisos de Drive, la carpeta de respaldo) ni
+   siquiera sale de aquí: no le sirve al otro equipo y no tiene por qué
+   estar guardado en internet. */
+function textoParaCuenta(){
+  var a=ajustesQueViajan(BD.ajustes);
+  a.operMod=(BD.ajustes||{}).operMod||0;
+  return JSON.stringify(Object.assign({}, BD,
+    {ajustes:a, logos:{}, histTot:[], manuales:preciosManuales()}));
+}
+/* =====================================================================
+   QUÉ VIAJA ENTRE SUS EQUIPOS
+   La regla es al revés de como estaba: **viaja TODO**, menos lo que está
+   físicamente atado a este aparato y no tendría ningún sentido copiar.
+   Así, lo que usted ve en el teléfono es lo mismo que ve en la
+   computadora: los movimientos, la cartera, el riesgo, el idioma, los
+   colores, los sonidos, la meta, los precios que escribió a mano… todo.
+   ===================================================================== */
+var AJUSTES_DEL_APARATO=[
+  "git",            /* la clave de GitHub: JAMÁS viaja */
+  "nube",           /* los permisos de Drive y OneDrive: son de este navegador */
+  "cuenta",         /* la sesión de Firebase de este aparato */
+  "carpeta",        /* la carpeta de respaldo de esta computadora */
+  "equipo",         /* el nombre de este aparato, por definición */
+  "vioBienvenida",  /* si ESTE aparato ya enseñó la bienvenida */
+  "gitAuto","repoApp","gitUsuario",
+  "avisadoVer","verChk","mod","operMod"
+];
+/* dentro de los avisos, lo único de este aparato */
+var AVISOS_DEL_APARATO=["propioNombre","apuntado","apuntadoFallo","vigilante"];
+
+function ajustesQueViajan(a){
+  var r={};
+  Object.keys(a||{}).forEach(function(k){
+    if(AJUSTES_DEL_APARATO.indexOf(k)>=0) return;
+    if(k==="avisos"){
+      var x={};
+      Object.keys(a.avisos||{}).forEach(function(j){
+        if(AVISOS_DEL_APARATO.indexOf(j)<0) x[j]=a.avisos[j];
+      });
+      r.avisos=x; return;
+    }
+    r[k]=a[k];
+  });
+  return r;
+}
+/* "aquí cambió algo": los movimientos, los ajustes que viajan, los colores
+   y los precios que usted escribió a mano */
 function firmaCuenta(){
-  var a=BD.ajustes||{};
-  return firmaNube()+"|"+JSON.stringify(AJUSTES_MIOS.map(function(k){ return a[k]; }));
+  var extra="";
+  try{ extra=JSON.stringify([ajustesQueViajan(BD.ajustes), BD.tema, preciosManuales()]); }catch(e){}
+  return firmaNube()+"|"+extra;
 }
-/* se llama cada vez que usted cambia la cartera, el riesgo, etc. */
-function marcarAjustesMios(){
-  BD.ajustes.operMod=Date.now();
-}
+/* la hora del último cambio de lo que viaja. Se mantiene sola en guardar() */
+function marcarAjustesMios(){ BD.ajustes.operMod=ahoraReal(); }
+
 /* de los dos equipos se queda el más reciente, igual que con los movimientos */
-function juntarAjustesMios(remoto){
-  if(!remoto||typeof remoto!=="object") return false;
+function juntarAjustesMios(remoto, tema, manuales){
   var local=BD.ajustes||{};
-  var lm=+local.operMod||0, rm=+remoto.operMod||0;
+  var lm=+local.operMod||0, rm=+((remoto||{}).operMod)||0;
   if(!(rm>lm)) return false;
   var cambio=false;
-  AJUSTES_MIOS.forEach(function(k){
-    if(remoto[k]!==undefined && remoto[k]!==local[k]){ local[k]=remoto[k]; cambio=true; }
+  var suyo=ajustesQueViajan(remoto);
+  Object.keys(suyo).forEach(function(k){
+    if(k==="avisos"){
+      var mio=local.avisos||{}, guardo={};
+      AVISOS_DEL_APARATO.forEach(function(j){ if(mio[j]!==undefined) guardo[j]=mio[j]; });
+      local.avisos=Object.assign({}, suyo.avisos||{}, guardo);
+      cambio=true; return;
+    }
+    var a,b;
+    try{ a=JSON.stringify(suyo[k]); b=JSON.stringify(local[k]); }catch(e){ a=1; b=2; }
+    if(a!==b){ local[k]=suyo[k]; cambio=true; }
+  });
+  /* los colores también son suyos */
+  if(tema){
+    try{
+      if(JSON.stringify(tema)!==JSON.stringify(BD.tema)){
+        BD.tema=normalizarTema(tema); cambio=true;
+        try{ aplicarTema(); }catch(e){}
+      }
+    }catch(e){}
+  }
+  /* y los precios que escribió a mano */
+  if(manuales) Object.keys(manuales).forEach(function(x){
+    var mio=BD.precios[x], suyo2=manuales[x];
+    if(!mio||!mio.mano||(+suyo2.t||0)>(+mio.t||0)){
+      BD.precios[x]=Object.assign({}, suyo2, {mano:true}); cambio=true;
+    }
   });
   local.operMod=rm;
   return cambio;
@@ -8655,14 +8874,20 @@ function subirACuenta(forzar){
     pintarCuenta(); return Promise.resolve(false);
   }
   CTA.ocupado=true; CTA.error=""; pintarCuenta();
+  /* se apunta la hora exacta que se escribe, para que la escucha reconozca
+     lo nuestro y no se avise a uno mismo de sus propios cambios */
+  var cuando=ahoraReal();
+  CTA.visto=Math.max(CTA.visto||0, cuando);
   return cargarFirebase().then(function(S){
-    return S.F.setDoc(docDeCuenta(S), {
-      datos: txt, equipo: nombreEquipo(), hora: Date.now(),
-      correo: CTA.correo||"", v: 7
-    });
+    var paq={ datos: txt, equipo: nombreEquipo(), hora: cuando,
+              correo: CTA.correo||"", v: 7 };
+    /* el reloj del servidor de Google: con él se corrige el de este aparato */
+    try{ if(S.F.serverTimestamp) paq.hs=S.F.serverTimestamp(); }catch(e){}
+    return S.F.setDoc(docDeCuenta(S), paq);
   }).then(function(){
-    CTA.ocupado=false; CTA.firma=f; CTA.hora=Date.now();
-    var c=ctaCfg(); c.hora=CTA.hora; guardar();
+    CTA.ocupado=false; CTA.firma=f; CTA.hora=cuando;
+    var c=ctaCfg(); c.hora=CTA.hora;
+    try{ localStorage.setItem(LLAVE, JSON.stringify(BD)); }catch(e){}
     pintarCuenta(); return true;
   }).catch(function(e){
     CTA.ocupado=false; CTA.error=mensajeCuenta(e); pintarCuenta(); return false;
@@ -8675,6 +8900,7 @@ function bajarDeCuenta(){
   }).then(function(d){
     if(!d.exists()) return null;
     var x=d.data()||{};
+    try{ if(x.hs&&x.hs.toMillis) ponerDesfase(x.hs.toMillis()); }catch(e){}
     return x.datos||null;
   });
 }
@@ -8735,7 +8961,23 @@ function traerDeCuenta(){
 function aplicarDeCuenta(r){
   if(!r||!Array.isArray(r.ops)) return 0;
   var antes=(BD.ops||[]).length+(BD.fut||[]).length+(BD.back||[]).length;
-  BD.borrados=limpiarBorrados((BD.borrados||[]).concat(r.borrados||[]));
+  var bor=limpiarBorrados((BD.borrados||[]).concat(r.borrados||[]));
+  /* ANTES de juntar: ¿esta mezcla va a quitarle cosas que aquí todavía
+     están? Si es así, se guarda una copia de rescate y se le avisa. Antes
+     esto pasaba en silencio y no había vuelta atrás. */
+  var pierde = loQueSePierde(BD.ops, r.ops, bor)
+             + loQueSePierde(BD.fut, r.fut, bor)
+             + loQueSePierde(BD.back, r.back, bor)
+             + loQueSePierde(BD.pruebas, r.pruebas, bor);
+  if(pierde>0){
+    copiaDeRescate("juntar con la cuenta");
+    try{
+      aviso("<b>Ojo:</b> al juntar con su cuenta se quitaron "+pierde+" "+
+        pal(pierde,"registro","registros")+" que estaban borrados en su otro equipo. "+
+        "Guardé una copia de rescate: en Ajustes puede volver atrás.", true);
+    }catch(e){}
+  }
+  BD.borrados=bor;
   BD.ops     = juntar(BD.ops,     r.ops,     BD.borrados);
   BD.fut     = juntar(BD.fut,     r.fut,     BD.borrados);
   BD.back    = juntar(BD.back,    r.back,    BD.borrados);
@@ -8743,7 +8985,16 @@ function aplicarDeCuenta(r){
   BD.ordenes = juntar(BD.ordenes, r.ordenes, BD.borrados);
   BD.alertas = juntarAlertas(BD.alertas, r.alertas, BD.borrados);
   BD.monedas = Object.assign({}, r.monedas||{}, BD.monedas||{});
-  juntarAjustesMios(r.ajustes);
+  if(!BD.sembrado && r.sembrado) BD.sembrado=r.sembrado;
+  /* los ajustes, los colores y los precios a mano: todo lo suyo */
+  var man=r.manuales||null;
+  if(!man && r.precios){
+    man={};
+    Object.keys(r.precios).forEach(function(k){
+      if(r.precios[k]&&r.precios[k].mano) man[k]=r.precios[k];
+    });
+  }
+  juntarAjustesMios(r.ajustes, r.tema, man);
   guardar();
   var ahora=(BD.ops||[]).length+(BD.fut||[]).length+(BD.back||[]).length;
   try{ repintar(); }catch(e){}
@@ -8760,6 +9011,22 @@ function callarCuenta(){
   try{ if(CTA.callar) CTA.callar(); }catch(e){}
   CTA.callar=null;
 }
+/* si la escucha se cae (se fue el internet, el teléfono se durmió), se
+   vuelve a enganchar sola. Si no, usted se quedaría sin recibir nada y
+   sin enterarse. */
+var CTA_reintento=null;
+function reengancharEscucha(){
+  clearTimeout(CTA_reintento);
+  CTA_reintento=setTimeout(function(){ escucharCuenta(); }, 4000);
+}
+try{
+  window.addEventListener("online", function(){ try{ escucharCuenta(); }catch(e){} });
+  document.addEventListener("visibilitychange", function(){
+    if(document.hidden) return;
+    try{ if(ctaDentro() && !CTA.callar) escucharCuenta(); }catch(e){}
+  });
+}catch(e){}
+
 function escucharCuenta(){
   callarCuenta();
   if(!ctaDentro()||ctaCfg().auto===false) return;
@@ -8772,6 +9039,8 @@ function escucharCuenta(){
         /* lo que acabamos de escribir nosotros no se vuelve a bajar */
         if(d.metadata && d.metadata.hasPendingWrites) return;
         var x=d.data()||{};
+        /* se pone el reloj en hora con el del servidor */
+        try{ if(x.hs&&x.hs.toMillis) ponerDesfase(x.hs.toMillis()); }catch(e){}
         if(!x.datos) return;
         var hora=+x.hora||0;
         if(hora && hora<=(CTA.visto||0)) return;
@@ -8789,11 +9058,31 @@ function escucharCuenta(){
           try{ pintarMenu(); }catch(e){}
         }
       }catch(e){}
-    }, function(){ CTA.callar=null; });
-  }).catch(function(){});
+    }, function(){ CTA.callar=null; reengancharEscucha(); });
+  }).catch(function(){ reengancharEscucha(); });
 }
 
-/* --- se sube solo cada vez que cambia algo --- */
+/* =====================================================================
+   SUBIR AL INSTANTE
+   Antes se esperaba al reloj de 20 segundos. Ahora, en cuanto usted
+   registra algo, sube enseguida. Se espera medio segundo nada más, por si
+   usted está escribiendo y hace varios cambios seguidos: así es una sola
+   subida y no veinte.
+   ===================================================================== */
+var CTA_pronto=null;
+function subirPronto(){
+  if(typeof CTA==="undefined"||!CTA) return;
+  if(!ctaDentro()||ctaCfg().auto===false) return;
+  clearTimeout(CTA_pronto);
+  CTA_pronto=setTimeout(function(){
+    var f=firmaCuenta();
+    if(f===CTA.firma) return;          /* no cambió nada de verdad */
+    CTA.firma=f;
+    subirACuenta(false);
+  }, 300);
+}
+
+/* --- el reloj de respaldo, por si alguna subida se cayó --- */
 function programarCuenta(){
   clearInterval(CTA.reloj);
   CTA.firma=firmaCuenta();
@@ -9002,7 +9291,7 @@ function ayudaCuenta(){
 function vioBienvenida(){ return !!BD.ajustes.vioBienvenida; }
 function cerrarBienvenida(comoEntro){
   BD.ajustes.vioBienvenida=Date.now();
-  BD.ajustes.mod=Date.now();
+  BD.ajustes.mod=ahoraReal();
   try{ guardar(); }catch(e){}
   var z=document.getElementById("bienve");
   if(z){ z.classList.add("fuera"); setTimeout(function(){ try{ z.remove(); }catch(e){} }, 320); }
@@ -9734,6 +10023,7 @@ function engancharDat(box){
   if((x=box.querySelector("#dSube"))) x.onclick=function(){ box.querySelector("#dArch").click(); };
   if((x=box.querySelector("#dArch"))) x.onchange=restaurarCopia;
   if((x=box.querySelector("#dPrueba"))) x.onclick=limpiarDatos;
+  if((x=box.querySelector("#dVolver"))) x.onclick=volverAlRescate;
   if((x=box.querySelector("#dLogos"))) x.onclick=function(){
     BD.logos={}; LOGO_pedido={}; guardar(); repintar();
     aviso("Logos soltados. Se vuelven a bajar solos cuando haya internet.");
@@ -9742,7 +10032,9 @@ function engancharDat(box){
     confirmar("Borrar todo","Se borran <b>"+BD.ops.length+"</b> "+pal(BD.ops.length,"movimiento","movimientos")+" de spot, <b>"+
       BD.fut.length+"</b> "+pal(BD.fut.length,"operación","operaciones")+" de futuros, <b>"+BD.pruebas.length+
       "</b> "+pal(BD.pruebas.length,"prueba","pruebas")+" y <b>"+(BD.alertas||[]).length+"</b> "+pal((BD.alertas||[]).length,"alerta","alertas")+", <b>en todos sus equipos</b>. "+
-      "No se puede deshacer.","Sí, borrar todo", function(){
+      "Se guarda una copia de rescate en este aparato por si se arrepiente.",
+      "Sí, borrar todo", function(){
+        copiaDeRescate("borrar todo");
         BD.ops.forEach(function(o){ anotarBorrado(o.id); });
         BD.fut.forEach(function(f){ anotarBorrado(f.id); });
         BD.back.forEach(function(f){ anotarBorrado(f.id); });
@@ -9750,7 +10042,8 @@ function engancharDat(box){
         (BD.alertas||[]).forEach(function(a){ anotarBorrado(a.id); });
         BD.ops=[]; BD.fut=[]; BD.back=[]; BD.pruebas=[]; BD.alertas=[];
         BD.ajustes.prueba="";
-        guardar(); repintar(); aviso("Todo en blanco.");
+        guardar(); repintar();
+        aviso("Todo en blanco. Si se arrepiente, en Ajustes está «Volver atrás».");
       }, true);
   };
 }
@@ -9801,7 +10094,27 @@ function cajaCopias(){
   '</div></div>';
 }
 function cajaBorrar(){
-  return '<div class="caja"><h2><span class="ic">'+IC.basura+'</span>Borrar</h2><div class="cp">'+
+  var r=cuantoHayEnRescate();
+  return '<div class="caja"><h2><span class="ic">'+IC.basura+'</span>Borrar y volver atrás</h2><div class="cp">'+
+
+  /* --- la vuelta atrás, primero: es lo que salva --- */
+  (r
+    ? '<div class="permAv ok"><div><b>Hay una copia de rescate</b>'+
+      '<span>'+esc(fechaHora(r.cuando))+'</span>'+
+      '<span class="rescN">'+
+        [plural(r.ops,"movimiento de spot","movimientos de spot"),
+         plural(r.fut,"operación de futuros","operaciones de futuros"),
+         plural(r.back,"operación de prueba","operaciones de prueba"),
+         plural(r.pruebas,"prueba","pruebas")]
+        .map(function(x){ return '<i>'+x+'</i>'; }).join("")+'</span>'+
+      (r.porque?'<span>Se guardó antes de esto:</span><span>'+esc(r.porque)+'</span>':'')+
+      '</div><button class="b vd" id="dVolver">Volver atrás</button></div>'
+    : '<div class="permAv"><div><b>Todavía no hay copia de rescate</b>'+
+      '<span>El programa se guarda una solo cuando usted va a borrar algo grande, o cuando al '+
+      'juntarse con su otro equipo se iba a perder algo. Es automático, no hay que hacer nada.</span>'+
+      '</div></div>')+
+
+  '<div class="fsec">Borrar</div>'+
   '<div style="display:flex;gap:9px;flex-wrap:wrap">'+
     '<button class="b ac" id="dPrueba">Borrar los datos de prueba…</button>'+
     '<button class="b" id="dLogos">Borrar los logos descargados</button>'+
@@ -9809,8 +10122,9 @@ function cajaBorrar(){
   '</div>'+
   '<div class="nota">«Borrar los datos de prueba» le deja elegir qué quitar y le dice cuántos '+
   'son <b>antes</b> de borrar nada. Sirve para limpiar lo que registró probando sin tocar lo de verdad.</div>'+
-  '<div class="nota mal">«Borrar todo» quita sus movimientos de spot, sus futuros, sus '+
-  'pruebas y sus alertas <b>en todos sus equipos</b>. No se puede deshacer.</div>'+
+  '<div class="nota mal">Lo que borre se borra <b>en todos sus equipos</b>: el que borra manda. '+
+  'Por eso, antes de cualquier borrado grande, el programa guarda aquí una copia de rescate de '+
+  'este aparato, y con el botón de arriba se vuelve a ella.</div>'+
   '</div></div>';
 }
 
@@ -9918,6 +10232,7 @@ function limpiarDatos(){
         "Se quitan <b>"+esc(resumen)+"</b> en todos sus equipos.<br><br>"+
         "Lo que no marcó se queda como está. Esto no se puede deshacer.",
         "Sí, borrarlos", function(){
+          copiaDeRescate("borrar los datos de prueba");
           GRUPOS.forEach(function(g){
             if(!marcado[g.k]) return;
             var fuera=cuales(g), ids={};
@@ -10281,6 +10596,16 @@ function ordenarDatosViejos(){
   (BD.pruebas||[]).forEach(function(p){
     if(!p.id){ p.id=idNuevo(); cambio=true; }
     if(!p.mod){ p.mod=1; cambio=true; }
+  });
+  (BD.ordenes||[]).forEach(function(o){
+    if(!o.id){ o.id=idNuevo(); cambio=true; }
+    if(!o.mod){ o.mod=1; cambio=true; }
+  });
+  /* TODO registro tiene que llevar su fecha de modificación. Sin ella, al
+     juntar valía 0 y CUALQUIER borrado anotado con su mismo número lo
+     mataba, aunque fuera otro registro distinto. */
+  [BD.ops,BD.fut,BD.back].forEach(function(L){
+    (L||[]).forEach(function(x){ if(x&&!x.mod){ x.mod=1; cambio=true; } });
   });
   if(cambio) guardar();
   return cambio;
@@ -11397,7 +11722,55 @@ DIC.en={
 "spot −$# · futuros −$#":"spot −$# · futures −$#",
 "Llegaron # registros nuevos desde @.":"# new records arrived from @.",
 "Llegó # registro nuevo desde @.":"# new record arrived from @.",
-"Se actualizó con los cambios de @.":"Updated with the changes from @."
+"Se actualizó con los cambios de @.":"Updated with the changes from @.",
+
+/* --- v22: la vuelta atrás, nada se pierde sin remedio --- */
+"(antes de: borrar los datos de prueba).":"(before: deleting the test data).",
+": el que borra manda. Por eso, antes de cualquier borrado grande, el programa guarda aquí una copia de rescate de este aparato, y con el botón de arriba se vuelve a ella.":": whoever deletes wins. That is why, before any big deletion, the program keeps a rescue copy of this device here, and the button above takes you back to it.",
+"Borrar y volver atrás":"Delete and undo",
+"El programa se guarda una solo cuando usted va a borrar algo grande, o cuando al juntarse con su otro equipo se iba a perder algo. Es automático, no hay que hacer nada.":"The program keeps one only when you are about to delete something big, or when merging with your other device was going to lose something. It is automatic, you do not have to do anything.",
+"Hay una copia de rescate del # oct #:#":"There is a rescue copy from # Oct #:#",
+"Lo borrado vuelve.":"What was deleted comes back.",
+"Lo que borre se borra":"What you delete is deleted",
+"Se quita de la lista de borrados para que no lo maten otra vez desde su otro equipo.":"It is taken off the deleted list so your other device does not kill it again.",
+"Se vuelve a como estaba el":"It goes back to how it was on",
+"Sí, volver ahí":"Yes, go back there",
+"Todavía no hay copia de rescate":"There is no rescue copy yet",
+"Volver a la copia de rescate":"Go back to the rescue copy",
+"Volver atrás":"Undo",
+"de futuros,":"of futures,",
+"de prueba y":"test ones and",
+"movimientos de spot,":"spot movements,",
+"Ojo: al juntar con su cuenta se quitaron # registros que estaban borrados en su otro equipo. Guardé una copia de rescate: en Ajustes puede volver atrás.":"Careful: merging with your account removed # records that were deleted on your other device. I kept a rescue copy: you can undo it in Settings.",
+"Todo en blanco. Si se arrepiente, en Ajustes está «Volver atrás».":"Everything cleared. If you change your mind, «Undo» is in Settings.",
+"Se guarda una copia de rescate en este aparato por si se arrepiente.":"A rescue copy is kept on this device in case you change your mind.",
+"# movimiento de spot · # operación de futuros · # de prueba en # pruebas · # alerta · # ventas programadas":"# spot movement · # futures trade · # test trade in # tests · # alert · # scheduled sales",
+"Se guardó antes de esto:":"It was kept just before this:",
+"borrar los datos de prueba":"deleting the test data",
+"borrar todo":"deleting everything",
+"juntar con la cuenta":"merging with the account",
+"sincronizar con GitHub":"syncing with GitHub",
+"antes de volver al rescate":"before going back to the rescue copy",
+"# operación de prueba":"# test trade",
+"# operaciones de prueba":"# test trades",
+"# operación de futuros":"# futures trade",
+"# operaciones de futuros":"# futures trades",
+"# movimiento de spot":"# spot movement",
+"Hay una copia de rescate":"There is a rescue copy",
+"# ene #:#":"# Jan #:#",
+"# feb #:#":"# Feb #:#",
+"# mar #:#":"# Mar #:#",
+"# abr #:#":"# Apr #:#",
+"# may #:#":"# May #:#",
+"# jun #:#":"# Jun #:#",
+"# jul #:#":"# Jul #:#",
+"# ago #:#":"# Aug #:#",
+"# sep #:#":"# Sep #:#",
+"# oct #:#":"# Oct #:#",
+"# nov #:#":"# Nov #:#",
+"# dic #:#":"# Dec #:#",
+"# pruebas":"# tests",
+"# prueba":"# test"
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
@@ -12259,7 +12632,55 @@ DIC.pt={
 "spot −$# · futuros −$#":"spot −$# · futuros −$#",
 "Llegaron # registros nuevos desde @.":"Chegaram # registos novos de @.",
 "Llegó # registro nuevo desde @.":"Chegou # registo novo de @.",
-"Se actualizó con los cambios de @.":"Atualizou-se com as alterações de @."
+"Se actualizó con los cambios de @.":"Atualizou-se com as alterações de @.",
+
+/* --- v22: la vuelta atrás, nada se pierde sin remedio --- */
+"(antes de: borrar los datos de prueba).":"(antes de: apagar os dados de teste).",
+": el que borra manda. Por eso, antes de cualquier borrado grande, el programa guarda aquí una copia de rescate de este aparato, y con el botón de arriba se vuelve a ella.":": quem apaga manda. Por isso, antes de qualquer apagamento grande, o programa guarda aqui uma cópia de resgate deste aparelho, e com o botão de cima volta-se a ela.",
+"Borrar y volver atrás":"Apagar e voltar atrás",
+"El programa se guarda una solo cuando usted va a borrar algo grande, o cuando al juntarse con su otro equipo se iba a perder algo. Es automático, no hay que hacer nada.":"O programa guarda uma só quando vai apagar algo grande, ou quando ao juntar-se com o seu outro equipamento se ia perder algo. É automático, não há nada a fazer.",
+"Hay una copia de rescate del # oct #:#":"Há uma cópia de resgate de # out #:#",
+"Lo borrado vuelve.":"O que foi apagado volta.",
+"Lo que borre se borra":"O que apagar fica apagado",
+"Se quita de la lista de borrados para que no lo maten otra vez desde su otro equipo.":"Sai da lista de apagados para que não o matem outra vez a partir do seu outro equipamento.",
+"Se vuelve a como estaba el":"Volta a como estava a",
+"Sí, volver ahí":"Sim, voltar a esse ponto",
+"Todavía no hay copia de rescate":"Ainda não há cópia de resgate",
+"Volver a la copia de rescate":"Voltar à cópia de resgate",
+"Volver atrás":"Voltar atrás",
+"de futuros,":"de futuros,",
+"de prueba y":"de teste e",
+"movimientos de spot,":"movimentos de spot,",
+"Ojo: al juntar con su cuenta se quitaron # registros que estaban borrados en su otro equipo. Guardé una copia de rescate: en Ajustes puede volver atrás.":"Atenção: ao juntar com a sua conta tiraram-se # registos que estavam apagados no seu outro equipamento. Guardei uma cópia de resgate: em Ajustes pode voltar atrás.",
+"Todo en blanco. Si se arrepiente, en Ajustes está «Volver atrás».":"Tudo em branco. Se se arrepender, em Ajustes está «Voltar atrás».",
+"Se guarda una copia de rescate en este aparato por si se arrepiente.":"Guarda-se uma cópia de resgate neste aparelho caso se arrependa.",
+"# movimiento de spot · # operación de futuros · # de prueba en # pruebas · # alerta · # ventas programadas":"# movimento de spot · # operação de futuros · # de teste em # testes · # alerta · # vendas programadas",
+"Se guardó antes de esto:":"Guardou-se mesmo antes disto:",
+"borrar los datos de prueba":"apagar os dados de teste",
+"borrar todo":"apagar tudo",
+"juntar con la cuenta":"juntar com a conta",
+"sincronizar con GitHub":"sincronizar com o GitHub",
+"antes de volver al rescate":"antes de voltar ao resgate",
+"# operación de prueba":"# operação de teste",
+"# operaciones de prueba":"# operações de teste",
+"# operación de futuros":"# operação de futuros",
+"# operaciones de futuros":"# operações de futuros",
+"# movimiento de spot":"# movimento de spot",
+"Hay una copia de rescate":"Há uma cópia de resgate",
+"# ene #:#":"# jan #:#",
+"# feb #:#":"# fev #:#",
+"# mar #:#":"# mar #:#",
+"# abr #:#":"# abr #:#",
+"# may #:#":"# mai #:#",
+"# jun #:#":"# jun #:#",
+"# jul #:#":"# jul #:#",
+"# ago #:#":"# ago #:#",
+"# sep #:#":"# set #:#",
+"# oct #:#":"# out #:#",
+"# nov #:#":"# nov #:#",
+"# dic #:#":"# dez #:#",
+"# pruebas":"# testes",
+"# prueba":"# teste"
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
@@ -13121,7 +13542,55 @@ DIC.fr={
 "spot −$# · futuros −$#":"spot −$# · futures −$#",
 "Llegaron # registros nuevos desde @.":"# nouveaux enregistrements sont arrivés de @.",
 "Llegó # registro nuevo desde @.":"# nouvel enregistrement est arrivé de @.",
-"Se actualizó con los cambios de @.":"Mis à jour avec les changements de @."
+"Se actualizó con los cambios de @.":"Mis à jour avec les changements de @.",
+
+/* --- v22: la vuelta atrás, nada se pierde sin remedio --- */
+"(antes de: borrar los datos de prueba).":"(avant : supprimer les données de test).",
+": el que borra manda. Por eso, antes de cualquier borrado grande, el programa guarda aquí una copia de rescate de este aparato, y con el botón de arriba se vuelve a ella.":" : celui qui supprime l’emporte. C’est pourquoi, avant toute suppression importante, le programme conserve ici une copie de secours de cet appareil, et le bouton du haut vous y ramène.",
+"Borrar y volver atrás":"Supprimer et revenir en arrière",
+"El programa se guarda una solo cuando usted va a borrar algo grande, o cuando al juntarse con su otro equipo se iba a perder algo. Es automático, no hay que hacer nada.":"Le programme en garde une seulement quand vous allez supprimer quelque chose d’important, ou quand la fusion avec votre autre appareil allait faire perdre quelque chose. C’est automatique, vous n’avez rien à faire.",
+"Hay una copia de rescate del # oct #:#":"Il y a une copie de secours du # oct. #:#",
+"Lo borrado vuelve.":"Ce qui a été supprimé revient.",
+"Lo que borre se borra":"Ce que vous supprimez est supprimé",
+"Se quita de la lista de borrados para que no lo maten otra vez desde su otro equipo.":"Il est retiré de la liste des suppressions pour que votre autre appareil ne le supprime pas à nouveau.",
+"Se vuelve a como estaba el":"Cela revient à l’état du",
+"Sí, volver ahí":"Oui, y revenir",
+"Todavía no hay copia de rescate":"Il n’y a pas encore de copie de secours",
+"Volver a la copia de rescate":"Revenir à la copie de secours",
+"Volver atrás":"Revenir en arrière",
+"de futuros,":"de futures,",
+"de prueba y":"de test et",
+"movimientos de spot,":"mouvements spot,",
+"Ojo: al juntar con su cuenta se quitaron # registros que estaban borrados en su otro equipo. Guardé una copia de rescate: en Ajustes puede volver atrás.":"Attention : la fusion avec votre compte a retiré # enregistrements supprimés sur votre autre appareil. J’ai gardé une copie de secours : vous pouvez revenir en arrière dans les Réglages.",
+"Todo en blanco. Si se arrepiente, en Ajustes está «Volver atrás».":"Tout est effacé. Si vous changez d’avis, « Revenir en arrière » est dans les Réglages.",
+"Se guarda una copia de rescate en este aparato por si se arrepiente.":"Une copie de secours est conservée sur cet appareil au cas où vous changeriez d’avis.",
+"# movimiento de spot · # operación de futuros · # de prueba en # pruebas · # alerta · # ventas programadas":"# mouvement spot · # opération à terme · # de test dans # tests · # alerte · # ventes programmées",
+"Se guardó antes de esto:":"Elle a été gardée juste avant ceci :",
+"borrar los datos de prueba":"supprimer les données de test",
+"borrar todo":"tout supprimer",
+"juntar con la cuenta":"fusionner avec le compte",
+"sincronizar con GitHub":"synchroniser avec GitHub",
+"antes de volver al rescate":"avant de revenir à la copie de secours",
+"# operación de prueba":"# opération de test",
+"# operaciones de prueba":"# opérations de test",
+"# operación de futuros":"# opération à terme",
+"# operaciones de futuros":"# opérations à terme",
+"# movimiento de spot":"# mouvement spot",
+"Hay una copia de rescate":"Il y a une copie de secours",
+"# ene #:#":"# janv. #:#",
+"# feb #:#":"# févr. #:#",
+"# mar #:#":"# mars #:#",
+"# abr #:#":"# avr. #:#",
+"# may #:#":"# mai #:#",
+"# jun #:#":"# juin #:#",
+"# jul #:#":"# juil. #:#",
+"# ago #:#":"# août #:#",
+"# sep #:#":"# sept. #:#",
+"# oct #:#":"# oct. #:#",
+"# nov #:#":"# nov. #:#",
+"# dic #:#":"# déc. #:#",
+"# pruebas":"# tests",
+"# prueba":"# test"
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
@@ -13983,7 +14452,55 @@ DIC.de={
 "spot −$# · futuros −$#":"Spot −$# · Futures −$#",
 "Llegaron # registros nuevos desde @.":"# neue Einträge sind von @ eingetroffen.",
 "Llegó # registro nuevo desde @.":"# neuer Eintrag ist von @ eingetroffen.",
-"Se actualizó con los cambios de @.":"Mit den Änderungen von @ aktualisiert."
+"Se actualizó con los cambios de @.":"Mit den Änderungen von @ aktualisiert.",
+
+/* --- v22: la vuelta atrás, nada se pierde sin remedio --- */
+"(antes de: borrar los datos de prueba).":"(vor: Testdaten löschen).",
+": el que borra manda. Por eso, antes de cualquier borrado grande, el programa guarda aquí una copia de rescate de este aparato, y con el botón de arriba se vuelve a ella.":": wer löscht, gewinnt. Deshalb legt das Programm vor jeder großen Löschung hier eine Rettungskopie dieses Geräts an, und die Taste oben bringt Sie dorthin zurück.",
+"Borrar y volver atrás":"Löschen und rückgängig machen",
+"El programa se guarda una solo cuando usted va a borrar algo grande, o cuando al juntarse con su otro equipo se iba a perder algo. Es automático, no hay que hacer nada.":"Das Programm legt eine nur an, wenn Sie etwas Großes löschen wollen oder wenn beim Zusammenführen mit Ihrem anderen Gerät etwas verloren gegangen wäre. Das geschieht automatisch, Sie müssen nichts tun.",
+"Hay una copia de rescate del # oct #:#":"Es gibt eine Rettungskopie vom #. Okt. #:#",
+"Lo borrado vuelve.":"Das Gelöschte kommt zurück.",
+"Lo que borre se borra":"Was Sie löschen, ist gelöscht",
+"Se quita de la lista de borrados para que no lo maten otra vez desde su otro equipo.":"Es wird von der Löschliste genommen, damit Ihr anderes Gerät es nicht erneut löscht.",
+"Se vuelve a como estaba el":"Es geht zurück auf den Stand vom",
+"Sí, volver ahí":"Ja, dorthin zurück",
+"Todavía no hay copia de rescate":"Es gibt noch keine Rettungskopie",
+"Volver a la copia de rescate":"Zur Rettungskopie zurück",
+"Volver atrás":"Rückgängig",
+"de futuros,":"von Futures,",
+"de prueba y":"Testtrades und",
+"movimientos de spot,":"Spot-Bewegungen,",
+"Ojo: al juntar con su cuenta se quitaron # registros que estaban borrados en su otro equipo. Guardé una copia de rescate: en Ajustes puede volver atrás.":"Achtung: Beim Zusammenführen mit Ihrem Konto wurden # Einträge entfernt, die auf Ihrem anderen Gerät gelöscht waren. Ich habe eine Rettungskopie angelegt: In den Einstellungen können Sie zurück.",
+"Todo en blanco. Si se arrepiente, en Ajustes está «Volver atrás».":"Alles gelöscht. Falls Sie es sich anders überlegen: «Rückgängig» steht in den Einstellungen.",
+"Se guarda una copia de rescate en este aparato por si se arrepiente.":"Auf diesem Gerät wird eine Rettungskopie aufbewahrt, falls Sie es sich anders überlegen.",
+"# movimiento de spot · # operación de futuros · # de prueba en # pruebas · # alerta · # ventas programadas":"# Spot-Bewegung · # Futures-Trade · # Testtrade in # Tests · # Alarm · # geplante Verkäufe",
+"Se guardó antes de esto:":"Sie wurde direkt davor angelegt:",
+"borrar los datos de prueba":"Testdaten löschen",
+"borrar todo":"alles löschen",
+"juntar con la cuenta":"mit dem Konto zusammenführen",
+"sincronizar con GitHub":"mit GitHub synchronisieren",
+"antes de volver al rescate":"vor der Rückkehr zur Rettungskopie",
+"# operación de prueba":"# Testtrade",
+"# operaciones de prueba":"# Testtrades",
+"# operación de futuros":"# Futures-Trade",
+"# operaciones de futuros":"# Futures-Trades",
+"# movimiento de spot":"# Spot-Bewegung",
+"Hay una copia de rescate":"Es gibt eine Rettungskopie",
+"# ene #:#":"# Jan. #:#",
+"# feb #:#":"# Feb. #:#",
+"# mar #:#":"# März #:#",
+"# abr #:#":"# Apr. #:#",
+"# may #:#":"# Mai #:#",
+"# jun #:#":"# Juni #:#",
+"# jul #:#":"# Juli #:#",
+"# ago #:#":"# Aug. #:#",
+"# sep #:#":"# Sept. #:#",
+"# oct #:#":"# Okt. #:#",
+"# nov #:#":"# Nov. #:#",
+"# dic #:#":"# Dez. #:#",
+"# pruebas":"# Tests",
+"# prueba":"# Test"
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
@@ -14845,7 +15362,55 @@ DIC.it={
 "spot −$# · futuros −$#":"spot −$# · futures −$#",
 "Llegaron # registros nuevos desde @.":"Sono arrivati # registri nuovi da @.",
 "Llegó # registro nuevo desde @.":"È arrivato # registro nuovo da @.",
-"Se actualizó con los cambios de @.":"Aggiornato con le modifiche di @."
+"Se actualizó con los cambios de @.":"Aggiornato con le modifiche di @.",
+
+/* --- v22: la vuelta atrás, nada se pierde sin remedio --- */
+"(antes de: borrar los datos de prueba).":"(prima di: cancellare i dati di prova).",
+": el que borra manda. Por eso, antes de cualquier borrado grande, el programa guarda aquí una copia de rescate de este aparato, y con el botón de arriba se vuelve a ella.":": chi cancella comanda. Per questo, prima di qualsiasi cancellazione grande, il programma salva qui una copia di salvataggio di questo apparecchio, e con il pulsante sopra si torna a quella.",
+"Borrar y volver atrás":"Cancellare e tornare indietro",
+"El programa se guarda una solo cuando usted va a borrar algo grande, o cuando al juntarse con su otro equipo se iba a perder algo. Es automático, no hay que hacer nada.":"Il programma ne salva una solo quando sta per cancellare qualcosa di grande, o quando unendosi con il suo altro dispositivo si stava per perdere qualcosa. È automatico, non deve fare niente.",
+"Hay una copia de rescate del # oct #:#":"C’è una copia di salvataggio del # ott #:#",
+"Lo borrado vuelve.":"Quello che è stato cancellato torna.",
+"Lo que borre se borra":"Quello che cancella viene cancellato",
+"Se quita de la lista de borrados para que no lo maten otra vez desde su otro equipo.":"Viene tolto dalla lista dei cancellati perché il suo altro dispositivo non lo elimini di nuovo.",
+"Se vuelve a como estaba el":"Si torna a com’era il",
+"Sí, volver ahí":"Sì, tornare lì",
+"Todavía no hay copia de rescate":"Non c’è ancora una copia di salvataggio",
+"Volver a la copia de rescate":"Tornare alla copia di salvataggio",
+"Volver atrás":"Tornare indietro",
+"de futuros,":"di futures,",
+"de prueba y":"di prova e",
+"movimientos de spot,":"movimenti di spot,",
+"Ojo: al juntar con su cuenta se quitaron # registros que estaban borrados en su otro equipo. Guardé una copia de rescate: en Ajustes puede volver atrás.":"Attenzione: unendo con il suo account sono stati tolti # registri che erano cancellati sul suo altro dispositivo. Ho salvato una copia di salvataggio: in Impostazioni può tornare indietro.",
+"Todo en blanco. Si se arrepiente, en Ajustes está «Volver atrás».":"Tutto azzerato. Se ci ripensa, in Impostazioni c’è «Tornare indietro».",
+"Se guarda una copia de rescate en este aparato por si se arrepiente.":"Si salva una copia di salvataggio su questo apparecchio nel caso ci ripensi.",
+"# movimiento de spot · # operación de futuros · # de prueba en # pruebas · # alerta · # ventas programadas":"# movimento di spot · # operazione di futures · # di prova in # prove · # avviso · # vendite programmate",
+"Se guardó antes de esto:":"È stata salvata appena prima di questo:",
+"borrar los datos de prueba":"cancellare i dati di prova",
+"borrar todo":"cancellare tutto",
+"juntar con la cuenta":"unire con l’account",
+"sincronizar con GitHub":"sincronizzare con GitHub",
+"antes de volver al rescate":"prima di tornare alla copia di salvataggio",
+"# operación de prueba":"# operazione di prova",
+"# operaciones de prueba":"# operazioni di prova",
+"# operación de futuros":"# operazione di futures",
+"# operaciones de futuros":"# operazioni di futures",
+"# movimiento de spot":"# movimento di spot",
+"Hay una copia de rescate":"C’è una copia di salvataggio",
+"# ene #:#":"# gen #:#",
+"# feb #:#":"# feb #:#",
+"# mar #:#":"# mar #:#",
+"# abr #:#":"# apr #:#",
+"# may #:#":"# mag #:#",
+"# jun #:#":"# giu #:#",
+"# jul #:#":"# lug #:#",
+"# ago #:#":"# ago #:#",
+"# sep #:#":"# set #:#",
+"# oct #:#":"# ott #:#",
+"# nov #:#":"# nov #:#",
+"# dic #:#":"# dic #:#",
+"# pruebas":"# prove",
+"# prueba":"# prova"
 };
 </script>
 </body>
