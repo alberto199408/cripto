@@ -372,6 +372,12 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
   border:1px solid color-mix(in srgb,var(--ac) 32%,transparent);
   font-size:13px;color:var(--tx);line-height:1.65}
 .nota b{color:var(--ac2)}
+/* los enlaces: el azul de fábrica del navegador no se lee sobre fondo oscuro */
+a{color:var(--acTx)}
+a:hover{color:var(--ac2)}
+.nota a,.hb a,.gpieg a{color:var(--ac2);text-decoration:underline;text-underline-offset:2px}
+.nota.ojo a{color:var(--ojoTx)}
+.nota.mal a{color:var(--dnTx)}
 .nota.ojo{background:color-mix(in srgb,#FF9F3C 14%,transparent);
   border-color:color-mix(in srgb,#FF9F3C 50%,transparent)}
 .nota.ojo b{color:var(--ojoTx)}
@@ -1143,9 +1149,9 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
    PORTAFOLIO CRIPTO · v10
    Todo vive en este archivo. Sin internet sigue funcionando: guarda los
    últimos precios y los usa. Los datos se guardan en este equipo al
-   momento, y el botón ENVIAR los manda al otro equipo por GitHub.
+   momento, y el botón ENVIAR los manda al otro equipo por su cuenta de Google.
    ===================================================================== */
-var VERSION="28";
+var VERSION="29";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -1154,6 +1160,7 @@ var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde 
    la tienda y dentro del programa. El archivo privacidad.html viaja al
    lado de CRIPTO.html, así que servido por internet basta el nombre; si
    alguien abre el programa desde el disco, se va a la dirección pública. */
+var CORREO_SOPORTE="miportafoliocriptoapp@gmail.com";
 var WEB_PRIVACIDAD="https://alberto199408.github.io/cripto/portafolio/privacidad.html";
 function urlPrivacidad(){
   var base=WEB_PRIVACIDAD;
@@ -6538,7 +6545,7 @@ function vigilarCierres(){
   catch(e){ sonar(hechas.some(function(h){ return !h.bueno; })?"malo":"bueno"); }
   aviso("<b>Se hizo solo:</b> "+esc(txt), false);
   try{ repintar(); }catch(e){}
-  if(gitCfg().token) sincronizar(true);
+  try{ if(ctaDentro()) subirACuenta(true); }catch(e){}
 }
 
 /* --- un sonido corto, sin archivos --- */
@@ -7905,11 +7912,10 @@ function avisoFaltaUsdt(L){
 }
 /* =====================================================================
    21 · SINCRONIZAR PC Y TELÉFONO  (igual que siempre, no se cambió nada)
-   Los datos viven en un repositorio PRIVADO suyo de GitHub. Se juntan
+   Los datos viven en el aparato y viajan por la cuenta de Google. Se juntan
    los cambios de los dos lados: de cada registro gana el más reciente,
    y lo que borró en un lado no vuelve a aparecer.
    ===================================================================== */
-var SYNC={ ocupado:false, ultimo:null, error:"", auto:null, firma:"", sha:"" };
 var RELOJ_avisado=false;
 
 function firmaDatos(){
@@ -8022,85 +8028,6 @@ function fechaHora(t){
 }
 function gitCfg(){ return (BD.ajustes&&BD.ajustes.git)||{}; }
 
-function gh(ruta, opciones){
-  var g=gitCfg();
-  if(!g.token) return Promise.reject(new Error("Falta la clave de GitHub"));
-  var o=Object.assign({}, opciones||{});
-  o.headers=Object.assign({
-    "Authorization":"Bearer "+g.token,
-    "Accept":"application/vnd.github+json",
-    "X-GitHub-Api-Version":"2022-11-28"
-  }, o.headers||{});
-  return fetch("https://api.github.com"+ruta, o).then(function(r){
-    try{
-      var dd=r.headers.get("date");
-      if(dd){
-        /* GitHub también sirve para poner el reloj en hora */
-        try{ ponerDesfase(new Date(dd).getTime()-Date.now()); }catch(e){}
-        var dif=Math.abs(new Date(dd).getTime()-Date.now());
-        if(dif>5*60000 && !RELOJ_avisado){
-          RELOJ_avisado=true;
-          aviso("El reloj de este equipo está desfasado "+Math.round(dif/60000)+
-            " "+pal(dif,"minuto","minutos")+" contra el de internet. Póngalo en hora: si no, al juntar los cambios "+
-            "entre sus equipos puede ganar la versión equivocada.", true);
-        }
-      }
-    }catch(e){}
-    if(r.status===401){ var e1=new Error("La clave no sirve o se venció"); e1.codigo=401; throw e1; }
-    if(r.status===403){ var e2=new Error("La clave no tiene permiso sobre repositorios"); e2.codigo=403; throw e2; }
-    if(r.status===404) return {__falta:true};
-    if(!r.ok) return r.text().then(function(){
-      var e3=new Error(r.status===409?"los dos equipos escribieron a la vez"
-                                     :("GitHub respondió "+r.status));
-      e3.codigo=r.status; throw e3;
-    });
-    return r.json();
-  });
-}
-function conectarGit(token){
-  BD.ajustes.git=Object.assign(gitCfg(), {token:token});
-  return gh("/user").then(function(u){
-    if(u.__falta||!u.login) throw new Error("No se pudo leer su cuenta");
-    BD.ajustes.git.user=u.login;
-    var repo=gitCfg().repo||"portafolio-cripto";
-    BD.ajustes.git.repo=repo;
-    return gh("/repos/"+u.login+"/"+repo).then(function(r){
-      if(!r.__falta) return r;
-      return gh("/user/repos",{method:"POST",body:JSON.stringify({
-        name:repo, private:true, auto_init:true,
-        description:"Datos privados de mi portafolio cripto"})});
-    });
-  }).then(function(){
-    guardar();
-    return sincronizar(true);
-  });
-}
-function bajarRemoto(){
-  var g=gitCfg();
-  return gh("/repos/"+g.user+"/"+g.repo+"/contents/portafolio.json").then(function(r){
-    if(r.__falta) return {datos:null, sha:null};
-    var txt;
-    try{ txt=decodeURIComponent(escape(atob((r.content||"").replace(/\n/g,"")))); }
-    catch(e){ txt=atob((r.content||"").replace(/\n/g,"")); }
-    var d=null, roto=false;
-    try{ d=JSON.parse(txt); }catch(e){ roto=true; }
-    return {datos:d, sha:r.sha, roto:roto};
-  });
-}
-function subirRemoto(sha){
-  var g=gitCfg();
-  var paquete={ops:BD.ops, fut:BD.fut, back:BD.back, pruebas:BD.pruebas, ordenes:BD.ordenes||[],
-    alertas:BD.alertas, borrados:BD.borrados||[], manuales:preciosManuales(),
-    monedas:BD.monedas, ajustes:sinClave(BD.ajustes), tema:BD.tema, sembrado:BD.sembrado,
-    equipo:nombreEquipo(), version:VERSION, guardado:Date.now()};
-  var txt=JSON.stringify(paquete,null,1);
-  var b64;
-  try{ b64=btoa(unescape(encodeURIComponent(txt))); }catch(e){ b64=btoa(txt); }
-  var cuerpo={message:"portafolio · "+nombreEquipo()+" · "+ahora(), content:b64};
-  if(sha) cuerpo.sha=sha;
-  return gh("/repos/"+g.user+"/"+g.repo+"/contents/portafolio.json",
-    {method:"PUT", body:JSON.stringify(cuerpo)});
-}
 function sinClave(a){
   var c=Object.assign({}, a||{});
   if(c.git) c.git=Object.assign({}, c.git, {token:""});   /* la clave NUNCA viaja */
@@ -8150,79 +8077,6 @@ function loQueSePierde(local, remoto, borrados){
   Object.keys(antes).forEach(function(k){ if(!queda[k]) n++; });
   return n;
 }
-function sincronizar(silencioso, reintento){
-  var g=gitCfg();
-  if(!g.token||!g.user){
-    if(!silencioso) aviso("Primero conecte su cuenta de GitHub en Configuración.",true);
-    return Promise.resolve();
-  }
-  if(SYNC.ocupado) return Promise.resolve();
-  SYNC.ocupado=true; pintarSync("trabajando");
-  return bajarRemoto().then(function(r){
-    if(r.roto) throw new Error("el archivo del repositorio no se pudo leer; no se subió nada "+
-      "para no pisar lo que tenga el otro equipo");
-    var d=r.datos;
-    if(d){
-      var bor=limpiarBorrados((BD.borrados||[]).concat(d.borrados||[]));
-      /* igual que con la cuenta: si esta mezcla va a quitarle cosas, copia
-         de rescate primero y aviso después. Nada se pierde en silencio. */
-      var pierde=loQueSePierde(BD.ops,d.ops,bor)+loQueSePierde(BD.fut,d.fut,bor)+
-                 loQueSePierde(BD.back,d.back,bor)+loQueSePierde(BD.pruebas,d.pruebas,bor);
-      if(pierde>0){
-        copiaDeRescate("sincronizar con GitHub");
-        try{ aviso("<b>Ojo:</b> al sincronizar se quitaron "+pierde+" "+
-          pal(pierde,"registro","registros")+" que estaban borrados en su otro equipo. "+
-          "Guardé una copia de rescate: en Ajustes puede volver atrás.", true); }catch(e){}
-      }
-      BD.ops=juntar(BD.ops, d.ops, bor);
-      BD.fut=juntar(BD.fut, d.fut, bor);
-      BD.back=juntar(BD.back, d.back, bor);
-      BD.pruebas=juntar(BD.pruebas, d.pruebas, bor);
-      BD.ordenes=juntar(BD.ordenes||[], d.ordenes, bor);
-      BD.alertas=juntarAlertas(BD.alertas, d.alertas, bor);
-      BD.borrados=bor;
-      if(!BD.sembrado&&d.sembrado) BD.sembrado=d.sembrado;
-      if(d.monedas) BD.monedas=Object.assign({}, d.monedas, BD.monedas);
-      /* Los ajustes se juntan CAMPO POR CAMPO, no de un bloque.
-         Antes, si el otro equipo tenía la fecha más nueva, se reemplazaba
-         TODO: le pisaba el idioma, los colores, el nombre del equipo y la
-         configuración de la nube de este aparato. Ahora solo viaja lo que
-         es suyo de verdad (cartera, riesgo, apalancamiento, comisión…) y
-         lo del aparato se queda donde está. Misma regla que en la cuenta. */
-      juntarAjustesMios(d.ajustes, d.tema, d.manuales);
-      BD.ops.sort(function(a,b){
-        var fa=a.fecha||"", fb=b.fecha||"";
-        if(fa!==fb) return fa<fb?-1:1;
-        var ia=String(a.id||""), ib=String(b.id||"");
-        return ia<ib?-1:(ia>ib?1:0);
-      });
-      /* si el otro equipo todavía tiene una versión vieja, se avisa UNA vez */
-      if(d.version && +d.version < +VERSION && !BD.ajustes.avisadoVer){
-        BD.ajustes.avisadoVer=1;
-        aviso("Su otro equipo ("+esc(d.equipo||"el otro")+") todavía tiene la versión "+
-          esc(String(d.version))+". Publíquele la "+VERSION+" desde Configuración antes de "+
-          "usar el backtesting, o esa parte no le viajará.", true);
-      }
-    }
-    if(silencioso && SYNC.firma && SYNC.firma===firmaDatos() && SYNC.sha && SYNC.sha===r.sha)
-      return null;
-    return subirRemoto(r.sha).then(function(res){
-      SYNC.firma=firmaDatos();
-      if(res&&res.content&&res.content.sha) SYNC.sha=res.content.sha;
-      return res;
-    });
-  }).then(function(){
-    SYNC.ocupado=false; SYNC.ultimo=Date.now(); SYNC.error="";
-    guardar(); repintar();
-    if(!silencioso) aviso("Sincronizado. Sus cambios están en todos sus equipos.");
-  }).catch(function(e){
-    SYNC.ocupado=false;
-    if(e&&e.codigo===409&&!reintento) return sincronizar(silencioso,true);
-    SYNC.error=String(e&&e.message||e);
-    pintarSync("mal");
-    if(!silencioso) aviso("No se pudo sincronizar: "+SYNC.error, true);
-  });
-}
 function juntarAlertas(a,b,borrados){
   var fuera={}, por={}, r=[];
   (borrados||[]).forEach(function(x){ fuera[x.id]=Math.max(fuera[x.id]||0, x.t||0); });
@@ -8236,24 +8090,6 @@ function juntarAlertas(a,b,borrados){
   Object.keys(por).forEach(function(k){ r.push(por[k]); });
   return r;
 }
-function pintarSync(estado){
-  var e=document.getElementById("sync"), t=document.getElementById("syncT");
-  if(!e||!t) return;
-  var g=gitCfg();
-  if(!g.token){ e.style.display="none"; return; }
-  e.style.display="";
-  if(estado==="trabajando"){ e.className="syn"; t.textContent="sincronizando…"; return; }
-  if(estado==="mal"||SYNC.error){ e.className="syn mal"; t.textContent="sin sincronizar"; return; }
-  e.className="syn ok";
-  t.textContent=SYNC.ultimo?("enviado "+hora(SYNC.ultimo)):"conectado";
-}
-function programarSync(){
-  clearInterval(SYNC.auto);
-  var g=gitCfg();
-  if(!g.token||!BD.ajustes.gitAuto) return;
-  SYNC.auto=setInterval(function(){ sincronizar(true); }, 90000);
-}
-
 /* =====================================================================
    22 · RESPALDO AUTOMÁTICO A UNA CARPETA DE ESTA COMPUTADORA
    ===================================================================== */
@@ -8371,40 +8207,43 @@ function guardarYSincronizar(){
   guardar();
   respaldarAhora(true);
   GUARDADO_HORA=horaYa();
-  if(!gitCfg().token){
+  var dentro=false; try{ dentro=ctaDentro(); }catch(e){}
+  if(!dentro){
     pintarBotonGuardar();
-    aviso("Guardado en este equipo · "+GUARDADO_HORA+
-      ". Para verlo en el teléfono, conecte la sincronización en Configuración.");
+    aviso("Guardado en este aparato · "+GUARDADO_HORA+
+      ". Entre con su cuenta de Google y lo verá también en sus otros aparatos.");
     return;
   }
   if(b){ b.disabled=true; b.textContent="Enviando…"; }
-  sincronizar(true).then(function(){
+  subirACuenta(true).then(function(){
     if(b) b.disabled=false;
     GUARDADO_HORA=horaYa();
     pintarBotonGuardar();
-    aviso(SYNC.error
-      ? ("Guardado aquí, pero no se pudo mandar al otro equipo: "+SYNC.error)
-      : ("Guardado y enviado · "+GUARDADO_HORA+"."), !!SYNC.error);
+    aviso("Guardado y enviado · "+GUARDADO_HORA+".");
+  }).catch(function(e){
+    if(b) b.disabled=false;
+    pintarBotonGuardar();
+    aviso("Guardado aquí, pero no se pudo mandar a su cuenta: "+((e&&e.message)||e), true);
   });
 }
 function pintarBotonGuardar(){
   var b=document.getElementById("bSave");
   if(!b) return;
   b.disabled=false;
-  var hayGit=!!gitCfg().token;
+  var dentro=false; try{ dentro=ctaDentro(); }catch(e){}
   if(!GUARDADO_HORA){
     b.className="b sm ac";
     var alla=/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent||"")
       ? "A LA COMPUTADORA" : "AL TELÉFONO";
-    b.textContent = hayGit ? ("ENVIAR "+alla) : "GUARDAR COPIA";
-    b.title = hayGit
-      ? "Todo se guarda solo en este equipo al momento. Este botón manda los cambios a sus otros equipos ahora mismo."
-      : "Todo se guarda solo en este equipo al momento. Este botón además escribe la copia en su carpeta de respaldo.";
+    b.textContent = dentro ? ("ENVIAR "+alla) : "GUARDAR COPIA";
+    b.title = dentro
+      ? "Todo se guarda solo en este aparato al momento. Este botón manda los cambios a sus otros aparatos ahora mismo."
+      : "Todo se guarda solo en este aparato al momento. Este botón además escribe la copia en su carpeta de respaldo.";
     return;
   }
   b.className="b sm vd";
-  b.textContent=(hayGit?"Enviado ":"Guardado ")+GUARDADO_HORA;
-  b.title=hayGit?"Enviado a sus otros equipos.":"Copia escrita en su carpeta.";
+  b.textContent=(dentro?"Enviado ":"Guardado ")+GUARDADO_HORA;
+  b.title=dentro?"Enviado a sus otros aparatos.":"Copia escrita en su carpeta.";
 }
 
 /* =====================================================================
@@ -8447,122 +8286,6 @@ function mostrarVersionNueva(txt){
   };
   document.getElementById("vnNo").onclick=function(){ e.className=""; };
 }
-function repoApp(){ return (BD.ajustes&&BD.ajustes.repoApp)||"cripto"; }
-function textoDeGithub(r){
-  var b=(r.content||"").replace(/\n/g,"");
-  try{ return decodeURIComponent(escape(atob(b))); }catch(e){ return atob(b); }
-}
-function buscarVersionPrograma(silencioso){
-  var g=gitCfg();
-  if(!g.token||!g.user){
-    if(!silencioso) aviso("Primero conecte su clave de GitHub.",true);
-    return Promise.resolve(null);
-  }
-  if(PROG.buscando) return Promise.resolve(null);
-  PROG.buscando=true;
-  return gh("/repos/"+g.user+"/"+repoApp()+"/contents/CRIPTO.html").then(function(r){
-    PROG.buscando=false;
-    if(r.__falta) throw new Error("no hay un CRIPTO.html en el repositorio "+repoApp());
-    var txt=textoDeGithub(r);
-    var m=txt.match(/var VERSION="([^"]+)"/);
-    PROG.remota=m?m[1]:"?";
-    PROG.txt=txt; PROG.ultima=Date.now();
-    var hayNueva=(+PROG.remota > +VERSION);
-    if(!silencioso){
-      aviso(hayNueva
-        ? ("Hay la versión "+PROG.remota+" publicada. Usted tiene la "+VERSION+".")
-        : ("Está al día: publicada la "+PROG.remota+", aquí la "+VERSION+"."));
-      if(vista==="dat") pintarDat();
-    } else if(hayNueva&&location.protocol==="file:"){
-      mostrarVersionNueva("Hay publicada la versión "+PROG.remota+" (usted tiene la "+VERSION+")");
-      var ok=document.getElementById("vnOk");
-      ok.textContent="Descargarla";
-      ok.onclick=function(){
-        document.getElementById("verNueva").className="";
-        descargarPrograma();
-      };
-    }
-    return PROG.remota;
-  }).catch(function(e){
-    PROG.buscando=false;
-    if(!silencioso) aviso("No se pudo consultar: "+(e.message||e),true);
-    return null;
-  });
-}
-function descargarPrograma(){
-  if(!PROG.txt){ aviso("Primero pulse Buscar versión nueva.",true); return; }
-  bajarArchivo("CRIPTO.html", PROG.txt, "text/html;charset=utf-8");
-  aviso("Descargado. Reemplace con él el CRIPTO.html de su carpeta y vuelva a abrir el programa.");
-}
-function leerTexto(f){
-  return new Promise(function(ok,mal){
-    var fr=new FileReader();
-    fr.onload=function(){ ok(fr.result); };
-    fr.onerror=function(){ mal(new Error("no se pudo leer "+f.name)); };
-    fr.readAsText(f);
-  });
-}
-function leerBase64(f){
-  return new Promise(function(ok,mal){
-    var fr=new FileReader();
-    fr.onload=function(){ ok(String(fr.result).split(",")[1]||""); };
-    fr.onerror=function(){ mal(new Error("no se pudo leer "+f.name)); };
-    fr.readAsDataURL(f);
-  });
-}
-function pareceDatos(txt){
-  var t=String(txt||"").replace(/^﻿/,"").trim();
-  if(t.charAt(0)!=="{"&&t.charAt(0)!=="[") return false;
-  try{
-    var d=JSON.parse(t);
-    if(!d||typeof d!=="object") return false;
-    if(Array.isArray(d.ops)||Array.isArray(d.fut)||Array.isArray(d.back)||d.ajustes||d.borrados)
-      return true;
-  }catch(e){}
-  return false;
-}
-function publicarPrograma(archivos){
-  var g=gitCfg(), repo=repoApp();
-  if(!g.token||!g.user){ aviso("Primero conecte su clave de GitHub.",true); return; }
-  var lista=[].slice.call(archivos||[]);
-  if(!lista.length) return;
-  var malos=lista.filter(function(f){ return !/\.(html|js|webmanifest|css|png|svg)$/i.test(f.name); });
-  if(malos.length){
-    aviso("Aquí solo se publica el programa (CRIPTO.html, sw.js, manifest.webmanifest y los iconos). \""+
-      esc(malos[0].name)+"\" no se sube: este repositorio es público y sus datos no pueden ir ahí.",
-      true);
-    return;
-  }
-  aviso("Publicando "+plural(lista.length,"archivo","archivos")+" en "+repo+"…");
-  var i=0, ok=[], err=[];
-  function siguiente(){
-    if(i>=lista.length){
-      if(err.length) aviso("Publicados "+ok.length+" · falló "+err.join(" · "),true);
-      else aviso("Publicado: "+ok.join(", ")+". El teléfono lo toma solo la próxima vez que "+
-        "lo abra con internet.");
-      PROG.remota=null; PROG.txt=null;
-      BD.ajustes.avisadoVer=0; guardar();
-      if(vista==="dat") pintarDat();
-      return;
-    }
-    var f=lista[i++];
-    var esImagen=/\.(png|svg)$/i.test(f.name);
-    (esImagen?leerBase64(f):leerTexto(f)).then(function(txt){
-      if(!esImagen && pareceDatos(txt)) throw new Error("parece una copia de sus datos, no el programa");
-      var ruta="/repos/"+g.user+"/"+repo+"/contents/"+encodeURIComponent(f.name);
-      return gh(ruta).then(function(r){
-        var b64;
-        if(esImagen) b64=txt;
-        else { try{ b64=btoa(unescape(encodeURIComponent(txt))); }catch(e){ b64=btoa(txt); } }
-        var cuerpo={message:"programa · "+f.name+" · "+ahora(), content:b64};
-        if(!r.__falta&&r.sha) cuerpo.sha=r.sha;
-        return gh(ruta,{method:"PUT", body:JSON.stringify(cuerpo)});
-      });
-    }).then(function(){ ok.push(f.name); siguiente(); })
-      .catch(function(e){ err.push(f.name+" ("+(e.message||e)+")"); siguiente(); });
-  }
-  siguiente();
-}
 /* =====================================================================
    29 · LA NUBE · vincular su cuenta y que los datos se guarden SOLOS
    ---------------------------------------------------------------------
@@ -8596,8 +8319,7 @@ function nubeHttps(){
 function nubeDireccion(){
   /* si ya está en internet, esa misma dirección; si no, la de su repositorio */
   if(location.protocol==="https:") return location.origin+location.pathname.replace(/[^\/]*$/,"CRIPTO.html");
-  var u=(BD.ajustes&&BD.ajustes.gitUsuario)||"alberto199408";
-  return "https://"+u+".github.io/"+repoApp()+"/portafolio/CRIPTO.html";
+  return WEB_PRIVACIDAD.replace(/privacidad\.html$/, "CRIPTO.html");
 }
 /* lo que se sube: todo menos la clave de GitHub, los logos y el historial
    de la gráfica (que se vuelve a armar solo) */
@@ -9085,8 +8807,8 @@ function panelNube(){
     '<div class="chk" style="margin-top:4px"><button type="button" data-nauto="1" class="'+
       (c.auto!==false?"on":"")+'"><span class="cj">✓</span>Subir solo cada vez que cambio algo'+
       '</button></div>'+
-    '<div class="nota">Lo que se sube es el mismo archivo <b>'+NUBE_ARCHIVO+'</b> de siempre, '+
-    'sin su clave de GitHub. Puede abrirlo, copiarlo o compartirlo desde su nube como cualquier '+
+    '<div class="nota">Lo que se sube es el mismo archivo <b>'+NUBE_ARCHIVO+'</b> de siempre. '+
+    'Puede abrirlo, copiarlo o compartirlo desde su nube como cualquier '+
     'archivo suyo. Huawei Cloud no deja que programas de fuera guarden en su nube, así que para '+
     'ese teléfono sirve Google Drive igual.</div>'+
   '</div></div>';
@@ -9255,28 +8977,6 @@ function ctaDentro(){ return !!(CTA.u && CTA.u.uid); }
 /* Google no deja entrar con una cuenta desde un archivo del disco */
 function ctaPuede(){ return nubeHttps(); }
 
-/* --- lee el bloque de claves que Google muestra, venga como venga --- */
-function leerClavesFirebase(txt){
-  if(!txt) return null;
-  var s=String(txt).trim();
-  var o=null;
-  try{ o=JSON.parse(s); }catch(e){}
-  if(!o){
-    /* el bloque que Google enseña es javascript, no json: se saca a mano */
-    var r={};
-    ["apiKey","authDomain","projectId","storageBucket",
-     "messagingSenderId","appId"].forEach(function(k){
-      var m=s.match(new RegExp(k+'\\s*:\\s*["\']([^"\']+)["\']'));
-      if(m) r[k]=m[1];
-    });
-    if(r.apiKey) o=r;
-  }
-  if(!o||!o.apiKey||!o.projectId) return null;
-  return {apiKey:o.apiKey, authDomain:o.authDomain||(o.projectId+".firebaseapp.com"),
-          projectId:o.projectId, storageBucket:o.storageBucket||"",
-          messagingSenderId:o.messagingSenderId||"", appId:o.appId||""};
-}
-
 /* --- trae la librería de Google la primera vez que hace falta --- */
 function cargarFirebase(){
   if(CTA.sdk) return Promise.resolve(CTA.sdk);
@@ -9370,12 +9070,10 @@ function salirDeCuenta(){
 }
 function mensajeCuenta(e){
   var c=(e&&e.code)||"", m=(e&&e.message)||"No se pudo.";
-  if(/auth\/unauthorized-domain/.test(c))
-    return "Esta dirección no está autorizada en Firebase. En la consola de Firebase, "+
-           "en Authentication → Settings → Dominios autorizados, agregue «"+location.hostname+"».";
-  if(/auth\/operation-not-allowed/.test(c))
-    return "En Firebase falta prender «Google» como forma de entrar (Authentication → "+
-           "Sign-in method → Google).";
+  if(/auth\/unauthorized-domain|auth\/operation-not-allowed/.test(c))
+    return "No se puede entrar con Google desde aquí. Si abrió el programa desde un archivo "+
+           "del disco, ábralo desde su dirección de internet. Si sigue igual, escríbanos a "+
+           CORREO_SOPORTE+" y lo revisamos.";
   if(/auth\/popup-closed-by-user|auth\/cancelled-popup-request/.test(c))
     return "Cerró la ventana antes de elegir la cuenta.";
   if(/auth\/network-request-failed/.test(c))
@@ -9547,7 +9245,7 @@ function bajarDeCuenta(){
 
 /* --- al entrar: se juntan lo de la cuenta y lo de este equipo ---
    Nada se pierde: de cada movimiento se queda el más reciente, y lo que
-   borró no vuelve a aparecer. Es la misma mezcla que usa GitHub. */
+   borró no vuelve a aparecer. */
 function fusionarConCuenta(silencioso){
   if(!ctaDentro()) return Promise.resolve(false);
   CTA.bajando=true; pintarCuenta();
@@ -9851,19 +9549,14 @@ function panelCuenta(){
       '<div style="display:flex;gap:9px;flex-wrap:wrap">'+
         '<button class="b vd gr" id="ctaEntra"'+(ctaPuede()?"":" disabled")+'>'+
         'Entrar con Google</button>'+
-        '<button class="b" id="ctaAyuda">¿Cómo funciona esto?</button>'+
-        /* el botón de cambiar claves solo sirve cuando se pegaron a mano */
-        ((FB_FIJA&&FB_FIJA.apiKey)?'':'<button class="b gh" id="ctaCambia">Cambiar las claves</button>')+
+        '<button class="b" id="ctaAyuda">¿Qué pasa al entrar?</button>'+
         '</div>';
   } else {
-    h+='<div class="campos"><div class="campo ancho">'+
-      '<label>Claves de Firebase <small>· se pegan una sola vez</small></label>'+
-      '<textarea id="ctaFb" rows="5" style="font-family:ui-monospace,monospace;font-size:12px" '+
-      'placeholder=\'{ "apiKey": "…", "projectId": "…", "appId": "…" }\'></textarea></div></div>'+
-      '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:10px">'+
-        '<button class="b vd" id="ctaGuardaFb">Guardar las claves</button>'+
-        '<button class="b" id="ctaAyuda">¿De dónde saco las claves?</button></div>'+
-      (CTA.error?'<div class="nota mal">'+esc(CTA.error)+'</div>':'');
+    /* No debería pasar nunca: las claves vienen dentro del programa. Pero si
+       un día faltaran, mejor decirlo que dejar la caja en blanco. */
+    h+='<div class="nota mal">No se puede entrar con una cuenta en esta copia del '+
+      'programa. Escríbanos a <b>'+esc(CORREO_SOPORTE)+'</b> y lo arreglamos. '+
+      'Mientras tanto la aplicación funciona igual, guardando en este aparato.</div>';
   }
   return h+'</div></div>';
 }
@@ -9892,89 +9585,40 @@ function engancharCuenta(box){
     programarCuenta();
     if(c.auto!==false) subirACuenta(false);
   };
-  if((x=box.querySelector("#ctaCambia"))) x.onclick=function(){
-    confirmar("Cambiar las claves de Firebase",
-      "Se borran las claves de este equipo y vuelve a salir la casilla para pegar otras. "+
-      "Sus datos no se tocan.", "Cambiarlas", function(){
-        var c=ctaCfg(); c.fb=null; guardar(); CTA.sdk=null; CTA.arrancado=false;
-        pintarCuenta();
-      }, true);
-  };
-  if((x=box.querySelector("#ctaGuardaFb"))) x.onclick=function(){
-    var t=(box.querySelector("#ctaFb")||{}).value||"";
-    var cl=leerClavesFirebase(t);
-    if(!cl){
-      CTA.error="Eso no son las claves. Copie el bloque completo que le muestra Firebase, "+
-        "desde la llave que abre hasta la que cierra.";
-      pintarCuenta(); return;
-    }
-    var c=ctaCfg(); c.fb=cl; guardar();
-    CTA.error=""; CTA.sdk=null; CTA.arrancado=false;
-    pintarCuenta();
-    aviso("Claves guardadas. Ahora pulse «Entrar con Google».");
-    arrancarCuenta();
-  };
 }
 
-/* --- la ayuda: el paso a paso, dentro del propio programa --- */
+/* Qué le hace la cuenta a USTED. Antes aquí había una guía para montar un
+   proyecto de Firebase: eso es cosa del que hace el programa, no del que lo
+   usa. Las claves vienen puestas de fábrica. */
 function ayudaCuenta(){
-  var dom=location.hostname||"su dirección";
-  abrir('<div class="hoja ancha"><div class="hh"><h3>Su cuenta, paso a paso</h3>'+
+  abrir('<div class="hoja ancha"><div class="hh"><span class="ic">'+IC.escudo+'</span>'+
+    '<h3>¿Qué pasa al entrar con Google?</h3>'+
     '<button class="x" data-cerrar>×</button></div><div class="hb">'+
 
-    '<div class="fsec" style="margin-top:0">Qué es esto</div>'+
-    '<p class="mut">Firebase es una página de Google donde se crea la bodega en la que viven '+
-    'los datos. Usted no programa nada: entra, pulsa botones y al final copia un bloque de '+
-    'texto que pega aquí. Son unos 15 minutos y es gratis para empezar.</p>'+
+    '<div class="fsec">Lo corto</div>'+
+    '<p class="mut">Sus movimientos dejan de estar solo en este aparato y quedan guardados '+
+    'en su cuenta. Si cambia de teléfono, entra con el mismo correo y aparece todo.</p>'+
 
-    '<div class="fsec">Paso 1 · crear el proyecto</div>'+
-    '<ol class="pasos"><li>Entre a <b>console.firebase.google.com</b> con su Gmail.</li>'+
-    '<li>Pulse <b>Crear un proyecto</b> y póngale un nombre, por ejemplo <b>Portafolio Cripto</b>.</li>'+
-    '<li>Si le pregunta por Google Analytics, puede decir que no. No hace falta.</li></ol>'+
+    '<div class="fsec">Qué se guarda</div>'+
+    '<ul class="pasos">'+
+      '<li>Su <b>correo, nombre y foto</b> de Google, para saber que es usted.</li>'+
+      '<li>Lo que usted registra: spot, futuros, backtesting, alertas y sus ajustes.</li>'+
+    '</ul>'+
 
-    '<div class="fsec">Paso 2 · prender la entrada con Google</div>'+
-    '<ol class="pasos"><li>En el menú de la izquierda busque <b>Authentication</b> y pulse '+
-    '<b>Comenzar</b>.</li>'+
-    '<li>En la lista elija <b>Google</b>, prenda el interruptor, escriba un correo de contacto '+
-    'y guarde.</li>'+
-    '<li>Entre a <b>Settings</b> → <b>Dominios autorizados</b> y agregue <b>'+esc(dom)+'</b>.</li></ol>'+
+    '<div class="fsec">Quién puede verlo</div>'+
+    '<p class="mut"><b>Solo usted.</b> Las reglas del servidor no dejan que nadie lea ni '+
+    'escriba el documento de otra persona. Todo viaja cifrado.</p>'+
 
-    '<div class="fsec">Paso 3 · crear la bodega</div>'+
-    '<ol class="pasos"><li>En el menú busque <b>Firestore Database</b> y pulse <b>Crear base '+
-    'de datos</b>.</li>'+
-    '<li>Elija <b>modo producción</b> y la región que le quede más cerca.</li>'+
-    '<li>Entre a la pestaña <b>Reglas</b>, borre lo que hay y pegue esto tal cual:</li></ol>'+
-    '<pre class="codigo">rules_version = \'2\';\nservice cloud.firestore {\n'+
-    '  match /databases/{database}/documents {\n'+
-    '    match /portafolios/{uid} {\n'+
-    '      allow read, write: if request.auth != null\n'+
-    '                         &amp;&amp; request.auth.uid == uid;\n'+
-    '    }\n  }\n}</pre>'+
-    '<p class="mut">Esas tres líneas son las que hacen que <b>cada persona solo pueda ver lo '+
-    'suyo</b>. Sin ellas cualquiera podría leer los datos de los demás. Pulse <b>Publicar</b>.</p>'+
+    '<div class="fsec">Si no quiere cuenta</div>'+
+    '<p class="mut">No pasa nada: la aplicación funciona igual de completa sin entrar. '+
+    'Sus datos se quedan en este aparato y no salen de aquí. Lo único que pierde es que '+
+    'lo sigan al cambiar de teléfono.</p>'+
 
-    '<div class="fsec">Paso 4 · copiar las claves</div>'+
-    '<ol class="pasos"><li>Arriba a la izquierda pulse la <b>rueda dentada</b> → '+
-    '<b>Configuración del proyecto</b>.</li>'+
-    '<li>Baje hasta <b>Tus apps</b> y pulse el icono de <b>web</b> (dice <b>&lt;/&gt;</b>).</li>'+
-    '<li>Póngale un apodo, no marque hosting, y pulse registrar.</li>'+
-    '<li>Le muestra un bloque que empieza por <b>const firebaseConfig = {</b>. Copie desde la '+
-    'llave que abre hasta la que cierra y péguelo en la casilla de aquí atrás.</li></ol>'+
-
-    '<div class="fsec">¿Y esas claves no son peligrosas?</div>'+
-    '<p class="mut">No. Google las deja a la vista en toda página que use Firebase: están '+
-    'hechas para ser públicas. Lo que protege los datos son las reglas del paso 3. Su clave de '+
-    'GitHub, esa sí es secreta, y nunca sale de este equipo.</p>'+
+    '<div class="nota">'+enlacePrivacidad("Lea la política de privacidad")+
+    ' — está todo escrito ahí, con nombres y apellidos.</div>'+
 
     '</div><div class="hf"><button class="b ac" data-cerrar>Entendido</button></div></div>');
 }
-
-/* =====================================================================
-   22b · LA PANTALLA DE BIENVENIDA
-   Lo primero que ve quien abre la aplicación por primera vez: el nombre,
-   un botón grande para entrar con Google, y debajo, más chiquito, la
-   opción de usarla sin cuenta. Sale una sola vez.
-   ===================================================================== */
 function vioBienvenida(){ return !!BD.ajustes.vioBienvenida; }
 function cerrarBienvenida(comoEntro){
   BD.ajustes.vioBienvenida=Date.now();
@@ -10381,7 +10025,6 @@ function pintarDat(){
     '<div class="cp">'+resumenGuardado()+'</div>'+
     '<div class="grupoIn">'+
       panelCuenta()+
-      panelSync()+
       panelNube().replace('<div class="caja">','<div class="caja" id="nubeCaja">')+
       panelRespaldo()+
       cajaCopias()+
@@ -10421,7 +10064,11 @@ function prepararInstalar(){
 }
 function yaInstalado(){
   try{
+    /* dentro de la aplicación de la tienda (TWA) el navegador no siempre dice
+       «standalone», pero sí deja su huella en el referrer */
+    if(String(document.referrer||"").indexOf("android-app://")===0) return true;
     return (window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)||
+           (window.matchMedia&&window.matchMedia("(display-mode: fullscreen)").matches)||
            navigator.standalone===true;
   }catch(e){ return false; }
 }
@@ -10454,8 +10101,8 @@ function instalarApp(){
 function bloqueInstalar(){
   if(yaInstalado())
     return '<div class="nota">Está corriendo como <b>aplicación instalada</b>. '+
-      'Esta es la misma aplicación en la computadora y en el teléfono, y las dos comparten '+
-      'la información por la sincronización.</div>';
+      'Entrando con su cuenta de Google, la computadora y el teléfono comparten '+
+      'la misma información.</div>';
   if(location.protocol==="file:")
     return '<div class="nota">Está corriendo <b>CRIPTO.html</b> como <b>programa portable</b>: '+
       'ese archivo solo, sin nada al lado, ya trae todo adentro — los iconos, los dibujos y el '+
@@ -10470,43 +10117,9 @@ function bloqueInstalar(){
     'sin barra de direcciones. Los dos comparten la misma información.</div>';
 }
 function panelPrograma(){
-  var g=gitCfg(), enPc=(location.protocol==="file:");
-  var hayNueva=PROG.remota&&(+PROG.remota>+VERSION);
   return '<div class="caja"><h2><span class="ic">'+IC.doc+'</span>El programa'+
-    '<span class="sp"></span><span class="chip a">versión '+esc(VERSION)+'</span></h2><div class="cp">'+
-    '<div class="fcalc">Está corriendo la <b>versión '+esc(VERSION)+'</b> '+
-      (enPc?'desde el archivo de esta computadora'
-           :'desde internet · el teléfono toma la versión nueva solo, la próxima vez que lo abra')+
-      (PROG.remota?' · publicada en su repositorio: <b'+(hayNueva?' class="dn"':'')+'>versión '+
-        esc(PROG.remota)+'</b>':'')+'</div>'+
-    (hayNueva
-      ? '<div class="nota ojo"><b>Hay una versión más nueva publicada.</b> '+
-        (enPc?'Descárguela y reemplace con ella el CRIPTO.html de esta carpeta.'
-             :'Cierre y vuelva a abrir la aplicación.')+'</div>'
-      : '')+
-    (g.token
-      ? '<div class="campos" style="margin-top:12px">'+
-          '<div class="campo ancho"><label>Repositorio público donde vive el programa</label>'+
-          '<input id="pgRepo" style="font-family:inherit" value="'+esc(repoApp())+
-          '" placeholder="cripto"></div></div>'+
-        '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px">'+
-          '<button class="b ac" id="pgSubir">Publicar para el teléfono</button>'+
-          '<button class="b" id="pgVer">Buscar versión nueva</button>'+
-          (hayNueva&&enPc?'<button class="b" id="pgBajar">Descargar la versión '+
-            esc(PROG.remota)+'</button>':'')+
-          '<input type="file" id="pgArch" accept=".html,.js,.webmanifest,.css" multiple '+
-          'style="display:none"></div>'+
-        '<div class="nota"><b>Publicar</b> sube al repositorio <b>'+esc(repoApp())+
-        '</b> los archivos que elija (CRIPTO.html, sw.js, manifest.webmanifest) sin que usted '+
-        'tenga que entrar a github.com — también los iconos (icono-192.png, icono-512.png). Después de publicar, el teléfono se actualiza solo.'+
-        '<br><br><b>Ese repositorio es público.</b> Aquí solo entra el programa: las copias de '+
-        'sus datos (.json) están bloqueadas, por extensión y por contenido. Sus movimientos '+
-        'viajan por el repositorio privado, que es otro.</div>'+
-        '<div class="nota ojo"><b>Importante al cambiar de versión:</b> actualice los DOS equipos. '+
-        'Si la computadora ya tiene la '+esc(VERSION)+' y el teléfono se queda con una más vieja, '+
-        'el teléfono al sincronizar sube el archivo sin la parte de backtesting y se la borra.</div>'
-      : '<div class="nota">Conecte su clave de GitHub más abajo y desde aquí podrá publicar el '+
-        'programa para el teléfono sin entrar a github.com.</div>')+
+    '<span class="sp"></span><span class="chip a">versión '+esc(VERSION)+'</span></h2>'+
+    '<div class="cp">'+
     bloqueInstalar()+
     '<div class="nota">'+enlacePrivacidad("Lea la política de privacidad")+
     ' — qué se guarda, dónde y quién puede verlo.</div>'+
@@ -10527,56 +10140,6 @@ function panelRespaldo(){
       (RESP.handle?'<button class="b" id="rYa">Respaldar ahora</button>'+
                    '<button class="b rj" id="rNo">Apagar</button>':'')+
     '</div></div></div>';
-}
-function panelSync(){
-  var g=gitCfg();
-  if(!g.token){
-    return '<div class="caja"><h2><span class="ic">'+IC.banco+'</span>Sincronizar teléfono y '+
-      'computadora</h2><div class="cp">'+
-      '<p class="mut" style="margin:0 0 12px">Sus datos se guardan en un repositorio '+
-      '<b>privado suyo</b> de GitHub — gratis y nadie más lo ve. Lo conecta una vez en cada '+
-      'equipo y los cambios viajan solos.</p>'+
-      '<ol class="pasos">'+
-        '<li>Cree una cuenta gratis en <b>github.com</b> si no tiene.</li>'+
-        '<li>Entre a <b>Settings → Developer settings → Personal access tokens → '+
-          'Tokens (classic)</b> y pulse <b>Generate new token (classic)</b>.</li>'+
-        '<li>Marque solo la casilla <b>repo</b>, genere el token y cópielo.</li>'+
-        '<li>Péguelo aquí abajo. Repita el mismo token en su teléfono.</li>'+
-      '</ol>'+
-      '<div class="campos" style="margin-top:12px">'+
-        '<div class="campo ancho"><label>Clave de GitHub (token)</label>'+
-          '<input id="gTok" placeholder="ghp_..." autocomplete="off"></div>'+
-        '<div class="campo"><label>Nombre de este equipo</label>'+
-          '<input id="gEq" style="font-family:inherit" placeholder="'+esc(nombreEquipo())+
-          '" value="'+esc(BD.ajustes.equipo||"")+'"></div>'+
-      '</div>'+
-      '<div style="margin-top:12px"><button class="b ac" id="gConn">Conectar</button></div>'+
-      '<div class="nota">La clave se guarda solo en este equipo y nunca se sube al repositorio, '+
-      'ni a las copias, ni al respaldo de la carpeta.</div>'+
-    '</div></div>';
-  }
-  return '<div class="caja"><h2><span class="ic">'+IC.banco+'</span>Sincronización'+
-    '<span class="sp"></span><span class="chip '+(SYNC.error?"s":"l")+'">'+
-    (SYNC.error?"con problema":"conectada")+'</span></h2><div class="cp">'+
-    '<div class="fcalc">Cuenta <b>'+esc(g.user||"?")+'</b> · repositorio privado <b>'+
-      esc(g.repo||"portafolio-cripto")+'</b> · este equipo es <b>'+esc(nombreEquipo())+'</b>'+
-      (SYNC.ultimo?' · última vez '+hora(SYNC.ultimo):'')+
-      (SYNC.error?'<br><span class="dn">'+esc(SYNC.error)+'</span>':'')+'</div>'+
-    '<div class="campos" style="margin-top:12px">'+
-      '<div class="campo"><label>Sincronizar solo</label><select id="gAuto">'+
-        '<option value="1"'+(BD.ajustes.gitAuto?" selected":"")+'>Sí, cada minuto y medio</option>'+
-        '<option value="0"'+(!BD.ajustes.gitAuto?" selected":"")+'>No, solo cuando yo pulse</option>'+
-      '</select></div>'+
-      '<div class="campo"><label>Nombre de este equipo</label>'+
-        '<input id="gEq2" style="font-family:inherit" value="'+esc(BD.ajustes.equipo||"")+
-        '" placeholder="'+esc(nombreEquipo())+'"></div>'+
-    '</div>'+
-    '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px">'+
-      '<button class="b ac" id="gSync">Sincronizar ahora</button>'+
-      '<button class="b" id="gDesc">Desconectar este equipo</button></div>'+
-    '<div class="nota">Al sincronizar se juntan los cambios de los dos equipos: de cada '+
-    'movimiento queda el más reciente, y lo que borró no vuelve a aparecer.</div>'+
-  '</div></div>';
 }
 function engancharDat(box){
   var x;
@@ -10646,24 +10209,6 @@ function engancharDat(box){
     BD.ajustes.meta=(v!=null&&v>0)?v:0; guardar();
     aviso(BD.ajustes.meta?("Meta puesta en "+usd(BD.ajustes.meta)+"."):"Meta quitada.");
   });
-  /* --- programa --- */
-  var pgR=box.querySelector("#pgRepo");
-  if(pgR) pgR.addEventListener("change", function(){
-    BD.ajustes.repoApp=pgR.value.trim()||"cripto";
-    PROG.remota=null; PROG.txt=null; guardar(); pintarDat();
-  });
-  var pgS=box.querySelector("#pgSubir"), pgA=box.querySelector("#pgArch");
-  if(pgS&&pgA){
-    pgS.onclick=function(){ pgA.value=""; pgA.click(); };
-    pgA.onchange=function(){ publicarPrograma(pgA.files); pgA.value=""; };
-  }
-  if((x=box.querySelector("#pgVer"))) x.onclick=function(){
-    var b=x; b.disabled=true; b.textContent="Consultando…";
-    buscarVersionPrograma(false).then(function(){
-      b.disabled=false; b.textContent="Buscar versión nueva";
-    });
-  };
-  if((x=box.querySelector("#pgBajar"))) x.onclick=descargarPrograma;
   /* --- respaldo --- */
   if((x=box.querySelector("#rEleg"))) x.onclick=elegirCarpetaRespaldo;
   if((x=box.querySelector("#rYa"))) x.onclick=function(){
@@ -10673,38 +10218,6 @@ function engancharDat(box){
     });
   };
   if((x=box.querySelector("#rNo"))) x.onclick=apagarRespaldo;
-  /* --- sincronización --- */
-  var bConn=box.querySelector("#gConn");
-  if(bConn) bConn.onclick=function(){
-    var t=box.querySelector("#gTok").value.trim();
-    if(!t){ aviso("Pegue la clave.",true); return; }
-    var eq=box.querySelector("#gEq").value.trim();
-    if(eq) BD.ajustes.equipo=eq;
-    bConn.disabled=true; bConn.textContent="Conectando…";
-    conectarGit(t).then(function(){
-      BD.ajustes.gitAuto=true; guardar(); programarSync(); repintar();
-      aviso("Conectado. Ponga la misma clave en su otro equipo.");
-    }).catch(function(e){
-      BD.ajustes.git={}; guardar();
-      bConn.disabled=false; bConn.textContent="Conectar";
-      aviso("No se pudo conectar: "+(e.message||e), true);
-    });
-  };
-  if((x=box.querySelector("#gSync"))) x.onclick=function(){ sincronizar(false); };
-  if((x=box.querySelector("#gAuto"))) x.onchange=function(){
-    BD.ajustes.gitAuto=this.value==="1"; guardar(); programarSync();
-    aviso(BD.ajustes.gitAuto?"Se sincronizará solo.":"Solo cuando usted pulse.");
-  };
-  if((x=box.querySelector("#gEq2"))) x.onchange=function(){
-    BD.ajustes.equipo=this.value.trim(); guardar();
-  };
-  if((x=box.querySelector("#gDesc"))) x.onclick=function(){
-    confirmar("Desconectar","Este equipo deja de sincronizar. Sus datos siguen aquí y también "+
-      "en el repositorio.","Desconectar", function(){
-        BD.ajustes.git={}; BD.ajustes.gitAuto=false; guardar();
-        clearInterval(SYNC.auto); repintar(); aviso("Desconectado.");
-      });
-  };
   /* --- copias --- */
   if((x=box.querySelector("#dBaja"))) x.onclick=descargarCopia;
   if((x=box.querySelector("#dComp"))) x.onclick=compartirCopia;
@@ -10747,9 +10260,8 @@ function resumenGuardado(){
       '<span class="pt2">'+(ok?"✓":"·")+'</span>'+
       '<div><b>'+esc(titulo)+'</b><i>'+esc(dicho)+'</i></div></div>';
   }
-  var dentro=false, hayGit=false, hayNube=false, hayCarpeta=false;
+  var dentro=false, hayNube=false, hayCarpeta=false;
   try{ dentro=ctaDentro(); }catch(e){}
-  try{ hayGit=!!(gitCfg()&&gitCfg().token); }catch(e){}
   try{ hayNube=nubeEncendida(); }catch(e){}
   try{ hayCarpeta=!!(BD.ajustes.carpeta||CARPETA&&CARPETA.mango); }catch(e){}
   return '<p class="mut" style="margin:0 0 12px">Lo más cómodo es entrar con su cuenta de '+
@@ -10758,7 +10270,6 @@ function resumenGuardado(){
     '<div class="lugares">'+
       punto(true, "Este aparato", "siempre, aunque se quede sin internet")+
       punto(dentro, "Su cuenta de Google", dentro?"entrando con su correo":"sin entrar todavía")+
-      punto(hayGit, "Entre sus equipos", hayGit?"por GitHub":"sin configurar")+
       punto(hayCarpeta||hayNube, "Una carpeta suya", (hayCarpeta||hayNube)?"copia automática":"sin configurar")+
     '</div>';
 }
@@ -10951,7 +10462,7 @@ function numEs(n,dec){
 function descargarCopia(){
   var c=Object.assign({}, BD, {ajustes:sinClave(BD.ajustes), logos:{}, histTot:[]});
   bajarArchivo("portafolio-"+hoy()+".json", JSON.stringify(c,null,1));
-  aviso("Copia descargada. No lleva su clave de GitHub.");
+  aviso("Copia descargada.");
 }
 /* manda la copia por el menú de compartir del teléfono (Drive, Gmail, WhatsApp…) */
 function compartirCopia(){
@@ -10999,10 +10510,9 @@ function aplicarCopia(d){
           L.forEach(function(o){ o.mod=t; if(o.id) vivos[o.id]=1; });
         });
         BD.borrados=(BD.borrados||[]).filter(function(x){ return !vivos[x.id]; });
-        SYNC.firma=""; SYNC.sha="";
         guardar(); aplicarTema(); programarPrecios(); programarMarca();
         repintar(); traerPrecios(true); conectarVivo();
-        if(gitCfg().token) sincronizar(true);
+        try{ if(ctaDentro()) subirACuenta(true); }catch(e){}
         aviso("Portafolio restaurado · "+plural(BD.ops.length,"movimiento","movimientos")+", "+
           plural(BD.fut.length,"futuro","futuros")+" y "+BD.back.length+" de prueba.");
 }
@@ -11026,7 +10536,7 @@ function restaurarCopia(ev){
       ((d.fut&&d.fut.length)||0)+"</b> "+pal((d.fut&&d.fut.length)||0,"operación","operaciones")+" de futuros, <b>"+
       ((d.pruebas&&d.pruebas.length)||0)+"</b> "+pal((d.pruebas&&d.pruebas.length)||0,"prueba","pruebas")+" y <b>"+
       ((d.alertas&&d.alertas.length)||0)+"</b> "+pal((d.alertas&&d.alertas.length)||0,"alerta","alertas")+". Reemplaza lo que hay ahora. "+
-      "Su clave de GitHub no se toca, y lo que traiga la copia manda sobre el otro equipo.",
+      "Lo que traiga la copia manda sobre lo que haya en sus otros aparatos.",
       "Restaurar", function(){ aplicarCopia(d); });
     ev.target.value="";
   };
@@ -11246,7 +10756,6 @@ function repintarCabecera(){
   var s=document.getElementById("subt");
   if(s) s.textContent=SUBTIT[vista]||"";
   pintarPulso();
-  try{ pintarSync(); }catch(e){}
   pintarMenu();
   try{
     var S=carteraSpot(), F=carteraFut(BD.fut), D=efectivoDet();
@@ -11326,27 +10835,17 @@ function arrancar(){
   SP.casa=BD.ajustes.casa||"BINANCE";
   FU.fecha=hoy();
   try{ programarMarca(); }catch(e){}
-  try{ programarSync(); }catch(e){}
   try{ reconectarRespaldo(); }catch(e){}
   try{ registrarAyudante(); }catch(e){}
   try{ aplicarIdioma(false); }catch(e){}
   try{ arrancarNube(); }catch(e){}
   try{ arrancarCuenta(); }catch(e){}
   try{ prepararInstalar(); }catch(e){}
-  setTimeout(function(){
-    try{
-      if(gitCfg().token && (Date.now()-(+BD.ajustes.verChk||0))>86400000){
-        BD.ajustes.verChk=Date.now(); guardar();
-        buscarVersionPrograma(true);
-      }
-    }catch(e){}
-  }, 6000);
   /* «Actualizar» trae los precios Y lo que haya cambiado en su otro equipo:
      antes solo traía los precios y eso confundía. */
   document.getElementById("bRef").onclick=function(){
     traerPrecios(false); conectarVivo();
     try{ if(ctaDentro()) fusionarConCuenta(true); }catch(e){}
-    try{ if(gitCfg().token) sincronizar(true); }catch(e){}
   };
   document.getElementById("bSave").onclick=guardarYSincronizar;
   pintarBotonGuardar();
@@ -12587,7 +12086,38 @@ DIC.en={
 /* v28 · correr la gráfica hacia atrás */
 "⟶ ahora":"⟶ now",
 "Volver al momento de ahora":"Back to the present",
-"Corra la gráfica con el dedo para ver lo de antes.":"Drag the chart with your finger to see what came before."
+"Corra la gráfica con el dedo para ver lo de antes.":"Drag the chart with your finger to see what came before.",
+/* v29 · fuera GitHub, la ayuda reescrita para quien usa */
+"¿Qué pasa al entrar?":"What happens when I sign in?",
+"¿Qué pasa al entrar con Google?":"What happens when you sign in with Google?",
+"Lo corto":"The short version",
+"Sus movimientos dejan de estar solo en este aparato y quedan guardados en su cuenta. Si cambia de teléfono, entra con el mismo correo y aparece todo.":"Your records stop living only on this device and are kept in your account. Change phone, sign in with the same address, and everything is there.",
+"Qué se guarda":"What is stored",
+"correo, nombre y foto":"email, name and photo",
+"de Google, para saber que es usted.":"from Google, to know it is you.",
+"Lo que usted registra: spot, futuros, backtesting, alertas y sus ajustes.":"What you record: spot, futures, backtesting, alerts and your settings.",
+"Quién puede verlo":"Who can see it",
+"Solo usted.":"Only you.",
+"Las reglas del servidor no dejan que nadie lea ni escriba el documento de otra persona. Todo viaja cifrado.":"The server rules do not let anyone read or write another person's document. Everything travels encrypted.",
+"Si no quiere cuenta":"If you do not want an account",
+"No pasa nada: la aplicación funciona igual de completa sin entrar. Sus datos se quedan en este aparato y no salen de aquí. Lo único que pierde es que lo sigan al cambiar de teléfono.":"That is fine: the app works just as fully without signing in. Your data stays on this device and never leaves. The only thing you lose is having it follow you to a new phone.",
+"— está todo escrito ahí, con nombres y apellidos.":"— it is all written there, in black and white.",
+"Guardado en este aparato · #:# Entre con su cuenta de Google y lo verá también en sus otros aparatos.":"Saved on this device · #:# Sign in with your Google account and you will see it on your other devices too.",
+"Guardado #:#":"Saved #:#",
+"Todo se guarda solo en este aparato al momento. Este botón manda los cambios a sus otros aparatos ahora mismo.":"Everything saves by itself on this device, right away. This button sends the changes to your other devices now.",
+"Todo se guarda solo en este aparato al momento. Este botón además escribe la copia en su carpeta de respaldo.":"Everything saves by itself on this device, right away. This button also writes the copy into your backup folder.",
+"de siempre. Puede abrirlo, copiarlo o compartirlo desde su nube como cualquier archivo suyo. Huawei Cloud no deja que programas de fuera guarden en su nube, así que para ese teléfono sirve Google Drive igual.":"as always. You can open it, copy it or share it from your cloud like any file of yours. Huawei Cloud does not let outside programs write to it, so for that phone Google Drive works just as well.",
+"entrando con su correo":"signed in with your address",
+"No se puede entrar con Google desde aquí. Si abrió el programa desde un archivo del disco, ábralo desde su dirección de internet. Si sigue igual, escríbanos a":"You cannot sign in with Google from here. If you opened the program from a file on disk, open it from its internet address instead. If it still fails, write to us at",
+"Copia descargada.":"Copy downloaded.",
+"Lo que traiga la copia manda sobre lo que haya en sus otros aparatos.":"What the copy brings wins over whatever is on your other devices.",
+"Entrando con su cuenta de Google, la computadora y el teléfono comparten la misma información.":"Signing in with your Google account, the computer and the phone share the same information.",
+"Guardado y enviado · #:#.":"Saved and sent · #:#.",
+"Guardado aquí, pero no se pudo mandar a su cuenta:":"Saved here, but it could not be sent to your account:",
+"Enviado a sus otros aparatos.":"Sent to your other devices.",
+"No se puede entrar con una cuenta en esta copia del programa. Escríbanos a":"You cannot sign in with an account in this copy of the program. Write to us at",
+"y lo arreglamos. Mientras tanto la aplicación funciona igual, guardando en este aparato.":"and we will fix it. Meanwhile the app works just the same, saving on this device.",
+"Copia escrita en su carpeta.":"Copy written to your folder."
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
@@ -13624,7 +13154,38 @@ DIC.pt={
 /* v28 · correr la gráfica hacia atrás */
 "⟶ ahora":"⟶ agora",
 "Volver al momento de ahora":"Voltar ao momento de agora",
-"Corra la gráfica con el dedo para ver lo de antes.":"Arraste o gráfico com o dedo para ver o que veio antes."
+"Corra la gráfica con el dedo para ver lo de antes.":"Arraste o gráfico com o dedo para ver o que veio antes.",
+/* v29 · fuera GitHub, la ayuda reescrita para quien usa */
+"¿Qué pasa al entrar?":"O que acontece ao entrar?",
+"¿Qué pasa al entrar con Google?":"O que acontece ao entrar com o Google?",
+"Lo corto":"O resumo",
+"Sus movimientos dejan de estar solo en este aparato y quedan guardados en su cuenta. Si cambia de teléfono, entra con el mismo correo y aparece todo.":"Os seus registos deixam de estar só neste aparelho e ficam guardados na sua conta. Se mudar de telemóvel, entra com o mesmo email e aparece tudo.",
+"Qué se guarda":"O que se guarda",
+"correo, nombre y foto":"email, nome e foto",
+"de Google, para saber que es usted.":"do Google, para saber que é você.",
+"Lo que usted registra: spot, futuros, backtesting, alertas y sus ajustes.":"O que você regista: spot, futuros, backtesting, alertas e os seus ajustes.",
+"Quién puede verlo":"Quem o pode ver",
+"Solo usted.":"Só você.",
+"Las reglas del servidor no dejan que nadie lea ni escriba el documento de otra persona. Todo viaja cifrado.":"As regras do servidor não deixam ninguém ler nem escrever o documento de outra pessoa. Tudo viaja cifrado.",
+"Si no quiere cuenta":"Se não quiser conta",
+"No pasa nada: la aplicación funciona igual de completa sin entrar. Sus datos se quedan en este aparato y no salen de aquí. Lo único que pierde es que lo sigan al cambiar de teléfono.":"Não faz mal: a aplicação funciona igualmente completa sem entrar. Os seus dados ficam neste aparelho e não saem daqui. A única coisa que perde é que o sigam ao mudar de telemóvel.",
+"— está todo escrito ahí, con nombres y apellidos.":"— está tudo escrito lá, com todas as letras.",
+"Guardado en este aparato · #:# Entre con su cuenta de Google y lo verá también en sus otros aparatos.":"Guardado neste aparelho · #:# Entre com a sua conta Google e vê-lo-á também nos seus outros aparelhos.",
+"Guardado #:#":"Guardado #:#",
+"Todo se guarda solo en este aparato al momento. Este botón manda los cambios a sus otros aparatos ahora mismo.":"Tudo se guarda sozinho neste aparelho, na hora. Este botão manda as alterações para os seus outros aparelhos agora mesmo.",
+"Todo se guarda solo en este aparato al momento. Este botón además escribe la copia en su carpeta de respaldo.":"Tudo se guarda sozinho neste aparelho, na hora. Este botão escreve além disso a cópia na sua pasta de backup.",
+"de siempre. Puede abrirlo, copiarlo o compartirlo desde su nube como cualquier archivo suyo. Huawei Cloud no deja que programas de fuera guarden en su nube, así que para ese teléfono sirve Google Drive igual.":"de sempre. Pode abri-lo, copiá-lo ou partilhá-lo a partir da sua nuvem como qualquer ficheiro seu. A Huawei Cloud não deixa que programas de fora guardem na sua nuvem, por isso para esse telemóvel serve o Google Drive na mesma.",
+"entrando con su correo":"entrando com o seu email",
+"No se puede entrar con Google desde aquí. Si abrió el programa desde un archivo del disco, ábralo desde su dirección de internet. Si sigue igual, escríbanos a":"Não é possível entrar com o Google a partir daqui. Se abriu o programa a partir de um ficheiro do disco, abra-o pelo seu endereço de internet. Se continuar igual, escreva-nos para",
+"Copia descargada.":"Cópia descarregada.",
+"Lo que traiga la copia manda sobre lo que haya en sus otros aparatos.":"O que a cópia trouxer manda sobre o que houver nos seus outros aparelhos.",
+"Entrando con su cuenta de Google, la computadora y el teléfono comparten la misma información.":"Entrando com a sua conta Google, o computador e o telemóvel partilham a mesma informação.",
+"Guardado y enviado · #:#.":"Guardado e enviado · #:#.",
+"Guardado aquí, pero no se pudo mandar a su cuenta:":"Guardado aqui, mas não se conseguiu enviar para a sua conta:",
+"Enviado a sus otros aparatos.":"Enviado para os seus outros aparelhos.",
+"No se puede entrar con una cuenta en esta copia del programa. Escríbanos a":"Não é possível entrar com uma conta nesta cópia do programa. Escreva-nos para",
+"y lo arreglamos. Mientras tanto la aplicación funciona igual, guardando en este aparato.":"e nós resolvemos. Entretanto a aplicação funciona na mesma, guardando neste aparelho.",
+"Copia escrita en su carpeta.":"Cópia escrita na sua pasta."
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
@@ -14661,7 +14222,38 @@ DIC.fr={
 /* v28 · correr la gráfica hacia atrás */
 "⟶ ahora":"⟶ maintenant",
 "Volver al momento de ahora":"Revenir au moment présent",
-"Corra la gráfica con el dedo para ver lo de antes.":"Faites glisser le graphique avec le doigt pour voir ce qui précède."
+"Corra la gráfica con el dedo para ver lo de antes.":"Faites glisser le graphique avec le doigt pour voir ce qui précède.",
+/* v29 · fuera GitHub, la ayuda reescrita para quien usa */
+"¿Qué pasa al entrar?":"Que se passe-t-il à la connexion ?",
+"¿Qué pasa al entrar con Google?":"Que se passe-t-il quand vous entrez avec Google ?",
+"Lo corto":"En bref",
+"Sus movimientos dejan de estar solo en este aparato y quedan guardados en su cuenta. Si cambia de teléfono, entra con el mismo correo y aparece todo.":"Vos enregistrements ne vivent plus seulement sur cet appareil : ils sont gardés dans votre compte. Changez de téléphone, entrez avec la même adresse, et tout est là.",
+"Qué se guarda":"Ce qui est conservé",
+"correo, nombre y foto":"adresse, nom et photo",
+"de Google, para saber que es usted.":"de Google, pour savoir que c'est bien vous.",
+"Lo que usted registra: spot, futuros, backtesting, alertas y sus ajustes.":"Ce que vous notez : spot, futures, backtesting, alertes et vos réglages.",
+"Quién puede verlo":"Qui peut le voir",
+"Solo usted.":"Vous seul.",
+"Las reglas del servidor no dejan que nadie lea ni escriba el documento de otra persona. Todo viaja cifrado.":"Les règles du serveur ne laissent personne lire ou écrire le document d'autrui. Tout circule chiffré.",
+"Si no quiere cuenta":"Si vous ne voulez pas de compte",
+"No pasa nada: la aplicación funciona igual de completa sin entrar. Sus datos se quedan en este aparato y no salen de aquí. Lo único que pierde es que lo sigan al cambiar de teléfono.":"Aucun problème : l'application fonctionne tout aussi complètement sans connexion. Vos données restent sur cet appareil et n'en sortent pas. La seule chose que vous perdez, c'est qu'elles vous suivent sur un nouveau téléphone.",
+"— está todo escrito ahí, con nombres y apellidos.":"— tout y est écrit, noir sur blanc.",
+"Guardado en este aparato · #:# Entre con su cuenta de Google y lo verá también en sus otros aparatos.":"Enregistré sur cet appareil · #:# Entrez avec votre compte Google et vous le verrez aussi sur vos autres appareils.",
+"Guardado #:#":"Enregistré #:#",
+"Todo se guarda solo en este aparato al momento. Este botón manda los cambios a sus otros aparatos ahora mismo.":"Tout s'enregistre tout seul sur cet appareil, aussitôt. Ce bouton envoie les changements à vos autres appareils maintenant.",
+"Todo se guarda solo en este aparato al momento. Este botón además escribe la copia en su carpeta de respaldo.":"Tout s'enregistre tout seul sur cet appareil, aussitôt. Ce bouton écrit en plus la copie dans votre dossier de sauvegarde.",
+"de siempre. Puede abrirlo, copiarlo o compartirlo desde su nube como cualquier archivo suyo. Huawei Cloud no deja que programas de fuera guarden en su nube, así que para ese teléfono sirve Google Drive igual.":"comme toujours. Vous pouvez l'ouvrir, le copier ou le partager depuis votre cloud comme n'importe quel fichier à vous. Huawei Cloud n'autorise pas les programmes extérieurs à y écrire, donc pour ce téléphone Google Drive fait aussi bien l'affaire.",
+"entrando con su correo":"connecté avec votre adresse",
+"No se puede entrar con Google desde aquí. Si abrió el programa desde un archivo del disco, ábralo desde su dirección de internet. Si sigue igual, escríbanos a":"Impossible d'entrer avec Google depuis ici. Si vous avez ouvert le programme depuis un fichier du disque, ouvrez-le depuis son adresse internet. Si cela persiste, écrivez-nous à",
+"Copia descargada.":"Copie téléchargée.",
+"Lo que traiga la copia manda sobre lo que haya en sus otros aparatos.":"Ce que la copie apporte l'emporte sur ce qui se trouve sur vos autres appareils.",
+"Entrando con su cuenta de Google, la computadora y el teléfono comparten la misma información.":"En entrant avec votre compte Google, l'ordinateur et le téléphone partagent les mêmes informations.",
+"Guardado y enviado · #:#.":"Enregistré et envoyé · #:#.",
+"Guardado aquí, pero no se pudo mandar a su cuenta:":"Enregistré ici, mais impossible de l'envoyer à votre compte :",
+"Enviado a sus otros aparatos.":"Envoyé à vos autres appareils.",
+"No se puede entrar con una cuenta en esta copia del programa. Escríbanos a":"Impossible d'entrer avec un compte dans cette copie du programme. Écrivez-nous à",
+"y lo arreglamos. Mientras tanto la aplicación funciona igual, guardando en este aparato.":"et nous le corrigerons. En attendant, l'application fonctionne pareil, en enregistrant sur cet appareil.",
+"Copia escrita en su carpeta.":"Copie écrite dans votre dossier."
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
@@ -15698,7 +15290,38 @@ DIC.de={
 /* v28 · correr la gráfica hacia atrás */
 "⟶ ahora":"⟶ jetzt",
 "Volver al momento de ahora":"Zurück zum Jetzt",
-"Corra la gráfica con el dedo para ver lo de antes.":"Ziehen Sie den Chart mit dem Finger, um zu sehen, was vorher war."
+"Corra la gráfica con el dedo para ver lo de antes.":"Ziehen Sie den Chart mit dem Finger, um zu sehen, was vorher war.",
+/* v29 · fuera GitHub, la ayuda reescrita para quien usa */
+"¿Qué pasa al entrar?":"Was passiert beim Anmelden?",
+"¿Qué pasa al entrar con Google?":"Was passiert, wenn Sie sich mit Google anmelden?",
+"Lo corto":"Kurz gesagt",
+"Sus movimientos dejan de estar solo en este aparato y quedan guardados en su cuenta. Si cambia de teléfono, entra con el mismo correo y aparece todo.":"Ihre Einträge liegen nicht mehr nur auf diesem Gerät, sondern in Ihrem Konto. Neues Telefon, gleiche Adresse — alles ist wieder da.",
+"Qué se guarda":"Was gespeichert wird",
+"correo, nombre y foto":"E-Mail, Name und Foto",
+"de Google, para saber que es usted.":"von Google, damit klar ist, dass Sie es sind.",
+"Lo que usted registra: spot, futuros, backtesting, alertas y sus ajustes.":"Was Sie eintragen: Spot, Futures, Backtesting, Alarme und Ihre Einstellungen.",
+"Quién puede verlo":"Wer es sehen kann",
+"Solo usted.":"Nur Sie.",
+"Las reglas del servidor no dejan que nadie lea ni escriba el documento de otra persona. Todo viaja cifrado.":"Die Serverregeln lassen niemanden das Dokument einer anderen Person lesen oder beschreiben. Alles wird verschlüsselt übertragen.",
+"Si no quiere cuenta":"Wenn Sie kein Konto wollen",
+"No pasa nada: la aplicación funciona igual de completa sin entrar. Sus datos se quedan en este aparato y no salen de aquí. Lo único que pierde es que lo sigan al cambiar de teléfono.":"Kein Problem: die App funktioniert ohne Anmeldung genauso vollständig. Ihre Daten bleiben auf diesem Gerät und verlassen es nicht. Sie verlieren nur, dass sie Ihnen auf ein neues Telefon folgen.",
+"— está todo escrito ahí, con nombres y apellidos.":"— dort steht alles, schwarz auf weiß.",
+"Guardado en este aparato · #:# Entre con su cuenta de Google y lo verá también en sus otros aparatos.":"Auf diesem Gerät gespeichert · #:# Melden Sie sich mit Ihrem Google-Konto an, dann sehen Sie es auch auf Ihren anderen Geräten.",
+"Guardado #:#":"Gespeichert #:#",
+"Todo se guarda solo en este aparato al momento. Este botón manda los cambios a sus otros aparatos ahora mismo.":"Alles speichert sich von selbst auf diesem Gerät, sofort. Dieser Knopf schickt die Änderungen jetzt an Ihre anderen Geräte.",
+"Todo se guarda solo en este aparato al momento. Este botón además escribe la copia en su carpeta de respaldo.":"Alles speichert sich von selbst auf diesem Gerät, sofort. Dieser Knopf schreibt zusätzlich die Kopie in Ihren Sicherungsordner.",
+"de siempre. Puede abrirlo, copiarlo o compartirlo desde su nube como cualquier archivo suyo. Huawei Cloud no deja que programas de fuera guarden en su nube, así que para ese teléfono sirve Google Drive igual.":"wie immer. Sie können sie aus Ihrer Cloud öffnen, kopieren oder teilen wie jede andere Datei von Ihnen. Huawei Cloud lässt fremde Programme nicht hineinschreiben, für dieses Telefon tut es Google Drive genauso.",
+"entrando con su correo":"mit Ihrer Adresse angemeldet",
+"No se puede entrar con Google desde aquí. Si abrió el programa desde un archivo del disco, ábralo desde su dirección de internet. Si sigue igual, escríbanos a":"Von hier aus ist die Anmeldung mit Google nicht möglich. Wenn Sie das Programm aus einer Datei auf der Festplatte geöffnet haben, öffnen Sie es über seine Internetadresse. Bleibt es dabei, schreiben Sie uns an",
+"Copia descargada.":"Kopie heruntergeladen.",
+"Lo que traiga la copia manda sobre lo que haya en sus otros aparatos.":"Was die Kopie mitbringt, hat Vorrang vor dem, was auf Ihren anderen Geräten liegt.",
+"Entrando con su cuenta de Google, la computadora y el teléfono comparten la misma información.":"Mit Ihrem Google-Konto teilen sich Computer und Telefon dieselben Informationen.",
+"Guardado y enviado · #:#.":"Gespeichert und gesendet · #:#.",
+"Guardado aquí, pero no se pudo mandar a su cuenta:":"Hier gespeichert, aber es konnte nicht an Ihr Konto gesendet werden:",
+"Enviado a sus otros aparatos.":"An Ihre anderen Geräte gesendet.",
+"No se puede entrar con una cuenta en esta copia del programa. Escríbanos a":"In dieser Kopie des Programms ist keine Anmeldung mit einem Konto möglich. Schreiben Sie uns an",
+"y lo arreglamos. Mientras tanto la aplicación funciona igual, guardando en este aparato.":"und wir bringen es in Ordnung. Inzwischen funktioniert die App genauso und speichert auf diesem Gerät.",
+"Copia escrita en su carpeta.":"Kopie in Ihren Ordner geschrieben."
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
@@ -16735,7 +16358,38 @@ DIC.it={
 /* v28 · correr la gráfica hacia atrás */
 "⟶ ahora":"⟶ adesso",
 "Volver al momento de ahora":"Tornare al momento di adesso",
-"Corra la gráfica con el dedo para ver lo de antes.":"Trascini il grafico con il dito per vedere quello di prima."
+"Corra la gráfica con el dedo para ver lo de antes.":"Trascini il grafico con il dito per vedere quello di prima.",
+/* v29 · fuera GitHub, la ayuda reescrita para quien usa */
+"¿Qué pasa al entrar?":"Che cosa succede quando entra?",
+"¿Qué pasa al entrar con Google?":"Che cosa succede quando entra con Google?",
+"Lo corto":"In breve",
+"Sus movimientos dejan de estar solo en este aparato y quedan guardados en su cuenta. Si cambia de teléfono, entra con el mismo correo y aparece todo.":"Le sue registrazioni non stanno più solo in questo apparecchio: restano salvate nel suo account. Se cambia telefono, entra con lo stesso indirizzo e c'è tutto.",
+"Qué se guarda":"Che cosa si conserva",
+"correo, nombre y foto":"email, nome e foto",
+"de Google, para saber que es usted.":"di Google, per sapere che è lei.",
+"Lo que usted registra: spot, futuros, backtesting, alertas y sus ajustes.":"Quello che registra: spot, futures, backtesting, avvisi e le sue impostazioni.",
+"Quién puede verlo":"Chi può vederlo",
+"Solo usted.":"Solo lei.",
+"Las reglas del servidor no dejan que nadie lea ni escriba el documento de otra persona. Todo viaja cifrado.":"Le regole del server non lasciano che nessuno legga o scriva il documento di un'altra persona. Tutto viaggia cifrato.",
+"Si no quiere cuenta":"Se non vuole un account",
+"No pasa nada: la aplicación funciona igual de completa sin entrar. Sus datos se quedan en este aparato y no salen de aquí. Lo único que pierde es que lo sigan al cambiar de teléfono.":"Non succede nulla: l'applicazione funziona altrettanto completa senza entrare. I suoi dati restano in questo apparecchio e non escono da qui. L'unica cosa che perde è che la seguano quando cambia telefono.",
+"— está todo escrito ahí, con nombres y apellidos.":"— è tutto scritto lì, nero su bianco.",
+"Guardado en este aparato · #:# Entre con su cuenta de Google y lo verá también en sus otros aparatos.":"Salvato in questo apparecchio · #:# Entri con il suo account Google e lo vedrà anche nei suoi altri apparecchi.",
+"Guardado #:#":"Salvato #:#",
+"Todo se guarda solo en este aparato al momento. Este botón manda los cambios a sus otros aparatos ahora mismo.":"Tutto si salva da solo in questo apparecchio, sul momento. Questo pulsante manda le modifiche ai suoi altri apparecchi adesso.",
+"Todo se guarda solo en este aparato al momento. Este botón además escribe la copia en su carpeta de respaldo.":"Tutto si salva da solo in questo apparecchio, sul momento. Questo pulsante scrive inoltre la copia nella sua cartella di backup.",
+"de siempre. Puede abrirlo, copiarlo o compartirlo desde su nube como cualquier archivo suyo. Huawei Cloud no deja que programas de fuera guarden en su nube, así que para ese teléfono sirve Google Drive igual.":"di sempre. Può aprirlo, copiarlo o condividerlo dalla sua nuvola come qualsiasi suo file. Huawei Cloud non lascia che programmi esterni salvino nella sua nuvola, quindi per quel telefono va bene lo stesso Google Drive.",
+"entrando con su correo":"entrando con il suo indirizzo",
+"No se puede entrar con Google desde aquí. Si abrió el programa desde un archivo del disco, ábralo desde su dirección de internet. Si sigue igual, escríbanos a":"Non si può entrare con Google da qui. Se ha aperto il programma da un file del disco, lo apra dal suo indirizzo internet. Se resta uguale, ci scriva a",
+"Copia descargada.":"Copia scaricata.",
+"Lo que traiga la copia manda sobre lo que haya en sus otros aparatos.":"Quello che porta la copia vale più di quello che c'è nei suoi altri apparecchi.",
+"Entrando con su cuenta de Google, la computadora y el teléfono comparten la misma información.":"Entrando con il suo account Google, il computer e il telefono condividono le stesse informazioni.",
+"Guardado y enviado · #:#.":"Salvato e inviato · #:#.",
+"Guardado aquí, pero no se pudo mandar a su cuenta:":"Salvato qui, ma non si è potuto mandare al suo account:",
+"Enviado a sus otros aparatos.":"Inviato ai suoi altri apparecchi.",
+"No se puede entrar con una cuenta en esta copia del programa. Escríbanos a":"Non si può entrare con un account in questa copia del programma. Ci scriva a",
+"y lo arreglamos. Mientras tanto la aplicación funciona igual, guardando en este aparato.":"e lo sistemiamo. Nel frattempo l'applicazione funziona lo stesso, salvando in questo apparecchio.",
+"Copia escrita en su carpeta.":"Copia scritta nella sua cartella."
 };
 </script>
 </body>

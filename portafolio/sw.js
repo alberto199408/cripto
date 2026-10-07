@@ -1,9 +1,9 @@
 /* =====================================================================
-   AYUDANTE DEL TELÉFONO · Mi Portafolio Cripto v28
+   AYUDANTE DEL TELÉFONO · Mi Portafolio Cripto v29
    Guarda el programa para que abra sin internet y, cuando usted publica
    una versión nueva, la trae solo la próxima vez que lo abra con internet.
    ===================================================================== */
-var CAJA = "cripto-v28";
+var CAJA = "cripto-v29";
 var ARCHIVOS = ["./", "./index.html", "./CRIPTO.html", "./manifest.webmanifest", "./icono-192.png", "./icono-512.png", "./icono-mask-192.png", "./icono-mask-512.png", "./privacidad.html"];
 
 self.addEventListener("install", function (ev) {
