@@ -612,16 +612,21 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
   font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap}
 .gint button:hover{color:var(--tx)}
 .gint button.on{background:var(--ac);color:var(--acInk)}
-.gzona{position:relative;height:300px;touch-action:none;overflow:hidden}
-.gsvg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.gzona{position:relative;height:300px;touch-action:none;overflow:hidden;cursor:grab}
+.gzona.corriendo{cursor:grabbing}
+/* volver al momento de ahora, cuando se corrió la gráfica hacia atrás */
+.gahora{position:absolute;bottom:10px;z-index:7;display:none;
+  background:var(--b2);border:1px solid var(--ln);color:var(--tx);
+  font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;
+  padding:7px 12px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.45)}
+.gahora.ve{display:block}
+.gahora:hover{border-color:var(--ac);color:var(--acTx)}
+.gsvg{position:absolute;left:0;top:0;bottom:0;width:100%;height:100%;display:block}
 .gejes{position:absolute;inset:0;pointer-events:none}
 .gejes .gr{position:absolute;left:0;right:0;border-top:1px dashed color-mix(in srgb,var(--ln) 85%,transparent)}
-.gejes .gr span{position:absolute;right:4px;top:2px;font-size:11px;color:var(--t2);
+.gejes .gr span{position:absolute;left:4px;top:2px;font-size:11px;color:var(--t2);
   background:color-mix(in srgb,var(--b0) 70%,transparent);
   padding:0 3px;border-radius:3px}
-/* en la ficha de una operación hay hasta cinco etiquetas a la derecha:
-   los precios del eje se van a la izquierda para que no se amontonen */
-.graf:not(.edit) .gejes .gr span{right:auto;left:4px}
 .glineas{position:absolute;inset:0}
 /* las dos zonas: de la entrada al stop (rojo, lo que arriesga) y de la entrada
    al objetivo (verde, lo que puede ganar), con su porcentaje encima */
@@ -649,11 +654,19 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
   border:1px solid currentColor;color:inherit}
 .ln[data-ln="sl"] .tir{left:34px}
 .ln[data-ln="tp"] .tir{left:64px}
-.ln .et{position:absolute;right:4px;top:4px;background:var(--b2);border:1px solid currentColor;
-  border-radius:6px;padding:3px 8px;font-size:12px;
+.ln .et{position:absolute;right:4px;top:calc(4px + var(--dy,0px));background:var(--b2);
+  border:1px solid currentColor;border-radius:6px;padding:3px 8px;font-size:12px;
   white-space:nowrap;line-height:1.5}
+/* una etiqueta escalonada lleva un hilito hasta su propia línea */
+.ln[style*="--dy"] .et::before{content:"";position:absolute;right:11px;top:-6px;
+  border-left:1px dashed currentColor;height:var(--dy,0px);
+  transform:translateY(calc(-1 * var(--dy,0px) + 6px))}
 .ln .et b{font-size:11px;letter-spacing:.08em;margin-right:3px;color:inherit}
 .ln .et i{font-style:normal;opacity:.85}
+/* pantalla estrecha: la etiqueta se aprieta para dejarle sitio a las velas */
+.graf.ap .ln .et i{display:none}
+.graf.ap2 .ln .et{font-size:11px;padding:2px 6px}
+.graf.ap2 .ln .et b{font-size:10px;letter-spacing:.04em}
 .ln.abajo .et,.ln.abajo .tir{top:auto;bottom:4px}
 .ln.ent{color:#A97BFF}
 .ln.sl{color:var(--dnTx)}
@@ -665,8 +678,7 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
 .ln.sal::before{border-top-style:solid;border-top-width:2px}
 .ln.ahora{color:var(--tx);cursor:default;z-index:2;pointer-events:none}
 .ln.ahora::before{border-top-style:solid}
-.ln.ahora .et{background:var(--tx);color:var(--b0);border-color:var(--tx);font-weight:700;right:auto;left:4px}
-.graf.edit .ln.ahora .et{left:96px}
+.ln.ahora .et{background:var(--tx);color:var(--b0);border-color:var(--tx);font-weight:700}
 .gcompra.alt span{top:4px}
 .ln.ahora .et b{color:var(--b0)}
 .ln.agarrada::before{border-top-style:solid;border-top-width:3px}
@@ -1133,7 +1145,7 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por GitHub.
    ===================================================================== */
-var VERSION="27";
+var VERSION="28";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -2305,11 +2317,15 @@ var GRAF=null;
 
 function clave(sym,inter){ return String(sym).toUpperCase()+"|"+inter; }
 
+/* Se traen MUCHAS más velas de las que se ven. En pantalla se muestra una
+   ventana (VENTANA velas) y usted puede correrla con el dedo hacia atrás
+   para ver lo que pasó antes. */
+var VENTANA=110;
 function traerVelas(sym, inter){
   var k=clave(sym,inter), c=VELAS[k];
   if(c && (Date.now()-c.t)<45000) return Promise.resolve(c.d);
   var url="https://api.binance.com/api/v3/klines?symbol="+parBinance(sym).toUpperCase()+
-          "&interval="+inter+"&limit=120";
+          "&interval="+inter+"&limit=500";
   return conTiempo(url,9000).then(function(a){
     if(!Array.isArray(a)||!a.length) throw new Error("sin velas");
     var d=a.map(function(x){
@@ -2362,6 +2378,8 @@ function montarGrafica(cont, op){
       '<div class="gejes"></div>'+
       '<div class="glineas"></div>'+
       '<div class="gtope"></div>'+
+      '<button type="button" class="gahora" title="Volver al momento de ahora">'+
+        '⟶ ahora</button>'+
       '<div class="gcargando">Trayendo la gráfica…</div>'+
     '</div>'+
     '<div class="gpieg"></div>';
@@ -2389,6 +2407,44 @@ function montarGrafica(cont, op){
       dibujar(estado);
     });
   }
+  /* ---------------------------------------------------------------------
+     CORRER LA GRÁFICA CON EL DEDO. Se arrastra el fondo hacia la derecha y
+     se ve lo de antes; hacia la izquierda, se vuelve. Las tres líneas de
+     precio siguen mandando donde se las toca (ellas paran el arrastre).
+     --------------------------------------------------------------------- */
+  var zona=cont.querySelector(".gzona");
+  var volver=cont.querySelector(".gahora");
+  if(volver) volver.onclick=function(ev){ ev.stopPropagation(); irAlFinal(estado); };
+  if(zona) zona.addEventListener("pointerdown", function(ev){
+    if(ev.target.closest("[data-ln]")) return;      /* eso es mover una línea */
+    if(ev.target.closest("button")) return;
+    var v=estado.velas;
+    if(!v||v.length<=(estado.cuantas||VENTANA)) return;   /* no hay nada más que ver */
+    var r=zona.getBoundingClientRect();
+    var x0=ev.clientX, fin0=estado.fin!=null?estado.fin:v.length;
+    var movido=false;
+    zona.classList.add("corriendo");
+    function mover(e2){
+      var dx=e2.clientX-x0;
+      if(!movido && Math.abs(dx)<4) return;
+      movido=true;
+      var ancho=Math.max(1, r.width-(estado.margenDer||0));
+      var porVela=ancho/(estado.cuantas||VENTANA);
+      var fin=Math.round(fin0 - dx/porVela);
+      fin=Math.max(estado.cuantas||VENTANA, Math.min(v.length, fin));
+      if(fin!==estado.fin){ estado.fin=fin; dibujar(estado); }
+    }
+    function soltar(){
+      zona.classList.remove("corriendo");
+      window.removeEventListener("pointermove", mover);
+      window.removeEventListener("pointerup", soltar);
+      window.removeEventListener("pointercancel", soltar);
+    }
+    window.addEventListener("pointermove", mover);
+    window.addEventListener("pointerup", soltar);
+    window.addEventListener("pointercancel", soltar);
+  });
+
   cargarVelas();
   estado.redibujar=function(){ dibujar(estado); };
   return estado;
@@ -2397,13 +2453,46 @@ function montarGrafica(cont, op){
 function aY(estado,p){ return (estado.max-p)/(estado.max-estado.min)*100; }
 function aP(estado,y){ return estado.max-(y/100)*(estado.max-estado.min); }
 
-/* la escala: sale de las velas; las líneas la estiran solo hasta cierto punto */
+/* ---------------------------------------------------------------------
+   LA VENTANA: de todas las velas traídas solo se ven unas cuantas, y se
+   puede correr con el dedo. estado.fin es la última vela que se ve.
+   --------------------------------------------------------------------- */
+/* en el teléfono caben menos velas: si se meten las mismas quedan como pelos */
+function cuantasCaben(estado){
+  var z=estado.cont?estado.cont.querySelector(".gzona"):null;
+  var a=z?z.clientWidth:0;
+  if(!a) return VENTANA;
+  return a<560 ? 65 : VENTANA;
+}
+function velasVisibles(estado){
+  var v=estado.velas;
+  if(!v||!v.length) return [];
+  if(!estado.cuantas) estado.cuantas=cuantasCaben(estado);
+  var cu=Math.min(estado.cuantas||VENTANA, v.length);
+  var fin=estado.fin;
+  if(fin==null||fin>v.length) fin=v.length;
+  if(fin<cu) fin=cu;
+  estado.fin=fin; estado.cuantas=cu;
+  return v.slice(fin-cu, fin);
+}
+function alFinal(estado){
+  var v=estado.velas;
+  return !v||!v.length||estado.fin==null||estado.fin>=v.length;
+}
+function irAlFinal(estado){
+  estado.fin=estado.velas?estado.velas.length:null;
+  dibujar(estado);
+}
+
+/* la escala: sale de las velas QUE SE VEN; las líneas la estiran solo hasta cierto punto */
 function calcularEscala(estado){
-  var op=estado.op, v=estado.velas, val=op.valores?op.valores():{};
+  var op=estado.op, v=velasVisibles(estado), val=op.valores?op.valores():{};
   var pr=precioDe(op.sym);
   var pv=[];
   if(v) v.forEach(function(x){ pv.push(x.h,x.b); });
-  if(pr!=null) pv.push(pr);
+  /* si se corrió la gráfica hacia atrás, el precio de HOY no manda en la
+     escala: lo que importa es lo que se está mirando */
+  if(pr!=null && alFinal(estado)) pv.push(pr);
   pv=pv.filter(function(x){ return x!=null&&!isNaN(x)&&isFinite(x)&&x>0; });
   if(!pv.length) pv=[val.entrada||1, val.sl||1].filter(function(x){ return x>0; });
   if(!pv.length) pv=[1];
@@ -2432,9 +2521,10 @@ function fueraDe(estado,x){
 function dibujar(estado){
   var cont=estado.cont, op=estado.op;
   if(!cont||!document.body.contains(cont)) return;
-  var v=estado.velas, val=op.valores?op.valores():{};
+  var val=op.valores?op.valores():{};
   var pr=precioDe(op.sym);
   calcularEscala(estado);
+  var v=velasVisibles(estado);
   estado.ultimoPintado=Date.now();
 
   /* --- las velas --- */
@@ -2479,7 +2569,7 @@ function dibujar(estado){
   var L=cont.querySelector(".glineas");
   var lado=op.lado?op.lado():"LONG";
   var ET=Object.assign({entrada:"ENTRADA", sl:"STOP", tp:"OBJETIVO",
-                        liq:"LIQUIDACIÓN", salida:"SALIÓ"}, op.etiquetas||{});
+                        liq:"LIQUIDACIÓN", salida:"SALIÓ", ahora:"HOY"}, op.etiquetas||{});
   function yClamp(p){ return Math.max(0,Math.min(100, aY(estado,p))); }
   var hl="";
   if(!op.soloVer){
@@ -2513,29 +2603,73 @@ function dibujar(estado){
   });
   /* Las tres de siempre, y dos más que solo aparecen cuando la operación ya
      corre: la LIQUIDACIÓN (donde se queda sin margen) y dónde SALIÓ. */
+  /* Las etiquetas van todas pegadas a la derecha. Si dos precios quedan
+     cerca, la de abajo se baja un escalón para que no se tapen. */
+  var puestas=[];
   [{k:"entrada",c:"ent",v:val.entrada},{k:"sl",c:"sl",v:val.sl},{k:"tp",c:"tp",v:val.tp},
-   {k:"liq",c:"liq",v:val.liq},{k:"salida",c:"sal",v:val.salida}]
-  .forEach(function(x){
-    if(x.v==null||isNaN(x.v)||x.v<=0) return;
+   {k:"liq",c:"liq",v:val.liq},{k:"salida",c:"sal",v:val.salida},
+   {k:"ahora",c:"ahora",v:pr}]
+  .map(function(x){
+    if(x.v==null||isNaN(x.v)||x.v<=0) return null;
     var f=fueraDe(estado,x.v);
-    var y=f?(f>0?0.8:99.2):aY(estado,x.v);
-    var dif=(val.entrada>0 && x.k!=="entrada")?(x.v-val.entrada)/val.entrada*100:null;
-    hl+='<div class="ln '+x.c+(f?" lejos":"")+(y>84?" abajo":"")+'" data-ln="'+x.k+
-        '" style="top:'+y.toFixed(2)+'%">'+
-        (op.soloVer?'':'<span class="tir" title="Arrastre para mover">⇕</span>')+
-        '<span class="et"><b>'+esc(ET[x.k])+'</b> '+(f?(f>0?"↑ ":"↓ "):"")+precio(x.v)+
+    x.f=f; x.y=f?(f>0?0.8:99.2):aY(estado,x.v);
+    return x;
+  }).filter(Boolean).sort(function(a,b){ return a.y-b.y; })
+  .forEach(function(x){
+    var esc2=0;
+    puestas.forEach(function(p){ if(Math.abs(p.y-x.y)<8) esc2=Math.max(esc2,p.esc+1); });
+    x.esc=esc2; puestas.push(x);
+    var dif=(val.entrada>0 && x.k!=="entrada" && x.k!=="ahora")
+            ? (x.v-val.entrada)/val.entrada*100 : null;
+    var arrastrable = (x.k==="entrada"||x.k==="sl"||x.k==="tp");
+    hl+='<div class="ln '+x.c+(x.f?" lejos":"")+(x.y>84?" abajo":"")+'" data-ln="'+x.k+
+        '" style="top:'+x.y.toFixed(2)+'%'+(esc2?';--dy:'+(esc2*25)+'px':'')+'">'+
+        ((op.soloVer||!arrastrable)?'':'<span class="tir" title="Arrastre para mover">⇕</span>')+
+        '<span class="et"><b>'+esc(ET[x.k])+'</b> '+(x.f?(x.f>0?"↑ ":"↓ "):"")+precio(x.v)+
         (dif!=null?' <i>'+pct(dif,2)+'</i>':'')+'</span></div>';
   });
-  if(pr!=null){
-    var yp=aY(estado,pr);
-    if(yp>=-5&&yp<=105)
-      hl+='<div class="ln ahora'+(yp>84?" abajo":"")+'" style="top:'+yp.toFixed(2)+'%">'+
-          '<span class="et"><b>HOY</b> '+precio(pr)+'</span></div>';
-  }
   L.innerHTML=hl;
 
+  /* EL ESPACIO DE LA DERECHA. Las etiquetas de precio ocupan su sitio y las
+     velas se paran antes, para que nunca queden una encima de otra y se vea
+     claro dónde termina la gráfica. Se mide de verdad, no a ojo. */
+  var zona=cont.querySelector(".gzona");
+  var anchoZona=zona?zona.clientWidth:0;
+  function anchoEtiquetas(){
+    var m=0;
+    L.querySelectorAll(".et").forEach(function(et){
+      if(et.parentNode.style.getPropertyValue("--dy")) return;  /* esas caen en hueco */
+      if(et.offsetWidth>m) m=et.offsetWidth;
+    });
+    return m;
+  }
+  var margen=0;
+  if(anchoZona>0){
+    /* Si las etiquetas se comen más de un tercio de la gráfica, se les quita
+       primero el porcentaje (que ya está escrito abajo en palabras) y, si aún
+       así no caben, se achica la letra. Las velas no se tocan. */
+    cont.classList.remove("ap","ap2");
+    margen=anchoEtiquetas();
+    if(margen > anchoZona*0.33){ cont.classList.add("ap"); margen=anchoEtiquetas(); }
+    if(margen > anchoZona*0.38){ cont.classList.add("ap2"); margen=anchoEtiquetas(); }
+    margen=Math.min(margen+12, Math.round(anchoZona*0.42));
+    if(margen<20) margen=20;            /* aire mínimo aunque no haya etiquetas */
+  }
+  estado.margenDer=margen;
+  svg.style.width="calc(100% - "+margen+"px)";
+  var ej=cont.querySelector(".gejes");
+  if(ej) ej.style.right=margen+"px";
+
+  /* el botón de volver al presente: solo cuando se corrió hacia atrás, y
+     dentro de la zona de las velas para que no tape ninguna etiqueta */
+  var bAhora=cont.querySelector(".gahora");
+  if(bAhora){
+    bAhora.classList.toggle("ve", !alFinal(estado));
+    bAhora.style.right=(margen+10)+"px";
+  }
+
   var vv=cont.querySelector("#gVivo");
-  if(vv) vv.style.display = PRE.vivo ? "" : "none";
+  if(vv) vv.style.display = (PRE.vivo && alFinal(estado)) ? "" : "none";
   var gs=cont.querySelector(".gsym");
   if(gs) gs.innerHTML=icono(op.sym,22)+'<b>'+esc(op.sym)+'</b>'+
     (pr!=null?'<span class="mono" data-v="pr" data-s="'+esc(op.sym)+'">'+precio(pr)+'</span>':'');
@@ -2636,6 +2770,9 @@ function dibujar(estado){
         'solo en las casillas.</span>';
     } else pie.innerHTML='<span class="mut">Arrastre con el dedo la línea roja del <b>STOP</b> '+
       'hasta donde quiera ponerlo y el dinero a poner se calcula solo.</span>';
+    /* que se sepa que la gráfica se puede correr: si no, nadie lo descubre */
+    if(estado.velas && estado.velas.length > (estado.cuantas||VENTANA))
+      pie.innerHTML+='<span class="mut">Corra la gráfica con el dedo para ver lo de antes.</span>';
   }
 }
 
@@ -2644,6 +2781,8 @@ function refrescarGrafica(){
   if(!GRAF || !GRAF.cont || !document.body.contains(GRAF.cont)){ GRAF=null; return; }
   var E=GRAF, pr=precioDe(E.op.sym);
   if(pr==null || E.arrastrando) return;
+  /* si está mirando hacia atrás, no se le mueve nada bajo el dedo */
+  if(!alFinal(E)) return;
   var v=E.velas;
   if(v&&v.length&&!v[0].linea){
     var u=v[v.length-1];
@@ -2665,10 +2804,20 @@ function refrescarGrafica(){
   var hoyL=E.cont.querySelector(".ln.ahora");
   var yp=aY(E,pr);
   if(hoyL){
+    /* si HOY se acercó a otra etiqueta (o se alejó), hay que recolocar el
+       escalonado: eso sí pide repintar entero, pero pasa poquísimas veces */
+    var cerca=false;
+    E.cont.querySelectorAll(".glineas .ln").forEach(function(x){
+      if(x===hoyL) return;
+      var t=parseFloat(x.style.top);
+      if(!isNaN(t) && Math.abs(t-yp)<9) cerca=true;
+    });
+    var tieneEscalon=!!hoyL.style.getPropertyValue("--dy");
+    if(cerca!==tieneEscalon){ dibujar(E); return; }
     hoyL.style.top=yp.toFixed(2)+"%";
     hoyL.classList.toggle("abajo", yp>84);
     var et=hoyL.querySelector(".et");
-    if(et) et.innerHTML='<b>HOY</b> '+precio(pr);
+    if(et) et.innerHTML='<b>'+tr("HOY")+'</b> '+precio(pr);
   } else if(yp>=-5&&yp<=105) dibujar(E);
   /* las velas nuevas (cada 15 min) sí se traen enteras, pero sin molestar */
   if(Date.now()-E.ultimoPintado>120000 && !E.cargando){
@@ -5493,7 +5642,7 @@ function tablaAbiertas(abiertas,k){
     abiertas.map(function(e){
       var f=e.f, pr=precioDe(f.sym);
       return '<tr style="--fc:'+colDe(f.sym)+'">'+
-        '<td><div class="cri">'+icono(f.sym,34)+'<div><b>'+esc(f.sym)+'</b>'+
+        '<td><div class="cri">'+iconoFicha(f,k,34)+'<div><b>'+esc(f.sym)+'</b>'+
           '<span>N° '+esc(String(f.n||"—"))+(f.fecha?' · '+fechaCorta(f.fecha):'')+'</span></div></div></td>'+
         '<td><span class="chip '+(f.lado==="SHORT"?"s":"l")+'">'+
           (f.lado==="SHORT"?"▼ CORTO":"▲ LARGO")+'</span><span class="sub">'+e.apal+'x</span></td>'+
@@ -5573,7 +5722,7 @@ function cajaProgramadas(progs, k){
     progs.map(function(e){
       var f=e.f, pr=precioDe(f.sym);
       return '<tr style="--fc:'+colDe(f.sym)+'">'+
-        '<td><div class="cri">'+icono(f.sym,34)+'<div><b>'+esc(f.sym)+'</b>'+
+        '<td><div class="cri">'+iconoFicha(f,k,34)+'<div><b>'+esc(f.sym)+'</b>'+
           '<span>N° '+esc(String(f.n||"—"))+(f.fecha?' · '+fechaCorta(f.fecha):'')+'</span></div></div></td>'+
         '<td><span class="chip '+(f.lado==="SHORT"?"s":"l")+'">'+
           (f.lado==="SHORT"?"▼ CORTO":"▲ LARGO")+'</span><span class="sub">'+e.apal+'x</span></td>'+
@@ -12434,7 +12583,11 @@ DIC.en={
 "@ sube a":"@ rises to",
 "Otra · comisión $# · hace # días":"Other · fee $# · # days ago",
 "# @ · promedio":"# @ · average",
-"# a #":"# to #"
+"# a #":"# to #",
+/* v28 · correr la gráfica hacia atrás */
+"⟶ ahora":"⟶ now",
+"Volver al momento de ahora":"Back to the present",
+"Corra la gráfica con el dedo para ver lo de antes.":"Drag the chart with your finger to see what came before."
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
@@ -13467,7 +13620,11 @@ DIC.pt={
 "@ sube a":"@ sobe a",
 "Otra · comisión $# · hace # días":"Outra · comissão $# · há # dias",
 "# @ · promedio":"# @ · média",
-"# a #":"# para #"
+"# a #":"# para #",
+/* v28 · correr la gráfica hacia atrás */
+"⟶ ahora":"⟶ agora",
+"Volver al momento de ahora":"Voltar ao momento de agora",
+"Corra la gráfica con el dedo para ver lo de antes.":"Arraste o gráfico com o dedo para ver o que veio antes."
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
@@ -14500,7 +14657,11 @@ DIC.fr={
 "@ sube a":"@ monte à",
 "Otra · comisión $# · hace # días":"Autre · frais $# · il y a # jours",
 "# @ · promedio":"# @ · moyenne",
-"# a #":"# pour #"
+"# a #":"# pour #",
+/* v28 · correr la gráfica hacia atrás */
+"⟶ ahora":"⟶ maintenant",
+"Volver al momento de ahora":"Revenir au moment présent",
+"Corra la gráfica con el dedo para ver lo de antes.":"Faites glisser le graphique avec le doigt pour voir ce qui précède."
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
@@ -15533,7 +15694,11 @@ DIC.de={
 "@ sube a":"@ steigt auf",
 "Otra · comisión $# · hace # días":"Andere · Gebühr $# · vor # Tagen",
 "# @ · promedio":"# @ · Durchschnitt",
-"# a #":"# zu #"
+"# a #":"# zu #",
+/* v28 · correr la gráfica hacia atrás */
+"⟶ ahora":"⟶ jetzt",
+"Volver al momento de ahora":"Zurück zum Jetzt",
+"Corra la gráfica con el dedo para ver lo de antes.":"Ziehen Sie den Chart mit dem Finger, um zu sehen, was vorher war."
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
@@ -16566,7 +16731,11 @@ DIC.it={
 "@ sube a":"@ sale a",
 "Otra · comisión $# · hace # días":"Altra · commissione $# · # giorni fa",
 "# @ · promedio":"# @ · media",
-"# a #":"# a #"
+"# a #":"# a #",
+/* v28 · correr la gráfica hacia atrás */
+"⟶ ahora":"⟶ adesso",
+"Volver al momento de ahora":"Tornare al momento di adesso",
+"Corra la gráfica con el dedo para ver lo de antes.":"Trascini il grafico con il dito per vedere quello di prima."
 };
 </script>
 </body>
