@@ -118,6 +118,33 @@ main>*{max-width:var(--anchoMax);margin-left:auto;margin-right:auto}
 .encab p{margin:4px 0 0;font-size:var(--f3);color:var(--t2);line-height:1.4}
 .encab .der{margin-left:auto;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .encab .estado,.encab .acciones{display:flex;align-items:center;gap:var(--e2);flex-wrap:wrap}
+/* el chip de la cuenta: va en la cabecera, que es una sola para todas las pantallas */
+/* en pantalla ancha va al final de la fila, lo más a la derecha;
+   en el teléfono la fila se parte, así que se clava arriba a la derecha */
+.cuentaChip{display:flex;align-items:center;order:99}
+@media (max-width:760px){
+  .encab{position:relative;padding-right:52px}
+  .cuentaChip{position:absolute;top:2px;right:0;z-index:5}
+}
+/* las dos salidas, una debajo de otra: en el teléfono tres botones no caben */
+.opSalir{margin-top:12px;padding:14px 16px;border-radius:13px;cursor:pointer;
+  background:var(--b0);border:1px solid var(--ln);transition:.14s;text-align:left}
+.opSalir:hover,.opSalir:focus-visible{border-color:var(--ac);background:var(--b2);outline:none}
+.opSalir b{display:block;font-size:14.5px;color:var(--tx);margin-bottom:4px}
+.opSalir i{display:block;font-style:normal;font-size:12.5px;line-height:1.6;color:var(--t2)}
+.opSalir i b{display:inline;font-size:inherit}
+.opSalir.mala:hover,.opSalir.mala:focus-visible{border-color:var(--dn)}
+.opSalir.mala b{color:var(--dnTx)}
+.chipEntrar{display:inline-flex;align-items:center;gap:6px}
+.chipEntrar .ic{width:16px;height:16px;display:inline-grid;place-items:center}
+.chipEntrar .ic svg{width:16px;height:16px}
+.chipCta{width:38px;height:38px;flex:none;padding:0;border-radius:50%;cursor:pointer;
+  background:var(--b2);border:2px solid var(--ln);overflow:hidden;display:grid;place-items:center;
+  transition:.14s}
+.chipCta:hover,.chipCta:focus-visible{border-color:var(--ac);outline:none;transform:scale(1.05)}
+.chipCta img{width:100%;height:100%;object-fit:cover;display:block}
+.chipCta .ini{font-weight:800;font-size:15px;color:var(--acTx)}
+@media (max-width:700px){ .chipCta{width:34px;height:34px} }
 .encab .der{min-width:0;max-width:100%}
 .encab .acciones .b{max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .met .v.chica{font-size:19px}
@@ -1120,6 +1147,7 @@ a:hover{color:var(--ac2)}
         </div>
       </div>
       <div class="der">
+        <div class="cuentaChip" id="cuentaChip"></div>
         <div class="estado">
           <span class="pulso" id="pulso"><i></i><span id="pulsoT">…</span></span>
           <span class="syn" id="sync" style="display:none"><i></i><span id="syncT"></span></span>
@@ -1151,7 +1179,7 @@ a:hover{color:var(--ac2)}
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por su cuenta de Google.
    ===================================================================== */
-var VERSION="29";
+var VERSION="31";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -1499,6 +1527,23 @@ function firmaAjustes(){
    ===================================================================== */
 var DESFASE_RELOJ=0;
 function ahoraReal(){ return Date.now()+DESFASE_RELOJ; }
+/* =====================================================================
+   MARCAR UN REGISTRO COMO CAMBIADO — nunca hacia atrás
+   Mismo motivo que el de los borrados: si usted cambia algo con la sesión
+   cerrada (reloj sin corregir) y lo vuelve a cambiar después de entrar
+   (reloj ya corregido, y por tanto más temprano), el cambio nuevo tendría
+   una hora ANTERIOR al viejo. La mezcla se quedaría con el viejo y
+   desharía lo que acaba de hacer. Por eso nunca retrocede.
+   ===================================================================== */
+function adelante(antes){
+  var t=ahoraReal(), m=+antes||0;
+  return (m>=t)?(m+1):t;
+}
+function tocar(x){
+  if(!x) return x;
+  x.mod=adelante(x.mod);
+  return x;
+}
 /* recibe la DIFERENCIA: hora del servidor menos hora local, en milisegundos.
    Positiva = este reloj atrasa; negativa = adelanta. */
 function ponerDesfase(diferenciaMs){
@@ -1514,7 +1559,7 @@ function guardar(){
   if(BD.ajustes){
     var f=firmaAjustes();
     if(AJ_FIRMA===null) AJ_FIRMA=f;
-    else if(f!==AJ_FIRMA){ AJ_FIRMA=f; BD.ajustes.mod=ahoraReal(); }
+    else if(f!==AJ_FIRMA){ AJ_FIRMA=f; tocar(BD.ajustes); }
     if(!BD.ajustes.mod) BD.ajustes.mod=ahoraReal();
     /* y por separado, la hora de lo que SÍ viaja a sus otros equipos:
        así cambiar el idioma o los colores también llega al otro aparato,
@@ -1522,7 +1567,7 @@ function guardar(){
     try{
       var g=JSON.stringify([ajustesQueViajan(BD.ajustes), BD.tema]);
       if(AJ_VIAJA===null) AJ_VIAJA=g;
-      else if(g!==AJ_VIAJA){ AJ_VIAJA=g; BD.ajustes.operMod=ahoraReal(); }
+      else if(g!==AJ_VIAJA){ AJ_VIAJA=g; BD.ajustes.operMod=adelante(BD.ajustes.operMod); }
       if(!BD.ajustes.operMod) BD.ajustes.operMod=ahoraReal();
     }catch(e){}
   }
@@ -3434,6 +3479,7 @@ function confirmar(tit, cuerpo, textoOk, alOk, peligro){
    12 · PIEZAS QUE SE REPITEN
    ===================================================================== */
 var IC={
+  persona:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>',
   mundo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/></svg>',
   res:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>',
   spot:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M15 9.5a3.5 3 0 1 0 0 5"/></svg>',
@@ -4798,7 +4844,7 @@ function editarOp(id){
       confirmar("Eliminar","Se borra la "+(o.tipo==="venta"?"venta":"compra")+" de <b>"+
         cant(o.cant)+" "+esc(o.sym)+"</b> en todos sus equipos.","Eliminar", function(){
           BD.ops=BD.ops.filter(function(x){ return x.id!==o.id; });
-          anotarBorrado(o.id); guardar(); repintar(); aviso("Eliminado.");
+          anotarBorrado(o.id, o.mod); guardar(); repintar(); aviso("Eliminado.");
         }, true);
     };
     M.querySelector("#eOk").onclick=function(){
@@ -4810,7 +4856,7 @@ function editarOp(id){
       o.fecha=M.querySelector("#eF").value||hoy();
       o.casa=M.querySelector("#eCa").value;
       o.nota=M.querySelector("#eN").value.trim();
-      o.mod=ahoraReal();
+      tocar(o);
       guardar(); cerrar(); repintar(); aviso("Guardado.");
     };
   });
@@ -4932,7 +4978,7 @@ function verMoneda(sym){
       confirmar("Quitar "+esc(sym),"Se borran los <b>"+e.ops.length+"</b> "+pal(e.ops.length,"movimiento","movimientos")+" de "+
         esc(sym)+" (compras y ventas) en todos sus equipos. Los futuros de esta moneda no se tocan.",
         "Quitar "+esc(sym), function(){
-          e.ops.forEach(function(o){ anotarBorrado(o.id); });
+          e.ops.forEach(function(o){ anotarBorrado(o.id, o.mod); });
           BD.ops=BD.ops.filter(function(o){ return String(o.sym).toUpperCase()!==sym; });
           guardar(); repintar(); aviso(sym+" quitada del portafolio.");
         }, true);
@@ -5076,7 +5122,7 @@ function ambito(k){
       guardarCfg: function(c){
         if(!p) return;
         p.capital=c.cartera0!=null?c.cartera0:p.capital;
-        p.riesgo=c.riesgo; p.apal=c.apal; p.com=c.com; p.mod=ahoraReal();
+        p.riesgo=c.riesgo; p.apal=c.apal; p.com=c.com; tocar(p);
         guardar();
       },
       nuevo: function(o){ o.prueba=p?p.id:""; BD.back.push(o); },
@@ -5782,7 +5828,7 @@ function activarOperacion(id,k){
   var A=ambito(k);
   var f=A.lista.filter(function(x){ return x.id===id; })[0];
   if(!f){ aviso("Esa operación ya no existe.",true); return; }
-  f.estado="abierta"; f.horaEntrada=horaYa(); f.mod=ahoraReal();
+  f.estado="abierta"; f.horaEntrada=horaYa(); tocar(f);
   guardar(); repintar();
   aviso("Listo: la operación de "+esc(f.sym)+" ya cuenta como abierta.");
 }
@@ -6200,7 +6246,7 @@ function cerrarOperacion(id, k){
       f.salida=x; f.estado="cerrada"; f.pct=null;
       f.cierre=M.querySelector("#cF").value||hoy();
       f.com=num(M.querySelector("#cK").value)||0;
-      f.mod=ahoraReal();
+      tocar(f);
       guardar(); cerrar(); repintar();
       var s2=estadoOp(f);
       aviso("Cerrada · "+(s2.gan>=0?"ganó ":"perdió ")+usdF(Math.abs(s2.gan))+".");
@@ -6323,7 +6369,7 @@ function editarOperacion(id, k){
       cerrar();
       confirmar("Eliminar operación","Se borra la operación <b>"+esc(String(f.n||""))+
         "</b> de "+esc(f.sym||"")+" en todos sus equipos.","Eliminar", function(){
-          A.quitar(f.id); anotarBorrado(f.id); guardar(); repintar(); aviso("Eliminada.");
+          A.quitar(f.id); anotarBorrado(f.id, f.mod); guardar(); repintar(); aviso("Eliminada.");
         }, true);
     };
     M.querySelector("#eOk").onclick=function(){
@@ -6351,7 +6397,7 @@ function editarOperacion(id, k){
       f.plan=plan; f.animo=animo;
       f.estado = d.estado;
       if(f.estado==="cerrada"&&!f.cierre) f.cierre=hoy();
-      f.pct=null; f.mod=ahoraReal();
+      f.pct=null; tocar(f);
       guardar(); cerrar(); repintar(); aviso("Guardada.");
     };
   });
@@ -6410,7 +6456,7 @@ function renombrarPrueba(){
     M.querySelector("#rOk").onclick=function(){
       var n=M.querySelector("#rN").value.trim();
       if(!n){ aviso("Escriba un nombre.",true); return; }
-      p.nombre=n; p.mod=ahoraReal(); guardar(); cerrar(); pintarBack(); aviso("Listo.");
+      p.nombre=n; tocar(p); guardar(); cerrar(); pintarBack(); aviso("Listo.");
     };
   });
 }
@@ -6422,10 +6468,10 @@ function borrarPrueba(){
     "</b> "+pal(n,"operación","operaciones")+" de prueba, en todos sus equipos. Su dinero de verdad no se toca.",
     "Borrar la prueba", function(){
       copiaDeRescate("borrar la prueba "+(p.nombre||""));
-      opsDePrueba(p.id).forEach(function(o){ anotarBorrado(o.id); });
+      opsDePrueba(p.id).forEach(function(o){ anotarBorrado(o.id, o.mod); });
       BD.back=BD.back.filter(function(o){ return o.prueba!==p.id; });
       BD.pruebas=BD.pruebas.filter(function(x){ return x.id!==p.id; });
-      anotarBorrado(p.id);
+      anotarBorrado(p.id, p.mod);
       BD.ajustes.prueba=BD.pruebas.length?BD.pruebas[0].id:"";
       guardar(); repintar(); aviso("Prueba borrada.");
     }, true);
@@ -6486,7 +6532,7 @@ function vigilarCierres(){
       /* en un corto se espera que el precio SUBA a la entrada; en un largo, que BAJE */
       var llego = (f.lado==="SHORT") ? (pr>=ent) : (pr<=ent);
       if(!llego) return;
-      f.estado="abierta"; f.horaEntrada=horaYa(); f.fecha=f.fecha||hoy(); f.mod=ahoraReal();
+      f.estado="abierta"; f.horaEntrada=horaYa(); f.fecha=f.fecha||hoy(); tocar(f);
       hechas.push({tipo:par[0], bueno:true,
         texto:(par[0]==="back"?"[prueba] ":"")+f.sym+" op "+(f.n||"")+" ENTRÓ: el precio llegó a "+
           precio(ent)+" · ahora la operación está abierta"});
@@ -6507,7 +6553,7 @@ function vigilarCierres(){
       }
       if(!toco) return;
       f.salida=toco.p; f.estado="cerrada"; f.cierre=hoy(); f.pct=null;
-      f.auto=toco.q; f.horaCierre=horaYa(); f.mod=ahoraReal();
+      f.auto=toco.q; f.horaCierre=horaYa(); tocar(f);
       var st=estadoOp(f);
       hechas.push({tipo:par[0], texto:(par[0]==="back"?"[prueba] ":"")+f.sym+" op "+(f.n||"")+
         " tocó el "+toco.q+" en "+precio(toco.p)+" · "+(st.gan>=0?"ganó ":"perdió ")+
@@ -6522,7 +6568,7 @@ function vigilarCierres(){
     if(!toca) return;
     var e=estadoDe(o.sym);
     var c=Math.min(+o.cant||0, e.cantidad);
-    anotarBorrado(o.id);
+    anotarBorrado(o.id, o.mod);
     BD.ordenes=BD.ordenes.filter(function(x){ return x.id!==o.id; });
     if(!(c>0)){
       hechas.push({tipo:"spot", texto:"La venta programada de "+o.sym+" no se hizo: ya no tenía monedas", bueno:false});
@@ -6678,7 +6724,7 @@ function quitarOrden(id){
   if(!o) return;
   confirmar("Quitar la venta programada","Se quita la venta programada de <b>"+cant(o.cant)+" "+
     esc(o.sym)+"</b> a "+precio(o.precio)+".","Quitarla", function(){
-      anotarBorrado(o.id);
+      anotarBorrado(o.id, o.mod);
       BD.ordenes=BD.ordenes.filter(function(x){ return x.id!==id; });
       guardar(); repintar(); aviso("Quitada.");
     }, true);
@@ -6728,7 +6774,7 @@ function cfgAvisos(){
 function ponAvisos(cambios){
   var a=cfgAvisos();
   Object.keys(cambios).forEach(function(k){ a[k]=cambios[k]; });
-  BD.ajustes.mod=ahoraReal();
+  tocar(BD.ajustes);
   guardar();
 }
 
@@ -6925,10 +6971,10 @@ function vigilarAlertas(){
     var p=precioDe(a.sym); if(p==null) return;
     var son = a.dir==="sube" ? p>=a.precio : p<=a.precio;
     if(son && !a.sono){
-      a.sono=1; a.cuando=Date.now(); a.mod=ahoraReal(); cambio=true;
+      a.sono=1; a.cuando=Date.now(); tocar(a); cambio=true;
       nuevas.push(a.sym+" "+(a.dir==="sube"?"llegó a":"bajó a")+" "+precio(a.precio));
     } else if(!son && a.sono){
-      a.sono=0; a.mod=ahoraReal(); cambio=true;    /* se rearma para la próxima */
+      a.sono=0; tocar(a); cambio=true;    /* se rearma para la próxima */
     }
   });
   if(!cambio) return;
@@ -7636,7 +7682,7 @@ function alertasQueSonaron(){
   var cambio=false;
   var r=(BD.alertas||[]).filter(function(a){
     var son=alertaSuena(a);
-    if(!son&&a.visto){ a.visto=0; a.mod=ahoraReal(); cambio=true; }
+    if(!son&&a.visto){ a.visto=0; tocar(a); cambio=true; }
     return son&&!a.visto;
   });
   if(cambio){ try{ guardar(); }catch(e){} }
@@ -7721,7 +7767,7 @@ function pintarAlr(){
   c.querySelectorAll("[data-avis]").forEach(function(b){
     b.onclick=function(){
       var a=BD.alertas[+b.getAttribute("data-avis")];
-      if(a){ a.visto=Date.now(); a.mod=ahoraReal(); }
+      if(a){ a.visto=Date.now(); tocar(a); }
       guardar(); pintarAlr(); pintarMenu();
       aviso("Listo. No le vuelvo a avisar de esa hasta que el precio se devuelva y la cruce otra vez.");
     };
@@ -7733,7 +7779,7 @@ function pintarAlr(){
       confirmar("Quitar alerta","Se quita la alerta de <b>"+esc(a.sym)+" "+
         (a.dir==="sube"?"sube a":"baja a")+" "+precio(a.precio)+"</b> en todos sus equipos.",
         "Quitarla", function(){
-          if(a.id) anotarBorrado(a.id);
+          if(a.id) anotarBorrado(a.id, a.mod);
           BD.alertas.splice(i,1);
           guardar(); pintarAlr(); pintarMenu();
           try{ avisarAlVigilante(); }catch(e){}
@@ -7942,10 +7988,43 @@ function limpiarBorrados(l){
     .filter(function(x){ return x.t>=corte; })
     .sort(function(a,b){ return a.t-b.t; }).slice(-BORRADO_TOPE);
 }
-function anotarBorrado(id){
+/* la hora del registro que se va a borrar, por si quien llama no la pasó */
+function modDeRegistro(id){
+  var m=0;
+  [BD.ops,BD.fut,BD.back,BD.pruebas,BD.ordenes,BD.alertas].forEach(function(L){
+    (L||[]).forEach(function(x){
+      if(x&&x.id===id){ var w=+x.mod||0; if(w>m) m=w; }
+    });
+  });
+  return m;
+}
+/* =====================================================================
+   UN BORRADO SIEMPRE LE GANA AL REGISTRO QUE BORRA
+   ---------------------------------------------------------------------
+   El fallo que esto arregla, en palabras de Luis: registra una compra con
+   la sesión CERRADA, entra con su cuenta, borra la compra… y la compra
+   VUELVE A APARECER.
+
+   Por qué pasaba. Con la sesión cerrada el programa todavía no sabe que el
+   reloj de ese equipo va adelantado, así que la compra se guarda con la
+   hora cruda — pongamos, 40 segundos en el futuro. Al entrar con la cuenta,
+   Google le dice la hora buena y el programa se corrige. El borrado se
+   estampa entonces con esa hora corregida… que queda ANTES que la de la
+   compra. Y la regla de la mezcla es «manda el más reciente»: ganaba la
+   compra, y volvía.
+
+   El arreglo: el borrado se estampa, como mínimo, un milisegundo después
+   del registro que mata. Así nunca pierde contra su propio registro — pero
+   si OTRO aparato lo cambia de verdad más tarde, ese cambio sigue mandando,
+   que es como debe ser.
+   ===================================================================== */
+function anotarBorrado(id, mod){
   if(!id) return;
   BD.borrados=BD.borrados||[];
-  BD.borrados.push({id:id, t:ahoraReal()});
+  var m=(mod!=null) ? (+mod||0) : modDeRegistro(id);
+  var t=ahoraReal();
+  if(m>=t) t=m+1;
+  BD.borrados.push({id:id, t:t});
   if(BD.borrados.length>BORRADO_TOPE+500) BD.borrados=limpiarBorrados(BD.borrados);
 }
 
@@ -9055,18 +9134,88 @@ function entrarConGoogle(){
     return false;
   });
 }
+/* =====================================================================
+   SALIR DE LA CUENTA — con las dos opciones, y de vuelta al inicio
+   ---------------------------------------------------------------------
+   No se usa confirmar(), que solo admite un botón de acción y la usa medio
+   programa. Esta lleva su propia hoja, con las dos salidas en dos filas:
+   en el teléfono tres botones en línea no caben.
+   ===================================================================== */
+function cuantoHayAqui(){
+  var n=0;
+  [BD.ops,BD.fut,BD.back,BD.pruebas,BD.ordenes,BD.alertas].forEach(function(L){
+    n+=(L||[]).length;
+  });
+  return n;
+}
 function salirDeCuenta(){
-  confirmar("Salir de la cuenta",
-    "Sus datos se quedan guardados en su cuenta y en este equipo. Al volver a entrar "+
-    "con el mismo correo aparecen otra vez.",
-    "Salir", function(){
-      if(!CTA.sdk){ CTA.u=null; pintarCuenta(); return; }
-      CTA.sdk.A.signOut(CTA.sdk.auth).then(function(){
-        CTA.u=null; CTA.correo=""; CTA.nombre=""; CTA.foto="";
-        var c=ctaCfg(); c.correo=""; c.uid=""; guardar();
-        pintarCuenta(); aviso("Salió de la cuenta.");
-      });
+  var correo=CTA.correo||"su cuenta";
+  var n=cuantoHayAqui();
+  abrir('<div class="hoja"><div class="hh"><h3>Salir de la cuenta</h3>'+
+    '<button class="x" data-cerrar>×</button></div><div class="hb">'+
+    '<p style="margin:0 0 4px;font-size:14px;line-height:1.7">Entró con <b>'+esc(correo)+
+    '</b>. Al salir, lo que registre deja de guardarse en su cuenta y vuelve a la pantalla '+
+    'de inicio.</p>'+
+
+    '<div class="opSalir" id="osQuedan">'+
+      '<b>Salir y dejar mis datos aquí</b>'+
+      '<i>Sigue usando la aplicación sin cuenta, con todo lo que tiene'+
+      (n?' ('+n+' registros)':'')+'. Al volver a entrar, lo nuevo se sube solo.</i>'+
+    '</div>'+
+    '<div class="opSalir mala" id="osBorra">'+
+      '<b>Salir y borrar este aparato</b>'+
+      '<i>Para un teléfono prestado o un equipo que ya no es suyo. '+
+      '<b>Sus datos siguen en su cuenta</b> y vuelven al entrar con el mismo correo.</i>'+
+    '</div>'+
+
+    '</div><div class="hf"><button class="b" data-cerrar>Cancelar</button></div></div>',
+    function(M){
+      var q=M.querySelector("#osQuedan"), b=M.querySelector("#osBorra");
+      if(q) q.onclick=function(){ cerrar(); hacerSalida(false); };
+      if(b) b.onclick=function(){
+        cerrar();
+        confirmar("Borrar todo de este aparato",
+          "Se borra de ESTE aparato todo lo que tiene registrado. <b>En su cuenta se queda "+
+          "intacto</b> y vuelve en cuanto entre otra vez con "+esc(correo)+".<br><br>"+
+          "Si no piensa volver a entrar en este aparato, no habrá forma de recuperarlo desde aquí.",
+          "Salir y borrar", function(){ hacerSalida(true); }, true);
+      };
     });
+}
+/* el trabajo de verdad: cerrar la sesión y, si toca, vaciar este aparato */
+function hacerSalida(borrar){
+  function rematar(){
+    CTA.u=null; CTA.correo=""; CTA.nombre=""; CTA.foto="";
+    var c=ctaCfg(); c.correo=""; c.uid=""; c.hora=0;
+    if(borrar) vaciarEsteAparato();
+    guardar();
+    pintarCuenta();
+    volverABienvenida(borrar);
+  }
+  if(!CTA.sdk){ rematar(); return; }
+  CTA.sdk.A.signOut(CTA.sdk.auth).then(rematar).catch(rematar);
+}
+/* deja el aparato como recién instalado, SIN tocar lo que hay en la cuenta:
+   por eso no se apunta nada en «borrados», que viajaría y lo borraría allá */
+function vaciarEsteAparato(){
+  BD.ops=[]; BD.fut=[]; BD.back=[]; BD.pruebas=[]; BD.ordenes=[]; BD.alertas=[];
+  BD.borrados=[]; BD.precios={};
+  try{ localStorage.removeItem(LLAVE_RESCATE); }catch(e){}
+  BD.ajustes.vioBienvenida=0;
+  CTA.firma="";
+  try{ repintar(); }catch(e){}
+}
+/* de vuelta al menú de inicio: entrar con Google o seguir sin cuenta */
+function volverABienvenida(seBorro){
+  BD.ajustes.vioBienvenida=0;
+  try{ guardar(); }catch(e){}
+  try{
+    var z=document.getElementById("bienve");
+    if(z) z.remove();
+    mostrarBienvenida(seBorro ? "vacio" : "salio");
+  }catch(e){
+    aviso("Salió de la cuenta.");
+  }
 }
 function mensajeCuenta(e){
   var c=(e&&e.code)||"", m=(e&&e.message)||"No se pudo.";
@@ -9140,7 +9289,7 @@ function firmaCuenta(){
   return firmaNube()+"|"+extra;
 }
 /* la hora del último cambio de lo que viaja. Se mantiene sola en guardar() */
-function marcarAjustesMios(){ BD.ajustes.operMod=ahoraReal(); }
+function marcarAjustesMios(){ BD.ajustes.operMod=adelante(BD.ajustes.operMod); }
 
 /* de los dos equipos se queda el más reciente, igual que con los movimientos */
 function juntarAjustesMios(remoto, tema, manuales){
@@ -9560,7 +9709,94 @@ function panelCuenta(){
   }
   return h+'</div></div>';
 }
+/* =====================================================================
+   EL CHIP DE LA CUENTA — arriba a la derecha, en TODAS las pantallas
+   ---------------------------------------------------------------------
+   La cabecera está escrita una sola vez en el cuerpo del documento, así
+   que esto sale en Resumen, Spot, Futuros, Backtesting, Alertas y
+   Ajustes sin tocar ninguna de ellas.
+
+   Sin cuenta  → un botón «Entrar».
+   Con cuenta  → su foto de Google; al tocarla se abre el panelito.
+
+   El panelito, y no un «Salir» suelto, porque un botón de salir a un
+   toque en seis pantallas se pulsa sin querer, y es algo que se usa dos
+   veces en la vida. De paso, ahí vive el «guardado hace un momento».
+   ===================================================================== */
+function inicialCuenta(){
+  var s=(CTA.nombre||CTA.correo||"?").trim();
+  return (s.charAt(0)||"?").toUpperCase();
+}
+function pintarChipCuenta(){
+  var c=document.getElementById("cuentaChip");
+  if(!c) return;
+  if(ctaDentro()){
+    c.innerHTML='<button type="button" class="chipCta" id="chipCta" '+
+      'title="'+esc(CTA.correo||"Su cuenta")+'" aria-label="Su cuenta">'+
+      (CTA.foto
+        ? '<img src="'+esc(CTA.foto)+'" alt="">'
+        : '<span class="ini">'+esc(inicialCuenta())+'</span>')+
+      '</button>';
+    var b=c.querySelector("#chipCta");
+    if(b) b.onclick=panelitoCuenta;
+  } else {
+    c.innerHTML='<button type="button" class="b sm chipEntrar" id="chipEntrar">'+
+      '<span class="ic">'+IC.persona+'</span>Entrar</button>';
+    var e=c.querySelector("#chipEntrar");
+    if(e) e.onclick=function(){
+      if(!ctaPuede()){
+        aviso("Para entrar con Google el programa tiene que estar abierto desde su dirección "+
+          "de internet o instalado como aplicación, no desde un archivo del disco.", true);
+        return;
+      }
+      entrarConGoogle();
+    };
+  }
+}
+/* cuánto hace que se guardó, en palabras */
+function haceCuantoCorto(t){
+  if(!t) return "todavía no";
+  var s=Math.max(0, Math.round((ahoraReal()-t)/1000));
+  if(s<10) return "hace un momento";
+  if(s<60) return "hace "+s+" segundos";
+  var m=Math.round(s/60);
+  if(m<60) return "hace "+m+(m===1?" minuto":" minutos");
+  var h=Math.round(m/60);
+  if(h<24) return "hace "+h+(h===1?" hora":" horas");
+  return fechaHora(t);
+}
+function panelitoCuenta(){
+  var c=ctaCfg();
+  var cuando=CTA.ultimaSubida||CTA.hora||c.hora||0;
+  abrir('<div class="hoja"><div class="hh">'+
+    (CTA.foto?'<img class="ic" src="'+esc(CTA.foto)+'" alt="">'
+             :'<span class="ic"><span class="disco" style="background:var(--ac);color:var(--acInk)">'+
+              esc(inicialCuenta())+'</span></span>')+
+    '<div style="flex:1;min-width:0"><h3 style="font-size:17px">'+esc(CTA.nombre||"Su cuenta")+'</h3>'+
+    '<div class="mut" style="font-size:13px">'+esc(CTA.correo)+'</div></div>'+
+    '<button class="x" data-cerrar>×</button></div>'+
+    '<div class="hb">'+
+      '<div class="fdet"><span class="e">Guardado en su cuenta</span>'+
+        '<b class="'+(CTA.escuchaViva?"up":"")+'">'+esc(haceCuantoCorto(cuando))+'</b>'+
+        '<i>'+(CTA.escuchaViva?"al día con sus otros aparatos":"sin conexión por ahora")+'</i></div>'+
+      '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:14px">'+
+        '<button class="b ac" id="pcGuarda">Guardar ahora</button>'+
+        '<button class="b" id="pcLlave">Llave y seguridad</button>'+
+      '</div>'+
+      '<div style="margin-top:10px">'+
+        '<button class="b gh" id="pcSale" style="width:100%">Salir de la cuenta</button></div>'+
+    '</div></div>', function(M){
+      var x;
+      if((x=M.querySelector("#pcGuarda"))) x.onclick=function(){
+        subirACuenta(true).then(function(){ aviso("Guardado en su cuenta."); cerrar(); });
+      };
+      if((x=M.querySelector("#pcLlave"))) x.onclick=function(){ cerrar(); irA("dat"); };
+      if((x=M.querySelector("#pcSale")))  x.onclick=function(){ cerrar(); salirDeCuenta(); };
+    });
+}
+
 function pintarCuenta(){
+  try{ pintarChipCuenta(); }catch(e){}
   var v=document.getElementById("ctaCaja");
   if(!v||!v.parentNode) return;
   var d=document.createElement("div");
@@ -9622,17 +9858,37 @@ function ayudaCuenta(){
 function vioBienvenida(){ return !!BD.ajustes.vioBienvenida; }
 function cerrarBienvenida(comoEntro){
   BD.ajustes.vioBienvenida=Date.now();
-  BD.ajustes.mod=ahoraReal();
+  tocar(BD.ajustes);
   try{ guardar(); }catch(e){}
   var z=document.getElementById("bienve");
   if(z){ z.classList.add("fuera"); setTimeout(function(){ try{ z.remove(); }catch(e){} }, 320); }
   try{ despertarAudio(); }catch(e){}
   if(comoEntro==="sincuenta") aviso("Listo. Puede entrar con su cuenta cuando quiera, desde Ajustes.");
 }
-function mostrarBienvenida(){
-  if(vioBienvenida()) return;
+/* motivo: "" la primera vez · "salio" al salir dejando los datos ·
+   "vacio" al salir borrando este aparato. El saludo NO puede ser el mismo:
+   decirle «Bienvenido» a quien lleva seis meses usándola es tomarle el pelo. */
+function mostrarBienvenida(motivo){
+  if(!motivo && vioBienvenida()) return;
   if(document.getElementById("bienve")) return;
   var puede=false; try{ puede=ctaPuede(); }catch(e){}
+  var hay=0; try{ hay=cuantoHayAqui(); }catch(e){}
+  var tit, dicho;
+  if(motivo==="vacio"){
+    tit='Listo, este aparato quedó limpio';
+    dicho='Lo que tenía registrado sigue guardado en su cuenta. Entre con el mismo correo '+
+          'y vuelve todo.';
+  } else if(motivo==="salio"){
+    tit='Salió de su cuenta';
+    dicho= hay
+      ? ('Lo que tiene registrado sigue aquí, en este aparato, y lo puede seguir usando sin '+
+         'cuenta. Mientras no entre, no se guarda en su cuenta.')
+      : 'Puede entrar otra vez cuando quiera, o seguir sin cuenta.';
+  } else {
+    tit='Bienvenido a<br><b>'+esc(APP_NOMBRE)+'</b>';
+    dicho='Su spot, sus futuros y su backtesting en un solo sitio. Con los precios en vivo '+
+          'y las cuentas hechas.';
+  }
   var z=document.createElement("div");
   z.id="bienve";
   z.innerHTML=
@@ -9648,13 +9904,13 @@ function mostrarBienvenida(){
           '<circle cx="39" cy="5.5" r="3.8" fill="#fff"/>'+
         '</svg>'+
       '</div>'+
-      '<h1>Bienvenido a<br><b>'+esc(APP_NOMBRE)+'</b></h1>'+
-      '<p class="bvDicho">Su spot, sus futuros y su backtesting en un solo sitio. '+
-        'Con los precios en vivo y las cuentas hechas.</p>'+
-      '<div class="bvPuntos">'+
-        '<span>Spot y futuros</span><span>Backtesting</span>'+
-        '<span>Alertas de precio</span><span>Más de 1.500 monedas</span>'+
-      '</div>'+
+      '<h1>'+tit+'</h1>'+
+      '<p class="bvDicho">'+dicho+'</p>'+
+      (motivo ? '' :
+        '<div class="bvPuntos">'+
+          '<span>Spot y futuros</span><span>Backtesting</span>'+
+          '<span>Alertas de precio</span><span>Más de 1.500 monedas</span>'+
+        '</div>')+
       (puede
         ? '<button class="bvGoogle" id="bvEntrar">'+
             '<svg viewBox="0 0 48 48" aria-hidden="true">'+
@@ -9668,7 +9924,9 @@ function mostrarBienvenida(){
         : '<div class="bvAviso">Está abriendo el programa desde un <b>archivo del disco</b>, '+
           'y Google no deja entrar con una cuenta así. Úselo sin cuenta, o ábralo desde su '+
           'dirección de internet.</div>')+
-      '<button class="bvSin" id="bvSin">usar sin cuenta, solo en este teléfono</button>'+
+      '<button class="bvSin" id="bvSin">'+
+        (motivo==="salio" && hay ? 'seguir sin cuenta, con lo que tengo aquí'
+                                 : 'usar sin cuenta, solo en este teléfono')+'</button>'+
       '<p class="bvLegal">'+enlacePrivacidad()+'</p>'+
     '</div>';
   document.body.appendChild(z);
@@ -10099,10 +10357,9 @@ function instalarApp(){
     '</div></div><div class="hf"><button class="b ac" data-cerrar>Entendido</button></div></div>');
 }
 function bloqueInstalar(){
-  if(yaInstalado())
-    return '<div class="nota">Está corriendo como <b>aplicación instalada</b>. '+
-      'Entrando con su cuenta de Google, la computadora y el teléfono comparten '+
-      'la misma información.</div>';
+  /* Ya instalada (y dentro de la APK siempre lo está): aquí no se dice nada.
+     Avisarle a alguien de que la aplicación que abrió está instalada es ruido. */
+  if(yaInstalado()) return "";
   if(location.protocol==="file:")
     return '<div class="nota">Está corriendo <b>CRIPTO.html</b> como <b>programa portable</b>: '+
       'ese archivo solo, sin nada al lado, ya trae todo adentro — los iconos, los dibujos y el '+
@@ -10238,11 +10495,11 @@ function engancharDat(box){
       "Se guarda una copia de rescate en este aparato por si se arrepiente.",
       "Sí, borrar todo", function(){
         copiaDeRescate("borrar todo");
-        BD.ops.forEach(function(o){ anotarBorrado(o.id); });
-        BD.fut.forEach(function(f){ anotarBorrado(f.id); });
-        BD.back.forEach(function(f){ anotarBorrado(f.id); });
-        BD.pruebas.forEach(function(p){ anotarBorrado(p.id); });
-        (BD.alertas||[]).forEach(function(a){ anotarBorrado(a.id); });
+        BD.ops.forEach(function(o){ anotarBorrado(o.id, o.mod); });
+        BD.fut.forEach(function(f){ anotarBorrado(f.id, f.mod); });
+        BD.back.forEach(function(f){ anotarBorrado(f.id, f.mod); });
+        BD.pruebas.forEach(function(p){ anotarBorrado(p.id, p.mod); });
+        (BD.alertas||[]).forEach(function(a){ anotarBorrado(a.id, a.mod); });
         BD.ops=[]; BD.fut=[]; BD.back=[]; BD.pruebas=[]; BD.alertas=[];
         BD.ajustes.prueba="";
         guardar(); repintar();
@@ -10437,7 +10694,7 @@ function limpiarDatos(){
           GRUPOS.forEach(function(g){
             if(!marcado[g.k]) return;
             var fuera=cuales(g), ids={};
-            fuera.forEach(function(o){ if(o.id){ ids[o.id]=1; anotarBorrado(o.id); } });
+            fuera.forEach(function(o){ if(o.id){ ids[o.id]=1; anotarBorrado(o.id, o.mod); } });
             BD[g.k]=(BD[g.k]||[]).filter(function(o){ return !(o.id&&ids[o.id]); });
           });
           guardar(); repintar(); pintarMenu();
@@ -10757,6 +11014,7 @@ function repintarCabecera(){
   if(s) s.textContent=SUBTIT[vista]||"";
   pintarPulso();
   pintarMenu();
+  try{ pintarChipCuenta(); }catch(e){}   /* el chip de la cuenta, en todas las pantallas */
   try{
     var S=carteraSpot(), F=carteraFut(BD.fut), D=efectivoDet();
     var tot=S.tot.valor+F.tot.margenAbierto+F.tot.flotante+(D.total>0?D.total:0);
