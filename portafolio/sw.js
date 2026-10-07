@@ -1,15 +1,28 @@
 /* =====================================================================
-   AYUDANTE DEL TELÉFONO · Mi Portafolio Cripto v31
+   AYUDANTE DEL TELÉFONO · Mi Portafolio Cripto v32
    Guarda el programa para que abra sin internet y, cuando usted publica
    una versión nueva, la trae solo la próxima vez que lo abra con internet.
    ===================================================================== */
-var CAJA = "cripto-v31";
+var CAJA = "cripto-v32";
 var ARCHIVOS = ["./", "./index.html", "./CRIPTO.html", "./manifest.webmanifest", "./icono-192.png", "./icono-512.png", "./icono-mask-192.png", "./icono-mask-512.png", "./privacidad.html"];
 
+/* OJO, AQUÍ ESTABA EL FALLO DE «SUBO Y NO SE ACTUALIZA»:
+   GitHub manda sus archivos con «guárdalos 10 minutos» (max-age=600). Si el
+   ayudante nuevo los pedía normal, el navegador le daba la copia VIEJA de su
+   propio almacén y el ayudante la guardaba en su caja nueva. A partir de ahí
+   la caja nueva tenía el programa viejo dentro y ya no se arreglaba solo.
+   Con cache:"reload" se obliga a pedirlos a GitHub de verdad. */
+function pedirDeVerdad(u){ return new Request(u, {cache:"reload"}); }
+
 self.addEventListener("install", function (ev) {
+  self.skipWaiting();                 /* el ayudante nuevo manda ya, sin esperar */
   ev.waitUntil(
     caches.open(CAJA).then(function (c) {
-      return c.addAll(ARCHIVOS).catch(function () { /* si falta alguno, no se cae */ });
+      return Promise.all(ARCHIVOS.map(function (u) {
+        return fetch(pedirDeVerdad(u)).then(function (r) {
+          if (r && r.ok) return c.put(u, r);
+        }).catch(function () { /* si falta alguno, no se cae */ });
+      }));
     })
   );
 });
@@ -33,8 +46,15 @@ self.addEventListener("fetch", function (ev) {
   try { url = new URL(req.url); } catch (e) { return; }
   if (url.origin !== location.origin) return;
 
+  /* el programa y sus piezas se piden SIEMPRE a GitHub, sin pasar por el
+     almacén del navegador: si no, una copia de hace diez minutos tapa la
+     versión que usted acaba de publicar */
+  var p = url.pathname;
+  var esPrograma = /\.(html|js|webmanifest)$/.test(p) || p.endsWith("/");
+  var pedir = esPrograma ? new Request(req.url, {cache:"no-store"}) : req;
+
   ev.respondWith(
-    fetch(req).then(function (r) {
+    fetch(pedir).then(function (r) {
       if (r && r.ok) {
         var copia = r.clone();
         caches.open(CAJA).then(function (c) { c.put(req, copia); });

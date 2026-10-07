@@ -1179,7 +1179,7 @@ a:hover{color:var(--ac2)}
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por su cuenta de Google.
    ===================================================================== */
-var VERSION="31";
+var VERSION="32";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -8353,6 +8353,47 @@ function registrarAyudante(){
     try{ reg.update(); }catch(e){}
   }).catch(function(){});
 }
+/* =====================================================================
+   ¿TENGO LA ÚLTIMA? — y el botón que lo arregla por las bravas
+   ---------------------------------------------------------------------
+   Pregunta a su dirección de internet qué versión hay publicada, sin pasar
+   por ningún almacén intermedio, y la compara con la que está corriendo.
+   Si no coinciden, el botón tira abajo el ayudante y TODAS las cajas
+   guardadas y recarga: queda como recién bajado del internet.
+   ===================================================================== */
+var VER_PUB={ mirando:false, hay:"", visto:0 };
+function mirarVersionPublicada(){
+  if(location.protocol==="file:") return Promise.resolve("");
+  if(VER_PUB.mirando) return Promise.resolve(VER_PUB.hay);
+  VER_PUB.mirando=true;
+  var u=location.href.replace(/[?#].*$/,"").replace(/[^\/]*$/,"")+"CRIPTO.html?v="+Date.now();
+  return fetch(u,{cache:"no-store"}).then(function(r){ return r.ok?r.text():""; })
+    .then(function(txt){
+      var m=String(txt).match(/var VERSION="([^"]+)"/);
+      VER_PUB.hay=m?m[1]:""; VER_PUB.visto=Date.now();
+      return VER_PUB.hay;
+    }).catch(function(){ return ""; })
+    .then(function(x){ VER_PUB.mirando=false; return x; });
+}
+/* deja el aparato como recién bajado: fuera el ayudante y fuera las cajas */
+function traerLaUltima(){
+  var pasos=[];
+  try{
+    if(navigator.serviceWorker&&navigator.serviceWorker.getRegistrations)
+      pasos.push(navigator.serviceWorker.getRegistrations().then(function(l){
+        return Promise.all(l.map(function(r){ return r.unregister(); }));
+      }).catch(function(){}));
+  }catch(e){}
+  try{
+    if(window.caches&&caches.keys)
+      pasos.push(caches.keys().then(function(ks){
+        return Promise.all(ks.map(function(k){ return caches.delete(k); }));
+      }).catch(function(){}));
+  }catch(e){}
+  return Promise.all(pasos).then(function(){
+    location.replace(location.href.replace(/[?#].*$/,"")+"?v="+Date.now());
+  });
+}
 function mostrarVersionNueva(txt){
   var e=document.getElementById("verNueva");
   if(!e) return;
@@ -8360,8 +8401,11 @@ function mostrarVersionNueva(txt){
   e.className="on";
   document.getElementById("vnOk").onclick=function(){
     e.className="";
+    /* Antes aquí solo se le pedía el relevo al ayudante y se recargaba. Si el
+       aparato se había quedado con una copia vieja guardada, eso no servía de
+       nada: recargaba y volvía a salir lo mismo. Ahora se barre de verdad. */
     if(SW_REG&&SW_REG.waiting) SW_REG.waiting.postMessage({tipo:"actualizar"});
-    else location.reload();
+    traerLaUltima();
   };
   document.getElementById("vnNo").onclick=function(){ e.className=""; };
 }
@@ -10374,9 +10418,17 @@ function bloqueInstalar(){
     'sin barra de direcciones. Los dos comparten la misma información.</div>';
 }
 function panelPrograma(){
+  var hay=VER_PUB.hay, vieja = hay && hay!==VERSION;
   return '<div class="caja"><h2><span class="ic">'+IC.doc+'</span>El programa'+
-    '<span class="sp"></span><span class="chip a">versión '+esc(VERSION)+'</span></h2>'+
+    '<span class="sp"></span><span class="chip '+(vieja?"s":"a")+'">versión '+esc(VERSION)+'</span></h2>'+
     '<div class="cp">'+
+    (vieja
+      ? '<div class="nota ojo"><b>Hay una versión más nueva: la '+esc(hay)+'.</b> '+
+        'Su aparato se quedó con la '+esc(VERSION)+' guardada. Pulse el botón y la trae de una.</div>'+
+        '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:10px">'+
+        '<button class="b ac" id="pgUlt">Traer la versión '+esc(hay)+'</button></div>'
+      : '<div style="display:flex;gap:9px;flex-wrap:wrap">'+
+        '<button class="b" id="pgMira">¿Tengo la última versión?</button></div>')+
     bloqueInstalar()+
     '<div class="nota">'+enlacePrivacidad("Lea la política de privacidad")+
     ' — qué se guarda, dónde y quién puede verlo.</div>'+
@@ -10467,6 +10519,20 @@ function engancharDat(box){
     aviso(BD.ajustes.meta?("Meta puesta en "+usd(BD.ajustes.meta)+"."):"Meta quitada.");
   });
   /* --- respaldo --- */
+  /* --- programa: comprobar y traer la última --- */
+  if((x=box.querySelector("#pgMira"))) x.onclick=function(){
+    var b2=x; b2.disabled=true; b2.textContent="Mirando…";
+    mirarVersionPublicada().then(function(v){
+      b2.disabled=false; b2.textContent="¿Tengo la última versión?";
+      if(!v){ aviso("No se pudo preguntar. ¿Hay internet?", true); return; }
+      if(v===VERSION) aviso("Sí, tiene la última: la "+VERSION+".");
+      else pintarDat();
+    });
+  };
+  if((x=box.querySelector("#pgUlt"))) x.onclick=function(){
+    x.disabled=true; x.textContent="Trayéndola…";
+    traerLaUltima();
+  };
   if((x=box.querySelector("#rEleg"))) x.onclick=elegirCarpetaRespaldo;
   if((x=box.querySelector("#rYa"))) x.onclick=function(){
     respaldarAhora(true).then(function(ok){
@@ -11095,6 +11161,17 @@ function arrancar(){
   try{ programarMarca(); }catch(e){}
   try{ reconectarRespaldo(); }catch(e){}
   try{ registrarAyudante(); }catch(e){}
+  /* ¿se quedó este aparato con una versión vieja guardada? se mira sin ruido */
+  setTimeout(function(){
+    try{
+      mirarVersionPublicada().then(function(v){
+        if(v && v!==VERSION){
+          mostrarVersionNueva(tr("Su aparato se quedó con la versión")+" "+VERSION+
+            ". "+tr("Hay publicada la")+" "+v+".");
+        }
+      });
+    }catch(e){}
+  }, 4000);
   try{ aplicarIdioma(false); }catch(e){}
   try{ arrancarNube(); }catch(e){}
   try{ arrancarCuenta(); }catch(e){}
