@@ -1124,6 +1124,12 @@ body.conCerrojo{overflow:hidden}
   font-size:13px;font-weight:600;color:var(--t3);text-decoration:underline;
   text-underline-offset:3px;padding:8px}
 .cjAyuda:hover{color:var(--tx)}
+/* «Entrar con mi clave»: el repuesto, cuando la huella no coge. Va debajo
+   de la huella y se lee claro, pero sin competir con el botón grande. */
+.cjOtra{margin-top:14px;background:none;border:0;cursor:pointer;font-family:inherit;
+  font-size:14px;font-weight:700;color:var(--acTx);text-decoration:underline;
+  text-underline-offset:3px;padding:10px}
+.cjOtra:hover{color:var(--ac)}
 .bvLegal{margin:14px 0 0;font-size:11.5px}
 .bvLegal a{color:var(--t3);text-decoration:underline;text-underline-offset:3px}
 .bvLegal a:hover{color:var(--ac)}
@@ -1208,7 +1214,7 @@ body.conCerrojo{overflow:hidden}
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por su cuenta de Google.
    ===================================================================== */
-var VERSION="35";
+var VERSION="36";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -7795,20 +7801,28 @@ function pintarCerrojo(){
   var z=document.createElement("div");
   z.id="cerrojo";
   var conHuella=!!c.credId, conPin=!!c.pin;
+  /* Con huella puesta, la clave NO se enseña: es el repuesto, y enseñarla
+     al lado hacía creer que había que poner las dos. Queda detrás de un
+     enlace pequeño, para cuando la huella no coja. */
+  var claveEscondida = conHuella && conPin;
   z.innerHTML=
     '<div class="cjCaja">'+
       '<div class="cjIco">'+IC.candado+'</div>'+
       '<h2>'+esc(APP_NOMBRE)+'</h2>'+
-      '<p class="cjDicho">Desbloquee para entrar.</p>'+
+      '<p class="cjDicho">'+(conHuella?"Ponga su huella para entrar.":"Escriba su clave para entrar.")+'</p>'+
       '<div id="cjEspera" class="cjEspera"></div>'+
       (conHuella?'<button class="b vd gr cjGrande" id="cjHuella">'+IC.huella+
                  'Desbloquear</button>':'')+
-      (conPin?'<div class="cjPin">'+
+      (conPin?'<div class="cjPin"'+(claveEscondida?' style="display:none"':'')+'>'+
           '<input id="cjNum" type="password" inputmode="numeric" autocomplete="off" '+
           'maxlength="8" placeholder="• • • •" aria-label="Su clave">'+
-          '<button class="b ac" id="cjOk">Entrar</button></div>':'')+
+          /* «Abrir», no «Entrar»: en la cuenta «Entrar» significa iniciar
+             sesión, y la misma palabra para dos cosas distintas se traduce
+             mal a los otros idiomas. */
+          '<button class="b ac" id="cjOk">Abrir</button></div>':'')+
+      (claveEscondida?'<button class="cjOtra" id="cjUsarClave">Entrar con mi clave</button>':'')+
       '<div id="cjMal" class="cjMal"></div>'+
-      '<button class="cjAyuda" id="cjOlvide">Olvidé cómo entrar</button>'+
+      '<button class="cjAyuda" id="cjOlvide">¿Olvidó su clave?</button>'+
     '</div>';
   document.body.appendChild(z);
   document.body.classList.add("conCerrojo");
@@ -7840,14 +7854,39 @@ function pintarCerrojo(){
     if(y){ y.classList.add("fuera"); setTimeout(function(){ try{ y.remove(); }catch(e){} }, 260); }
     try{ despertarAudio(); }catch(e){}
   }
+  /* ---------------------------------------------------------------------
+     La huella se pide SOLA al abrir. Antes había que pulsar «Desbloquear»
+     primero, que es un paso de más: el aparato ya sabe lo que le va a
+     pedir. El botón se queda para volver a intentarlo si usted la cancela
+     o si el navegador no deja abrir el lector sin tocar antes la pantalla.
+
+     Un detalle que importa: el intento AUTOMÁTICO no cuenta como fallo.
+     Si contara, abrir y cerrar la aplicación cinco veces sin poner el dedo
+     le dejaría el aparato esperando un minuto sin haber hecho nada malo.
+     --------------------------------------------------------------------- */
   var h=z.querySelector("#cjHuella");
-  if(h) h.onclick=function(){
-    if(cuantoFalta()>0) return;
-    h.disabled=true;
+  function pedirla(sola){
+    if(!h || LLV.pidiendo || cuantoFalta()>0) return;
+    LLV.pidiendo=true; h.disabled=true;
     pedirHuella().then(function(ok){
-      h.disabled=false;
-      if(ok) abrir2(); else fallo("No se reconoció. Pruebe otra vez.");
+      LLV.pidiendo=false; h.disabled=false;
+      if(ok){ abrir2(); return; }
+      if(sola) return;                 /* la cancelación de la automática no penaliza */
+      fallo("No se reconoció. Pruebe otra vez.");
+    }).catch(function(){
+      LLV.pidiendo=false; h.disabled=false;
     });
+  }
+  if(h) h.onclick=function(){ pedirla(false); };
+  if(h) setTimeout(function(){ pedirla(true); }, 350);
+
+  var otra=z.querySelector("#cjUsarClave");
+  if(otra) otra.onclick=function(){
+    var caja=z.querySelector(".cjPin");
+    if(caja) caja.style.display="";
+    otra.style.display="none";
+    var e=z.querySelector(".cjDicho"); if(e) e.textContent="Escriba su clave para entrar.";
+    try{ z.querySelector("#cjNum").focus(); }catch(e2){}
   };
   var ok2=z.querySelector("#cjOk"), num=z.querySelector("#cjNum");
   function probarPin(){
@@ -7865,17 +7904,35 @@ function pintarCerrojo(){
     setTimeout(function(){ try{ if(!conHuella) num.focus(); }catch(e){} }, 300);
   }
   z.querySelector("#cjOlvide").onclick=function(){
-    abrir('<div class="hoja"><div class="hh"><h3>Olvidé cómo entrar</h3>'+
+    abrir('<div class="hoja"><div class="hh"><h3>¿Olvidó su clave?</h3>'+
       '<button class="x" data-cerrar>×</button></div><div class="hb">'+
-      '<p style="font-size:14px;line-height:1.75;margin:0 0 12px">Desde aquí no se puede '+
-      'saltar: si se pudiera, no serviría de nada.</p>'+
-      '<p style="font-size:14px;line-height:1.75;margin:0 0 12px"><b>Si entró con su cuenta '+
-      'de Google</b>, no ha perdido nada. Borre los datos de la aplicación en los ajustes de '+
-      'su teléfono (o del navegador en la computadora), ábrala otra vez y entre con el mismo '+
-      'correo: le vuelve todo.</p>'+
-      '<p style="font-size:14px;line-height:1.75;margin:0"><b>Si no tenía cuenta</b> y guardó '+
-      'alguna copia, puede restaurarla al volver a abrir. Si no guardó ninguna, no hay forma '+
-      'de recuperarlo. Por eso vale la pena entrar con su cuenta.</p>'+
+
+      /* OJO al escribir esto: cada negrita parte la frase en un trozo
+         suelto, y cada trozo necesita su propia línea en los cinco
+         diccionarios. Por eso las negritas abarcan frases ENTERAS: así
+         cada frase se traduce de una pieza y no quedan cachos en español. */
+      '<p style="font-size:14px;line-height:1.75;margin:0 0 14px">'+
+      '<b>No le llega ningún código al correo.</b> Su clave no está guardada en ningún '+
+      'servidor: solo en este aparato, y revuelta. Nadie más la sabe, así que nadie se la '+
+      'puede mandar. Y desde aquí no se puede saltar: si se pudiera, no serviría de nada.</p>'+
+
+      '<p style="font-size:14px;line-height:1.75;margin:0 0 8px">'+
+      '<b>Si entra con su cuenta de Google, no pierde nada.</b> Sus datos están en su '+
+      'cuenta, no en la clave:</p>'+
+      '<ol class="pasos" style="margin:0 0 12px">'+
+        '<li>Borre los datos de la aplicación — en los ajustes de su teléfono, o los del '+
+        'navegador si es la computadora.</li>'+
+        '<li>Abra la aplicación otra vez.</li>'+
+        '<li>Entre con el mismo correo de siempre.</li>'+
+      '</ol>'+
+      '<p style="font-size:14px;line-height:1.75;margin:0 0 14px">Le vuelven sus compras, sus '+
+      'operaciones y sus pruebas. Lo único que se pierde es la clave, y pone otra.</p>'+
+
+      '<div class="nota ojo"><b>Si usa la aplicación sin cuenta, como invitado, y olvida la '+
+      'clave, no hay forma de recuperar nada.</b> Lo que tenga aquí se pierde. Por eso vale '+
+      'la pena entrar con su cuenta: es gratis y es lo único que le devuelve su información '+
+      'si pasa algo.</div>'+
+
       '</div><div class="hf"><button class="b ac" data-cerrar>Entendido</button></div></div>');
   };
   pintarEspera();
@@ -7921,13 +7978,33 @@ function panelLlave(){
 
   '</div></div>';
 }
+/* ---------------------------------------------------------------------
+   AQUÍ ESTABA EL FALLO DE «PULSO LA HUELLA Y NO PASA NADA»:
+
+   Antes los tres botones se enganchaban con UNA MISMA variable `x`, y el
+   manejador del botón de la huella se guardaba la variable, no el botón.
+   Para cuando el usuario pulsaba, esa variable ya apuntaba al ÚLTIMO
+   botón de la lista — «Quitar el bloqueo» — que NO EXISTE mientras no
+   haya bloqueo puesto. Así que apuntaba a la nada, el programa se caía
+   en la primera línea del manejador, en silencio, y ni siquiera llegaba
+   a pedir la huella.
+
+   Y por eso «funcionaba» después de poner una clave: con el bloqueo ya
+   puesto, el botón de quitar existía, la variable apuntaba a algo, y la
+   huella se registraba.
+
+   Ahora cada botón tiene SU PROPIA variable. No se comparte ninguna.
+   --------------------------------------------------------------------- */
 function engancharLlave(box){
-  var x;
-  if((x=box.querySelector("#llHuella"))) x.onclick=function(){
-    var b=x; b.disabled=true;
+  var bHuella=box.querySelector("#llHuella");
+  var bClave =box.querySelector("#llPin");
+  var bQuita =box.querySelector("#llQuita");
+
+  if(bHuella) bHuella.onclick=function(){
+    bHuella.disabled=true;
     huellaUsable().then(function(se){
       if(!se){
-        b.disabled=false;
+        bHuella.disabled=false;
         var n=box.querySelector("#llNoHuella");
         if(n) n.style.display="";
         aviso("Este aparato no tiene huella puesta. Puede poner una clave.", true);
@@ -7937,13 +8014,19 @@ function engancharLlave(box){
         aviso("Listo. Al abrir se le pedirá su huella.");
         pintarDat();
       }).catch(function(e){
-        b.disabled=false;
+        bHuella.disabled=false;
         aviso("No se pudo poner: "+((e&&e.message)||e), true);
       });
+    }).catch(function(e){
+      /* pase lo que pase, el usuario se entera: nunca más un botón mudo */
+      bHuella.disabled=false;
+      aviso("No se pudo poner: "+((e&&e.message)||e), true);
     });
   };
-  if((x=box.querySelector("#llPin"))) x.onclick=pedirPinNuevo;
-  if((x=box.querySelector("#llQuita"))) x.onclick=function(){
+
+  if(bClave) bClave.onclick=pedirPinNuevo;
+
+  if(bQuita) bQuita.onclick=function(){
     confirmar("Quitar el bloqueo",
       "La aplicación volverá a abrirse sin pedir nada. Cualquiera que coja este aparato "+
       "verá su portafolio.", "Quitarlo", function(){
@@ -7962,9 +8045,16 @@ function pedirPinNuevo(){
         '<input id="pnB" type="password" inputmode="numeric" maxlength="8" autocomplete="off"></div>'+
     '</div>'+
     '<div class="nota mal" id="pnMal" style="display:none"></div>'+
-    '<div class="nota ojo">Si la olvida no hay forma de saltársela. Con su cuenta de Google '+
-    'puesta no pierde nada: borra los datos de la aplicación, entra con el mismo correo y '+
-    'le vuelve todo.</div>'+
+    /* lo que pasa si la olvida NO es lo mismo con cuenta que sin cuenta, y
+       se lo decimos antes de ponerla, no después */
+    (ctaDentro()
+      ? '<div class="nota">Si la olvida no hay forma de saltársela, pero no pierde nada: sus '+
+        'datos están en su cuenta. Borra los datos de la aplicación, entra con el mismo '+
+        'correo y le vuelve todo.</div>'
+      : '<div class="nota ojo"><b>Ojo: usted no ha entrado con su cuenta.</b> Si olvida esta '+
+        'clave, no hay forma de recuperar lo que tiene guardado aquí, ni por correo ni de '+
+        'ninguna otra manera. Entre con su cuenta de Google y deja de ser un problema: es '+
+        'gratis.</div>')+
     '</div><div class="hf"><button class="b" data-cerrar>Cancelar</button>'+
     '<button class="b ac" id="pnOk">Guardar la clave</button></div></div>',
     function(M){
@@ -10351,9 +10441,14 @@ function engancharCuenta(box){
   if((x=box.querySelector("#ctaJunta"))) x.onclick=function(){ fusionarConCuenta(false); };
   if((x=box.querySelector("#ctaBaja")))  x.onclick=traerDeCuenta;
   if((x=box.querySelector("#ctaAyuda"))) x.onclick=ayudaCuenta;
-  if((x=box.querySelector("#ctaAuto")))  x.onclick=function(){
+  /* su propia variable: compartir una sola entre varios botones es lo que
+     dejó mudo el botón de la huella. Aquí todavía no daba problema porque
+     era el último de la lista, pero en cuanto se añadiera otro detrás se
+     rompía igual. */
+  var bAuto=box.querySelector("#ctaAuto");
+  if(bAuto) bAuto.onclick=function(){
     var c=ctaCfg(); c.auto=(c.auto===false); guardar();
-    x.className=(c.auto!==false)?"on":"";
+    bAuto.className=(c.auto!==false)?"on":"";
     programarCuenta();
     if(c.auto!==false) subirACuenta(false);
   };
@@ -11015,17 +11110,22 @@ function engancharDat(box){
   });
   /* --- respaldo --- */
   /* --- programa: comprobar y traer la última --- */
-  if((x=box.querySelector("#pgMira"))) x.onclick=function(){
-    var b2=x; b2.disabled=true; b2.textContent="Mirando…";
+  /* cada uno con SU variable. Antes los dos se guardaban la `x` común y,
+     para cuando el usuario pulsaba, esa `x` ya apuntaba a otro botón de
+     más abajo: estos dos botones tocaban al que no era. */
+  var bMira=box.querySelector("#pgMira");
+  if(bMira) bMira.onclick=function(){
+    bMira.disabled=true; bMira.textContent="Mirando…";
     mirarVersionPublicada().then(function(v){
-      b2.disabled=false; b2.textContent="¿Tengo la última versión?";
+      bMira.disabled=false; bMira.textContent="¿Tengo la última versión?";
       if(!v){ aviso("No se pudo preguntar. ¿Hay internet?", true); return; }
       if(v===VERSION) aviso("Sí, tiene la última: la "+VERSION+".");
       else pintarDat();
     });
   };
-  if((x=box.querySelector("#pgUlt"))) x.onclick=function(){
-    x.disabled=true; x.textContent="Trayéndola…";
+  var bUlt=box.querySelector("#pgUlt");
+  if(bUlt) bUlt.onclick=function(){
+    bUlt.disabled=true; bUlt.textContent="Trayéndola…";
     traerLaUltima();
   };
   if((x=box.querySelector("#rEleg"))) x.onclick=elegirCarpetaRespaldo;
@@ -12976,25 +13076,17 @@ DIC.en={
 "Guardar la clave":"Save the code",
 "La clave son de # a # números, nada más.":"The code is # to # digits, nothing else.",
 "Las dos no coinciden.":"The two do not match.",
-"Si la olvida no hay forma de saltársela. Con su cuenta de Google puesta no pierde nada: borra los datos de la aplicación, entra con el mismo correo y le vuelve todo.":"If you forget it there is no way around it. With your Google account set up you lose nothing: clear the app's data, sign in with the same address and everything comes back.",
 "Clave guardada.":"Code saved.",
 "Bloqueo quitado.":"Lock removed.",
 "Listo. Al abrir se le pedirá su huella.":"Done. When it opens it will ask for your fingerprint.",
 "La aplicación volverá a abrirse sin pedir nada. Cualquiera que coja este aparato verá su portafolio.":"The app will open again without asking for anything. Anyone who picks up this device will see your portfolio.",
 "Quitarla":"Remove it",
-"Desbloquee para entrar.":"Unlock to get in.",
 "Desbloquear":"Unlock",
 "No coincide. Vuelva a intentarlo.":"It does not match. Try again.",
 "Esa no es la clave.":"That is not the code.",
 "No se reconoció. Pruebe otra vez.":"Not recognised. Try again.",
 "Demasiados intentos. Espere # segundos.":"Too many attempts. Wait # seconds.",
 "Demasiados intentos. Espere # segundo.":"Too many attempts. Wait # second.",
-"Olvidé cómo entrar":"I forgot how to get in",
-"Desde aquí no se puede saltar: si se pudiera, no serviría de nada.":"It cannot be bypassed from here: if it could, it would be useless.",
-"Si entró con su cuenta de Google":"If you signed in with your Google account",
-", no ha perdido nada. Borre los datos de la aplicación en los ajustes de su teléfono (o del navegador en la computadora), ábrala otra vez y entre con el mismo correo: le vuelve todo.":", you have lost nothing. Clear the app's data in your phone's settings (or the browser's on the computer), open it again and sign in with the same address: everything comes back.",
-"Si no tenía cuenta":"If you had no account",
-"y guardó alguna copia, puede restaurarla al volver a abrir. Si no guardó ninguna, no hay forma de recuperarlo. Por eso vale la pena entrar con su cuenta.":"and saved a copy, you can restore it when you open again. If you saved none, there is no way to get it back. That is why signing in with your account is worth it.",
 "Su portafolio empieza aquí":"Your portfolio starts here",
 "Registre su primera compra en Spot, o su primera operación en Futuros. El promedio, la ganancia y el lote se calculan solos.":"Log your first buy in Spot, or your first trade in Futures. The average, the gain and the position size work themselves out.",
 "Empezar por Spot":"Start with Spot",
@@ -13035,6 +13127,26 @@ DIC.en={
 "# ventas contadas a medias":"# sales counted only in part",
 "no tiene registrada la compra. Sin saber lo que le costó, el programa cuenta esa venta entera como ganancia y el «ya ganado» le sale inflado. Registre esas compras y el número cuadra.":"the buy is not logged. Without knowing what it cost you, the app counts that whole sale as profit and your \u00abalready made\u00bb comes out inflated. Log those buys and the number adds up.",
 "vendió más de lo que tenía en ese momento, así que solo se contó la parte que alcanzaba. Revise la fecha de la compra: si la puso después de la venta, corríjala y el número cuadra.":"you sold more than you held at that point, so only the part that was covered got counted. Check the buy's date: if you put it after the sale, fix it and the number adds up.",
+/* v36 · la pantalla del candado y lo que pasa si olvida la clave */
+"Ponga su huella para entrar.":"Put your finger on the sensor to get in.",
+"Escriba su clave para entrar.":"Type your code to get in.",
+"Entrar con mi clave":"Use my code instead",
+"¿Olvidó su clave?":"Forgot your code?",
+"No le llega ningún código al correo.":"No code is sent to your email.",
+"Su clave no está guardada en ningún servidor: solo en este aparato, y revuelta. Nadie más la sabe, así que nadie se la puede mandar. Y desde aquí no se puede saltar: si se pudiera, no serviría de nada.":"Your code is not stored on any server: only on this device, and scrambled. Nobody else knows it, so nobody can send it to you. And it cannot be bypassed from here: if it could, it would be useless.",
+"Si entra con su cuenta de Google, no pierde nada.":"If you sign in with your Google account, you lose nothing.",
+"Sus datos están en su cuenta, no en la clave:":"Your data lives in your account, not in the code:",
+"Borre los datos de la aplicación — en los ajustes de su teléfono, o los del navegador si es la computadora.":"Clear the app's data — in your phone's settings, or the browser's if you are on the computer.",
+"Abra la aplicación otra vez.":"Open the app again.",
+"Entre con el mismo correo de siempre.":"Sign in with the same address as always.",
+"Le vuelven sus compras, sus operaciones y sus pruebas. Lo único que se pierde es la clave, y pone otra.":"Your buys, your trades and your tests all come back. The only thing lost is the code, and you set a new one.",
+"Si usa la aplicación sin cuenta, como invitado, y olvida la clave, no hay forma de recuperar nada.":"If you use the app without an account, as a guest, and you forget the code, there is no way to get anything back.",
+"Lo que tenga aquí se pierde. Por eso vale la pena entrar con su cuenta: es gratis y es lo único que le devuelve su información si pasa algo.":"Whatever you have here is lost. That is why signing in with your account is worth it: it is free, and it is the only thing that gives your data back if something happens.",
+"Si la olvida no hay forma de saltársela, pero no pierde nada: sus datos están en su cuenta. Borra los datos de la aplicación, entra con el mismo correo y le vuelve todo.":"If you forget it there is no way around it, but you lose nothing: your data is in your account. Clear the app's data, sign in with the same address and everything comes back.",
+"Ojo: usted no ha entrado con su cuenta.":"Careful: you have not signed in with your account.",
+"Si olvida esta clave, no hay forma de recuperar lo que tiene guardado aquí, ni por correo ni de ninguna otra manera. Entre con su cuenta de Google y deja de ser un problema: es gratis.":"If you forget this code, there is no way to get back what you have stored here — not by email, not any other way. Sign in with your Google account and it stops being a problem: it is free.",
+"Abrir":"Open",
+"Entrar":"Sign in",
 "Hace # min · Binance":"# min ago · Binance"
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
@@ -14131,25 +14243,17 @@ DIC.pt={
 "Guardar la clave":"Guardar a senha",
 "La clave son de # a # números, nada más.":"A senha são de # a # números, nada mais.",
 "Las dos no coinciden.":"As duas não coincidem.",
-"Si la olvida no hay forma de saltársela. Con su cuenta de Google puesta no pierde nada: borra los datos de la aplicación, entra con el mismo correo y le vuelve todo.":"Se o esquecer não há forma de o saltar. Com a sua conta Google posta não perde nada: apaga os dados da aplicação, entra com o mesmo email e volta tudo.",
 "Clave guardada.":"Senha guardada.",
 "Bloqueo quitado.":"Bloqueio retirado.",
 "Listo. Al abrir se le pedirá su huella.":"Pronto. Ao abrir pedirá a sua impressão digital.",
 "La aplicación volverá a abrirse sin pedir nada. Cualquiera que coja este aparato verá su portafolio.":"A aplicação voltará a abrir sem pedir nada. Qualquer pessoa que pegue neste aparelho verá o seu portfólio.",
 "Quitarla":"Tirá-la",
-"Desbloquee para entrar.":"Desbloqueie para entrar.",
 "Desbloquear":"Desbloquear",
 "No coincide. Vuelva a intentarlo.":"Não coincide. Tente outra vez.",
 "Esa no es la clave.":"Essa não é a senha.",
 "No se reconoció. Pruebe otra vez.":"Não se reconheceu. Tente outra vez.",
 "Demasiados intentos. Espere # segundos.":"Demasiadas tentativas. Espere # segundos.",
 "Demasiados intentos. Espere # segundo.":"Demasiadas tentativas. Espere # segundo.",
-"Olvidé cómo entrar":"Esqueci-me de como entrar",
-"Desde aquí no se puede saltar: si se pudiera, no serviría de nada.":"Daqui não se pode saltar: se fosse possível, não serviria de nada.",
-"Si entró con su cuenta de Google":"Se entrou com a sua conta Google",
-", no ha perdido nada. Borre los datos de la aplicación en los ajustes de su teléfono (o del navegador en la computadora), ábrala otra vez y entre con el mismo correo: le vuelve todo.":", não perdeu nada. Apague os dados da aplicação nas definições do seu telemóvel (ou do navegador no computador), abra-a outra vez e entre com o mesmo email: volta tudo.",
-"Si no tenía cuenta":"Se não tinha conta",
-"y guardó alguna copia, puede restaurarla al volver a abrir. Si no guardó ninguna, no hay forma de recuperarlo. Por eso vale la pena entrar con su cuenta.":"e guardou alguma cópia, pode restaurá-la ao voltar a abrir. Se não guardou nenhuma, não há forma de o recuperar. Por isso vale a pena entrar com a sua conta.",
 "Su portafolio empieza aquí":"O seu portfólio começa aqui",
 "Registre su primera compra en Spot, o su primera operación en Futuros. El promedio, la ganancia y el lote se calculan solos.":"Registe a sua primeira compra em Spot, ou a sua primeira operação em Futuros. A média, o ganho e o lote calculam-se sozinhos.",
 "Empezar por Spot":"Começar por Spot",
@@ -14190,6 +14294,26 @@ DIC.pt={
 "# ventas contadas a medias":"# vendas contadas pela metade",
 "no tiene registrada la compra. Sin saber lo que le costó, el programa cuenta esa venta entera como ganancia y el «ya ganado» le sale inflado. Registre esas compras y el número cuadra.":"a compra não está registada. Sem saber quanto lhe custou, o programa conta essa venda inteira como lucro e o «já ganho» sai-lhe inflacionado. Registe essas compras e o número fecha.",
 "vendió más de lo que tenía en ese momento, así que solo se contó la parte que alcanzaba. Revise la fecha de la compra: si la puso después de la venta, corríjala y el número cuadra.":"vendeu mais do que tinha naquele momento, por isso só se contou a parte que dava. Verifique a data da compra: se a pôs depois da venda, corrija-a e o número fecha.",
+/* v36 · la pantalla del candado y lo que pasa si olvida la clave */
+"Ponga su huella para entrar.":"Ponha a sua impressão digital para entrar.",
+"Escriba su clave para entrar.":"Escreva a sua senha para entrar.",
+"Entrar con mi clave":"Entrar com a minha senha",
+"¿Olvidó su clave?":"Esqueceu-se da sua senha?",
+"No le llega ningún código al correo.":"Não lhe chega nenhum código ao correio.",
+"Su clave no está guardada en ningún servidor: solo en este aparato, y revuelta. Nadie más la sabe, así que nadie se la puede mandar. Y desde aquí no se puede saltar: si se pudiera, no serviría de nada.":"A sua senha não está guardada em nenhum servidor: só neste aparelho, e baralhada. Mais ninguém a sabe, por isso ninguém lha pode mandar. E daqui não se pode saltar: se fosse possível, não serviria de nada.",
+"Si entra con su cuenta de Google, no pierde nada.":"Se entrar com a sua conta Google, não perde nada.",
+"Sus datos están en su cuenta, no en la clave:":"Os seus dados estão na sua conta, não na senha:",
+"Borre los datos de la aplicación — en los ajustes de su teléfono, o los del navegador si es la computadora.":"Apague os dados da aplicação — nas definições do seu telefone, ou nas do navegador se for o computador.",
+"Abra la aplicación otra vez.":"Abra a aplicação outra vez.",
+"Entre con el mismo correo de siempre.":"Entre com o mesmo correio de sempre.",
+"Le vuelven sus compras, sus operaciones y sus pruebas. Lo único que se pierde es la clave, y pone otra.":"Voltam as suas compras, as suas operações e os seus testes. A única coisa que se perde é a senha, e põe outra.",
+"Si usa la aplicación sin cuenta, como invitado, y olvida la clave, no hay forma de recuperar nada.":"Se usar a aplicação sem conta, como convidado, e se esquecer da senha, não há forma de recuperar nada.",
+"Lo que tenga aquí se pierde. Por eso vale la pena entrar con su cuenta: es gratis y es lo único que le devuelve su información si pasa algo.":"O que tiver aqui perde-se. Por isso vale a pena entrar com a sua conta: é grátis e é a única coisa que lhe devolve a sua informação se acontecer algo.",
+"Si la olvida no hay forma de saltársela, pero no pierde nada: sus datos están en su cuenta. Borra los datos de la aplicación, entra con el mismo correo y le vuelve todo.":"Se se esquecer dela não há forma de a saltar, mas não perde nada: os seus dados estão na sua conta. Apaga os dados da aplicação, entra com o mesmo correio e volta tudo.",
+"Ojo: usted no ha entrado con su cuenta.":"Atenção: não entrou com a sua conta.",
+"Si olvida esta clave, no hay forma de recuperar lo que tiene guardado aquí, ni por correo ni de ninguna otra manera. Entre con su cuenta de Google y deja de ser un problema: es gratis.":"Se se esquecer desta senha, não há forma de recuperar o que tem guardado aqui, nem por correio nem de nenhuma outra maneira. Entre com a sua conta Google e deixa de ser um problema: é grátis.",
+"Abrir":"Abrir",
+"Entrar":"Entrar",
 "Hace # min · Binance":"Há # min · Binance"
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
@@ -15286,25 +15410,17 @@ DIC.fr={
 "Guardar la clave":"Enregistrer le code",
 "La clave son de # a # números, nada más.":"Le code, c'est de # à # chiffres, rien d'autre.",
 "Las dos no coinciden.":"Les deux ne correspondent pas.",
-"Si la olvida no hay forma de saltársela. Con su cuenta de Google puesta no pierde nada: borra los datos de la aplicación, entra con el mismo correo y le vuelve todo.":"Si vous l'oubliez, impossible de le contourner. Avec votre compte Google en place vous ne perdez rien : effacez les données de l'application, entrez avec la même adresse et tout revient.",
 "Clave guardada.":"Code enregistré.",
 "Bloqueo quitado.":"Verrouillage retiré.",
 "Listo. Al abrir se le pedirá su huella.":"C'est fait. À l'ouverture, il demandera votre empreinte.",
 "La aplicación volverá a abrirse sin pedir nada. Cualquiera que coja este aparato verá su portafolio.":"L'application s'ouvrira de nouveau sans rien demander. Quiconque prend cet appareil verra votre portefeuille.",
 "Quitarla":"Le retirer",
-"Desbloquee para entrar.":"Déverrouillez pour entrer.",
 "Desbloquear":"Déverrouiller",
 "No coincide. Vuelva a intentarlo.":"Cela ne correspond pas. Réessayez.",
 "Esa no es la clave.":"Ce n'est pas le code.",
 "No se reconoció. Pruebe otra vez.":"Non reconnu. Réessayez.",
 "Demasiados intentos. Espere # segundos.":"Trop d'essais. Attendez # secondes.",
 "Demasiados intentos. Espere # segundo.":"Trop d'essais. Attendez # seconde.",
-"Olvidé cómo entrar":"J'ai oublié comment entrer",
-"Desde aquí no se puede saltar: si se pudiera, no serviría de nada.":"On ne peut pas le contourner d'ici : si c'était possible, cela ne servirait à rien.",
-"Si entró con su cuenta de Google":"Si vous êtes entré avec votre compte Google",
-", no ha perdido nada. Borre los datos de la aplicación en los ajustes de su teléfono (o del navegador en la computadora), ábrala otra vez y entre con el mismo correo: le vuelve todo.":", vous n'avez rien perdu. Effacez les données de l'application dans les réglages de votre téléphone (ou du navigateur sur l'ordinateur), rouvrez-la et entrez avec la même adresse : tout revient.",
-"Si no tenía cuenta":"Si vous n'aviez pas de compte",
-"y guardó alguna copia, puede restaurarla al volver a abrir. Si no guardó ninguna, no hay forma de recuperarlo. Por eso vale la pena entrar con su cuenta.":"et avez gardé une copie, vous pouvez la restaurer à la réouverture. Si vous n'en avez gardé aucune, il n'y a pas moyen de récupérer. C'est pour cela qu'entrer avec votre compte en vaut la peine.",
 "Su portafolio empieza aquí":"Votre portefeuille commence ici",
 "Registre su primera compra en Spot, o su primera operación en Futuros. El promedio, la ganancia y el lote se calculan solos.":"Notez votre premier achat en Spot, ou votre première opération en Futures. La moyenne, le gain et le lot se calculent tout seuls.",
 "Empezar por Spot":"Commencer par le Spot",
@@ -15345,6 +15461,26 @@ DIC.fr={
 "# ventas contadas a medias":"# ventes comptées à moitié",
 "no tiene registrada la compra. Sin saber lo que le costó, el programa cuenta esa venta entera como ganancia y el «ya ganado» le sale inflado. Registre esas compras y el número cuadra.":"l'achat n'est pas enregistré. Sans savoir ce qu'il vous a coûté, le programme compte toute cette vente comme un gain et votre «déjà gagné» est gonflé. Enregistrez ces achats et le compte sera juste.",
 "vendió más de lo que tenía en ese momento, así que solo se contó la parte que alcanzaba. Revise la fecha de la compra: si la puso después de la venta, corríjala y el número cuadra.":"vous avez vendu plus que ce que vous déteniez à ce moment-là, donc seule la part couverte a été comptée. Vérifiez la date de l'achat : si vous l'avez mise après la vente, corrigez-la et le compte sera juste.",
+/* v36 · la pantalla del candado y lo que pasa si olvida la clave */
+"Ponga su huella para entrar.":"Posez votre empreinte pour entrer.",
+"Escriba su clave para entrar.":"Saisissez votre code pour entrer.",
+"Entrar con mi clave":"Entrer avec mon code",
+"¿Olvidó su clave?":"Vous avez oublié votre code ?",
+"No le llega ningún código al correo.":"Aucun code ne vous est envoyé par courriel.",
+"Su clave no está guardada en ningún servidor: solo en este aparato, y revuelta. Nadie más la sabe, así que nadie se la puede mandar. Y desde aquí no se puede saltar: si se pudiera, no serviría de nada.":"Votre code n'est enregistré sur aucun serveur : uniquement sur cet appareil, et brouillé. Personne d'autre ne le connaît, donc personne ne peut vous l'envoyer. Et on ne peut pas le contourner d'ici : si c'était possible, cela ne servirait à rien.",
+"Si entra con su cuenta de Google, no pierde nada.":"Si vous vous connectez avec votre compte Google, vous ne perdez rien.",
+"Sus datos están en su cuenta, no en la clave:":"Vos données sont dans votre compte, pas dans le code :",
+"Borre los datos de la aplicación — en los ajustes de su teléfono, o los del navegador si es la computadora.":"Effacez les données de l'application — dans les réglages de votre téléphone, ou ceux du navigateur sur l'ordinateur.",
+"Abra la aplicación otra vez.":"Rouvrez l'application.",
+"Entre con el mismo correo de siempre.":"Connectez-vous avec la même adresse que d'habitude.",
+"Le vuelven sus compras, sus operaciones y sus pruebas. Lo único que se pierde es la clave, y pone otra.":"Vos achats, vos opérations et vos tests reviennent tous. La seule chose perdue est le code, et vous en mettez un autre.",
+"Si usa la aplicación sin cuenta, como invitado, y olvida la clave, no hay forma de recuperar nada.":"Si vous utilisez l'application sans compte, en invité, et que vous oubliez le code, il n'y a aucun moyen de rien récupérer.",
+"Lo que tenga aquí se pierde. Por eso vale la pena entrar con su cuenta: es gratis y es lo único que le devuelve su información si pasa algo.":"Tout ce que vous avez ici est perdu. C'est pourquoi se connecter avec votre compte en vaut la peine : c'est gratuit, et c'est la seule chose qui vous rende vos données s'il arrive quelque chose.",
+"Si la olvida no hay forma de saltársela, pero no pierde nada: sus datos están en su cuenta. Borra los datos de la aplicación, entra con el mismo correo y le vuelve todo.":"Si vous l'oubliez, impossible de le contourner, mais vous ne perdez rien : vos données sont dans votre compte. Effacez les données de l'application, connectez-vous avec la même adresse et tout revient.",
+"Ojo: usted no ha entrado con su cuenta.":"Attention : vous ne vous êtes pas connecté avec votre compte.",
+"Si olvida esta clave, no hay forma de recuperar lo que tiene guardado aquí, ni por correo ni de ninguna otra manera. Entre con su cuenta de Google y deja de ser un problema: es gratis.":"Si vous oubliez ce code, il n'y a aucun moyen de récupérer ce que vous avez enregistré ici, ni par courriel ni autrement. Connectez-vous avec votre compte Google et ce n'est plus un problème : c'est gratuit.",
+"Abrir":"Ouvrir",
+"Entrar":"Se connecter",
 "Hace # min · Binance":"Il y a # min · Binance"
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
@@ -16441,25 +16577,17 @@ DIC.de={
 "Guardar la clave":"Code speichern",
 "La clave son de # a # números, nada más.":"Der Code hat # bis # Ziffern, nichts weiter.",
 "Las dos no coinciden.":"Die beiden stimmen nicht überein.",
-"Si la olvida no hay forma de saltársela. Con su cuenta de Google puesta no pierde nada: borra los datos de la aplicación, entra con el mismo correo y le vuelve todo.":"Wenn Sie sie vergessen, gibt es keinen Weg daran vorbei. Mit eingerichtetem Google-Konto verlieren Sie nichts: App-Daten löschen, mit derselben Adresse anmelden, und alles ist zurück.",
 "Clave guardada.":"Code gespeichert.",
 "Bloqueo quitado.":"Sperre entfernt.",
 "Listo. Al abrir se le pedirá su huella.":"Fertig. Beim Öffnen wird Ihr Fingerabdruck verlangt.",
 "La aplicación volverá a abrirse sin pedir nada. Cualquiera que coja este aparato verá su portafolio.":"Die App öffnet sich wieder ohne Nachfrage. Jeder, der dieses Gerät in die Hand nimmt, sieht Ihr Portfolio.",
 "Quitarla":"Entfernen",
-"Desbloquee para entrar.":"Entsperren, um hineinzukommen.",
 "Desbloquear":"Entsperren",
 "No coincide. Vuelva a intentarlo.":"Stimmt nicht. Versuchen Sie es erneut.",
 "Esa no es la clave.":"Das ist nicht der Code.",
 "No se reconoció. Pruebe otra vez.":"Nicht erkannt. Versuchen Sie es erneut.",
 "Demasiados intentos. Espere # segundos.":"Zu viele Versuche. Warten Sie # Sekunden.",
 "Demasiados intentos. Espere # segundo.":"Zu viele Versuche. Warten Sie # Sekunde.",
-"Olvidé cómo entrar":"Ich weiß nicht mehr, wie ich hineinkomme",
-"Desde aquí no se puede saltar: si se pudiera, no serviría de nada.":"Von hier aus lässt sie sich nicht umgehen: wäre es möglich, wäre sie nutzlos.",
-"Si entró con su cuenta de Google":"Wenn Sie sich mit Ihrem Google-Konto angemeldet haben",
-", no ha perdido nada. Borre los datos de la aplicación en los ajustes de su teléfono (o del navegador en la computadora), ábrala otra vez y entre con el mismo correo: le vuelve todo.":", haben Sie nichts verloren. Löschen Sie die App-Daten in den Einstellungen Ihres Telefons (oder des Browsers am Computer), öffnen Sie sie erneut und melden Sie sich mit derselben Adresse an: Alles ist zurück.",
-"Si no tenía cuenta":"Wenn Sie kein Konto hatten",
-"y guardó alguna copia, puede restaurarla al volver a abrir. Si no guardó ninguna, no hay forma de recuperarlo. Por eso vale la pena entrar con su cuenta.":"und eine Kopie gesichert haben, können Sie sie beim nächsten Öffnen zurückholen. Haben Sie keine, gibt es keinen Weg zurück. Darum lohnt sich die Anmeldung mit Ihrem Konto.",
 "Su portafolio empieza aquí":"Ihr Portfolio beginnt hier",
 "Registre su primera compra en Spot, o su primera operación en Futuros. El promedio, la ganancia y el lote se calculan solos.":"Tragen Sie Ihren ersten Kauf im Spot ein oder Ihren ersten Trade in Futures. Durchschnitt, Gewinn und Positionsgröße ergeben sich von selbst.",
 "Empezar por Spot":"Mit Spot anfangen",
@@ -16500,6 +16628,26 @@ DIC.de={
 "# ventas contadas a medias":"# Verkäufe nur halb gezählt",
 "no tiene registrada la compra. Sin saber lo que le costó, el programa cuenta esa venta entera como ganancia y el «ya ganado» le sale inflado. Registre esas compras y el número cuadra.":"der Kauf ist nicht erfasst. Ohne zu wissen, was er Sie gekostet hat, zählt das Programm diesen ganzen Verkauf als Gewinn, und Ihr «bereits verdient» fällt zu hoch aus. Erfassen Sie diese Käufe, und die Zahl stimmt.",
 "vendió más de lo que tenía en ese momento, así que solo se contó la parte que alcanzaba. Revise la fecha de la compra: si la puso después de la venta, corríjala y el número cuadra.":"Sie haben mehr verkauft, als Sie zu dem Zeitpunkt hatten, daher wurde nur der gedeckte Teil gezählt. Prüfen Sie das Datum des Kaufs: steht es nach dem Verkauf, korrigieren Sie es, und die Zahl stimmt.",
+/* v36 · la pantalla del candado y lo que pasa si olvida la clave */
+"Ponga su huella para entrar.":"Legen Sie Ihren Finger auf, um hineinzukommen.",
+"Escriba su clave para entrar.":"Geben Sie Ihren Code ein, um hineinzukommen.",
+"Entrar con mi clave":"Mit meinem Code hinein",
+"¿Olvidó su clave?":"Code vergessen?",
+"No le llega ningún código al correo.":"Es wird kein Code an Ihre E-Mail geschickt.",
+"Su clave no está guardada en ningún servidor: solo en este aparato, y revuelta. Nadie más la sabe, así que nadie se la puede mandar. Y desde aquí no se puede saltar: si se pudiera, no serviría de nada.":"Ihr Code liegt auf keinem Server: nur auf diesem Gerät, und verschlüsselt. Niemand sonst kennt ihn, also kann ihn Ihnen auch niemand schicken. Und von hier aus lässt er sich nicht umgehen: wäre es möglich, wäre er nutzlos.",
+"Si entra con su cuenta de Google, no pierde nada.":"Wenn Sie sich mit Ihrem Google-Konto anmelden, verlieren Sie nichts.",
+"Sus datos están en su cuenta, no en la clave:":"Ihre Daten liegen in Ihrem Konto, nicht im Code:",
+"Borre los datos de la aplicación — en los ajustes de su teléfono, o los del navegador si es la computadora.":"Löschen Sie die Daten der App — in den Einstellungen Ihres Telefons oder denen des Browsers am Computer.",
+"Abra la aplicación otra vez.":"Öffnen Sie die App erneut.",
+"Entre con el mismo correo de siempre.":"Melden Sie sich mit derselben Adresse wie immer an.",
+"Le vuelven sus compras, sus operaciones y sus pruebas. Lo único que se pierde es la clave, y pone otra.":"Ihre Käufe, Ihre Trades und Ihre Tests kommen alle zurück. Verloren geht nur der Code, und Sie legen einen neuen fest.",
+"Si usa la aplicación sin cuenta, como invitado, y olvida la clave, no hay forma de recuperar nada.":"Wenn Sie die App ohne Konto als Gast nutzen und den Code vergessen, lässt sich nichts zurückholen.",
+"Lo que tenga aquí se pierde. Por eso vale la pena entrar con su cuenta: es gratis y es lo único que le devuelve su información si pasa algo.":"Was Sie hier haben, ist weg. Deshalb lohnt sich die Anmeldung mit Ihrem Konto: sie ist kostenlos und das Einzige, was Ihnen Ihre Daten zurückgibt, wenn etwas passiert.",
+"Si la olvida no hay forma de saltársela, pero no pierde nada: sus datos están en su cuenta. Borra los datos de la aplicación, entra con el mismo correo y le vuelve todo.":"Wenn Sie ihn vergessen, führt kein Weg daran vorbei, aber Sie verlieren nichts: Ihre Daten liegen in Ihrem Konto. Daten der App löschen, mit derselben Adresse anmelden, und alles ist wieder da.",
+"Ojo: usted no ha entrado con su cuenta.":"Achtung: Sie haben sich nicht mit Ihrem Konto angemeldet.",
+"Si olvida esta clave, no hay forma de recuperar lo que tiene guardado aquí, ni por correo ni de ninguna otra manera. Entre con su cuenta de Google y deja de ser un problema: es gratis.":"Wenn Sie diesen Code vergessen, lässt sich nichts zurückholen, was Sie hier gespeichert haben — weder per E-Mail noch sonst wie. Melden Sie sich mit Ihrem Google-Konto an, dann ist es kein Problem mehr: es ist kostenlos.",
+"Abrir":"Öffnen",
+"Entrar":"Anmelden",
 "Hace # min · Binance":"Vor # Min · Binance"
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
@@ -17596,25 +17744,17 @@ DIC.it={
 "Guardar la clave":"Salvare il codice",
 "La clave son de # a # números, nada más.":"Il codice è da # a # numeri, nient'altro.",
 "Las dos no coinciden.":"I due non coincidono.",
-"Si la olvida no hay forma de saltársela. Con su cuenta de Google puesta no pierde nada: borra los datos de la aplicación, entra con el mismo correo y le vuelve todo.":"Se lo dimentica non c'è modo di saltarlo. Con il suo account Google messo non perde niente: cancella i dati dell'applicazione, entra con lo stesso indirizzo e torna tutto.",
 "Clave guardada.":"Codice salvato.",
 "Bloqueo quitado.":"Blocco rimosso.",
 "Listo. Al abrir se le pedirá su huella.":"Fatto. All'apertura le chiederà la sua impronta.",
 "La aplicación volverá a abrirse sin pedir nada. Cualquiera que coja este aparato verá su portafolio.":"L'applicazione tornerà ad aprirsi senza chiedere nulla. Chiunque prenda questo apparecchio vedrà il suo portafoglio.",
 "Quitarla":"Toglierla",
-"Desbloquee para entrar.":"Sblocchi per entrare.",
 "Desbloquear":"Sbloccare",
 "No coincide. Vuelva a intentarlo.":"Non coincide. Riprovi.",
 "Esa no es la clave.":"Questo non è il codice.",
 "No se reconoció. Pruebe otra vez.":"Non riconosciuto. Riprovi.",
 "Demasiados intentos. Espere # segundos.":"Troppi tentativi. Aspetti # secondi.",
 "Demasiados intentos. Espere # segundo.":"Troppi tentativi. Aspetti # secondo.",
-"Olvidé cómo entrar":"Ho dimenticato come entrare",
-"Desde aquí no se puede saltar: si se pudiera, no serviría de nada.":"Da qui non si può aggirare: se si potesse, non servirebbe a niente.",
-"Si entró con su cuenta de Google":"Se è entrato con il suo account Google",
-", no ha perdido nada. Borre los datos de la aplicación en los ajustes de su teléfono (o del navegador en la computadora), ábrala otra vez y entre con el mismo correo: le vuelve todo.":", non ha perso niente. Cancelli i dati dell'applicazione nelle impostazioni del suo telefono (o del browser sul computer), la riapra ed entri con lo stesso indirizzo: torna tutto.",
-"Si no tenía cuenta":"Se non aveva un account",
-"y guardó alguna copia, puede restaurarla al volver a abrir. Si no guardó ninguna, no hay forma de recuperarlo. Por eso vale la pena entrar con su cuenta.":"e ha salvato qualche copia, può ripristinarla alla riapertura. Se non ne ha salvata nessuna, non c'è modo di recuperarlo. Per questo vale la pena entrare con il suo account.",
 "Su portafolio empieza aquí":"Il suo portafoglio inizia qui",
 "Registre su primera compra en Spot, o su primera operación en Futuros. El promedio, la ganancia y el lote se calculan solos.":"Registri il suo primo acquisto in Spot, o la sua prima operazione in Futures. La media, il guadagno e il lotto si calcolano da soli.",
 "Empezar por Spot":"Cominciare dallo Spot",
@@ -17655,6 +17795,26 @@ DIC.it={
 "# ventas contadas a medias":"# vendite contate a metà",
 "no tiene registrada la compra. Sin saber lo que le costó, el programa cuenta esa venta entera como ganancia y el «ya ganado» le sale inflado. Registre esas compras y el número cuadra.":"l'acquisto non è registrato. Senza sapere quanto le è costato, il programma conta tutta quella vendita come guadagno e il «già guadagnato» le viene gonfiato. Registri quegli acquisti e il numero torna.",
 "vendió más de lo que tenía en ese momento, así que solo se contó la parte que alcanzaba. Revise la fecha de la compra: si la puso después de la venta, corríjala y el número cuadra.":"ha venduto più di quanto aveva in quel momento, quindi è stata contata solo la parte coperta. Controlli la data dell'acquisto: se l'ha messa dopo la vendita, la corregga e il numero torna.",
+/* v36 · la pantalla del candado y lo que pasa si olvida la clave */
+"Ponga su huella para entrar.":"Metta la sua impronta per entrare.",
+"Escriba su clave para entrar.":"Scriva il suo codice per entrare.",
+"Entrar con mi clave":"Entrare con il mio codice",
+"¿Olvidó su clave?":"Ha dimenticato il suo codice?",
+"No le llega ningún código al correo.":"Non le arriva nessun codice per email.",
+"Su clave no está guardada en ningún servidor: solo en este aparato, y revuelta. Nadie más la sabe, así que nadie se la puede mandar. Y desde aquí no se puede saltar: si se pudiera, no serviría de nada.":"Il suo codice non è salvato su nessun server: solo su questo dispositivo, e mescolato. Nessun altro lo conosce, quindi nessuno glielo può mandare. E da qui non si può aggirare: se si potesse, non servirebbe a niente.",
+"Si entra con su cuenta de Google, no pierde nada.":"Se entra con il suo account Google, non perde nulla.",
+"Sus datos están en su cuenta, no en la clave:":"I suoi dati sono nel suo account, non nel codice:",
+"Borre los datos de la aplicación — en los ajustes de su teléfono, o los del navegador si es la computadora.":"Cancelli i dati dell'applicazione — nelle impostazioni del suo telefono, o in quelle del browser se è il computer.",
+"Abra la aplicación otra vez.":"Apra di nuovo l'applicazione.",
+"Entre con el mismo correo de siempre.":"Entri con lo stesso indirizzo di sempre.",
+"Le vuelven sus compras, sus operaciones y sus pruebas. Lo único que se pierde es la clave, y pone otra.":"Tornano i suoi acquisti, le sue operazioni e le sue prove. L'unica cosa che si perde è il codice, e ne mette un altro.",
+"Si usa la aplicación sin cuenta, como invitado, y olvida la clave, no hay forma de recuperar nada.":"Se usa l'applicazione senza account, come ospite, e dimentica il codice, non c'è modo di recuperare nulla.",
+"Lo que tenga aquí se pierde. Por eso vale la pena entrar con su cuenta: es gratis y es lo único que le devuelve su información si pasa algo.":"Quello che ha qui si perde. Per questo vale la pena entrare con il suo account: è gratis ed è l'unica cosa che le restituisce le sue informazioni se succede qualcosa.",
+"Si la olvida no hay forma de saltársela, pero no pierde nada: sus datos están en su cuenta. Borra los datos de la aplicación, entra con el mismo correo y le vuelve todo.":"Se lo dimentica non c'è modo di aggirarlo, ma non perde nulla: i suoi dati sono nel suo account. Cancella i dati dell'applicazione, entra con lo stesso indirizzo e torna tutto.",
+"Ojo: usted no ha entrado con su cuenta.":"Attenzione: non è entrato con il suo account.",
+"Si olvida esta clave, no hay forma de recuperar lo que tiene guardado aquí, ni por correo ni de ninguna otra manera. Entre con su cuenta de Google y deja de ser un problema: es gratis.":"Se dimentica questo codice, non c'è modo di recuperare quello che ha salvato qui, né per email né in nessun altro modo. Entri con il suo account Google e smette di essere un problema: è gratis.",
+"Abrir":"Aprire",
+"Entrar":"Accedere",
 "Hace # min · Binance":"# min fa · Binance"
 };
 </script>
