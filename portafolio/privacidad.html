@@ -1,0 +1,749 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Política de privacidad · Mi Portafolio Cripto</title>
+<meta name="description" content="Política de privacidad de Mi Portafolio Cripto: qué datos se guardan, dónde y quién puede verlos.">
+<meta name="theme-color" content="#0A0E14">
+<style>
+  :root{
+    --bg:#0A0E14; --b1:#121824; --b2:#1A2232; --ln:#263147;
+    --tx:#E7ECF5; --t2:#9AA7BD; --t3:#6B7A94; --ac:#2BE8A5;
+    --rad:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);
+    font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    -webkit-text-size-adjust:100%}
+  .env{max-width:760px;margin:0 auto;padding:32px 20px 70px}
+  header{display:flex;align-items:center;gap:14px;margin-bottom:8px}
+  .logo{width:52px;height:52px;border-radius:16px;flex:none;display:grid;place-items:center;
+    background:linear-gradient(145deg,var(--ac),#1DBE86);color:#06231a;
+    box-shadow:0 10px 26px rgba(43,232,165,.28)}
+  .logo svg{width:30px;height:30px}
+  h1{font-size:25px;line-height:1.25;margin:0;letter-spacing:-.02em}
+  header span{display:block;font-size:13px;color:var(--t2);font-weight:600;margin-top:2px}
+  .idiomas{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0 26px}
+  .idiomas button{background:var(--b1);border:1px solid var(--ln);color:var(--t2);
+    padding:7px 13px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+  .idiomas button:hover{color:var(--tx);border-color:var(--ac)}
+  .idiomas button[aria-current=true]{background:color-mix(in srgb,var(--ac) 18%,transparent);
+    border-color:var(--ac);color:var(--tx)}
+  .fecha{font-size:13px;color:var(--t3);margin:0 0 26px;padding-bottom:18px;
+    border-bottom:1px solid var(--ln)}
+  h2{font-size:18px;margin:34px 0 10px;letter-spacing:-.01em}
+  h2:first-of-type{margin-top:0}
+  p{margin:0 0 13px;color:var(--t2)}
+  strong{color:var(--tx);font-weight:650}
+  ul{margin:0 0 16px;padding-left:20px;color:var(--t2)}
+  li{margin-bottom:7px}
+  li::marker{color:var(--ac)}
+  .caja{background:var(--b1);border:1px solid var(--ln);border-radius:var(--rad);
+    padding:16px 18px;margin:0 0 20px}
+  .caja p:last-child{margin-bottom:0}
+  .caja.fuerte{border-color:color-mix(in srgb,var(--ac) 45%,transparent);
+    background:color-mix(in srgb,var(--ac) 8%,var(--b1))}
+  a{color:var(--ac)}
+  table{width:100%;border-collapse:collapse;margin:0 0 18px;font-size:14.5px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--ln);vertical-align:top}
+  th{color:var(--t3);font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+  td{color:var(--t2)} td:first-child{color:var(--tx);font-weight:600;white-space:nowrap}
+  footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--ln);
+    font-size:13.5px;color:var(--t3)}
+  @media (max-width:520px){
+    h1{font-size:21px} .env{padding:24px 16px 56px}
+    td:first-child{white-space:normal}
+  }
+</style>
+</head>
+<body>
+<div class="env">
+  <header>
+    <div class="logo">
+      <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <rect x="4" y="25" width="9" height="17" rx="2.6" fill="currentColor" opacity=".45"/>
+        <rect x="19.5" y="16" width="9" height="26" rx="2.6" fill="currentColor" opacity=".7"/>
+        <rect x="35" y="6" width="9" height="36" rx="2.6" fill="currentColor"/>
+        <path d="M7 22 L23 13 L39 5" fill="none" stroke="#fff" stroke-width="2.8"
+          stroke-linecap="round" stroke-linejoin="round" opacity=".95"/>
+        <circle cx="39" cy="5.5" r="3.8" fill="#fff"/>
+      </svg>
+    </div>
+    <div>
+      <h1 id="tit">Política de privacidad</h1>
+      <span>Mi Portafolio Cripto</span>
+    </div>
+  </header>
+
+  <nav class="idiomas" id="idiomas" aria-label="Idioma"></nav>
+  <p class="fecha" id="fecha"></p>
+  <main id="texto"></main>
+  <footer id="pie"></footer>
+</div>
+
+<script>
+var CORREO="miportafoliocriptoapp@gmail.com";
+var FECHA={es:"6 de octubre de 2026", en:"6 October 2026", pt:"6 de outubro de 2026",
+           fr:"6 octobre 2026", de:"6. Oktober 2026", it:"6 ottobre 2026"};
+var ETIQUETA={es:"Español", en:"English", pt:"Português", fr:"Français",
+              de:"Deutsch", it:"Italiano"};
+
+/* Los servicios a los que habla el programa. Es la misma lista en los seis
+   idiomas: son nombres propios. Solo cambia para qué sirve cada uno. */
+var SERVICIOS=[
+  ["Firebase (Google)", "cuenta", "firebase"],
+  ["Binance · CoinGecko · Coinbase · CoinCap · CoinMarketCap", "precios", "precios"],
+  ["jsDelivr · CoinCap · CoinMarketCap", "logos", "logos"],
+  ["GitHub", "github", "github"],
+  ["Google Drive · Microsoft OneDrive", "nube", "nube"]
+];
+
+var T={};
+
+T.es={
+  titulo:"Política de privacidad",
+  fecha:"Última actualización: "+FECHA.es+" · Aplicación: Mi Portafolio Cripto",
+  bloques:[
+    ["caja fuerte", null,
+     "<p><strong>Lo corto:</strong> esta aplicación no vende, no alquila y no comparte sus datos con nadie. "+
+     "No lleva publicidad ni programas de seguimiento. Si la usa sin cuenta, nada de lo que registre sale de su teléfono.</p>"],
+
+    ["h2","Quién responde por esto",
+     "<p>Esta aplicación la hizo y la mantiene <strong>Luis Veintimilla</strong>, como persona particular. "+
+     "Para cualquier cosa relacionada con sus datos puede escribir a <a href=\"mailto:"+CORREO+"\">"+CORREO+"</a>.</p>"],
+
+    ["h2","Qué se guarda, y solo si usted lo decide",
+     "<p>La aplicación funciona de dos maneras, y usted elige cuál al abrirla por primera vez.</p>"+
+     "<p><strong>Sin cuenta.</strong> Todo lo que registre —sus compras, sus ventas, sus operaciones de futuros, "+
+     "su backtesting, sus alertas— se queda guardado <strong>únicamente dentro de su teléfono o su computadora</strong>. "+
+     "No se manda a ningún servidor. Nadie, ni siquiera el autor de la aplicación, puede verlo.</p>"+
+     "<p><strong>Con su cuenta de Google.</strong> Si usted entra con Google para que sus datos lo sigan de un "+
+     "aparato a otro, se guarda además:</p>"+
+     "<ul>"+
+     "<li>Su <strong>correo electrónico</strong>, su <strong>nombre</strong> y la <strong>foto</strong> de su cuenta de Google, "+
+     "tal como Google los entrega al entrar. Sirven para saber de quién es cada portafolio y para mostrarle "+
+     "en pantalla con qué cuenta entró.</li>"+
+     "<li>El <strong>contenido de su portafolio</strong>: lo que usted mismo escribió en la aplicación.</li>"+
+     "</ul>"+
+     "<p>Eso se guarda en Firebase, un servicio de Google, en un documento que lleva su identificador de usuario. "+
+     "<strong>Las reglas del servidor están puestas de modo que solo usted, entrando con su propio correo, "+
+     "puede leer o escribir ese documento.</strong></p>"],
+
+    ["h2","Qué NO se recoge, nunca",
+     "<ul>"+
+     "<li>Su ubicación</li>"+
+     "<li>Sus contactos, sus fotos, sus archivos ni sus mensajes</li>"+
+     "<li>Las claves de ninguna casa de cambio. <strong>La aplicación no se conecta a su cuenta de Binance "+
+     "ni a ninguna otra, y no puede comprar ni vender nada por usted.</strong></li>"+
+     "<li>Nada que sirva para publicidad. No hay anuncios ni programas de seguimiento de ningún tipo.</li>"+
+     "<li>Estadísticas de uso. No se registra qué pantallas abre ni cuánto tiempo pasa en ellas.</li>"+
+     "</ul>"],
+
+    ["h2","Con quién se habla, y para qué",
+     "<p>La aplicación se conecta a estos servicios. En las consultas de precios y de logos "+
+     "<strong>solo viaja el símbolo de la moneda</strong> (por ejemplo «BTC») y, como en cualquier página de "+
+     "internet, la dirección IP de su conexión. No se les manda ningún dato suyo.</p>",
+     "tabla"],
+
+    ["h2","Avisos de precio",
+     "<p>Si usted enciende las notificaciones, el teléfono le entrega a la aplicación una <strong>dirección de "+
+     "avisos</strong> —un código largo que identifica a ese aparato, no a usted— y se guarda junto con los precios "+
+     "que usted quiere vigilar, para poder avisarle cuando lleguen. Si apaga las notificaciones, esa dirección "+
+     "deja de usarse.</p>"+
+     "<p>El sonido que usted elija de su propio teléfono <strong>se queda únicamente en ese aparato</strong> y "+
+     "no viaja a ningún lado.</p>"],
+
+    ["h2","Sus datos son suyos: verlos, llevárselos, borrarlos",
+     "<ul>"+
+     "<li><strong>Verlos:</strong> todo lo que la aplicación guarda está a la vista dentro de ella.</li>"+
+     "<li><strong>Llevárselos:</strong> en Ajustes → <em>Una copia para usted</em> → <em>Descargar copia</em> "+
+     "obtiene un archivo con absolutamente todo, en un formato que cualquiera puede abrir.</li>"+
+     "<li><strong>Borrarlos:</strong> en Ajustes → <em>Borrar</em> → <em>Borrar todo</em> se borra su portafolio "+
+     "en todos sus aparatos y en su cuenta.</li>"+
+     "<li><strong>Borrarlo todo de verdad:</strong> si además quiere que no quede nada en la cuenta, escriba a "+
+     "<a href=\"mailto:"+CORREO+"\">"+CORREO+"</a> desde el mismo correo con el que entró y su documento se "+
+     "elimina por completo. Sin preguntas y sin demoras.</li>"+
+     "</ul>"],
+
+    ["h2","Seguridad",
+     "<ul>"+
+     "<li>Todo lo que viaja por internet va <strong>cifrado</strong> (HTTPS).</li>"+
+     "<li>Las reglas del servidor solo dejan que <strong>cada persona lea y escriba su propio documento</strong>.</li>"+
+     "<li>Si usted usa la sincronización con GitHub, <strong>su clave de GitHub nunca sale de su aparato</strong>: "+
+     "no se sube a la cuenta, ni a las copias, ni al respaldo.</li>"+
+     "</ul>"+
+     "<p>Dicho esto, ningún sistema es perfecto. Guarde una copia de vez en cuando, como con cualquier cosa "+
+     "que le importe.</p>"],
+
+    ["h2","Menores",
+     "<p>Esta aplicación no está dirigida a menores de 13 años y no se recoge a sabiendas ningún dato de ellos.</p>"],
+
+    ["h2","Si algo de esto cambia",
+     "<p>Si alguna vez cambia lo que la aplicación hace con sus datos, esta página se actualiza y cambia la fecha "+
+     "de arriba. Si el cambio es importante, se avisa dentro de la propia aplicación.</p>"],
+
+    ["h2","Avisos importantes",
+     "<p>Mi Portafolio Cripto es una <strong>herramienta para llevar sus propias cuentas</strong>. "+
+     "No es asesoría financiera, no recomienda inversiones y no garantiza ningún resultado. "+
+     "Los precios que muestra vienen de servicios públicos y pueden tener retrasos o errores. "+
+     "Las decisiones sobre su dinero son suyas.</p>"]
+  ],
+  tabla:{
+    cab:["Servicio","Para qué"],
+    firebase:"Guardar su portafolio en su cuenta y comprobar que es usted quien entra.",
+    precios:"Traer el precio de las monedas. Solo se les pide el símbolo.",
+    logos:"Traer el dibujo de las monedas que no vienen dentro de la aplicación.",
+    github:"<strong>Solo si usted lo enciende.</strong> Guardar una copia en un repositorio privado suyo.",
+    nube:"<strong>Solo si usted lo enciende.</strong> Guardar una copia en su propia nube."
+  },
+  pie:"Mi Portafolio Cripto · Luis Veintimilla · <a href=\"mailto:"+CORREO+"\">"+CORREO+"</a>"
+};
+
+T.en={
+  titulo:"Privacy Policy",
+  fecha:"Last updated: "+FECHA.en+" · App: My Crypto Portfolio",
+  bloques:[
+    ["caja fuerte", null,
+     "<p><strong>The short version:</strong> this app does not sell, rent or share your data with anyone. "+
+     "It carries no advertising and no tracking. If you use it without an account, nothing you record ever "+
+     "leaves your phone.</p>"],
+
+    ["h2","Who is responsible",
+     "<p>This app is made and maintained by <strong>Luis Veintimilla</strong>, as an individual. "+
+     "For anything concerning your data, write to <a href=\"mailto:"+CORREO+"\">"+CORREO+"</a>.</p>"],
+
+    ["h2","What is stored, and only if you choose it",
+     "<p>The app works in two ways, and you pick which one the first time you open it.</p>"+
+     "<p><strong>Without an account.</strong> Everything you record — your buys, your sells, your futures trades, "+
+     "your backtesting, your alerts — is kept <strong>only inside your phone or computer</strong>. "+
+     "It is not sent to any server. Nobody, not even the app's author, can see it.</p>"+
+     "<p><strong>With your Google account.</strong> If you sign in with Google so your data follows you from one "+
+     "device to another, the following is also stored:</p>"+
+     "<ul>"+
+     "<li>Your <strong>email address</strong>, your <strong>name</strong> and your Google account <strong>photo</strong>, "+
+     "exactly as Google provides them on sign-in. They are used to know whose portfolio is whose and to show you "+
+     "which account you signed in with.</li>"+
+     "<li>The <strong>contents of your portfolio</strong>: what you yourself typed into the app.</li>"+
+     "</ul>"+
+     "<p>That is stored in Firebase, a Google service, in a document keyed to your user ID. "+
+     "<strong>The server rules are set so that only you, signed in with your own email, can read or write "+
+     "that document.</strong></p>"],
+
+    ["h2","What is NEVER collected",
+     "<ul>"+
+     "<li>Your location</li>"+
+     "<li>Your contacts, photos, files or messages</li>"+
+     "<li>Any exchange credentials. <strong>The app does not connect to your Binance account or any other, "+
+     "and cannot buy or sell anything on your behalf.</strong></li>"+
+     "<li>Anything used for advertising. There are no ads and no tracking of any kind.</li>"+
+     "<li>Usage statistics. No record is kept of which screens you open or how long you spend on them.</li>"+
+     "</ul>"],
+
+    ["h2","Who the app talks to, and why",
+     "<p>The app connects to the services below. For price and logo requests <strong>only the coin symbol "+
+     "travels</strong> (for example \"BTC\") and, as on any web page, your connection's IP address. "+
+     "No personal data of yours is sent to them.</p>",
+     "tabla"],
+
+    ["h2","Price alerts",
+     "<p>If you turn notifications on, the phone gives the app a <strong>notification address</strong> — a long "+
+     "code identifying that device, not you — and it is stored alongside the prices you want watched, so you can "+
+     "be told when they are reached. If you turn notifications off, that address stops being used.</p>"+
+     "<p>A sound you pick from your own phone <strong>stays only on that device</strong> and never travels "+
+     "anywhere.</p>"],
+
+    ["h2","Your data is yours: see it, take it, delete it",
+     "<ul>"+
+     "<li><strong>See it:</strong> everything the app stores is visible inside the app.</li>"+
+     "<li><strong>Take it:</strong> Settings → <em>A copy for you</em> → <em>Download copy</em> gives you a file "+
+     "with absolutely everything, in a format anyone can open.</li>"+
+     "<li><strong>Delete it:</strong> Settings → <em>Delete</em> → <em>Delete everything</em> erases your portfolio "+
+     "on all your devices and in your account.</li>"+
+     "<li><strong>Delete it completely:</strong> if you also want nothing left in the account, write to "+
+     "<a href=\"mailto:"+CORREO+"\">"+CORREO+"</a> from the same email you signed in with and your document will be "+
+     "removed entirely. No questions, no delays.</li>"+
+     "</ul>"],
+
+    ["h2","Security",
+     "<ul>"+
+     "<li>Everything that travels over the internet is <strong>encrypted</strong> (HTTPS).</li>"+
+     "<li>The server rules only let <strong>each person read and write their own document</strong>.</li>"+
+     "<li>If you use GitHub syncing, <strong>your GitHub token never leaves your device</strong>: it is not "+
+     "uploaded to the account, nor to the copies, nor to the folder backup.</li>"+
+     "</ul>"+
+     "<p>That said, no system is perfect. Keep a copy now and then, as you would with anything that matters "+
+     "to you.</p>"],
+
+    ["h2","Children",
+     "<p>This app is not directed at children under 13 and no data from them is knowingly collected.</p>"],
+
+    ["h2","If any of this changes",
+     "<p>If what the app does with your data ever changes, this page is updated and the date above changes with it. "+
+     "If the change is significant, you are told inside the app itself.</p>"],
+
+    ["h2","Important notices",
+     "<p>My Crypto Portfolio is a <strong>tool for keeping your own records</strong>. It is not financial advice, "+
+     "it does not recommend investments and it guarantees no outcome. The prices it shows come from public "+
+     "services and may be delayed or wrong. Decisions about your money are yours.</p>"]
+  ],
+  tabla:{
+    cab:["Service","What for"],
+    firebase:"Storing your portfolio in your account and checking that it is you signing in.",
+    precios:"Fetching coin prices. Only the symbol is requested.",
+    logos:"Fetching artwork for coins that do not ship inside the app.",
+    github:"<strong>Only if you turn it on.</strong> Keeping a copy in a private repository of yours.",
+    nube:"<strong>Only if you turn it on.</strong> Keeping a copy in your own cloud storage."
+  },
+  pie:"My Crypto Portfolio · Luis Veintimilla · <a href=\"mailto:"+CORREO+"\">"+CORREO+"</a>"
+};
+
+T.pt={
+  titulo:"Política de privacidade",
+  fecha:"Última atualização: "+FECHA.pt+" · Aplicação: A Minha Carteira Cripto",
+  bloques:[
+    ["caja fuerte", null,
+     "<p><strong>Em resumo:</strong> esta aplicação não vende, não aluga e não partilha os seus dados com ninguém. "+
+     "Não tem publicidade nem programas de seguimento. Se a usar sem conta, nada do que registar sai do seu telemóvel.</p>"],
+
+    ["h2","Quem é responsável",
+     "<p>Esta aplicação é feita e mantida por <strong>Luis Veintimilla</strong>, como particular. "+
+     "Para qualquer assunto relacionado com os seus dados escreva para <a href=\"mailto:"+CORREO+"\">"+CORREO+"</a>.</p>"],
+
+    ["h2","O que se guarda, e só se você decidir",
+     "<p>A aplicação funciona de duas maneiras, e você escolhe qual na primeira vez que a abre.</p>"+
+     "<p><strong>Sem conta.</strong> Tudo o que registar — as suas compras, as suas vendas, as suas operações de "+
+     "futuros, o seu backtesting, os seus avisos — fica guardado <strong>apenas dentro do seu telemóvel ou "+
+     "computador</strong>. Não é enviado para nenhum servidor. Ninguém, nem sequer o autor da aplicação, o pode ver.</p>"+
+     "<p><strong>Com a sua conta Google.</strong> Se entrar com a Google para que os seus dados o sigam de um "+
+     "aparelho para outro, guarda-se também:</p>"+
+     "<ul>"+
+     "<li>O seu <strong>email</strong>, o seu <strong>nome</strong> e a <strong>foto</strong> da sua conta Google, "+
+     "tal como a Google os entrega ao entrar. Servem para saber de quem é cada carteira e para lhe mostrar com "+
+     "que conta entrou.</li>"+
+     "<li>O <strong>conteúdo da sua carteira</strong>: aquilo que você próprio escreveu na aplicação.</li>"+
+     "</ul>"+
+     "<p>Isso fica guardado no Firebase, um serviço da Google, num documento com o seu identificador de utilizador. "+
+     "<strong>As regras do servidor estão definidas de modo a que só você, entrando com o seu próprio email, "+
+     "possa ler ou escrever nesse documento.</strong></p>"],
+
+    ["h2","O que NUNCA se recolhe",
+     "<ul>"+
+     "<li>A sua localização</li>"+
+     "<li>Os seus contactos, fotos, ficheiros ou mensagens</li>"+
+     "<li>As chaves de nenhuma corretora. <strong>A aplicação não se liga à sua conta da Binance nem a nenhuma "+
+     "outra, e não pode comprar nem vender nada por si.</strong></li>"+
+     "<li>Nada que sirva para publicidade. Não há anúncios nem programas de seguimento de qualquer tipo.</li>"+
+     "<li>Estatísticas de utilização. Não se regista que ecrãs abre nem quanto tempo passa neles.</li>"+
+     "</ul>"],
+
+    ["h2","Com quem fala a aplicação, e para quê",
+     "<p>A aplicação liga-se aos serviços abaixo. Nos pedidos de preços e de logótipos <strong>só viaja o símbolo "+
+     "da moeda</strong> (por exemplo «BTC») e, como em qualquer página de internet, o endereço IP da sua ligação. "+
+     "Não lhes é enviado nenhum dado seu.</p>",
+     "tabla"],
+
+    ["h2","Avisos de preço",
+     "<p>Se ligar as notificações, o telemóvel entrega à aplicação um <strong>endereço de avisos</strong> — um "+
+     "código longo que identifica esse aparelho, não a si — e é guardado juntamente com os preços que quer "+
+     "vigiar, para lhe poder avisar quando chegarem. Se desligar as notificações, esse endereço deixa de ser usado.</p>"+
+     "<p>O som que escolher do seu próprio telemóvel <strong>fica apenas nesse aparelho</strong> e não viaja para "+
+     "lado nenhum.</p>"],
+
+    ["h2","Os seus dados são seus: vê-los, levá-los, apagá-los",
+     "<ul>"+
+     "<li><strong>Vê-los:</strong> tudo o que a aplicação guarda está à vista dentro dela.</li>"+
+     "<li><strong>Levá-los:</strong> em Ajustes → <em>Uma cópia para si</em> → <em>Descarregar cópia</em> obtém um "+
+     "ficheiro com absolutamente tudo, num formato que qualquer pessoa pode abrir.</li>"+
+     "<li><strong>Apagá-los:</strong> em Ajustes → <em>Apagar</em> → <em>Apagar tudo</em> apaga a sua carteira em "+
+     "todos os seus aparelhos e na sua conta.</li>"+
+     "<li><strong>Apagar tudo a sério:</strong> se quiser que não fique nada na conta, escreva para "+
+     "<a href=\"mailto:"+CORREO+"\">"+CORREO+"</a> a partir do mesmo email com que entrou e o seu documento é "+
+     "eliminado por completo. Sem perguntas e sem demoras.</li>"+
+     "</ul>"],
+
+    ["h2","Segurança",
+     "<ul>"+
+     "<li>Tudo o que viaja pela internet vai <strong>cifrado</strong> (HTTPS).</li>"+
+     "<li>As regras do servidor só deixam que <strong>cada pessoa leia e escreva o seu próprio documento</strong>.</li>"+
+     "<li>Se usar a sincronização com o GitHub, <strong>a sua chave do GitHub nunca sai do seu aparelho</strong>: "+
+     "não é enviada para a conta, nem para as cópias, nem para o backup da pasta.</li>"+
+     "</ul>"+
+     "<p>Dito isto, nenhum sistema é perfeito. Guarde uma cópia de vez em quando, como faria com qualquer coisa "+
+     "que lhe importe.</p>"],
+
+    ["h2","Menores",
+     "<p>Esta aplicação não se dirige a menores de 13 anos e não se recolhe conscientemente nenhum dado deles.</p>"],
+
+    ["h2","Se algo disto mudar",
+     "<p>Se alguma vez mudar o que a aplicação faz com os seus dados, esta página é atualizada e a data acima "+
+     "muda com ela. Se a mudança for importante, é avisado dentro da própria aplicação.</p>"],
+
+    ["h2","Avisos importantes",
+     "<p>A Minha Carteira Cripto é uma <strong>ferramenta para levar as suas próprias contas</strong>. Não é "+
+     "consultoria financeira, não recomenda investimentos e não garante nenhum resultado. Os preços que mostra "+
+     "vêm de serviços públicos e podem ter atrasos ou erros. As decisões sobre o seu dinheiro são suas.</p>"]
+  ],
+  tabla:{
+    cab:["Serviço","Para quê"],
+    firebase:"Guardar a sua carteira na sua conta e confirmar que é você quem entra.",
+    precios:"Trazer o preço das moedas. Só se lhes pede o símbolo.",
+    logos:"Trazer o desenho das moedas que não vêm dentro da aplicação.",
+    github:"<strong>Só se você o ligar.</strong> Guardar uma cópia num repositório privado seu.",
+    nube:"<strong>Só se você o ligar.</strong> Guardar uma cópia na sua própria nuvem."
+  },
+  pie:"A Minha Carteira Cripto · Luis Veintimilla · <a href=\"mailto:"+CORREO+"\">"+CORREO+"</a>"
+};
+
+T.fr={
+  titulo:"Politique de confidentialité",
+  fecha:"Dernière mise à jour : "+FECHA.fr+" · Application : Mon Portefeuille Crypto",
+  bloques:[
+    ["caja fuerte", null,
+     "<p><strong>En bref :</strong> cette application ne vend pas, ne loue pas et ne partage pas vos données avec "+
+     "qui que ce soit. Elle ne contient ni publicité ni traceurs. Si vous l'utilisez sans compte, rien de ce que "+
+     "vous enregistrez ne quitte votre téléphone.</p>"],
+
+    ["h2","Qui en est responsable",
+     "<p>Cette application est réalisée et maintenue par <strong>Luis Veintimilla</strong>, à titre particulier. "+
+     "Pour toute question concernant vos données, écrivez à <a href=\"mailto:"+CORREO+"\">"+CORREO+"</a>.</p>"],
+
+    ["h2","Ce qui est enregistré, et seulement si vous le décidez",
+     "<p>L'application fonctionne de deux façons, et vous choisissez laquelle à la première ouverture.</p>"+
+     "<p><strong>Sans compte.</strong> Tout ce que vous enregistrez — vos achats, vos ventes, vos opérations à "+
+     "terme, votre backtesting, vos alertes — reste <strong>uniquement dans votre téléphone ou votre "+
+     "ordinateur</strong>. Rien n'est envoyé à un serveur. Personne, pas même l'auteur de l'application, ne peut "+
+     "le voir.</p>"+
+     "<p><strong>Avec votre compte Google.</strong> Si vous vous connectez avec Google pour que vos données vous "+
+     "suivent d'un appareil à l'autre, sont également enregistrés :</p>"+
+     "<ul>"+
+     "<li>Votre <strong>adresse e-mail</strong>, votre <strong>nom</strong> et la <strong>photo</strong> de votre "+
+     "compte Google, tels que Google les transmet à la connexion. Ils servent à savoir à qui appartient chaque "+
+     "portefeuille et à vous montrer avec quel compte vous êtes connecté.</li>"+
+     "<li>Le <strong>contenu de votre portefeuille</strong> : ce que vous avez vous-même saisi dans l'application.</li>"+
+     "</ul>"+
+     "<p>Cela est enregistré dans Firebase, un service de Google, dans un document portant votre identifiant "+
+     "d'utilisateur. <strong>Les règles du serveur sont définies de sorte que vous seul, connecté avec votre "+
+     "propre e-mail, puissiez lire ou écrire ce document.</strong></p>"],
+
+    ["h2","Ce qui n'est JAMAIS collecté",
+     "<ul>"+
+     "<li>Votre position</li>"+
+     "<li>Vos contacts, vos photos, vos fichiers ou vos messages</li>"+
+     "<li>Les identifiants d'aucune plateforme d'échange. <strong>L'application ne se connecte pas à votre compte "+
+     "Binance ni à aucun autre, et ne peut rien acheter ni vendre à votre place.</strong></li>"+
+     "<li>Rien qui serve à la publicité. Il n'y a ni annonces ni traceurs d'aucune sorte.</li>"+
+     "<li>Des statistiques d'utilisation. Il n'est pas enregistré quels écrans vous ouvrez ni combien de temps "+
+     "vous y passez.</li>"+
+     "</ul>"],
+
+    ["h2","À qui l'application parle, et pourquoi",
+     "<p>L'application se connecte aux services ci-dessous. Pour les demandes de prix et de logos, <strong>seul le "+
+     "symbole de la pièce circule</strong> (par exemple « BTC ») et, comme sur n'importe quelle page web, "+
+     "l'adresse IP de votre connexion. Aucune de vos données personnelles ne leur est transmise.</p>",
+     "tabla"],
+
+    ["h2","Alertes de prix",
+     "<p>Si vous activez les notifications, le téléphone remet à l'application une <strong>adresse de "+
+     "notification</strong> — un long code identifiant cet appareil, pas vous — qui est conservée avec les prix "+
+     "que vous voulez surveiller, afin de pouvoir vous prévenir lorsqu'ils sont atteints. Si vous désactivez les "+
+     "notifications, cette adresse cesse d'être utilisée.</p>"+
+     "<p>Un son choisi depuis votre propre téléphone <strong>reste uniquement sur cet appareil</strong> et ne "+
+     "circule nulle part.</p>"],
+
+    ["h2","Vos données vous appartiennent : les voir, les emporter, les effacer",
+     "<ul>"+
+     "<li><strong>Les voir :</strong> tout ce que l'application conserve est visible à l'intérieur.</li>"+
+     "<li><strong>Les emporter :</strong> Réglages → <em>Une copie pour vous</em> → <em>Télécharger une copie</em> "+
+     "vous donne un fichier contenant absolument tout, dans un format que tout le monde peut ouvrir.</li>"+
+     "<li><strong>Les effacer :</strong> Réglages → <em>Supprimer</em> → <em>Tout supprimer</em> efface votre "+
+     "portefeuille sur tous vos appareils et dans votre compte.</li>"+
+     "<li><strong>Tout effacer pour de bon :</strong> si vous voulez en plus qu'il ne reste rien dans le compte, "+
+     "écrivez à <a href=\"mailto:"+CORREO+"\">"+CORREO+"</a> depuis l'e-mail avec lequel vous vous êtes connecté et "+
+     "votre document sera entièrement supprimé. Sans question et sans délai.</li>"+
+     "</ul>"],
+
+    ["h2","Sécurité",
+     "<ul>"+
+     "<li>Tout ce qui circule sur internet est <strong>chiffré</strong> (HTTPS).</li>"+
+     "<li>Les règles du serveur ne permettent qu'à <strong>chacun de lire et d'écrire son propre document</strong>.</li>"+
+     "<li>Si vous utilisez la synchronisation GitHub, <strong>votre clé GitHub ne quitte jamais votre "+
+     "appareil</strong> : elle n'est envoyée ni au compte, ni aux copies, ni à la sauvegarde dans le dossier.</li>"+
+     "</ul>"+
+     "<p>Cela dit, aucun système n'est parfait. Gardez une copie de temps en temps, comme pour tout ce qui compte "+
+     "pour vous.</p>"],
+
+    ["h2","Mineurs",
+     "<p>Cette application ne s'adresse pas aux enfants de moins de 13 ans et aucune donnée les concernant n'est "+
+     "sciemment collectée.</p>"],
+
+    ["h2","Si quelque chose change",
+     "<p>Si ce que l'application fait de vos données venait à changer, cette page serait mise à jour et la date "+
+     "ci-dessus avec elle. Si le changement est important, vous en êtes informé dans l'application elle-même.</p>"],
+
+    ["h2","Avertissements importants",
+     "<p>Mon Portefeuille Crypto est un <strong>outil pour tenir vos propres comptes</strong>. Ce n'est pas un "+
+     "conseil financier, il ne recommande aucun investissement et ne garantit aucun résultat. Les prix affichés "+
+     "proviennent de services publics et peuvent être retardés ou erronés. Les décisions concernant votre argent "+
+     "vous appartiennent.</p>"]
+  ],
+  tabla:{
+    cab:["Service","À quoi ça sert"],
+    firebase:"Enregistrer votre portefeuille dans votre compte et vérifier que c'est bien vous qui vous connectez.",
+    precios:"Récupérer le prix des pièces. Seul le symbole leur est demandé.",
+    logos:"Récupérer l'image des pièces qui ne sont pas incluses dans l'application.",
+    github:"<strong>Seulement si vous l'activez.</strong> Garder une copie dans un dépôt privé qui vous appartient.",
+    nube:"<strong>Seulement si vous l'activez.</strong> Garder une copie dans votre propre espace en ligne."
+  },
+  pie:"Mon Portefeuille Crypto · Luis Veintimilla · <a href=\"mailto:"+CORREO+"\">"+CORREO+"</a>"
+};
+
+T.de={
+  titulo:"Datenschutzerklärung",
+  fecha:"Letzte Aktualisierung: "+FECHA.de+" · App: Mein Krypto-Portfolio",
+  bloques:[
+    ["caja fuerte", null,
+     "<p><strong>Kurz gesagt:</strong> Diese App verkauft, vermietet und teilt Ihre Daten mit niemandem. "+
+     "Sie enthält weder Werbung noch Tracking. Wenn Sie sie ohne Konto nutzen, verlässt nichts von dem, was Sie "+
+     "eintragen, Ihr Telefon.</p>"],
+
+    ["h2","Wer dafür verantwortlich ist",
+     "<p>Diese App wird von <strong>Luis Veintimilla</strong> als Privatperson erstellt und gepflegt. "+
+     "Bei allem, was Ihre Daten betrifft, schreiben Sie an <a href=\"mailto:"+CORREO+"\">"+CORREO+"</a>.</p>"],
+
+    ["h2","Was gespeichert wird, und nur wenn Sie es wollen",
+     "<p>Die App funktioniert auf zwei Arten, und Sie wählen beim ersten Öffnen, welche.</p>"+
+     "<p><strong>Ohne Konto.</strong> Alles, was Sie eintragen — Ihre Käufe, Ihre Verkäufe, Ihre Futures-Trades, "+
+     "Ihr Backtesting, Ihre Alarme — bleibt <strong>ausschließlich in Ihrem Telefon oder Computer</strong>. "+
+     "Es wird an keinen Server gesendet. Niemand, nicht einmal der Autor der App, kann es sehen.</p>"+
+     "<p><strong>Mit Ihrem Google-Konto.</strong> Wenn Sie sich mit Google anmelden, damit Ihre Daten Ihnen von "+
+     "einem Gerät zum anderen folgen, wird zusätzlich gespeichert:</p>"+
+     "<ul>"+
+     "<li>Ihre <strong>E-Mail-Adresse</strong>, Ihr <strong>Name</strong> und das <strong>Foto</strong> Ihres "+
+     "Google-Kontos, genau so, wie Google sie bei der Anmeldung übergibt. Sie dienen dazu zu wissen, wem welches "+
+     "Portfolio gehört, und Ihnen anzuzeigen, mit welchem Konto Sie angemeldet sind.</li>"+
+     "<li>Der <strong>Inhalt Ihres Portfolios</strong>: das, was Sie selbst in die App eingetragen haben.</li>"+
+     "</ul>"+
+     "<p>Das wird in Firebase gespeichert, einem Google-Dienst, in einem Dokument mit Ihrer Benutzerkennung. "+
+     "<strong>Die Serverregeln sind so gesetzt, dass nur Sie, angemeldet mit Ihrer eigenen E-Mail-Adresse, dieses "+
+     "Dokument lesen oder beschreiben können.</strong></p>"],
+
+    ["h2","Was NIEMALS erhoben wird",
+     "<ul>"+
+     "<li>Ihr Standort</li>"+
+     "<li>Ihre Kontakte, Fotos, Dateien oder Nachrichten</li>"+
+     "<li>Zugangsdaten irgendeiner Börse. <strong>Die App verbindet sich nicht mit Ihrem Binance-Konto oder einem "+
+     "anderen und kann nichts für Sie kaufen oder verkaufen.</strong></li>"+
+     "<li>Nichts, was der Werbung dient. Es gibt weder Anzeigen noch Tracking irgendeiner Art.</li>"+
+     "<li>Nutzungsstatistiken. Es wird nicht erfasst, welche Bildschirme Sie öffnen oder wie lange Sie dort "+
+     "verweilen.</li>"+
+     "</ul>"],
+
+    ["h2","Mit wem die App spricht, und wozu",
+     "<p>Die App verbindet sich mit den folgenden Diensten. Bei Kurs- und Logo-Abfragen wird <strong>nur das "+
+     "Münzkürzel übertragen</strong> (zum Beispiel „BTC\") und, wie auf jeder Webseite, die IP-Adresse Ihrer "+
+     "Verbindung. Keine Ihrer persönlichen Daten wird an sie gesendet.</p>",
+     "tabla"],
+
+    ["h2","Kursalarme",
+     "<p>Wenn Sie Benachrichtigungen einschalten, übergibt das Telefon der App eine <strong>Benachrichtigungs"+
+     "adresse</strong> — ein langer Code, der dieses Gerät kennzeichnet, nicht Sie — und sie wird zusammen mit "+
+     "den Kursen gespeichert, die Sie überwachen lassen wollen, damit Sie benachrichtigt werden können, wenn sie "+
+     "erreicht werden. Schalten Sie die Benachrichtigungen aus, wird diese Adresse nicht mehr verwendet.</p>"+
+     "<p>Ein Ton, den Sie von Ihrem eigenen Telefon auswählen, <strong>bleibt ausschließlich auf diesem "+
+     "Gerät</strong> und wandert nirgendwohin.</p>"],
+
+    ["h2","Ihre Daten gehören Ihnen: ansehen, mitnehmen, löschen",
+     "<ul>"+
+     "<li><strong>Ansehen:</strong> alles, was die App speichert, ist in ihr sichtbar.</li>"+
+     "<li><strong>Mitnehmen:</strong> Einstellungen → <em>Eine Kopie für Sie</em> → <em>Kopie herunterladen</em> "+
+     "gibt Ihnen eine Datei mit absolut allem, in einem Format, das jeder öffnen kann.</li>"+
+     "<li><strong>Löschen:</strong> Einstellungen → <em>Löschen</em> → <em>Alles löschen</em> löscht Ihr Portfolio "+
+     "auf allen Ihren Geräten und in Ihrem Konto.</li>"+
+     "<li><strong>Restlos löschen:</strong> wenn zusätzlich nichts im Konto bleiben soll, schreiben Sie an "+
+     "<a href=\"mailto:"+CORREO+"\">"+CORREO+"</a> von derselben E-Mail-Adresse, mit der Sie sich angemeldet haben, "+
+     "und Ihr Dokument wird vollständig entfernt. Ohne Rückfragen und ohne Verzögerung.</li>"+
+     "</ul>"],
+
+    ["h2","Sicherheit",
+     "<ul>"+
+     "<li>Alles, was über das Internet läuft, ist <strong>verschlüsselt</strong> (HTTPS).</li>"+
+     "<li>Die Serverregeln erlauben nur, dass <strong>jede Person ihr eigenes Dokument liest und beschreibt</strong>.</li>"+
+     "<li>Wenn Sie die GitHub-Synchronisierung nutzen, <strong>verlässt Ihr GitHub-Schlüssel niemals Ihr "+
+     "Gerät</strong>: er wird weder in das Konto noch in die Kopien noch in die Ordnersicherung hochgeladen.</li>"+
+     "</ul>"+
+     "<p>Dennoch ist kein System perfekt. Legen Sie ab und zu eine Kopie an, wie bei allem, was Ihnen wichtig ist.</p>"],
+
+    ["h2","Minderjährige",
+     "<p>Diese App richtet sich nicht an Kinder unter 13 Jahren, und es werden wissentlich keine Daten von ihnen "+
+     "erhoben.</p>"],
+
+    ["h2","Falls sich etwas davon ändert",
+     "<p>Sollte sich jemals ändern, was die App mit Ihren Daten macht, wird diese Seite aktualisiert und das Datum "+
+     "oben ändert sich mit. Ist die Änderung wesentlich, werden Sie in der App selbst darauf hingewiesen.</p>"],
+
+    ["h2","Wichtige Hinweise",
+     "<p>Mein Krypto-Portfolio ist ein <strong>Werkzeug, um Ihre eigenen Aufzeichnungen zu führen</strong>. "+
+     "Es ist keine Finanzberatung, empfiehlt keine Anlagen und garantiert kein Ergebnis. Die angezeigten Kurse "+
+     "stammen aus öffentlichen Diensten und können verzögert oder fehlerhaft sein. Entscheidungen über Ihr Geld "+
+     "treffen Sie.</p>"]
+  ],
+  tabla:{
+    cab:["Dienst","Wofür"],
+    firebase:"Ihr Portfolio in Ihrem Konto speichern und prüfen, dass Sie es sind, der sich anmeldet.",
+    precios:"Münzkurse abrufen. Es wird nur das Kürzel angefragt.",
+    logos:"Bilder für Münzen abrufen, die nicht in der App enthalten sind.",
+    github:"<strong>Nur wenn Sie es einschalten.</strong> Eine Kopie in einem privaten Repository von Ihnen ablegen.",
+    nube:"<strong>Nur wenn Sie es einschalten.</strong> Eine Kopie in Ihrem eigenen Cloud-Speicher ablegen."
+  },
+  pie:"Mein Krypto-Portfolio · Luis Veintimilla · <a href=\"mailto:"+CORREO+"\">"+CORREO+"</a>"
+};
+
+T.it={
+  titulo:"Informativa sulla privacy",
+  fecha:"Ultimo aggiornamento: "+FECHA.it+" · App: Il Mio Portafoglio Cripto",
+  bloques:[
+    ["caja fuerte", null,
+     "<p><strong>In breve:</strong> questa applicazione non vende, non affitta e non condivide i suoi dati con "+
+     "nessuno. Non contiene pubblicità né sistemi di tracciamento. Se la usa senza account, niente di quello che "+
+     "registra esce dal suo telefono.</p>"],
+
+    ["h2","Chi ne risponde",
+     "<p>Questa applicazione è realizzata e mantenuta da <strong>Luis Veintimilla</strong>, come privato. "+
+     "Per qualsiasi cosa riguardi i suoi dati scriva a <a href=\"mailto:"+CORREO+"\">"+CORREO+"</a>.</p>"],
+
+    ["h2","Cosa viene salvato, e solo se lo decide lei",
+     "<p>L'applicazione funziona in due modi, e lei sceglie quale la prima volta che la apre.</p>"+
+     "<p><strong>Senza account.</strong> Tutto quello che registra — i suoi acquisti, le sue vendite, le sue "+
+     "operazioni di futures, il suo backtesting, i suoi avvisi — resta <strong>solo dentro il suo telefono o il "+
+     "suo computer</strong>. Non viene inviato a nessun server. Nessuno, nemmeno l'autore dell'applicazione, può "+
+     "vederlo.</p>"+
+     "<p><strong>Con il suo account Google.</strong> Se entra con Google perché i suoi dati la seguano da un "+
+     "apparecchio all'altro, viene salvato anche:</p>"+
+     "<ul>"+
+     "<li>La sua <strong>email</strong>, il suo <strong>nome</strong> e la <strong>foto</strong> del suo account "+
+     "Google, così come Google li fornisce all'accesso. Servono a sapere di chi è ciascun portafoglio e a "+
+     "mostrarle con quale account è entrato.</li>"+
+     "<li>Il <strong>contenuto del suo portafoglio</strong>: quello che lei stesso ha scritto nell'applicazione.</li>"+
+     "</ul>"+
+     "<p>Questo viene salvato su Firebase, un servizio di Google, in un documento con il suo identificativo utente. "+
+     "<strong>Le regole del server sono impostate in modo che solo lei, entrando con la propria email, possa "+
+     "leggere o scrivere quel documento.</strong></p>"],
+
+    ["h2","Cosa NON viene MAI raccolto",
+     "<ul>"+
+     "<li>La sua posizione</li>"+
+     "<li>I suoi contatti, le sue foto, i suoi file o i suoi messaggi</li>"+
+     "<li>Le credenziali di nessun exchange. <strong>L'applicazione non si collega al suo account Binance né a "+
+     "nessun altro, e non può comprare né vendere niente al posto suo.</strong></li>"+
+     "<li>Niente che serva alla pubblicità. Non ci sono annunci né tracciamenti di alcun tipo.</li>"+
+     "<li>Statistiche d'uso. Non viene registrato quali schermate apre né quanto tempo ci passa.</li>"+
+     "</ul>"],
+
+    ["h2","Con chi parla l'applicazione, e per cosa",
+     "<p>L'applicazione si collega ai servizi qui sotto. Nelle richieste di prezzi e di loghi <strong>viaggia solo "+
+     "il simbolo della moneta</strong> (per esempio «BTC») e, come su qualsiasi pagina internet, l'indirizzo IP "+
+     "della sua connessione. Non viene inviato loro nessun suo dato.</p>",
+     "tabla"],
+
+    ["h2","Avvisi di prezzo",
+     "<p>Se accende le notifiche, il telefono consegna all'applicazione un <strong>indirizzo di avviso</strong> — "+
+     "un codice lungo che identifica quell'apparecchio, non lei — e viene salvato insieme ai prezzi che vuole "+
+     "sorvegliare, per poterla avvisare quando arrivano. Se spegne le notifiche, quell'indirizzo smette di essere "+
+     "usato.</p>"+
+     "<p>Il suono che sceglie dal suo telefono <strong>resta solo su quell'apparecchio</strong> e non viaggia da "+
+     "nessuna parte.</p>"],
+
+    ["h2","I suoi dati sono suoi: vederli, portarli via, cancellarli",
+     "<ul>"+
+     "<li><strong>Vederli:</strong> tutto quello che l'applicazione salva è in vista dentro di essa.</li>"+
+     "<li><strong>Portarli via:</strong> in Impostazioni → <em>Una copia per lei</em> → <em>Scaricare copia</em> "+
+     "ottiene un file con assolutamente tutto, in un formato che chiunque può aprire.</li>"+
+     "<li><strong>Cancellarli:</strong> in Impostazioni → <em>Cancellare</em> → <em>Cancellare tutto</em> cancella "+
+     "il suo portafoglio su tutti i suoi apparecchi e nel suo account.</li>"+
+     "<li><strong>Cancellare tutto davvero:</strong> se vuole anche che non resti niente nell'account, scriva a "+
+     "<a href=\"mailto:"+CORREO+"\">"+CORREO+"</a> dalla stessa email con cui è entrato e il suo documento viene "+
+     "eliminato del tutto. Senza domande e senza attese.</li>"+
+     "</ul>"],
+
+    ["h2","Sicurezza",
+     "<ul>"+
+     "<li>Tutto quello che viaggia su internet è <strong>cifrato</strong> (HTTPS).</li>"+
+     "<li>Le regole del server permettono solo che <strong>ogni persona legga e scriva il proprio documento</strong>.</li>"+
+     "<li>Se usa la sincronizzazione con GitHub, <strong>la sua chiave di GitHub non esce mai dal suo "+
+     "apparecchio</strong>: non viene caricata nell'account, né nelle copie, né nel backup della cartella.</li>"+
+     "</ul>"+
+     "<p>Detto questo, nessun sistema è perfetto. Salvi una copia ogni tanto, come con qualsiasi cosa le stia a "+
+     "cuore.</p>"],
+
+    ["h2","Minori",
+     "<p>Questa applicazione non è rivolta a minori di 13 anni e non vengono raccolti consapevolmente dati che li "+
+     "riguardino.</p>"],
+
+    ["h2","Se qualcosa di questo cambia",
+     "<p>Se un giorno cambia quello che l'applicazione fa con i suoi dati, questa pagina viene aggiornata e la "+
+     "data qui sopra cambia con essa. Se il cambiamento è importante, viene avvisato dentro l'applicazione stessa.</p>"],
+
+    ["h2","Avvisi importanti",
+     "<p>Il Mio Portafoglio Cripto è uno <strong>strumento per tenere i propri conti</strong>. Non è consulenza "+
+     "finanziaria, non raccomanda investimenti e non garantisce nessun risultato. I prezzi che mostra arrivano da "+
+     "servizi pubblici e possono avere ritardi o errori. Le decisioni sui suoi soldi sono sue.</p>"]
+  ],
+  tabla:{
+    cab:["Servizio","Per cosa"],
+    firebase:"Salvare il suo portafoglio nel suo account e verificare che sia lei a entrare.",
+    precios:"Recuperare il prezzo delle monete. Si chiede loro solo il simbolo.",
+    logos:"Recuperare il disegno delle monete che non sono incluse nell'applicazione.",
+    github:"<strong>Solo se lo accende lei.</strong> Tenere una copia in un repository privato suo.",
+    nube:"<strong>Solo se lo accende lei.</strong> Tenere una copia nel suo spazio online."
+  },
+  pie:"Il Mio Portafoglio Cripto · Luis Veintimilla · <a href=\"mailto:"+CORREO+"\">"+CORREO+"</a>"
+};
+
+var ORDEN=["es","en","pt","fr","de","it"];
+
+function tabla(d){
+  var h='<table><thead><tr><th>'+d.cab[0]+'</th><th>'+d.cab[1]+'</th></tr></thead><tbody>';
+  SERVICIOS.forEach(function(s){
+    h+='<tr><td>'+s[0]+'</td><td>'+d[s[2]]+'</td></tr>';
+  });
+  return h+'</tbody></table>';
+}
+function pintar(idi){
+  var d=T[idi]||T.es;
+  document.documentElement.lang=idi;
+  document.getElementById("tit").textContent=d.titulo;
+  document.getElementById("fecha").textContent=d.fecha;
+  var h="";
+  d.bloques.forEach(function(b){
+    if(b[0]==="caja fuerte"){ h+='<div class="caja fuerte">'+b[2]+'</div>'; return; }
+    h+='<h2>'+b[1]+'</h2>'+b[2];
+    if(b[3]==="tabla") h+=tabla(d.tabla);
+  });
+  document.getElementById("texto").innerHTML=h;
+  document.getElementById("pie").innerHTML=d.pie;
+  [].forEach.call(document.querySelectorAll("#idiomas button"), function(x){
+    x.setAttribute("aria-current", x.dataset.i===idi ? "true" : "false");
+  });
+  try{ localStorage.setItem("priv-idi", idi); }catch(e){}
+  try{ history.replaceState(null,"","#"+idi); }catch(e){}
+}
+(function(){
+  var nav=document.getElementById("idiomas");
+  nav.innerHTML=ORDEN.map(function(i){
+    return '<button type="button" data-i="'+i+'">'+ETIQUETA[i]+'</button>';
+  }).join("");
+  nav.addEventListener("click", function(e){
+    var b=e.target.closest("button"); if(b) pintar(b.dataset.i);
+  });
+  var inicial=(location.hash||"").replace("#","");
+  if(ORDEN.indexOf(inicial)<0){ try{ inicial=localStorage.getItem("priv-idi")||""; }catch(e){} }
+  if(ORDEN.indexOf(inicial)<0){
+    var n=(navigator.language||"es").slice(0,2).toLowerCase();
+    inicial = ORDEN.indexOf(n)>=0 ? n : "es";
+  }
+  pintar(inicial);
+})();
+</script>
+</body>
+</html>

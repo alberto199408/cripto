@@ -1013,6 +1013,9 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
   font-family:inherit;font-size:13px;font-weight:600;color:var(--t3);
   padding:9px 14px;border-radius:10px;text-decoration:underline;text-underline-offset:3px}
 .bvSin:hover{color:var(--tx);background:var(--b0);text-decoration:none}
+.bvLegal{margin:14px 0 0;font-size:11.5px}
+.bvLegal a{color:var(--t3);text-decoration:underline;text-underline-offset:3px}
+.bvLegal a:hover{color:var(--ac)}
 @media (max-width:420px){
   #bienve h1{font-size:22px} #bienve h1 b{font-size:27px}
   .bvLogo{width:72px;height:72px;border-radius:21px} .bvLogo svg{width:40px;height:40px}
@@ -1093,10 +1096,31 @@ input[type=range]{padding:0;border:0;background:none;accent-color:var(--acTx);he
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por GitHub.
    ===================================================================== */
-var VERSION="25";
+var VERSION="26";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
+
+/* La política de privacidad. Google la pide en dos sitios: en la ficha de
+   la tienda y dentro del programa. El archivo privacidad.html viaja al
+   lado de CRIPTO.html, así que servido por internet basta el nombre; si
+   alguien abre el programa desde el disco, se va a la dirección pública. */
+var WEB_PRIVACIDAD="https://alberto199408.github.io/cripto/portafolio/privacidad.html";
+function urlPrivacidad(){
+  var base=WEB_PRIVACIDAD;
+  try{
+    var p=location.protocol;
+    if(p==="http:"||p==="https:")
+      base=location.href.replace(/[?#].*$/,"").replace(/[^\/]*$/,"")+"privacidad.html";
+  }catch(e){}
+  /* abre la política en el mismo idioma que está usando el programa */
+  var i=""; try{ i=idioma(); }catch(e){}
+  return base+(i?"#"+i:"");
+}
+function enlacePrivacidad(texto){
+  return '<a href="'+urlPrivacidad()+'" target="_blank" rel="noopener">'+
+         (texto||"Política de privacidad")+'</a>';
+}
 
 /* =====================================================================
    1 · CATÁLOGO DE MONEDAS
@@ -9460,6 +9484,7 @@ function mostrarBienvenida(){
           'y Google no deja entrar con una cuenta así. Úselo sin cuenta, o ábralo desde su '+
           'dirección de internet.</div>')+
       '<button class="bvSin" id="bvSin">usar sin cuenta, solo en este teléfono</button>'+
+      '<p class="bvLegal">'+enlacePrivacidad()+'</p>'+
     '</div>';
   document.body.appendChild(z);
   var e=z.querySelector("#bvEntrar");
@@ -9942,6 +9967,8 @@ function panelPrograma(){
       : '<div class="nota">Conecte su clave de GitHub más abajo y desde aquí podrá publicar el '+
         'programa para el teléfono sin entrar a github.com.</div>')+
     bloqueInstalar()+
+    '<div class="nota">'+enlacePrivacidad("Lea la política de privacidad")+
+    ' — qué se guarda, dónde y quién puede verlo.</div>'+
   '</div></div>';
 }
 function panelRespaldo(){
@@ -11939,7 +11966,11 @@ DIC.en={
 "Llegó # registro nuevo desde teléfono.":"# new record arrived from the phone.",
 "Llegó # registro nuevo desde computadora.":"# new record arrived from the computer.",
 "Se actualizó con los cambios de teléfono.":"Updated with the changes from the phone.",
-"Se actualizó con los cambios de computadora.":"Updated with the changes from the computer."
+"Se actualizó con los cambios de computadora.":"Updated with the changes from the computer.",
+/* privacidad */
+"Política de privacidad":"Privacy policy",
+"Lea la política de privacidad":"Read the privacy policy",
+"— qué se guarda, dónde y quién puede verlo.":"— what is stored, where, and who can see it."
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
@@ -12896,7 +12927,11 @@ DIC.pt={
 "Llegó # registro nuevo desde teléfono.":"Chegou # registo novo do telemóvel.",
 "Llegó # registro nuevo desde computadora.":"Chegou # registo novo do computador.",
 "Se actualizó con los cambios de teléfono.":"Atualizou-se com as alterações do telemóvel.",
-"Se actualizó con los cambios de computadora.":"Atualizou-se com as alterações do computador."
+"Se actualizó con los cambios de computadora.":"Atualizou-se com as alterações do computador.",
+/* privacidad */
+"Política de privacidad":"Política de privacidade",
+"Lea la política de privacidad":"Leia a política de privacidade",
+"— qué se guarda, dónde y quién puede verlo.":"— o que se guarda, onde e quem pode ver."
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
@@ -13853,7 +13888,11 @@ DIC.fr={
 "Llegó # registro nuevo desde teléfono.":"# nouvel enregistrement est arrivé du téléphone.",
 "Llegó # registro nuevo desde computadora.":"# nouvel enregistrement est arrivé de l’ordinateur.",
 "Se actualizó con los cambios de teléfono.":"Mis à jour avec les changements du téléphone.",
-"Se actualizó con los cambios de computadora.":"Mis à jour avec les changements de l’ordinateur."
+"Se actualizó con los cambios de computadora.":"Mis à jour avec les changements de l’ordinateur.",
+/* privacidad */
+"Política de privacidad":"Politique de confidentialité",
+"Lea la política de privacidad":"Lisez la politique de confidentialité",
+"— qué se guarda, dónde y quién puede verlo.":"— ce qui est conservé, où, et qui peut le voir."
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
@@ -14810,7 +14849,11 @@ DIC.de={
 "Llegó # registro nuevo desde teléfono.":"# neuer Eintrag ist vom Telefon eingetroffen.",
 "Llegó # registro nuevo desde computadora.":"# neuer Eintrag ist vom Computer eingetroffen.",
 "Se actualizó con los cambios de teléfono.":"Mit den Änderungen vom Telefon aktualisiert.",
-"Se actualizó con los cambios de computadora.":"Mit den Änderungen vom Computer aktualisiert."
+"Se actualizó con los cambios de computadora.":"Mit den Änderungen vom Computer aktualisiert.",
+/* privacidad */
+"Política de privacidad":"Datenschutzerklärung",
+"Lea la política de privacidad":"Lesen Sie die Datenschutzerklärung",
+"— qué se guarda, dónde y quién puede verlo.":"— was gespeichert wird, wo, und wer es sehen kann."
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
@@ -15767,7 +15810,11 @@ DIC.it={
 "Llegó # registro nuevo desde teléfono.":"È arrivato # registro nuovo dal telefono.",
 "Llegó # registro nuevo desde computadora.":"È arrivato # registro nuovo dal computer.",
 "Se actualizó con los cambios de teléfono.":"Aggiornato con le modifiche del telefono.",
-"Se actualizó con los cambios de computadora.":"Aggiornato con le modifiche del computer."
+"Se actualizó con los cambios de computadora.":"Aggiornato con le modifiche del computer.",
+/* privacidad */
+"Política de privacidad":"Informativa sulla privacy",
+"Lea la política de privacidad":"Legga l'informativa sulla privacy",
+"— qué se guarda, dónde y quién puede verlo.":"— che cosa si conserva, dove e chi può vederlo."
 };
 </script>
 </body>
