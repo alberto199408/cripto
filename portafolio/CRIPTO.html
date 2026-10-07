@@ -1095,6 +1095,35 @@ a:hover{color:var(--ac2)}
   font-family:inherit;font-size:13px;font-weight:600;color:var(--t3);
   padding:9px 14px;border-radius:10px;text-decoration:underline;text-underline-offset:3px}
 .bvSin:hover{color:var(--tx);background:var(--b0);text-decoration:none}
+/* ---------- LA LLAVE: la pantalla de bloqueo ---------- */
+body.conCerrojo{overflow:hidden}
+#cerrojo{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:24px;
+  background:radial-gradient(130% 100% at 50% 0%,color-mix(in srgb,var(--ac) 12%,var(--b0)),var(--b0));
+  animation:cjEntra .18s ease-out}
+#cerrojo.fuera{opacity:0;transition:opacity .24s}
+@keyframes cjEntra{from{opacity:0}to{opacity:1}}
+.cjCaja{width:100%;max-width:360px;text-align:center}
+.cjIco{width:72px;height:72px;margin:0 auto 18px;border-radius:22px;display:grid;place-items:center;
+  background:color-mix(in srgb,var(--ac) 16%,var(--b1));color:var(--acTx);
+  border:1px solid color-mix(in srgb,var(--ac) 38%,transparent)}
+.cjIco svg{width:38px;height:38px}
+.cjCaja h2{font-size:21px;font-weight:800;letter-spacing:-.02em;margin:0 0 6px;color:var(--tx)}
+.cjDicho{margin:0 0 22px;font-size:14px;color:var(--t2)}
+.cjGrande{width:100%;justify-content:center;display:inline-flex;align-items:center;gap:10px;
+  padding:15px 18px;font-size:15px}
+.cjGrande svg{width:22px;height:22px}
+.cjPin{display:flex;gap:9px;margin-top:14px}
+.cjPin input{flex:1;min-width:0;text-align:center;letter-spacing:.5em;font-size:19px;
+  padding:14px 12px;border-radius:12px;background:var(--b1);border:1px solid var(--ln);
+  color:var(--tx);font-family:inherit}
+.cjPin input:focus{outline:none;border-color:var(--ac)}
+.cjMal{min-height:20px;margin-top:12px;font-size:13px;font-weight:600;color:var(--dnTx)}
+.cjEspera{min-height:0;font-size:13px;font-weight:600;color:var(--ojoTx)}
+.cjEspera.ve{min-height:22px;margin-bottom:10px}
+.cjAyuda{margin-top:18px;background:none;border:0;cursor:pointer;font-family:inherit;
+  font-size:13px;font-weight:600;color:var(--t3);text-decoration:underline;
+  text-underline-offset:3px;padding:8px}
+.cjAyuda:hover{color:var(--tx)}
 .bvLegal{margin:14px 0 0;font-size:11.5px}
 .bvLegal a{color:var(--t3);text-decoration:underline;text-underline-offset:3px}
 .bvLegal a:hover{color:var(--ac)}
@@ -1179,7 +1208,7 @@ a:hover{color:var(--ac2)}
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por su cuenta de Google.
    ===================================================================== */
-var VERSION="32";
+var VERSION="35";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -1538,6 +1567,12 @@ function ahoraReal(){ return Date.now()+DESFASE_RELOJ; }
 function adelante(antes){
   var t=ahoraReal(), m=+antes||0;
   return (m>=t)?(m+1):t;
+}
+/* ¿Hasta dónde llega lo que borra? Decirle «en todos sus equipos» a quien
+   solo tiene el teléfono, y encima sin cuenta, es mentirle. */
+function alcanceBorrado(){
+  var dentro=false; try{ dentro=ctaDentro(); }catch(e){}
+  return dentro ? "en su cuenta y en todos sus aparatos" : "de este aparato";
 }
 function tocar(x){
   if(!x) return x;
@@ -2885,14 +2920,44 @@ function refrescarGrafica(){
    Cada compra suma monedas y suma costo. Cada venta saca monedas al
    precio PROMEDIO y lo que gane o pierda en esa venta queda registrado.
    ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   EL ORDEN DE LOS MOVIMIENTOS — se decide AQUÍ y en ningún otro sitio
+   ---------------------------------------------------------------------
+   AQUÍ ESTABA EL FALLO DE «VENDÍ Y EL TOTAL SIGUE IGUAL»:
+
+   Las compras y las ventas solo guardan el DÍA, no la hora. Para ordenar
+   dos movimientos del mismo día se usaba el id — y el id empieza con la
+   hora del aparato que lo registró. Si la computadora tiene el reloj
+   adelantado (y con la sesión cerrada el programa todavía no lo sabe),
+   su compra quedaba DESPUÉS de la venta hecha en el teléfono. Entonces
+   la venta corría primero, no había nada que vender, contaba CERO, y el
+   total no se movía ni un centavo. El movimiento estaba ahí, en la
+   lista, a la vista — pero no sumaba. Parecía que no se sincronizaba.
+
+   Ahora el orden no depende de ningún reloj:
+     1 · el día
+     2 · el mismo día: primero lo que SUMA (compras) y después lo que
+         RESTA (ventas). No se puede vender lo que todavía no se compró.
+     3 · entre iguales, el id, solo para que el orden no baile entre una
+         pantalla y otra.
+   --------------------------------------------------------------------- */
+function ordenarMovimientos(lista, nuevoPrimero){
+  var L=(lista||[]).slice().sort(function(a,b){
+    var fa=(a.fecha||""), fb=(b.fecha||"");
+    if(fa!==fb) return fa<fb?-1:1;
+    var va=(a.tipo==="venta")?1:0, vb=(b.tipo==="venta")?1:0;
+    if(va!==vb) return va-vb;
+    return String(a.id||"")<String(b.id||"")?-1:1;
+  });
+  return nuevoPrimero ? L.reverse() : L;
+}
+
 function estadoDe(sym){
   var S=String(sym).toUpperCase();
-  var ops=BD.ops.filter(function(o){ return String(o.sym).toUpperCase()===S; })
-                .sort(function(a,b){
-                  var fa=(a.fecha||""), fb=(b.fecha||"");
-                  if(fa!==fb) return fa<fb?-1:1;
-                  return String(a.id||"")<String(b.id||"")?-1:1;
-                });
+  var ops=ordenarMovimientos(BD.ops.filter(function(o){
+    return String(o.sym).toUpperCase()===S;
+  }));
   var cantidad=0, costo=0, realizado=0, comprado=0, vendido=0, nCompras=0, nVentas=0, com=0;
   var porOp={};
   ops.forEach(function(o){
@@ -3479,6 +3544,8 @@ function confirmar(tit, cuerpo, textoOk, alOk, peligro){
    12 · PIEZAS QUE SE REPITEN
    ===================================================================== */
 var IC={
+  candado:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="10.5" width="16" height="10.5" rx="2.4"/><path d="M8 10.5V7.2a4 4 0 0 1 8 0v3.3"/><circle cx="12" cy="15.7" r="1.5" fill="currentColor" stroke="none"/></svg>',
+  huella:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4.2a7.8 7.8 0 0 0-7.8 7.8v2"/><path d="M19.8 12a7.8 7.8 0 0 0-3.6-6.6"/><path d="M8.1 12a3.9 3.9 0 0 1 7.8 0v4.2"/><path d="M12 12v5.6"/><path d="M15.9 19.6a7 7 0 0 0 .6-2.1"/><path d="M5.4 17.6c.3-.9.5-1.9.5-2.9"/></svg>',
   persona:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>',
   mundo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/></svg>',
   res:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>',
@@ -4029,7 +4096,11 @@ function pintarSpot(){
 
   var h=alertaPrecios();
 
-  /* ---- las cinco cifras de arriba ---- */
+  /* Cliente nuevo, cero movimientos: cinco tarjetas a $0,00 no le dicen nada.
+     Se le dice qué hacer, y las cifras aparecen cuando haya algo que contar. */
+  var vacioSpot = !BD.ops.length;
+
+  if(!vacioSpot)
   h+='<div class="mets">'+
     met(IC.banco,"Dinero que puso", usd(S.tot.costo),"",
         plural(vivas.length,"moneda","monedas")+" en el portafolio", 1,
@@ -4049,6 +4120,14 @@ function pintarSpot(){
         D.total<0?"anote el dinero que metió desde fuera":"para comprar", 3,
         null, "#usdtCaja")+
   '</div>';
+
+  if(vacioSpot)
+    h+='<div class="caja"><div class="vacio" style="padding:26px 20px">'+
+       '<div class="vic">'+IC.spot+'</div>'+
+       '<b>Aquí van sus compras y ventas</b>'+
+       '<p>Registre su primera compra abajo. En cuanto lo haga verá el precio promedio, '+
+       'lo que vale hoy y cuánto lleva ganado — todo calculado solo.</p>'+
+       '</div></div>';
 
   /* ---- panel de registrar ----
      El resumen de una moneda NO vive aquí: ocupaba media pantalla sin que
@@ -4251,11 +4330,11 @@ function panelSeleccionada(){
 }
 
 function historialSpot(){
-  var todo=BD.ops.slice().sort(function(a,b){
-    var fa=a.fecha||"", fb=b.fecha||"";
-    if(fa!==fb) return fa<fb?1:-1;
-    return (+b.mod||0)-(+a.mod||0);
-  });
+  /* el mismo orden que usa el cálculo, pero del más nuevo al más viejo:
+     así la lista que usted lee y los números que le salen cuentan lo
+     mismo. Antes la lista se ordenaba por «mod» y el cálculo por el id,
+     y podían no coincidir. */
+  var todo=ordenarMovimientos(BD.ops, true);
   if(!todo.length) return "";
   var RES=resultadoDeOps();
   var ver=todo.slice(0, SPOT_cuantos);
@@ -4358,26 +4437,65 @@ function tarjetaCasas(){
 }
 /* una venta sin su compra registrada hace que el programa cuente la venta entera
    como ganancia: aquí se avisa para que el número no engañe */
+/* Dos cosas distintas, que antes se avisaban con el mismo texto y por eso
+   el aviso mentía:
+     · SIN COMPRA  — vendió una moneda que no tiene comprada en ningún
+                     sitio. No se sabe lo que le costó.
+     · RECORTADA   — sí tiene la compra, pero ese día todavía no le
+                     alcanzaba la cantidad, así que la venta se contó a
+                     medias. Decirle «no tiene la compra» era falso. */
 function ventasSinCompra(){
-  var R=resultadoDeOps(), malas=[];
+  var R=resultadoDeOps(), sin=[], cortas=[];
+  /* qué monedas tienen SIQUIERA una compra registrada: eso es lo que
+     separa los dos avisos. Que la cuenta no cuadre puede ser porque no
+     registró la compra, o porque la registró con una fecha posterior a
+     la venta — y son dos cosas distintas que hay que decirle distinto. */
+  var conCompra={};
+  BD.ops.forEach(function(o){
+    if(o.tipo!=="venta") conCompra[String(o.sym).toUpperCase()]=1;
+  });
   BD.ops.forEach(function(o){
     if(o.tipo!=="venta"||esEstable(o.sym)) return;
     var r=R[o.id];
-    if(!r||r.gan==null||r.sinCosto||r.recortada) malas.push(o);
+    var cuadra = r && r.gan!=null && !r.sinCosto && !r.recortada;
+    if(cuadra) return;
+    if(conCompra[String(o.sym).toUpperCase()]) cortas.push(o);
+    else sin.push(o);
   });
-  return malas;
+  sin.cortas=cortas;                    /* para no romper a quien lo use */
+  return sin;
+}
+/* El nombre de las monedas va FUERA de la frase, en su propia etiqueta.
+   Antes iba dentro ("Vendió SOL pero no tiene…") y por eso estos avisos
+   nunca se tradujeron: el texto cambiaba con cada moneda y con cuántas
+   fueran, así que el diccionario no lo encontraba nunca. Sacándolo, la
+   frase es siempre la misma y se traduce con una sola línea. */
+function cajitaAviso(titulo, syms, frase){
+  return '<div class="alerta"><div class="t"><b>'+titulo+'</b><span>'+
+    '<b>'+esc(syms.join(", "))+' — </b>'+frase+
+    '</span></div><button class="b" onclick="irA(\'spot\')">Ver movimientos</button></div>';
 }
 function avisoVentasSinCompra(){
-  var m;
-  try{ m=ventasSinCompra(); }catch(e){ return ""; }
-  if(!m.length) return "";
-  var syms={}; m.forEach(function(o){ syms[o.sym]=1; });
-  return '<div class="alerta"><div class="t"><b>'+
-    plural(m.length,"venta sin su compra","ventas sin su compra")+'</b><span>'+
-    'Vendió '+Object.keys(syms).join(", ")+' pero no tiene registrada la compra. '+
-    'Sin saber lo que le costó, el programa cuenta esa venta entera como ganancia y el '+
-    '«ya ganado» le sale inflado. Registre esas compras y el número cuadra.'+
-    '</span></div><button class="b" onclick="irA(\'spot\')">Ver movimientos</button></div>';
+  var sin, cortas;
+  try{ sin=ventasSinCompra(); cortas=sin.cortas||[]; }catch(e){ return ""; }
+  var h="";
+  if(sin.length){
+    var s1={}; sin.forEach(function(o){ s1[o.sym]=1; });
+    h+=cajitaAviso(plural(sin.length,"venta sin su compra","ventas sin su compra"),
+      Object.keys(s1),
+      'no tiene registrada la compra. Sin saber lo que le costó, el programa cuenta esa '+
+      'venta entera como ganancia y el «ya ganado» le sale inflado. Registre esas compras '+
+      'y el número cuadra.');
+  }
+  if(cortas.length){
+    var s2={}; cortas.forEach(function(o){ s2[o.sym]=1; });
+    h+=cajitaAviso(plural(cortas.length,"venta contada a medias","ventas contadas a medias"),
+      Object.keys(s2),
+      'vendió más de lo que tenía en ese momento, así que solo se contó la parte que '+
+      'alcanzaba. Revise la fecha de la compra: si la puso después de la venta, corríjala '+
+      'y el número cuadra.');
+  }
+  return h;
 }
 function alertaPrecios(){
   var vivas={};
@@ -4842,7 +4960,7 @@ function editarOp(id){
     M.querySelector("#eD").onclick=function(){
       cerrar();
       confirmar("Eliminar","Se borra la "+(o.tipo==="venta"?"venta":"compra")+" de <b>"+
-        cant(o.cant)+" "+esc(o.sym)+"</b> en todos sus equipos.","Eliminar", function(){
+        cant(o.cant)+" "+esc(o.sym)+"</b> "+alcanceBorrado()+".","Eliminar", function(){
           BD.ops=BD.ops.filter(function(x){ return x.id!==o.id; });
           anotarBorrado(o.id, o.mod); guardar(); repintar(); aviso("Eliminado.");
         }, true);
@@ -4976,7 +5094,7 @@ function verMoneda(sym){
     if(bq) bq.onclick=function(){
       cerrar();
       confirmar("Quitar "+esc(sym),"Se borran los <b>"+e.ops.length+"</b> "+pal(e.ops.length,"movimiento","movimientos")+" de "+
-        esc(sym)+" (compras y ventas) en todos sus equipos. Los futuros de esta moneda no se tocan.",
+        esc(sym)+" (compras y ventas) "+alcanceBorrado()+". Los futuros de esta moneda no se tocan.",
         "Quitar "+esc(sym), function(){
           e.ops.forEach(function(o){ anotarBorrado(o.id, o.mod); });
           BD.ops=BD.ops.filter(function(o){ return String(o.sym).toUpperCase()!==sym; });
@@ -5195,8 +5313,13 @@ function franjaRiesgo(A){
       '<input id="frApal" inputmode="decimal" value="'+c.apal+'"></div>'+
     '<div class="fc"><label>Comisión (%)</label>'+
       '<input id="frCom" inputmode="decimal" title="Se cobra al entrar y al salir" value="'+String(c.com).replace(".",",")+'"></div>'+
-    '<div class="fr"><span>Arriesga <span class="v">'+usdF(riesgoUSD)+'</span> por operación</span>'+
-      '<span>· el '+pctS(c.riesgo)+' de '+usd(c.cartera)+'</span></div>'+
+    /* sin cartera escrita, «Arriesga $0,00 · el 1,0% de $0,00» no dice nada:
+       se le pide lo único que falta */
+    (c.cartera>0
+      ? '<div class="fr"><span>Arriesga <span class="v">'+usdF(riesgoUSD)+'</span> por operación</span>'+
+        '<span>· el '+pctS(c.riesgo)+' de '+usd(c.cartera)+'</span></div>'
+      : '<div class="fr"><span>Escriba arriba <b>cuánto tiene en su cartera</b> y '+
+        'el programa le calcula solo cuánto poner en cada operación.</span></div>')+
     '<div class="sw'+(autoActivo()?" on":"")+'" id="frAuto" title="Cuando el precio en vivo toque el stop o el objetivo, la operación se cierra sola en este registro">'+
       '<i></i><span>Cerrar sola cuando el precio toque el stop o el objetivo</span></div>'+
   '</div>';
@@ -5576,8 +5699,9 @@ function pintarAmbito(k){
   var c=document.getElementById("cuerpo");
   if(k==="back" && !BD.pruebas.length){
     c.innerHTML=cajaVacia("Todavía no tiene ninguna prueba",
-      "Una prueba es como una de sus hojas BACK TESTI: tiene su propia cartera y sus propias "+
-      "operaciones, y nunca se mezcla con su dinero de verdad. Puede tener varias y compararlas.",
+      "Una prueba es un cuaderno aparte: tiene su propia cartera y sus propias operaciones, "+
+      "y nunca se mezcla con su dinero de verdad. Sirve para probar una idea sin arriesgar "+
+      "nada. Puede tener varias y compararlas.",
       '<button class="b vd gr" onclick="nuevaPrueba()">+ Crear mi primera prueba</button>');
     return;
   }
@@ -5587,6 +5711,7 @@ function pintarAmbito(k){
   var h=alertaPrecios();
 
   /* ---- franja de riesgo ---- */
+  var vacioFut = !A.lista.length;
   h+=franjaRiesgo(A);
   if(k==="back") h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:-6px 0 14px">'+
     '<button class="b sm ac" onclick="nuevaPrueba()">+ Nueva prueba</button>'+
@@ -5604,6 +5729,18 @@ function pintarAmbito(k){
   var dicho = T.n ? (plural(T.n,"operación cerrada","operaciones cerradas")+
                      (T.nAb?" · "+plural(T.nAb,"abierta","abiertas"):""))
                   : (T.nAb?plural(T.nAb,"operación abierta","operaciones abiertas"):"todavía sin operaciones");
+  /* Sin una sola operación, el resultado y las cinco tarjetas salen todas a
+     cero o con guiones. Eso no informa: confunde. Se le dice qué hacer. */
+  if(vacioFut)
+    h+='<div class="caja"><div class="vacio" style="padding:26px 20px">'+
+       '<div class="vic">'+IC.fut+'</div>'+
+       '<b>'+(k==="back"?"Esta prueba todavía no tiene operaciones"
+                        :"Aquí van sus operaciones de futuros")+'</b>'+
+       '<p>Registre la primera abajo: elija la moneda, diga por dónde entra y dónde pone '+
+       'el stop, y el programa le dice <b>cuánto dinero poner</b> para no arriesgar más de '+
+       'lo que usted quiere.</p>'+
+       '</div></div>';
+  else
   h+='<div class="cima">'+
     heroResultado(k==="back"?"RESULTADO DE LA PRUEBA":"RESULTADO EN FUTUROS", T.gan+T.flotante,
       base, ahoraC, dicho, curva, T.nAb, T.flotante)+
@@ -6368,7 +6505,7 @@ function editarOperacion(id, k){
     M.querySelector("#eDel").onclick=function(){
       cerrar();
       confirmar("Eliminar operación","Se borra la operación <b>"+esc(String(f.n||""))+
-        "</b> de "+esc(f.sym||"")+" en todos sus equipos.","Eliminar", function(){
+        "</b> de "+esc(f.sym||"")+" "+alcanceBorrado()+".","Eliminar", function(){
           A.quitar(f.id); anotarBorrado(f.id, f.mod); guardar(); repintar(); aviso("Eliminada.");
         }, true);
     };
@@ -6410,7 +6547,7 @@ function nuevaPrueba(){
   abrir('<div class="hoja"><div class="hh"><h3>Nueva prueba</h3>'+
     '<button class="x" data-cerrar>×</button></div><div class="hb"><div class="campos">'+
     '<div class="campo ancho"><label>Nombre de la prueba</label>'+
-      '<input id="pN" style="font-family:inherit" placeholder="BACK TESTI 1" '+
+      '<input id="pN" style="font-family:inherit" placeholder="Mi primera prueba" '+
       'value="Prueba '+(BD.pruebas.length+1)+'"></div>'+
     '<div class="campo"><label>Dinero con el que empieza esta prueba (USD)</label>'+
       '<input id="pC" inputmode="decimal" value="30"></div>'+
@@ -6465,7 +6602,7 @@ function borrarPrueba(){
   if(!p){ aviso("No hay ninguna prueba.",true); return; }
   var n=opsDePrueba(p.id).length;
   confirmar("Borrar la prueba","Se borra <b>"+esc(p.nombre)+"</b> con sus <b>"+n+
-    "</b> "+pal(n,"operación","operaciones")+" de prueba, en todos sus equipos. Su dinero de verdad no se toca.",
+    "</b> "+pal(n,"operación","operaciones")+" de prueba, "+alcanceBorrado()+". Su dinero de verdad no se toca.",
     "Borrar la prueba", function(){
       copiaDeRescate("borrar la prueba "+(p.nombre||""));
       opsDePrueba(p.id).forEach(function(o){ anotarBorrado(o.id, o.mod); });
@@ -7499,6 +7636,352 @@ function montarFichaGraf(f, e){
   });
 }
 /* =====================================================================
+   22c · EL BLOQUEO — que nadie más vea su dinero
+   ---------------------------------------------------------------------
+   TODO lo del bloqueo está aquí y en ningún otro sitio: el ajuste, la
+   pantalla que tapa, la clave, la huella y lo que pasa si se olvida.
+
+   Dos formas, y el usuario elige la que quiera:
+
+     · SU HUELLA — la misma con la que abre el teléfono. Si no tiene
+       huella puesta, el teléfono le pide su patrón o su clave. Se monta
+       con WebAuthn: la huella NUNCA sale del teléfono y aquí no se
+       guarda ninguna.
+     · UNA CLAVE de la aplicación — 4 a 8 números. Sirve en la
+       computadora y en teléfonos sin huella.
+
+   Honestidad, porque esto se vende: el bloqueo TAPA LA PANTALLA. No
+   cifra lo que hay guardado. Para quien coge su teléfono es una puerta;
+   para alguien que sepa de computadoras y tenga el aparato en la mano,
+   no lo es. Se dice en la propia pantalla con esas palabras.
+
+   El bloqueo es de ESTE aparato: no viaja a su cuenta ni al otro equipo.
+
+   PALABRAS: aquí no se escribe «PIN» ni «desbloqueo del aparato». Se
+   escribe «su clave», «su huella» y «Desbloquear». Lo van a leer
+   personas, no técnicos.
+   ===================================================================== */
+var LLAVE_INTENTOS_MAX=5, LLAVE_ESPERA=60000;
+var LLV={ abierto:false, pidiendo:false };
+
+function llaveCfg(){
+  if(!BD.ajustes) BD.ajustes={};
+  if(!BD.ajustes.llave||typeof BD.ajustes.llave!=="object") BD.ajustes.llave={};
+  return BD.ajustes.llave;
+}
+function llavePuesta(){
+  var c=llaveCfg();
+  return !!(c.on && (c.pin || c.credId));
+}
+/* la huella del aparato solo existe si hay internet de verdad (https) */
+function hayHuella(){
+  try{
+    return !!(window.PublicKeyCredential && navigator.credentials &&
+              (location.protocol==="https:"||location.hostname==="localhost"));
+  }catch(e){ return false; }
+}
+function huellaUsable(){
+  if(!hayHuella()) return Promise.resolve(false);
+  try{
+    return PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
+      .then(function(x){ return !!x; }).catch(function(){ return false; });
+  }catch(e){ return Promise.resolve(false); }
+}
+
+/* ---------- la clave: nunca se guarda tal cual ---------- */
+function b64(buf){
+  var b=new Uint8Array(buf), s="";
+  for(var i=0;i<b.length;i++) s+=String.fromCharCode(b[i]);
+  return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function deB64(s){
+  s=String(s||"").replace(/-/g,"+").replace(/_/g,"/");
+  while(s.length%4) s+="=";
+  var b=atob(s), u=new Uint8Array(b.length);
+  for(var i=0;i<b.length;i++) u[i]=b.charCodeAt(i);
+  return u;
+}
+function salPropia(){
+  var c=llaveCfg();
+  if(!c.sal){
+    var u=new Uint8Array(16);
+    try{ crypto.getRandomValues(u); }catch(e){ for(var i=0;i<16;i++) u[i]=Math.floor(Math.random()*256); }
+    c.sal=b64(u);
+  }
+  return c.sal;
+}
+function revolverPin(pin){
+  var txt=salPropia()+"|"+String(pin);
+  try{
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(txt))
+      .then(function(h){ return b64(h); });
+  }catch(e){
+    /* sin SubtleCrypto (pasa en sitios sin https) se usa algo simple: no es
+       lo mismo, pero tampoco se guarda la clave a la vista */
+    var h=0;
+    for(var i=0;i<txt.length;i++){ h=((h<<5)-h+txt.charCodeAt(i))|0; }
+    return Promise.resolve("s"+h);
+  }
+}
+function ponerPin(pin){
+  return revolverPin(pin).then(function(h){
+    var c=llaveCfg();
+    c.pin=h; c.on=true; c.intentos=0; c.hasta=0;
+    guardar();
+    return true;
+  });
+}
+function pinCorrecto(pin){
+  var c=llaveCfg();
+  if(!c.pin) return Promise.resolve(false);
+  return revolverPin(pin).then(function(h){ return h===c.pin; });
+}
+
+/* ---------- la huella (o el patrón, o la clave del teléfono) ---------- */
+function apuntarHuella(){
+  if(!hayHuella()) return Promise.reject(new Error("Aquí no se puede usar la huella."));
+  var reto=new Uint8Array(32), idU=new Uint8Array(16);
+  try{ crypto.getRandomValues(reto); crypto.getRandomValues(idU); }catch(e){}
+  return navigator.credentials.create({publicKey:{
+    challenge:reto,
+    rp:{name:APP_NOMBRE},
+    user:{id:idU, name:(CTA.correo||"usuario"), displayName:(CTA.nombre||"Usuario")},
+    pubKeyCredParams:[{type:"public-key",alg:-7},{type:"public-key",alg:-257}],
+    authenticatorSelection:{authenticatorAttachment:"platform", userVerification:"required",
+                            residentKey:"preferred"},
+    timeout:60000, attestation:"none"
+  }}).then(function(cred){
+    if(!cred) throw new Error("No se pudo.");
+    var c=llaveCfg();
+    c.credId=b64(cred.rawId); c.on=true; c.intentos=0; c.hasta=0;
+    guardar();
+    return true;
+  });
+}
+function pedirHuella(){
+  var c=llaveCfg();
+  if(!c.credId||!hayHuella()) return Promise.resolve(false);
+  var reto=new Uint8Array(32);
+  try{ crypto.getRandomValues(reto); }catch(e){}
+  return navigator.credentials.get({publicKey:{
+    challenge:reto,
+    allowCredentials:[{type:"public-key", id:deB64(c.credId)}],
+    userVerification:"required", timeout:60000
+  }}).then(function(r){ return !!r; }).catch(function(){ return false; });
+}
+
+/* ---------- quitar el bloqueo ---------- */
+function quitarLlave(){
+  var c=llaveCfg();
+  c.on=false; c.pin=""; c.credId=""; c.sal=""; c.intentos=0; c.hasta=0;
+  guardar();
+}
+
+/* =====================================================================
+   LA PANTALLA QUE TAPA
+   ===================================================================== */
+function bloquearSiToca(){
+  if(!llavePuesta()) return;
+  if(document.getElementById("cerrojo")) return;
+  pintarCerrojo();
+}
+function cuantoFalta(){
+  var c=llaveCfg();
+  var f=(+c.hasta||0)-Date.now();
+  return f>0 ? Math.ceil(f/1000) : 0;
+}
+function pintarCerrojo(){
+  var c=llaveCfg();
+  var z=document.createElement("div");
+  z.id="cerrojo";
+  var conHuella=!!c.credId, conPin=!!c.pin;
+  z.innerHTML=
+    '<div class="cjCaja">'+
+      '<div class="cjIco">'+IC.candado+'</div>'+
+      '<h2>'+esc(APP_NOMBRE)+'</h2>'+
+      '<p class="cjDicho">Desbloquee para entrar.</p>'+
+      '<div id="cjEspera" class="cjEspera"></div>'+
+      (conHuella?'<button class="b vd gr cjGrande" id="cjHuella">'+IC.huella+
+                 'Desbloquear</button>':'')+
+      (conPin?'<div class="cjPin">'+
+          '<input id="cjNum" type="password" inputmode="numeric" autocomplete="off" '+
+          'maxlength="8" placeholder="• • • •" aria-label="Su clave">'+
+          '<button class="b ac" id="cjOk">Entrar</button></div>':'')+
+      '<div id="cjMal" class="cjMal"></div>'+
+      '<button class="cjAyuda" id="cjOlvide">Olvidé cómo entrar</button>'+
+    '</div>';
+  document.body.appendChild(z);
+  document.body.classList.add("conCerrojo");
+
+  function fallo(txt){
+    var c2=llaveCfg();
+    c2.intentos=(+c2.intentos||0)+1;
+    if(c2.intentos>=LLAVE_INTENTOS_MAX){ c2.hasta=Date.now()+LLAVE_ESPERA; c2.intentos=0; }
+    guardar();
+    var m=document.getElementById("cjMal");
+    if(m) m.textContent=txt||"No coincide. Vuelva a intentarlo.";
+    pintarEspera();
+  }
+  function pintarEspera(){
+    var e=document.getElementById("cjEspera");
+    if(!e) return;
+    var s=cuantoFalta();
+    if(s>0){
+      e.textContent="Demasiados intentos. Espere "+s+(s===1?" segundo.":" segundos.");
+      e.className="cjEspera ve";
+      setTimeout(pintarEspera, 1000);
+    } else { e.textContent=""; e.className="cjEspera"; }
+  }
+  function abrir2(){
+    var c2=llaveCfg(); c2.intentos=0; c2.hasta=0; guardar();
+    LLV.abierto=true;
+    document.body.classList.remove("conCerrojo");
+    var y=document.getElementById("cerrojo");
+    if(y){ y.classList.add("fuera"); setTimeout(function(){ try{ y.remove(); }catch(e){} }, 260); }
+    try{ despertarAudio(); }catch(e){}
+  }
+  var h=z.querySelector("#cjHuella");
+  if(h) h.onclick=function(){
+    if(cuantoFalta()>0) return;
+    h.disabled=true;
+    pedirHuella().then(function(ok){
+      h.disabled=false;
+      if(ok) abrir2(); else fallo("No se reconoció. Pruebe otra vez.");
+    });
+  };
+  var ok2=z.querySelector("#cjOk"), num=z.querySelector("#cjNum");
+  function probarPin(){
+    if(cuantoFalta()>0) return;
+    var p=(num.value||"").trim();
+    if(!p) return;
+    pinCorrecto(p).then(function(bien){
+      num.value="";
+      if(bien) abrir2(); else fallo("Esa no es la clave.");
+    });
+  }
+  if(ok2) ok2.onclick=probarPin;
+  if(num){
+    num.addEventListener("keydown", function(e){ if(e.key==="Enter") probarPin(); });
+    setTimeout(function(){ try{ if(!conHuella) num.focus(); }catch(e){} }, 300);
+  }
+  z.querySelector("#cjOlvide").onclick=function(){
+    abrir('<div class="hoja"><div class="hh"><h3>Olvidé cómo entrar</h3>'+
+      '<button class="x" data-cerrar>×</button></div><div class="hb">'+
+      '<p style="font-size:14px;line-height:1.75;margin:0 0 12px">Desde aquí no se puede '+
+      'saltar: si se pudiera, no serviría de nada.</p>'+
+      '<p style="font-size:14px;line-height:1.75;margin:0 0 12px"><b>Si entró con su cuenta '+
+      'de Google</b>, no ha perdido nada. Borre los datos de la aplicación en los ajustes de '+
+      'su teléfono (o del navegador en la computadora), ábrala otra vez y entre con el mismo '+
+      'correo: le vuelve todo.</p>'+
+      '<p style="font-size:14px;line-height:1.75;margin:0"><b>Si no tenía cuenta</b> y guardó '+
+      'alguna copia, puede restaurarla al volver a abrir. Si no guardó ninguna, no hay forma '+
+      'de recuperarlo. Por eso vale la pena entrar con su cuenta.</p>'+
+      '</div><div class="hf"><button class="b ac" data-cerrar>Entendido</button></div></div>');
+  };
+  pintarEspera();
+}
+
+/* =====================================================================
+   EL AJUSTE — una sola caja, con sus perillas a la vista
+   ===================================================================== */
+function panelLlave(){
+  var c=llaveCfg(), puesta=llavePuesta();
+  return '<div class="caja" id="llaveCaja"><h2><span class="ic">'+IC.candado+'</span>'+
+    'Bloqueo — que nadie más vea su dinero'+
+    '<span class="sp"></span><span class="chip '+(puesta?"l":"s")+'">'+
+    (puesta?"puesto":"sin poner")+'</span></h2><div class="cp">'+
+
+    (puesta
+      ? '<div class="fcalc">Al abrir se le pide '+
+          (c.credId&&c.pin ? '<b>su huella</b> o <b>su clave</b>'
+           : c.credId ? '<b>su huella</b>'
+           : '<b>su clave</b>')+'.</div>'+
+        '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px">'+
+          (c.credId?'' :'<button class="b" id="llHuella">Añadir mi huella</button>')+
+          (c.pin?'<button class="b" id="llPin">Cambiar la clave</button>'
+                :'<button class="b" id="llPin">Añadir una clave</button>')+
+          '<button class="b rj" id="llQuita" style="margin-left:auto">Quitar el bloqueo</button>'+
+        '</div>'
+      : '<p class="mut" style="margin:0 0 12px">Sin bloqueo, cualquiera que coja este '+
+        'aparato ve su portafolio.</p>'+
+        '<div style="display:flex;gap:9px;flex-wrap:wrap">'+
+          '<button class="b vd" id="llHuella">Usar mi huella</button>'+
+          '<button class="b ac" id="llPin">Poner una clave</button>'+
+        '</div>'+
+        '<div class="nota" id="llNoHuella" style="display:none">Este aparato no tiene huella '+
+        'puesta. Puede poner una clave.</div>')+
+
+    '<div class="nota">Es la misma huella con la que abre su teléfono. Si no tiene huella '+
+    'puesta, le pedirá su patrón. La pide el teléfono, no nosotros, y <b>su huella nunca '+
+    'sale de ahí</b>: aquí no se guarda ninguna.</div>'+
+
+    '<div class="nota ojo"><b>Dicho claro:</b> esto tapa la pantalla, '+
+    '<b>no cifra lo que hay guardado</b>. Y es solo de este aparato: no viaja a su cuenta '+
+    'ni a su otro equipo.</div>'+
+
+  '</div></div>';
+}
+function engancharLlave(box){
+  var x;
+  if((x=box.querySelector("#llHuella"))) x.onclick=function(){
+    var b=x; b.disabled=true;
+    huellaUsable().then(function(se){
+      if(!se){
+        b.disabled=false;
+        var n=box.querySelector("#llNoHuella");
+        if(n) n.style.display="";
+        aviso("Este aparato no tiene huella puesta. Puede poner una clave.", true);
+        return;
+      }
+      return apuntarHuella().then(function(){
+        aviso("Listo. Al abrir se le pedirá su huella.");
+        pintarDat();
+      }).catch(function(e){
+        b.disabled=false;
+        aviso("No se pudo poner: "+((e&&e.message)||e), true);
+      });
+    });
+  };
+  if((x=box.querySelector("#llPin"))) x.onclick=pedirPinNuevo;
+  if((x=box.querySelector("#llQuita"))) x.onclick=function(){
+    confirmar("Quitar el bloqueo",
+      "La aplicación volverá a abrirse sin pedir nada. Cualquiera que coja este aparato "+
+      "verá su portafolio.", "Quitarlo", function(){
+        quitarLlave(); pintarDat(); aviso("Bloqueo quitado.");
+      }, true);
+  };
+}
+function pedirPinNuevo(){
+  abrir('<div class="hoja"><div class="hh"><span class="ic">'+IC.candado+'</span>'+
+    '<h3>Su clave</h3><button class="x" data-cerrar>×</button></div><div class="hb">'+
+    '<p class="mut" style="margin:0 0 12px">De 4 a 8 números. Es solo de este aparato.</p>'+
+    '<div class="campos">'+
+      '<div class="campo"><label>Clave</label>'+
+        '<input id="pnA" type="password" inputmode="numeric" maxlength="8" autocomplete="off"></div>'+
+      '<div class="campo"><label>Otra vez, para no equivocarse</label>'+
+        '<input id="pnB" type="password" inputmode="numeric" maxlength="8" autocomplete="off"></div>'+
+    '</div>'+
+    '<div class="nota mal" id="pnMal" style="display:none"></div>'+
+    '<div class="nota ojo">Si la olvida no hay forma de saltársela. Con su cuenta de Google '+
+    'puesta no pierde nada: borra los datos de la aplicación, entra con el mismo correo y '+
+    'le vuelve todo.</div>'+
+    '</div><div class="hf"><button class="b" data-cerrar>Cancelar</button>'+
+    '<button class="b ac" id="pnOk">Guardar la clave</button></div></div>',
+    function(M){
+      M.querySelector("#pnOk").onclick=function(){
+        var a=(M.querySelector("#pnA").value||"").trim();
+        var b=(M.querySelector("#pnB").value||"").trim();
+        var m=M.querySelector("#pnMal");
+        function mal(t){ m.style.display=""; m.textContent=t; }
+        if(!/^\d{4,8}$/.test(a)) return mal("La clave son de 4 a 8 números, nada más.");
+        if(a!==b) return mal("Las dos no coinciden.");
+        ponerPin(a).then(function(){
+          cerrar(); pintarDat(); aviso("Clave guardada.");
+        });
+      };
+    });
+}
+/* =====================================================================
    19 · RESUMEN — todo junto, moviéndose solo
    ===================================================================== */
 function pintarRes(){
@@ -7777,7 +8260,7 @@ function pintarAlr(){
       var i=+b.getAttribute("data-adel"), a=BD.alertas[i];
       if(!a) return;
       confirmar("Quitar alerta","Se quita la alerta de <b>"+esc(a.sym)+" "+
-        (a.dir==="sube"?"sube a":"baja a")+" "+precio(a.precio)+"</b> en todos sus equipos.",
+        (a.dir==="sube"?"sube a":"baja a")+" "+precio(a.precio)+"</b> "+alcanceBorrado()+".",
         "Quitarla", function(){
           if(a.id) anotarBorrado(a.id, a.mod);
           BD.alertas.splice(i,1);
@@ -8312,9 +8795,9 @@ function pintarBotonGuardar(){
   var dentro=false; try{ dentro=ctaDentro(); }catch(e){}
   if(!GUARDADO_HORA){
     b.className="b sm ac";
-    var alla=/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent||"")
-      ? "A LA COMPUTADORA" : "AL TELÉFONO";
-    b.textContent = dentro ? ("ENVIAR "+alla) : "GUARDAR COPIA";
+    /* antes decía «ENVIAR A LA COMPUTADORA», que es mentira para quien solo
+       tiene el teléfono. Su cuenta es verdad siempre. */
+    b.textContent = dentro ? "ENVIAR A MI CUENTA" : "GUARDAR COPIA";
     b.title = dentro
       ? "Todo se guarda solo en este aparato al momento. Este botón manda los cambios a sus otros aparatos ahora mismo."
       : "Todo se guarda solo en este aparato al momento. Este botón además escribe la copia en su carpeta de respaldo.";
@@ -9271,11 +9754,19 @@ function mensajeCuenta(e){
     return "Cerró la ventana antes de elegir la cuenta.";
   if(/auth\/network-request-failed/.test(c))
     return "No hay internet, o la conexión se cortó.";
-  if(/permission-denied|insufficient/i.test(c+m))
-    return "Firebase no deja guardar: faltan las reglas del cajón. Están en la ayuda de aquí abajo.";
-  if(/api-key-not-valid|invalid-api-key/i.test(c+m))
-    return "Las claves de Firebase están mal pegadas. Vuelva a copiarlas completas.";
-  return m;
+  if(/too-many-requests/.test(c))
+    return "Google pidió esperar un momento. Pruebe otra vez en un minuto.";
+  if(/user-disabled/.test(c))
+    return "Esa cuenta de Google está deshabilitada.";
+  if(/permission-denied|insufficient|api-key-not-valid|invalid-api-key/i.test(c+m))
+    return "No se pudo guardar en su cuenta. Sus datos siguen enteros en este aparato. "+
+           "Si vuelve a pasar, escríbanos a "+CORREO_SOPORTE+".";
+  /* CUALQUIER otra cosa. Antes aquí se devolvía el mensaje crudo de Google y a
+     la persona le salía «Firebase: Error (auth/...)» en inglés. Nunca más: se
+     le dice algo que pueda entender, y el detalle solo va a la bitácora. */
+  try{ anotarSync("fallo de la cuenta", String(c||m).slice(0,120)); }catch(e2){}
+  return "No se pudo conectar con su cuenta. Sus datos siguen enteros en este aparato. "+
+         "Inténtelo en un rato y, si sigue igual, escríbanos a "+CORREO_SOPORTE+".";
 }
 
 /* --- qué se guarda en la cuenta ---
@@ -9298,6 +9789,7 @@ function textoParaCuenta(){
    colores, los sonidos, la meta, los precios que escribió a mano… todo.
    ===================================================================== */
 var AJUSTES_DEL_APARATO=[
+  "llave",          /* la clave y la huella: son de ESTE aparato, jamás viajan */
   "git",            /* la clave de GitHub: JAMÁS viaja */
   "nube",           /* los permisos de Drive y OneDrive: son de este navegador */
   "cuenta",         /* la sesión de Firebase de este aparato */
@@ -9825,7 +10317,7 @@ function panelitoCuenta(){
         '<i>'+(CTA.escuchaViva?"al día con sus otros aparatos":"sin conexión por ahora")+'</i></div>'+
       '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:14px">'+
         '<button class="b ac" id="pcGuarda">Guardar ahora</button>'+
-        '<button class="b" id="pcLlave">Llave y seguridad</button>'+
+        '<button class="b" id="pcLlave">Bloqueo y seguridad</button>'+
       '</div>'+
       '<div style="margin-top:10px">'+
         '<button class="b gh" id="pcSale" style="width:100%">Salir de la cuenta</button></div>'+
@@ -10322,6 +10814,8 @@ function pintarDat(){
      UN SOLO SITIO para todo lo de guardar. Antes eran cinco cajas
      separadas que hacían el mismo trabajo y nadie sabía cuál usar.
      =================================================================== */
+  panelLlave()+
+
   '<div class="caja grupo" id="cajaGuardado">'+
     '<h2><span class="ic">'+IC.escudo+'</span>Dónde se guarda su portafolio</h2>'+
     '<div class="cp">'+resumenGuardado()+'</div>'+
@@ -10453,6 +10947,7 @@ function panelRespaldo(){
 function engancharDat(box){
   var x;
   var ct=box.querySelector("#ctaCaja"); if(ct) engancharCuenta(ct);
+  var lv=box.querySelector("#llaveCaja"); if(lv) engancharLlave(lv);
   var nb=box.querySelector("#nubeCaja"); if(nb) engancharNube(nb);
   var ic=box.querySelector("#idiCaja"); if(ic) engancharIdioma(ic);
   var bi=box.querySelector("#pInst"); if(bi) bi.onclick=instalarApp;
@@ -10557,7 +11052,7 @@ function engancharDat(box){
   if((x=box.querySelector("#dBorrar"))) x.onclick=function(){
     confirmar("Borrar todo","Se borran <b>"+BD.ops.length+"</b> "+pal(BD.ops.length,"movimiento","movimientos")+" de spot, <b>"+
       BD.fut.length+"</b> "+pal(BD.fut.length,"operación","operaciones")+" de futuros, <b>"+BD.pruebas.length+
-      "</b> "+pal(BD.pruebas.length,"prueba","pruebas")+" y <b>"+(BD.alertas||[]).length+"</b> "+pal((BD.alertas||[]).length,"alerta","alertas")+", <b>en todos sus equipos</b>. "+
+      "</b> "+pal(BD.pruebas.length,"prueba","pruebas")+" y <b>"+(BD.alertas||[]).length+"</b> "+pal((BD.alertas||[]).length,"alerta","alertas")+", <b>"+alcanceBorrado()+"</b>. "+
       "Se guarda una copia de rescate en este aparato por si se arrepiente.",
       "Sí, borrar todo", function(){
         copiaDeRescate("borrar todo");
@@ -10919,7 +11414,7 @@ function exportarExcel(){
 
   h+=sub("TODOS LOS MOVIMIENTOS DE SPOT")+
     ths(["FECHA","TIPO","MONEDA","CANTIDAD","PRECIO","COMISIÓN","TOTAL","DÓNDE","NOTA"]);
-  BD.ops.slice().sort(function(a,b){ return (a.fecha||"")<(b.fecha||"")?-1:1; }).forEach(function(o){
+  ordenarMovimientos(BD.ops).forEach(function(o){
     var bruto=(+o.cant||0)*(+o.precio||0), k=(+o.com||0);
     var tot=o.tipo==="venta"?bruto-k:bruto+k;
     h+=fila([{t:o.fecha||""},{t:o.tipo==="venta"?"VENTA":"COMPRA",c:"l"},{t:o.sym||"",c:"l"},
@@ -11160,6 +11655,7 @@ function arrancar(){
   FU.fecha=hoy();
   try{ programarMarca(); }catch(e){}
   try{ reconectarRespaldo(); }catch(e){}
+  try{ bloquearSiToca(); }catch(e){}   /* la llave, antes que nada */
   try{ registrarAyudante(); }catch(e){}
   /* ¿se quedó este aparato con una versión vieja guardada? se mira sin ruido */
   setTimeout(function(){
@@ -12452,7 +12948,94 @@ DIC.en={
 "Enviado a sus otros aparatos.":"Sent to your other devices.",
 "No se puede entrar con una cuenta en esta copia del programa. Escríbanos a":"You cannot sign in with an account in this copy of the program. Write to us at",
 "y lo arreglamos. Mientras tanto la aplicación funciona igual, guardando en este aparato.":"and we will fix it. Meanwhile the app works just the same, saving on this device.",
-"Copia escrita en su carpeta.":"Copy written to your folder."
+"Copia escrita en su carpeta.":"Copy written to your folder.",
+/* v33 · la llave, las pantallas vacías y los errores en castellano */
+"Bloqueo — que nadie más vea su dinero":"Lock — so nobody else sees your money",
+"sin poner":"not set",
+"Sin bloqueo, cualquiera que coja este aparato ve su portafolio.":"Without a lock, anyone who picks up this device sees your portfolio.",
+"Usar mi huella":"Use my fingerprint",
+"Poner una clave":"Set a code",
+"Cambiar la clave":"Change the code",
+"Añadir una clave":"Add a code",
+"Añadir mi huella":"Add my fingerprint",
+"Quitar el bloqueo":"Remove the lock",
+"Al abrir se le pide":"When it opens it asks for",
+"su huella":"your fingerprint",
+"su clave":"your code",
+"Es la misma huella con la que abre su teléfono. Si no tiene huella puesta, le pedirá su patrón. La pide el teléfono, no nosotros, y":"It is the same fingerprint you use to open your phone. If you have no fingerprint set, it will ask for your pattern. The phone asks for it, not us, and",
+"su huella nunca sale de ahí":"your fingerprint never leaves it",
+": aquí no se guarda ninguna.":": none is stored here.",
+"Dicho claro:":"Said plainly:",
+"esto tapa la pantalla,":"this covers the screen,",
+"no cifra lo que hay guardado":"it does not encrypt what is stored",
+". Y es solo de este aparato: no viaja a su cuenta ni a su otro equipo.":". And it belongs to this device only: it does not travel to your account or to your other device.",
+"Este aparato no tiene huella puesta. Puede poner una clave.":"This device has no fingerprint set. You can set a code.",
+"Su clave":"Your code",
+"De # a # números. Es solo de este aparato.":"# to # digits. It belongs to this device only.",
+"Otra vez, para no equivocarse":"Again, so there is no mistake",
+"Guardar la clave":"Save the code",
+"La clave son de # a # números, nada más.":"The code is # to # digits, nothing else.",
+"Las dos no coinciden.":"The two do not match.",
+"Si la olvida no hay forma de saltársela. Con su cuenta de Google puesta no pierde nada: borra los datos de la aplicación, entra con el mismo correo y le vuelve todo.":"If you forget it there is no way around it. With your Google account set up you lose nothing: clear the app's data, sign in with the same address and everything comes back.",
+"Clave guardada.":"Code saved.",
+"Bloqueo quitado.":"Lock removed.",
+"Listo. Al abrir se le pedirá su huella.":"Done. When it opens it will ask for your fingerprint.",
+"La aplicación volverá a abrirse sin pedir nada. Cualquiera que coja este aparato verá su portafolio.":"The app will open again without asking for anything. Anyone who picks up this device will see your portfolio.",
+"Quitarla":"Remove it",
+"Desbloquee para entrar.":"Unlock to get in.",
+"Desbloquear":"Unlock",
+"No coincide. Vuelva a intentarlo.":"It does not match. Try again.",
+"Esa no es la clave.":"That is not the code.",
+"No se reconoció. Pruebe otra vez.":"Not recognised. Try again.",
+"Demasiados intentos. Espere # segundos.":"Too many attempts. Wait # seconds.",
+"Demasiados intentos. Espere # segundo.":"Too many attempts. Wait # second.",
+"Olvidé cómo entrar":"I forgot how to get in",
+"Desde aquí no se puede saltar: si se pudiera, no serviría de nada.":"It cannot be bypassed from here: if it could, it would be useless.",
+"Si entró con su cuenta de Google":"If you signed in with your Google account",
+", no ha perdido nada. Borre los datos de la aplicación en los ajustes de su teléfono (o del navegador en la computadora), ábrala otra vez y entre con el mismo correo: le vuelve todo.":", you have lost nothing. Clear the app's data in your phone's settings (or the browser's on the computer), open it again and sign in with the same address: everything comes back.",
+"Si no tenía cuenta":"If you had no account",
+"y guardó alguna copia, puede restaurarla al volver a abrir. Si no guardó ninguna, no hay forma de recuperarlo. Por eso vale la pena entrar con su cuenta.":"and saved a copy, you can restore it when you open again. If you saved none, there is no way to get it back. That is why signing in with your account is worth it.",
+"Su portafolio empieza aquí":"Your portfolio starts here",
+"Registre su primera compra en Spot, o su primera operación en Futuros. El promedio, la ganancia y el lote se calculan solos.":"Log your first buy in Spot, or your first trade in Futures. The average, the gain and the position size work themselves out.",
+"Empezar por Spot":"Start with Spot",
+"Empezar por Futuros":"Start with Futures",
+"Aquí van sus compras y ventas":"Your buys and sells go here",
+"Registre su primera compra abajo. En cuanto lo haga verá el precio promedio, lo que vale hoy y cuánto lleva ganado — todo calculado solo.":"Log your first buy below. As soon as you do you will see the average price, what it is worth today and how much you have made — all worked out for you.",
+"Aquí van sus operaciones de futuros":"Your futures trades go here",
+"Esta prueba todavía no tiene operaciones":"This test has no trades yet",
+"Registre la primera abajo: elija la moneda, diga por dónde entra y dónde pone el stop, y el programa le dice":"Log the first one below: pick the coin, say where you enter and where you put the stop, and the app tells you",
+"cuánto dinero poner":"how much money to put in",
+"para no arriesgar más de lo que usted quiere.":"so you never risk more than you want.",
+"cuánto tiene en su cartera":"how much is in your pot",
+"y el programa le calcula solo cuánto poner en cada operación.":"and the app works out by itself how much to put into each trade.",
+"Una prueba es un cuaderno aparte: tiene su propia cartera y sus propias operaciones, y nunca se mezcla con su dinero de verdad. Sirve para probar una idea sin arriesgar nada. Puede tener varias y compararlas.":"A test is a separate notebook: it has its own pot and its own trades, and it never mixes with your real money. It is for trying an idea without risking anything. You can keep several and compare them.",
+"Mi primera prueba":"My first test",
+"Todavía no tiene monedas. Regístrelas arriba.":"No coins yet. Log them above.",
+"No hay operaciones cerradas aquí.":"No closed trades here.",
+"todavía no ha registrado nada":"nothing logged yet",
+"ENVIAR A MI CUENTA":"SEND TO MY ACCOUNT",
+"¿Tengo la última versión?":"Do I have the latest version?",
+"de este aparato":"from this device",
+"en su cuenta y en todos sus aparatos":"from your account and from all your devices",
+"No se pudo conectar con su cuenta. Sus datos siguen enteros en este aparato. Inténtelo en un rato y, si sigue igual, escríbanos a":"Could not reach your account. Your data is still whole on this device. Try again in a while and, if it keeps failing, write to us at",
+"No se pudo guardar en su cuenta. Sus datos siguen enteros en este aparato. Si vuelve a pasar, escríbanos a":"Could not save to your account. Your data is still whole on this device. If it happens again, write to us at",
+"Google pidió esperar un momento. Pruebe otra vez en un minuto.":"Google asked to wait a moment. Try again in a minute.",
+"Esa cuenta de Google está deshabilitada.":"That Google account is disabled.",
+"Su aparato se quedó con la versión":"Your device is stuck on version",
+"Hay publicada la":"The published one is",
+"# movimiento de spot · # operaciones de futuros · # de prueba en # pruebas · # alerta · # ventas programadas":"# spot movement · # futures trades · # test trades in # tests · # alert · # scheduled sells",
+/* v34 · las palabras del bloqueo, como habla la gente */
+"puesto":"set",
+"Bloqueo y seguridad":"Lock and security",
+"Quitarlo":"Remove it",
+/* v35 · los dos avisos de las ventas que no cuadran */
+"# venta sin su compra":"# sale without its buy",
+"# ventas sin su compra":"# sales without their buy",
+"# venta contada a medias":"# sale counted only in part",
+"# ventas contadas a medias":"# sales counted only in part",
+"no tiene registrada la compra. Sin saber lo que le costó, el programa cuenta esa venta entera como ganancia y el «ya ganado» le sale inflado. Registre esas compras y el número cuadra.":"the buy is not logged. Without knowing what it cost you, the app counts that whole sale as profit and your \u00abalready made\u00bb comes out inflated. Log those buys and the number adds up.",
+"vendió más de lo que tenía en ese momento, así que solo se contó la parte que alcanzaba. Revise la fecha de la compra: si la puso después de la venta, corríjala y el número cuadra.":"you sold more than you held at that point, so only the part that was covered got counted. Check the buy's date: if you put it after the sale, fix it and the number adds up.",
+"Hace # min · Binance":"# min ago · Binance"
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
@@ -13520,7 +14103,94 @@ DIC.pt={
 "Enviado a sus otros aparatos.":"Enviado para os seus outros aparelhos.",
 "No se puede entrar con una cuenta en esta copia del programa. Escríbanos a":"Não é possível entrar com uma conta nesta cópia do programa. Escreva-nos para",
 "y lo arreglamos. Mientras tanto la aplicación funciona igual, guardando en este aparato.":"e nós resolvemos. Entretanto a aplicação funciona na mesma, guardando neste aparelho.",
-"Copia escrita en su carpeta.":"Cópia escrita na sua pasta."
+"Copia escrita en su carpeta.":"Cópia escrita na sua pasta.",
+/* v33 · la llave, las pantallas vacías y los errores en castellano */
+"Bloqueo — que nadie más vea su dinero":"Bloqueio — para que ninguém mais veja o seu dinheiro",
+"sin poner":"sem pôr",
+"Sin bloqueo, cualquiera que coja este aparato ve su portafolio.":"Sem bloqueio, qualquer pessoa que pegue este aparelho vê a sua carteira.",
+"Usar mi huella":"Usar a minha impressão digital",
+"Poner una clave":"Pôr uma senha",
+"Cambiar la clave":"Mudar a senha",
+"Añadir una clave":"Adicionar uma senha",
+"Añadir mi huella":"Adicionar a minha impressão digital",
+"Quitar el bloqueo":"Retirar o bloqueio",
+"Al abrir se le pide":"Ao abrir pede-lhe",
+"su huella":"a sua impressão digital",
+"su clave":"a sua senha",
+"Es la misma huella con la que abre su teléfono. Si no tiene huella puesta, le pedirá su patrón. La pide el teléfono, no nosotros, y":"É a mesma impressão digital com que abre o seu telefone. Se não tiver impressão digital, pedirá o seu padrão. É o telefone que pede, não nós, e",
+"su huella nunca sale de ahí":"a sua impressão digital nunca sai dali",
+": aquí no se guarda ninguna.":": aqui não se guarda nenhuma.",
+"Dicho claro:":"Dito com clareza:",
+"esto tapa la pantalla,":"isto tapa o ecrã,",
+"no cifra lo que hay guardado":"não cifra o que está guardado",
+". Y es solo de este aparato: no viaja a su cuenta ni a su otro equipo.":". E é só deste aparelho: não viaja para a sua conta nem para o seu outro equipamento.",
+"Este aparato no tiene huella puesta. Puede poner una clave.":"Este aparelho não tem impressão digital. Pode pôr uma senha.",
+"Su clave":"A sua senha",
+"De # a # números. Es solo de este aparato.":"De # a # números. É só deste aparelho.",
+"Otra vez, para no equivocarse":"Outra vez, para não se enganar",
+"Guardar la clave":"Guardar a senha",
+"La clave son de # a # números, nada más.":"A senha são de # a # números, nada mais.",
+"Las dos no coinciden.":"As duas não coincidem.",
+"Si la olvida no hay forma de saltársela. Con su cuenta de Google puesta no pierde nada: borra los datos de la aplicación, entra con el mismo correo y le vuelve todo.":"Se o esquecer não há forma de o saltar. Com a sua conta Google posta não perde nada: apaga os dados da aplicação, entra com o mesmo email e volta tudo.",
+"Clave guardada.":"Senha guardada.",
+"Bloqueo quitado.":"Bloqueio retirado.",
+"Listo. Al abrir se le pedirá su huella.":"Pronto. Ao abrir pedirá a sua impressão digital.",
+"La aplicación volverá a abrirse sin pedir nada. Cualquiera que coja este aparato verá su portafolio.":"A aplicação voltará a abrir sem pedir nada. Qualquer pessoa que pegue neste aparelho verá o seu portfólio.",
+"Quitarla":"Tirá-la",
+"Desbloquee para entrar.":"Desbloqueie para entrar.",
+"Desbloquear":"Desbloquear",
+"No coincide. Vuelva a intentarlo.":"Não coincide. Tente outra vez.",
+"Esa no es la clave.":"Essa não é a senha.",
+"No se reconoció. Pruebe otra vez.":"Não se reconheceu. Tente outra vez.",
+"Demasiados intentos. Espere # segundos.":"Demasiadas tentativas. Espere # segundos.",
+"Demasiados intentos. Espere # segundo.":"Demasiadas tentativas. Espere # segundo.",
+"Olvidé cómo entrar":"Esqueci-me de como entrar",
+"Desde aquí no se puede saltar: si se pudiera, no serviría de nada.":"Daqui não se pode saltar: se fosse possível, não serviria de nada.",
+"Si entró con su cuenta de Google":"Se entrou com a sua conta Google",
+", no ha perdido nada. Borre los datos de la aplicación en los ajustes de su teléfono (o del navegador en la computadora), ábrala otra vez y entre con el mismo correo: le vuelve todo.":", não perdeu nada. Apague os dados da aplicação nas definições do seu telemóvel (ou do navegador no computador), abra-a outra vez e entre com o mesmo email: volta tudo.",
+"Si no tenía cuenta":"Se não tinha conta",
+"y guardó alguna copia, puede restaurarla al volver a abrir. Si no guardó ninguna, no hay forma de recuperarlo. Por eso vale la pena entrar con su cuenta.":"e guardou alguma cópia, pode restaurá-la ao voltar a abrir. Se não guardou nenhuma, não há forma de o recuperar. Por isso vale a pena entrar com a sua conta.",
+"Su portafolio empieza aquí":"O seu portfólio começa aqui",
+"Registre su primera compra en Spot, o su primera operación en Futuros. El promedio, la ganancia y el lote se calculan solos.":"Registe a sua primeira compra em Spot, ou a sua primeira operação em Futuros. A média, o ganho e o lote calculam-se sozinhos.",
+"Empezar por Spot":"Começar por Spot",
+"Empezar por Futuros":"Começar por Futuros",
+"Aquí van sus compras y ventas":"Aqui vão as suas compras e vendas",
+"Registre su primera compra abajo. En cuanto lo haga verá el precio promedio, lo que vale hoy y cuánto lleva ganado — todo calculado solo.":"Registe a sua primeira compra abaixo. Assim que o fizer verá o preço médio, quanto vale hoje e quanto leva ganho — tudo calculado sozinho.",
+"Aquí van sus operaciones de futuros":"Aqui vão as suas operações de futuros",
+"Esta prueba todavía no tiene operaciones":"Este teste ainda não tem operações",
+"Registre la primera abajo: elija la moneda, diga por dónde entra y dónde pone el stop, y el programa le dice":"Registe a primeira abaixo: escolha a moeda, diga por onde entra e onde põe o stop, e o programa diz-lhe",
+"cuánto dinero poner":"quanto dinheiro pôr",
+"para no arriesgar más de lo que usted quiere.":"para não arriscar mais do que você quer.",
+"cuánto tiene en su cartera":"quanto tem na sua carteira",
+"y el programa le calcula solo cuánto poner en cada operación.":"e o programa calcula sozinho quanto pôr em cada operação.",
+"Una prueba es un cuaderno aparte: tiene su propia cartera y sus propias operaciones, y nunca se mezcla con su dinero de verdad. Sirve para probar una idea sin arriesgar nada. Puede tener varias y compararlas.":"Um teste é um caderno à parte: tem a sua própria carteira e as suas próprias operações, e nunca se mistura com o seu dinheiro a sério. Serve para testar uma ideia sem arriscar nada. Pode ter vários e compará-los.",
+"Mi primera prueba":"O meu primeiro teste",
+"Todavía no tiene monedas. Regístrelas arriba.":"Ainda não tem moedas. Registe-as acima.",
+"No hay operaciones cerradas aquí.":"Não há operações fechadas aqui.",
+"todavía no ha registrado nada":"ainda não registou nada",
+"ENVIAR A MI CUENTA":"ENVIAR PARA A MINHA CONTA",
+"¿Tengo la última versión?":"Tenho a última versão?",
+"de este aparato":"deste aparelho",
+"en su cuenta y en todos sus aparatos":"na sua conta e em todos os seus aparelhos",
+"No se pudo conectar con su cuenta. Sus datos siguen enteros en este aparato. Inténtelo en un rato y, si sigue igual, escríbanos a":"Não foi possível ligar à sua conta. Os seus dados continuam inteiros neste aparelho. Tente dentro de um bocado e, se continuar igual, escreva-nos para",
+"No se pudo guardar en su cuenta. Sus datos siguen enteros en este aparato. Si vuelve a pasar, escríbanos a":"Não foi possível guardar na sua conta. Os seus dados continuam inteiros neste aparelho. Se voltar a acontecer, escreva-nos para",
+"Google pidió esperar un momento. Pruebe otra vez en un minuto.":"O Google pediu para esperar um momento. Tente outra vez daqui a um minuto.",
+"Esa cuenta de Google está deshabilitada.":"Essa conta Google está desativada.",
+"Su aparato se quedó con la versión":"O seu aparelho ficou com a versão",
+"Hay publicada la":"Está publicada a",
+"# movimiento de spot · # operaciones de futuros · # de prueba en # pruebas · # alerta · # ventas programadas":"# movimento de spot · # operações de futuros · # de teste em # testes · # alerta · # vendas programadas",
+/* v34 · las palabras del bloqueo, como habla la gente */
+"puesto":"ativado",
+"Bloqueo y seguridad":"Bloqueio e segurança",
+"Quitarlo":"Retirá-lo",
+/* v35 · los dos avisos de las ventas que no cuadran */
+"# venta sin su compra":"# venda sem a sua compra",
+"# ventas sin su compra":"# vendas sem a sua compra",
+"# venta contada a medias":"# venda contada pela metade",
+"# ventas contadas a medias":"# vendas contadas pela metade",
+"no tiene registrada la compra. Sin saber lo que le costó, el programa cuenta esa venta entera como ganancia y el «ya ganado» le sale inflado. Registre esas compras y el número cuadra.":"a compra não está registada. Sem saber quanto lhe custou, o programa conta essa venda inteira como lucro e o «já ganho» sai-lhe inflacionado. Registe essas compras e o número fecha.",
+"vendió más de lo que tenía en ese momento, así que solo se contó la parte que alcanzaba. Revise la fecha de la compra: si la puso después de la venta, corríjala y el número cuadra.":"vendeu mais do que tinha naquele momento, por isso só se contou a parte que dava. Verifique a data da compra: se a pôs depois da venda, corrija-a e o número fecha.",
+"Hace # min · Binance":"Há # min · Binance"
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
@@ -14588,7 +15258,94 @@ DIC.fr={
 "Enviado a sus otros aparatos.":"Envoyé à vos autres appareils.",
 "No se puede entrar con una cuenta en esta copia del programa. Escríbanos a":"Impossible d'entrer avec un compte dans cette copie du programme. Écrivez-nous à",
 "y lo arreglamos. Mientras tanto la aplicación funciona igual, guardando en este aparato.":"et nous le corrigerons. En attendant, l'application fonctionne pareil, en enregistrant sur cet appareil.",
-"Copia escrita en su carpeta.":"Copie écrite dans votre dossier."
+"Copia escrita en su carpeta.":"Copie écrite dans votre dossier.",
+/* v33 · la llave, las pantallas vacías y los errores en castellano */
+"Bloqueo — que nadie más vea su dinero":"Verrouillage — pour que personne d'autre ne voie votre argent",
+"sin poner":"non mis",
+"Sin bloqueo, cualquiera que coja este aparato ve su portafolio.":"Sans verrouillage, quiconque prend cet appareil voit votre portefeuille.",
+"Usar mi huella":"Utiliser mon empreinte",
+"Poner una clave":"Mettre un code",
+"Cambiar la clave":"Changer le code",
+"Añadir una clave":"Ajouter un code",
+"Añadir mi huella":"Ajouter mon empreinte",
+"Quitar el bloqueo":"Retirer le verrouillage",
+"Al abrir se le pide":"À l'ouverture, il vous demande",
+"su huella":"votre empreinte",
+"su clave":"votre code",
+"Es la misma huella con la que abre su teléfono. Si no tiene huella puesta, le pedirá su patrón. La pide el teléfono, no nosotros, y":"C'est la même empreinte avec laquelle vous ouvrez votre téléphone. Si vous n'avez pas d'empreinte, il demandera votre schéma. C'est le téléphone qui demande, pas nous, et",
+"su huella nunca sale de ahí":"votre empreinte n'en sort jamais",
+": aquí no se guarda ninguna.":": aucune n'est conservée ici.",
+"Dicho claro:":"Dit clairement :",
+"esto tapa la pantalla,":"cela masque l'écran,",
+"no cifra lo que hay guardado":"il ne chiffre pas ce qui est enregistré",
+". Y es solo de este aparato: no viaja a su cuenta ni a su otro equipo.":". Et il ne concerne que cet appareil : il ne voyage ni vers votre compte ni vers votre autre appareil.",
+"Este aparato no tiene huella puesta. Puede poner una clave.":"Cet appareil n'a pas d'empreinte. Vous pouvez mettre un code.",
+"Su clave":"Votre code",
+"De # a # números. Es solo de este aparato.":"De # à # chiffres. Il n'appartient qu'à cet appareil.",
+"Otra vez, para no equivocarse":"Encore une fois, pour ne pas se tromper",
+"Guardar la clave":"Enregistrer le code",
+"La clave son de # a # números, nada más.":"Le code, c'est de # à # chiffres, rien d'autre.",
+"Las dos no coinciden.":"Les deux ne correspondent pas.",
+"Si la olvida no hay forma de saltársela. Con su cuenta de Google puesta no pierde nada: borra los datos de la aplicación, entra con el mismo correo y le vuelve todo.":"Si vous l'oubliez, impossible de le contourner. Avec votre compte Google en place vous ne perdez rien : effacez les données de l'application, entrez avec la même adresse et tout revient.",
+"Clave guardada.":"Code enregistré.",
+"Bloqueo quitado.":"Verrouillage retiré.",
+"Listo. Al abrir se le pedirá su huella.":"C'est fait. À l'ouverture, il demandera votre empreinte.",
+"La aplicación volverá a abrirse sin pedir nada. Cualquiera que coja este aparato verá su portafolio.":"L'application s'ouvrira de nouveau sans rien demander. Quiconque prend cet appareil verra votre portefeuille.",
+"Quitarla":"Le retirer",
+"Desbloquee para entrar.":"Déverrouillez pour entrer.",
+"Desbloquear":"Déverrouiller",
+"No coincide. Vuelva a intentarlo.":"Cela ne correspond pas. Réessayez.",
+"Esa no es la clave.":"Ce n'est pas le code.",
+"No se reconoció. Pruebe otra vez.":"Non reconnu. Réessayez.",
+"Demasiados intentos. Espere # segundos.":"Trop d'essais. Attendez # secondes.",
+"Demasiados intentos. Espere # segundo.":"Trop d'essais. Attendez # seconde.",
+"Olvidé cómo entrar":"J'ai oublié comment entrer",
+"Desde aquí no se puede saltar: si se pudiera, no serviría de nada.":"On ne peut pas le contourner d'ici : si c'était possible, cela ne servirait à rien.",
+"Si entró con su cuenta de Google":"Si vous êtes entré avec votre compte Google",
+", no ha perdido nada. Borre los datos de la aplicación en los ajustes de su teléfono (o del navegador en la computadora), ábrala otra vez y entre con el mismo correo: le vuelve todo.":", vous n'avez rien perdu. Effacez les données de l'application dans les réglages de votre téléphone (ou du navigateur sur l'ordinateur), rouvrez-la et entrez avec la même adresse : tout revient.",
+"Si no tenía cuenta":"Si vous n'aviez pas de compte",
+"y guardó alguna copia, puede restaurarla al volver a abrir. Si no guardó ninguna, no hay forma de recuperarlo. Por eso vale la pena entrar con su cuenta.":"et avez gardé une copie, vous pouvez la restaurer à la réouverture. Si vous n'en avez gardé aucune, il n'y a pas moyen de récupérer. C'est pour cela qu'entrer avec votre compte en vaut la peine.",
+"Su portafolio empieza aquí":"Votre portefeuille commence ici",
+"Registre su primera compra en Spot, o su primera operación en Futuros. El promedio, la ganancia y el lote se calculan solos.":"Notez votre premier achat en Spot, ou votre première opération en Futures. La moyenne, le gain et le lot se calculent tout seuls.",
+"Empezar por Spot":"Commencer par le Spot",
+"Empezar por Futuros":"Commencer par les Futures",
+"Aquí van sus compras y ventas":"Vos achats et ventes vont ici",
+"Registre su primera compra abajo. En cuanto lo haga verá el precio promedio, lo que vale hoy y cuánto lleva ganado — todo calculado solo.":"Notez votre premier achat ci-dessous. Dès que ce sera fait vous verrez le prix moyen, ce que ça vaut aujourd'hui et ce que vous avez gagné — tout calculé pour vous.",
+"Aquí van sus operaciones de futuros":"Vos opérations sur futures vont ici",
+"Esta prueba todavía no tiene operaciones":"Ce test n'a encore aucune opération",
+"Registre la primera abajo: elija la moneda, diga por dónde entra y dónde pone el stop, y el programa le dice":"Notez la première ci-dessous : choisissez la monnaie, dites où vous entrez et où vous placez le stop, et le programme vous dit",
+"cuánto dinero poner":"combien d'argent mettre",
+"para no arriesgar más de lo que usted quiere.":"pour ne jamais risquer plus que ce que vous voulez.",
+"cuánto tiene en su cartera":"combien vous avez en portefeuille",
+"y el programa le calcula solo cuánto poner en cada operación.":"et le programme calcule tout seul combien mettre dans chaque opération.",
+"Una prueba es un cuaderno aparte: tiene su propia cartera y sus propias operaciones, y nunca se mezcla con su dinero de verdad. Sirve para probar una idea sin arriesgar nada. Puede tener varias y compararlas.":"Un test est un carnet à part : il a son propre capital et ses propres opérations, et ne se mélange jamais à votre vrai argent. Il sert à essayer une idée sans rien risquer. Vous pouvez en avoir plusieurs et les comparer.",
+"Mi primera prueba":"Mon premier test",
+"Todavía no tiene monedas. Regístrelas arriba.":"Pas encore de monnaies. Notez-les ci-dessus.",
+"No hay operaciones cerradas aquí.":"Aucune opération clôturée ici.",
+"todavía no ha registrado nada":"rien de noté pour l'instant",
+"ENVIAR A MI CUENTA":"ENVOYER À MON COMPTE",
+"¿Tengo la última versión?":"Ai-je la dernière version ?",
+"de este aparato":"de cet appareil",
+"en su cuenta y en todos sus aparatos":"de votre compte et de tous vos appareils",
+"No se pudo conectar con su cuenta. Sus datos siguen enteros en este aparato. Inténtelo en un rato y, si sigue igual, escríbanos a":"Impossible de joindre votre compte. Vos données sont intactes sur cet appareil. Réessayez plus tard et, si cela persiste, écrivez-nous à",
+"No se pudo guardar en su cuenta. Sus datos siguen enteros en este aparato. Si vuelve a pasar, escríbanos a":"Impossible d'enregistrer dans votre compte. Vos données sont intactes sur cet appareil. Si cela se reproduit, écrivez-nous à",
+"Google pidió esperar un momento. Pruebe otra vez en un minuto.":"Google a demandé d'attendre un instant. Réessayez dans une minute.",
+"Esa cuenta de Google está deshabilitada.":"Ce compte Google est désactivé.",
+"Su aparato se quedó con la versión":"Votre appareil est resté sur la version",
+"Hay publicada la":"La version publiée est la",
+"# movimiento de spot · # operaciones de futuros · # de prueba en # pruebas · # alerta · # ventas programadas":"# mouvement spot · # opérations futures · # de test dans # tests · # alerte · # ventes programmées",
+/* v34 · las palabras del bloqueo, como habla la gente */
+"puesto":"activé",
+"Bloqueo y seguridad":"Verrouillage et sécurité",
+"Quitarlo":"Le retirer",
+/* v35 · los dos avisos de las ventas que no cuadran */
+"# venta sin su compra":"# vente sans son achat",
+"# ventas sin su compra":"# ventes sans leur achat",
+"# venta contada a medias":"# vente comptée à moitié",
+"# ventas contadas a medias":"# ventes comptées à moitié",
+"no tiene registrada la compra. Sin saber lo que le costó, el programa cuenta esa venta entera como ganancia y el «ya ganado» le sale inflado. Registre esas compras y el número cuadra.":"l'achat n'est pas enregistré. Sans savoir ce qu'il vous a coûté, le programme compte toute cette vente comme un gain et votre «déjà gagné» est gonflé. Enregistrez ces achats et le compte sera juste.",
+"vendió más de lo que tenía en ese momento, así que solo se contó la parte que alcanzaba. Revise la fecha de la compra: si la puso después de la venta, corríjala y el número cuadra.":"vous avez vendu plus que ce que vous déteniez à ce moment-là, donc seule la part couverte a été comptée. Vérifiez la date de l'achat : si vous l'avez mise après la vente, corrigez-la et le compte sera juste.",
+"Hace # min · Binance":"Il y a # min · Binance"
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
@@ -15656,7 +16413,94 @@ DIC.de={
 "Enviado a sus otros aparatos.":"An Ihre anderen Geräte gesendet.",
 "No se puede entrar con una cuenta en esta copia del programa. Escríbanos a":"In dieser Kopie des Programms ist keine Anmeldung mit einem Konto möglich. Schreiben Sie uns an",
 "y lo arreglamos. Mientras tanto la aplicación funciona igual, guardando en este aparato.":"und wir bringen es in Ordnung. Inzwischen funktioniert die App genauso und speichert auf diesem Gerät.",
-"Copia escrita en su carpeta.":"Kopie in Ihren Ordner geschrieben."
+"Copia escrita en su carpeta.":"Kopie in Ihren Ordner geschrieben.",
+/* v33 · la llave, las pantallas vacías y los errores en castellano */
+"Bloqueo — que nadie más vea su dinero":"Sperre — damit niemand sonst Ihr Geld sieht",
+"sin poner":"nicht gesetzt",
+"Sin bloqueo, cualquiera que coja este aparato ve su portafolio.":"Ohne Sperre sieht jeder, der dieses Gerät nimmt, Ihr Portfolio.",
+"Usar mi huella":"Meinen Fingerabdruck verwenden",
+"Poner una clave":"Code festlegen",
+"Cambiar la clave":"Code ändern",
+"Añadir una clave":"Code hinzufügen",
+"Añadir mi huella":"Meinen Fingerabdruck hinzufügen",
+"Quitar el bloqueo":"Sperre entfernen",
+"Al abrir se le pide":"Beim Öffnen wird verlangt:",
+"su huella":"Ihr Fingerabdruck",
+"su clave":"Ihr Code",
+"Es la misma huella con la que abre su teléfono. Si no tiene huella puesta, le pedirá su patrón. La pide el teléfono, no nosotros, y":"Es ist derselbe Fingerabdruck, mit dem Sie Ihr Telefon öffnen. Ohne Fingerabdruck fragt es nach Ihrem Muster. Das Telefon fragt, nicht wir, und",
+"su huella nunca sale de ahí":"Ihr Fingerabdruck verlässt es nie",
+": aquí no se guarda ninguna.":": hier wird keiner gespeichert.",
+"Dicho claro:":"Klar gesagt:",
+"esto tapa la pantalla,":"das deckt den Bildschirm ab,",
+"no cifra lo que hay guardado":"es verschlüsselt nicht, was gespeichert ist",
+". Y es solo de este aparato: no viaja a su cuenta ni a su otro equipo.":". Und sie gilt nur für dieses Gerät: Sie wandert nicht in Ihr Konto und nicht auf Ihr anderes Gerät.",
+"Este aparato no tiene huella puesta. Puede poner una clave.":"Dieses Gerät hat keinen Fingerabdruck. Sie können einen Code festlegen.",
+"Su clave":"Ihr Code",
+"De # a # números. Es solo de este aparato.":"# bis # Ziffern. Sie gehört nur zu diesem Gerät.",
+"Otra vez, para no equivocarse":"Noch einmal, damit nichts schiefgeht",
+"Guardar la clave":"Code speichern",
+"La clave son de # a # números, nada más.":"Der Code hat # bis # Ziffern, nichts weiter.",
+"Las dos no coinciden.":"Die beiden stimmen nicht überein.",
+"Si la olvida no hay forma de saltársela. Con su cuenta de Google puesta no pierde nada: borra los datos de la aplicación, entra con el mismo correo y le vuelve todo.":"Wenn Sie sie vergessen, gibt es keinen Weg daran vorbei. Mit eingerichtetem Google-Konto verlieren Sie nichts: App-Daten löschen, mit derselben Adresse anmelden, und alles ist zurück.",
+"Clave guardada.":"Code gespeichert.",
+"Bloqueo quitado.":"Sperre entfernt.",
+"Listo. Al abrir se le pedirá su huella.":"Fertig. Beim Öffnen wird Ihr Fingerabdruck verlangt.",
+"La aplicación volverá a abrirse sin pedir nada. Cualquiera que coja este aparato verá su portafolio.":"Die App öffnet sich wieder ohne Nachfrage. Jeder, der dieses Gerät in die Hand nimmt, sieht Ihr Portfolio.",
+"Quitarla":"Entfernen",
+"Desbloquee para entrar.":"Entsperren, um hineinzukommen.",
+"Desbloquear":"Entsperren",
+"No coincide. Vuelva a intentarlo.":"Stimmt nicht. Versuchen Sie es erneut.",
+"Esa no es la clave.":"Das ist nicht der Code.",
+"No se reconoció. Pruebe otra vez.":"Nicht erkannt. Versuchen Sie es erneut.",
+"Demasiados intentos. Espere # segundos.":"Zu viele Versuche. Warten Sie # Sekunden.",
+"Demasiados intentos. Espere # segundo.":"Zu viele Versuche. Warten Sie # Sekunde.",
+"Olvidé cómo entrar":"Ich weiß nicht mehr, wie ich hineinkomme",
+"Desde aquí no se puede saltar: si se pudiera, no serviría de nada.":"Von hier aus lässt sie sich nicht umgehen: wäre es möglich, wäre sie nutzlos.",
+"Si entró con su cuenta de Google":"Wenn Sie sich mit Ihrem Google-Konto angemeldet haben",
+", no ha perdido nada. Borre los datos de la aplicación en los ajustes de su teléfono (o del navegador en la computadora), ábrala otra vez y entre con el mismo correo: le vuelve todo.":", haben Sie nichts verloren. Löschen Sie die App-Daten in den Einstellungen Ihres Telefons (oder des Browsers am Computer), öffnen Sie sie erneut und melden Sie sich mit derselben Adresse an: Alles ist zurück.",
+"Si no tenía cuenta":"Wenn Sie kein Konto hatten",
+"y guardó alguna copia, puede restaurarla al volver a abrir. Si no guardó ninguna, no hay forma de recuperarlo. Por eso vale la pena entrar con su cuenta.":"und eine Kopie gesichert haben, können Sie sie beim nächsten Öffnen zurückholen. Haben Sie keine, gibt es keinen Weg zurück. Darum lohnt sich die Anmeldung mit Ihrem Konto.",
+"Su portafolio empieza aquí":"Ihr Portfolio beginnt hier",
+"Registre su primera compra en Spot, o su primera operación en Futuros. El promedio, la ganancia y el lote se calculan solos.":"Tragen Sie Ihren ersten Kauf im Spot ein oder Ihren ersten Trade in Futures. Durchschnitt, Gewinn und Positionsgröße ergeben sich von selbst.",
+"Empezar por Spot":"Mit Spot anfangen",
+"Empezar por Futuros":"Mit Futures anfangen",
+"Aquí van sus compras y ventas":"Hier kommen Ihre Käufe und Verkäufe hin",
+"Registre su primera compra abajo. En cuanto lo haga verá el precio promedio, lo que vale hoy y cuánto lleva ganado — todo calculado solo.":"Tragen Sie unten Ihren ersten Kauf ein. Danach sehen Sie den Durchschnittspreis, was es heute wert ist und wie viel Sie gewonnen haben — alles schon ausgerechnet.",
+"Aquí van sus operaciones de futuros":"Hier kommen Ihre Futures-Trades hin",
+"Esta prueba todavía no tiene operaciones":"Dieser Test hat noch keine Trades",
+"Registre la primera abajo: elija la moneda, diga por dónde entra y dónde pone el stop, y el programa le dice":"Tragen Sie unten den ersten ein: Münze wählen, sagen, wo Sie einsteigen und wo der Stop liegt — und das Programm sagt Ihnen",
+"cuánto dinero poner":"wie viel Geld Sie einsetzen sollen",
+"para no arriesgar más de lo que usted quiere.":"damit Sie nie mehr riskieren, als Sie wollen.",
+"cuánto tiene en su cartera":"wie viel in Ihrem Kapital steckt",
+"y el programa le calcula solo cuánto poner en cada operación.":"und das Programm rechnet selbst aus, wie viel in jeden Trade gehört.",
+"Una prueba es un cuaderno aparte: tiene su propia cartera y sus propias operaciones, y nunca se mezcla con su dinero de verdad. Sirve para probar una idea sin arriesgar nada. Puede tener varias y compararlas.":"Ein Test ist ein eigenes Heft: mit eigenem Kapital und eigenen Trades, und er vermischt sich nie mit Ihrem echten Geld. Er dient dazu, eine Idee auszuprobieren, ohne etwas zu riskieren. Sie können mehrere haben und vergleichen.",
+"Mi primera prueba":"Mein erster Test",
+"Todavía no tiene monedas. Regístrelas arriba.":"Noch keine Münzen. Tragen Sie sie oben ein.",
+"No hay operaciones cerradas aquí.":"Hier gibt es keine geschlossenen Trades.",
+"todavía no ha registrado nada":"noch nichts eingetragen",
+"ENVIAR A MI CUENTA":"AN MEIN KONTO SENDEN",
+"¿Tengo la última versión?":"Habe ich die neueste Version?",
+"de este aparato":"von diesem Gerät",
+"en su cuenta y en todos sus aparatos":"aus Ihrem Konto und von all Ihren Geräten",
+"No se pudo conectar con su cuenta. Sus datos siguen enteros en este aparato. Inténtelo en un rato y, si sigue igual, escríbanos a":"Ihr Konto war nicht erreichbar. Ihre Daten sind auf diesem Gerät unversehrt. Versuchen Sie es später noch einmal und schreiben Sie uns, wenn es dabei bleibt, an",
+"No se pudo guardar en su cuenta. Sus datos siguen enteros en este aparato. Si vuelve a pasar, escríbanos a":"Konnte nicht in Ihrem Konto gespeichert werden. Ihre Daten sind auf diesem Gerät unversehrt. Wenn es wieder passiert, schreiben Sie uns an",
+"Google pidió esperar un momento. Pruebe otra vez en un minuto.":"Google hat um einen Moment Geduld gebeten. Versuchen Sie es in einer Minute erneut.",
+"Esa cuenta de Google está deshabilitada.":"Dieses Google-Konto ist deaktiviert.",
+"Su aparato se quedó con la versión":"Ihr Gerät hängt auf Version",
+"Hay publicada la":"Veröffentlicht ist",
+"# movimiento de spot · # operaciones de futuros · # de prueba en # pruebas · # alerta · # ventas programadas":"# Spot-Bewegung · # Futures-Trades · # Test-Trades in # Tests · # Alarm · # geplante Verkäufe",
+/* v34 · las palabras del bloqueo, como habla la gente */
+"puesto":"aktiv",
+"Bloqueo y seguridad":"Sperre und Sicherheit",
+"Quitarlo":"Entfernen",
+/* v35 · los dos avisos de las ventas que no cuadran */
+"# venta sin su compra":"# Verkauf ohne seinen Kauf",
+"# ventas sin su compra":"# Verkäufe ohne ihren Kauf",
+"# venta contada a medias":"# Verkauf nur halb gezählt",
+"# ventas contadas a medias":"# Verkäufe nur halb gezählt",
+"no tiene registrada la compra. Sin saber lo que le costó, el programa cuenta esa venta entera como ganancia y el «ya ganado» le sale inflado. Registre esas compras y el número cuadra.":"der Kauf ist nicht erfasst. Ohne zu wissen, was er Sie gekostet hat, zählt das Programm diesen ganzen Verkauf als Gewinn, und Ihr «bereits verdient» fällt zu hoch aus. Erfassen Sie diese Käufe, und die Zahl stimmt.",
+"vendió más de lo que tenía en ese momento, así que solo se contó la parte que alcanzaba. Revise la fecha de la compra: si la puso después de la venta, corríjala y el número cuadra.":"Sie haben mehr verkauft, als Sie zu dem Zeitpunkt hatten, daher wurde nur der gedeckte Teil gezählt. Prüfen Sie das Datum des Kaufs: steht es nach dem Verkauf, korrigieren Sie es, und die Zahl stimmt.",
+"Hace # min · Binance":"Vor # Min · Binance"
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
@@ -16724,7 +17568,94 @@ DIC.it={
 "Enviado a sus otros aparatos.":"Inviato ai suoi altri apparecchi.",
 "No se puede entrar con una cuenta en esta copia del programa. Escríbanos a":"Non si può entrare con un account in questa copia del programma. Ci scriva a",
 "y lo arreglamos. Mientras tanto la aplicación funciona igual, guardando en este aparato.":"e lo sistemiamo. Nel frattempo l'applicazione funziona lo stesso, salvando in questo apparecchio.",
-"Copia escrita en su carpeta.":"Copia scritta nella sua cartella."
+"Copia escrita en su carpeta.":"Copia scritta nella sua cartella.",
+/* v33 · la llave, las pantallas vacías y los errores en castellano */
+"Bloqueo — que nadie más vea su dinero":"Blocco — perché nessun altro veda i suoi soldi",
+"sin poner":"non messa",
+"Sin bloqueo, cualquiera que coja este aparato ve su portafolio.":"Senza blocco, chiunque prenda questo dispositivo vede il suo portafoglio.",
+"Usar mi huella":"Usare la mia impronta",
+"Poner una clave":"Mettere un codice",
+"Cambiar la clave":"Cambiare il codice",
+"Añadir una clave":"Aggiungere un codice",
+"Añadir mi huella":"Aggiungere la mia impronta",
+"Quitar el bloqueo":"Togliere il blocco",
+"Al abrir se le pide":"All'apertura le chiede",
+"su huella":"la sua impronta",
+"su clave":"il suo codice",
+"Es la misma huella con la que abre su teléfono. Si no tiene huella puesta, le pedirá su patrón. La pide el teléfono, no nosotros, y":"È la stessa impronta con cui apre il suo telefono. Se non ha un'impronta, le chiederà il suo schema. La chiede il telefono, non noi, e",
+"su huella nunca sale de ahí":"la sua impronta non esce mai da lì",
+": aquí no se guarda ninguna.":": qui non se ne conserva nessuna.",
+"Dicho claro:":"Detto chiaro:",
+"esto tapa la pantalla,":"questo copre lo schermo,",
+"no cifra lo que hay guardado":"non cifra quello che c'è salvato",
+". Y es solo de este aparato: no viaja a su cuenta ni a su otro equipo.":". Ed è solo di questo dispositivo: non viaggia verso il suo account né verso l'altro suo dispositivo.",
+"Este aparato no tiene huella puesta. Puede poner una clave.":"Questo dispositivo non ha un'impronta. Può mettere un codice.",
+"Su clave":"Il suo codice",
+"De # a # números. Es solo de este aparato.":"Da # a # numeri. È solo di questo apparecchio.",
+"Otra vez, para no equivocarse":"Un'altra volta, per non sbagliarsi",
+"Guardar la clave":"Salvare il codice",
+"La clave son de # a # números, nada más.":"Il codice è da # a # numeri, nient'altro.",
+"Las dos no coinciden.":"I due non coincidono.",
+"Si la olvida no hay forma de saltársela. Con su cuenta de Google puesta no pierde nada: borra los datos de la aplicación, entra con el mismo correo y le vuelve todo.":"Se lo dimentica non c'è modo di saltarlo. Con il suo account Google messo non perde niente: cancella i dati dell'applicazione, entra con lo stesso indirizzo e torna tutto.",
+"Clave guardada.":"Codice salvato.",
+"Bloqueo quitado.":"Blocco rimosso.",
+"Listo. Al abrir se le pedirá su huella.":"Fatto. All'apertura le chiederà la sua impronta.",
+"La aplicación volverá a abrirse sin pedir nada. Cualquiera que coja este aparato verá su portafolio.":"L'applicazione tornerà ad aprirsi senza chiedere nulla. Chiunque prenda questo apparecchio vedrà il suo portafoglio.",
+"Quitarla":"Toglierla",
+"Desbloquee para entrar.":"Sblocchi per entrare.",
+"Desbloquear":"Sbloccare",
+"No coincide. Vuelva a intentarlo.":"Non coincide. Riprovi.",
+"Esa no es la clave.":"Questo non è il codice.",
+"No se reconoció. Pruebe otra vez.":"Non riconosciuto. Riprovi.",
+"Demasiados intentos. Espere # segundos.":"Troppi tentativi. Aspetti # secondi.",
+"Demasiados intentos. Espere # segundo.":"Troppi tentativi. Aspetti # secondo.",
+"Olvidé cómo entrar":"Ho dimenticato come entrare",
+"Desde aquí no se puede saltar: si se pudiera, no serviría de nada.":"Da qui non si può aggirare: se si potesse, non servirebbe a niente.",
+"Si entró con su cuenta de Google":"Se è entrato con il suo account Google",
+", no ha perdido nada. Borre los datos de la aplicación en los ajustes de su teléfono (o del navegador en la computadora), ábrala otra vez y entre con el mismo correo: le vuelve todo.":", non ha perso niente. Cancelli i dati dell'applicazione nelle impostazioni del suo telefono (o del browser sul computer), la riapra ed entri con lo stesso indirizzo: torna tutto.",
+"Si no tenía cuenta":"Se non aveva un account",
+"y guardó alguna copia, puede restaurarla al volver a abrir. Si no guardó ninguna, no hay forma de recuperarlo. Por eso vale la pena entrar con su cuenta.":"e ha salvato qualche copia, può ripristinarla alla riapertura. Se non ne ha salvata nessuna, non c'è modo di recuperarlo. Per questo vale la pena entrare con il suo account.",
+"Su portafolio empieza aquí":"Il suo portafoglio inizia qui",
+"Registre su primera compra en Spot, o su primera operación en Futuros. El promedio, la ganancia y el lote se calculan solos.":"Registri il suo primo acquisto in Spot, o la sua prima operazione in Futures. La media, il guadagno e il lotto si calcolano da soli.",
+"Empezar por Spot":"Cominciare dallo Spot",
+"Empezar por Futuros":"Cominciare dai Futures",
+"Aquí van sus compras y ventas":"Qui vanno i suoi acquisti e le sue vendite",
+"Registre su primera compra abajo. En cuanto lo haga verá el precio promedio, lo que vale hoy y cuánto lleva ganado — todo calculado solo.":"Registri il suo primo acquisto qui sotto. Appena lo faccia vedrà il prezzo medio, quanto vale oggi e quanto ha guadagnato — tutto calcolato da solo.",
+"Aquí van sus operaciones de futuros":"Qui vanno le sue operazioni in futures",
+"Esta prueba todavía no tiene operaciones":"Questa prova non ha ancora operazioni",
+"Registre la primera abajo: elija la moneda, diga por dónde entra y dónde pone el stop, y el programa le dice":"Registri la prima qui sotto: scelga la moneta, dica da dove entra e dove mette lo stop, e il programma le dice",
+"cuánto dinero poner":"quanti soldi mettere",
+"para no arriesgar más de lo que usted quiere.":"per non rischiare più di quanto lei vuole.",
+"cuánto tiene en su cartera":"quanto ha nel suo capitale",
+"y el programa le calcula solo cuánto poner en cada operación.":"e il programma calcola da solo quanto mettere in ogni operazione.",
+"Una prueba es un cuaderno aparte: tiene su propia cartera y sus propias operaciones, y nunca se mezcla con su dinero de verdad. Sirve para probar una idea sin arriesgar nada. Puede tener varias y compararlas.":"Una prova è un quaderno a parte: ha il suo capitale e le sue operazioni, e non si mescola mai con i suoi soldi veri. Serve a provare un'idea senza rischiare niente. Può averne diverse e confrontarle.",
+"Mi primera prueba":"La mia prima prova",
+"Todavía no tiene monedas. Regístrelas arriba.":"Non ha ancora monete. Le registri sopra.",
+"No hay operaciones cerradas aquí.":"Non ci sono operazioni chiuse qui.",
+"todavía no ha registrado nada":"non ha ancora registrato niente",
+"ENVIAR A MI CUENTA":"INVIA AL MIO ACCOUNT",
+"¿Tengo la última versión?":"Ho l'ultima versione?",
+"de este aparato":"da questo apparecchio",
+"en su cuenta y en todos sus aparatos":"dal suo account e da tutti i suoi apparecchi",
+"No se pudo conectar con su cuenta. Sus datos siguen enteros en este aparato. Inténtelo en un rato y, si sigue igual, escríbanos a":"Non è stato possibile collegarsi al suo account. I suoi dati restano interi in questo apparecchio. Riprovi fra un po' e, se resta uguale, ci scriva a",
+"No se pudo guardar en su cuenta. Sus datos siguen enteros en este aparato. Si vuelve a pasar, escríbanos a":"Non si è potuto salvare nel suo account. I suoi dati restano interi in questo apparecchio. Se succede ancora, ci scriva a",
+"Google pidió esperar un momento. Pruebe otra vez en un minuto.":"Google ha chiesto di aspettare un momento. Riprovi fra un minuto.",
+"Esa cuenta de Google está deshabilitada.":"Quell'account Google è disabilitato.",
+"Su aparato se quedó con la versión":"Il suo apparecchio è rimasto con la versione",
+"Hay publicada la":"Quella pubblicata è la",
+"# movimiento de spot · # operaciones de futuros · # de prueba en # pruebas · # alerta · # ventas programadas":"# movimento di spot · # operazioni di futures · # di prova in # prove · # avviso · # vendite programmate",
+/* v34 · las palabras del bloqueo, como habla la gente */
+"puesto":"attivo",
+"Bloqueo y seguridad":"Blocco e sicurezza",
+"Quitarlo":"Toglierlo",
+/* v35 · los dos avisos de las ventas que no cuadran */
+"# venta sin su compra":"# vendita senza il suo acquisto",
+"# ventas sin su compra":"# vendite senza il loro acquisto",
+"# venta contada a medias":"# vendita contata a metà",
+"# ventas contadas a medias":"# vendite contate a metà",
+"no tiene registrada la compra. Sin saber lo que le costó, el programa cuenta esa venta entera como ganancia y el «ya ganado» le sale inflado. Registre esas compras y el número cuadra.":"l'acquisto non è registrato. Senza sapere quanto le è costato, il programma conta tutta quella vendita come guadagno e il «già guadagnato» le viene gonfiato. Registri quegli acquisti e il numero torna.",
+"vendió más de lo que tenía en ese momento, así que solo se contó la parte que alcanzaba. Revise la fecha de la compra: si la puso después de la venta, corríjala y el número cuadra.":"ha venduto più di quanto aveva in quel momento, quindi è stata contata solo la parte coperta. Controlli la data dell'acquisto: se l'ha messa dopo la vendita, la corregga e il numero torna.",
+"Hace # min · Binance":"# min fa · Binance"
 };
 </script>
 </body>
