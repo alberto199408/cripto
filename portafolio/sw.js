@@ -3,7 +3,7 @@
    Guarda el programa para que abra sin internet y, cuando usted publica
    una versión nueva, la trae solo la próxima vez que lo abra con internet.
    ===================================================================== */
-var CAJA = "cripto-v38";
+var CAJA = "cripto-v39";
 var ARCHIVOS = ["./", "./index.html", "./CRIPTO.html", "./manifest.webmanifest", "./icono-192.png", "./icono-512.png", "./icono-mask-192.png", "./icono-mask-512.png", "./privacidad.html"];
 
 /* OJO, AQUÍ ESTABA EL FALLO DE «SUBO Y NO SE ACTUALIZA»:

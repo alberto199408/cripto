@@ -227,7 +227,7 @@ main>*{max-width:var(--anchoMax);margin-left:auto;margin-right:auto}
 .met .v .up,.met .v .dn,.met .v span{color:var(--cInk)}
 .met .s{font-size:var(--f2);color:var(--cInk);margin-top:5px;position:relative;
   line-height:1.4;font-weight:600}
-.met .msp{position:absolute;right:var(--e3);bottom:var(--e3);width:68px;height:24px;opacity:.5}
+.met .msp{position:absolute;right:var(--e3);bottom:var(--e3);width:68px;height:24px;opacity:.95}
 .met .msp svg{width:100%;height:100%;overflow:visible}
 .met.p1{--c:var(--c1);--cF:var(--c1F);--cInk:var(--c1Ink)}
 .met.p2{--c:var(--c2);--cF:var(--c2F);--cInk:var(--c2Ink)}
@@ -1047,6 +1047,8 @@ a:hover{color:var(--ac2)}
   .hprin{min-width:0}
   .mets,.cima .mets{grid-template-columns:1fr 1fr;gap:8px}
   .mets>.met:last-child:nth-child(odd){grid-column:1/-1}
+  /* con la tarjeta ancha delante, las demás ya quedan en parejas: la última no se estira */
+  .mets>.metAncha~.met:last-child:nth-child(odd){grid-column:auto}
   .met{padding:11px 12px}
   .met .v{font-size:20px}
   .met .v.chica{font-size:16px}
@@ -1292,6 +1294,41 @@ body.conCerrojo #aviso{z-index:10001}
   #informeImp .ojo{color:#B00020;font-weight:700;margin:6px 0}
   #informeImp .pie{color:#666;margin-top:12px;font-size:9px}
 }
+
+/* v39 · Resumen: la tarjeta de sus monedas, el doble de ancha (lleva su línea) */
+.cima .mets .metAncha{grid-column:span 2}
+.rpC.pulsa{cursor:pointer;transition:border-color .15s}
+.rpC.pulsa:hover{border-color:var(--acTx)}
+.rpC.pulsa:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.cima .mets .metAncha .msp{width:42%;max-width:220px;height:40px}
+
+/* v39 · Resumen en dos filas con nombre: SPOT y FUTUROS, una frente a la otra.
+   Cada fila lleva arriba su nombre y su ganancia, bien separados. */
+.cima .grupos{display:flex;flex-direction:column;gap:14px;min-width:0}
+.cima .grupo{display:flex;flex-direction:column;flex:1}
+.cima .grupo .mets{flex:1}
+.grT{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding:2px 4px 9px;margin-bottom:10px;border-bottom:1px solid var(--ln)}
+.grN{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:800;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--tx)}
+.grN .ic{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;
+  background:var(--b2);border:1px solid var(--ln);color:var(--acTx)}
+.grN .ic svg{width:15px;height:15px}
+.grG{display:flex;align-items:baseline;gap:8px;font-size:13px;color:var(--t2);font-weight:600}
+.grG b{font-size:16px;font-weight:800;color:var(--tx)}
+.grG b.up{color:var(--up)} .grG b.dn{color:var(--dn)}
+/* debajo de la cifra grande: la ganancia y su nombre, sueltos */
+.hgEt{font-size:14px;color:var(--t2);font-weight:600}
+
+/* v39 · LO GANADO EN VERDE Y LO PERDIDO EN ROJO, EN TODA LA APLICACIÓN.
+   Luis: «si cierro una posición en ganancia me sale en blanco… debe ser verde
+   si gano y rojo si pierdo, en spot, futuros y backtesting». Muchas cajas
+   (la fila del historial, el TOTAL, la cifra grande de Futuros, las hojas)
+   pintaban sus negritas de blanco y tapaban el verde y el rojo. Esto manda
+   sobre todas ellas, menos dentro de las tarjetas de colores, que llevan su
+   propia tinta oscura para leerse sobre el fondo. */
+.up:not(.met *):not(.gpill){color:var(--upTx)!important}
+.dn:not(.met *):not(.gpill){color:var(--dnTx)!important}
 </style>
 </head>
 <body>
@@ -1344,7 +1381,7 @@ body.conCerrojo #aviso{z-index:10001}
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por su cuenta de Google.
    ===================================================================== */
-var VERSION="38";
+var VERSION="39";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -1678,7 +1715,8 @@ var BD={
   back:[],       /* operaciones de las pruebas (backtesting)      */
   pruebas:[],    /* las pruebas, cada una con su nombre y cartera */
   ordenes:[],    /* ventas programadas de spot: "vende X cuando llegue a Y" */
-  histTot:[],    /* lo que valía todo su dinero, cada tanto, para la línea del resumen */
+  histTot:[],    /* lo de HOY, minuto a minuto (solo en este aparato): {t,v,m} */
+  histDia:[],    /* un punto por día, también en su cuenta: {d,t,m,mod} (v39) */
   precios:{},    /* último precio conocido de cada moneda         */
   logos:{},      /* logos bajados, para que salgan sin internet   */
   monedas:{},    /* monedas que usted agregó y no estaban         */
@@ -1799,6 +1837,7 @@ function cargar(){
       BD.pruebas=Array.isArray(d.pruebas)?d.pruebas:[];
       BD.ordenes=Array.isArray(d.ordenes)?d.ordenes:[];
       BD.histTot=Array.isArray(d.histTot)?d.histTot:[];
+      BD.histDia=Array.isArray(d.histDia)?d.histDia:[];
       BD.precios=(d.precios&&typeof d.precios==="object")?d.precios:{};
       BD.logos=(d.logos&&typeof d.logos==="object")?d.logos:{};
       BD.monedas=(d.monedas&&typeof d.monedas==="object")?d.monedas:{};
@@ -2472,10 +2511,14 @@ function ponTexto(el, txt, clase){
   }
 }
 function refrescarVivos(){
-  var S=null, F=null, B=null;
+  var S=null, F=null, B=null, TD=null, G=null;
   function spot(){ if(!S) S=carteraSpot(); return S; }
   function fut(){ if(!F) F=carteraFut(BD.fut); return F; }
+  function todo(){ if(!TD) TD=todoSuDinero(); return TD; }
+  function gan(){ if(!G) G=gananciasTodo(); return G; }
 
+  MEMO={};
+  try{
   document.querySelectorAll("[data-v]").forEach(function(el){
     var v=el.getAttribute("data-v"), s=el.getAttribute("data-s"), id=el.getAttribute("data-f");
     var pr, e, o;
@@ -2497,8 +2540,33 @@ function refrescarVivos(){
       ponTexto(el, (g>=0?"+":"−")+usd(g).replace("-",""), g>0?"gpill p":g<0?"gpill n":"gpill z");
     }
     else if(v==="totGanP"){ ponTexto(el, pct(spot().tot.abiertoPct), "gp2 "+cl(spot().tot.abiertoPct)); }
+    /* v39 · la cifra grande del Resumen y su reparto, al mismo segundo que la barra */
+    else if(v==="todoTot"){ ponTexto(el, usd(todo().total)); }
+    else if(v==="todoGan"){
+      var gg=gan().todo;
+      ponTexto(el, (gg>=0?"+":"−")+usd(Math.abs(gg)), gg>0?"gpill p":gg<0?"gpill n":"gpill z");
+    }
+    /* los que llevan palabras se escriben ya traducidos: si no, cada segundo
+       se escribiría el castellano y el traductor tendría que volver a pasarlo */
+    else if(v==="todoDicho"){ ponTexto(el, tr(textoDeDonde(gan()))); }
+    else if(v==="rpSpot"){ ponTexto(el, usd(todo().spot.total)); }
+    else if(v==="rpMon"){ ponTexto(el, usd(todo().spot.monedas)); }
+    else if(v==="rpFut"){ ponTexto(el, usd(todo().fut.total)); }
+    else if(v==="rpFutDisp"){ ponTexto(el, usd(todo().fut.disponible)); }
+    else if(v==="rpOper"){ ponTexto(el, usd(todo().fut.enUso+todo().fut.flotante)); }
+    else if(v==="ganSpot"){ var gs=gan().spot; ponTexto(el, conSignoUsd(gs), Math.abs(gs)<0.005?"nt":(gs>0?"up":"dn")); }
+    else if(v==="ganFut"){ var gf=gan().fut; ponTexto(el, conSignoUsd(gf), Math.abs(gf)<0.005?"nt":(gf>0?"up":"dn")); }
+    else if(v==="rpFlot"){
+      var fl=todo().fut.flotante;
+      ponTexto(el, (fl>=0?"+":"−")+usd(Math.abs(fl)), fl>0?"up":fl<0?"dn":"");
+    }
+    else if(v==="rpFlotEt"){ ponTexto(el, tr(todo().fut.flotante>=0?"Va ganando":"Va perdiendo")); }
+    else if(v==="ganMon"){
+      var ga=spot().tot.abierto;
+      ponTexto(el, (ga>=0?"+":"−")+usd(Math.abs(ga)));
+    }
     else if(v==="pieTot"){
-      var t=todoSuDinero().total;   /* la misma cifra que TODO SU DINERO */
+      var t=todo().total;   /* la misma cifra que TODO SU DINERO */
       ponTexto(el, (BD.ops.length||BD.fut.length)?usd(t):"—");
     }
     else if(v==="futPr"){ ponTexto(el, precio(precioDe(s))); }
@@ -2511,7 +2579,7 @@ function refrescarVivos(){
     else if(v==="futFlotP"){
       o=unaFut(id); if(!o) return;
       e=estadoOp(o);
-      ponTexto(el, e.pctFlot!=null?(pct(e.pctFlot,1)+" del margen"):"", "gsub "+cl(e.pctFlot));
+      ponTexto(el, e.pctFlotNeto!=null?(pct(e.pctFlotNeto,1)+" del margen"):"", "gsub "+cl(e.pctFlotNeto));
     }
     else if(v==="futTot"){
       var T=fut().tot;
@@ -2529,6 +2597,7 @@ function refrescarVivos(){
       ponTexto(el, pr!=null?pctS(Math.abs((meta-pr)/pr*100)):"—");
     }
   });
+  } finally { MEMO=null; }
   TIC={};
   try{ pintarPulso(); }catch(e){}
   try{ refrescarGrafica(); }catch(e){}
@@ -3176,7 +3245,19 @@ function resultadoDeOps(){
    Ahora los estables (USDT, USDC…) son DINERO, no moneda. No entran en
    la lista de monedas: se cuentan una sola vez, en efectivoDet.
    --------------------------------------------------------------------- */
-function carteraSpot(){
+/* v39 · EL REFRESCO AL SEGUNDO CALCULA LA CARTERA UNA SOLA VEZ. La cifra grande,
+   su reparto, la barra y las tarjetas se mueven ahora juntas cada segundo, y
+   cada una pedía la cartera entera otra vez (con 5.000 registros se notaba).
+   Mientras dura un refresco (MEMO lleno), la cuenta se hace una vez y se reusa;
+   al terminar se vacía, así que fuera de ahí todo se calcula fresco como siempre. */
+var MEMO=null;
+function carteraSpot(){ if(!MEMO) return carteraSpot0(); return MEMO.s||(MEMO.s=carteraSpot0()); }
+function efectivoDet(){ if(!MEMO) return efectivoDet0(); return MEMO.e||(MEMO.e=efectivoDet0()); }
+function carteraFut(fuente){
+  if(!MEMO || fuente!==BD.fut) return carteraFut0(fuente);
+  return MEMO.f||(MEMO.f=carteraFut0(fuente));
+}
+function carteraSpot0(){
   var s={};
   BD.ops.forEach(function(o){
     if(!o.sym || o.tipo==="traspaso" || esEstable(o.sym)) return;
@@ -3232,7 +3313,7 @@ function montoDinero(o){ return (+o.cant||0)*(+o.precio||1); }
 /* El bolsillo de SPOT: entra lo que depositó, lo que cobró al vender y lo
    que le vino de futuros; sale lo que pagó al comprar, lo que retiró y lo
    que mandó a futuros. */
-function efectivoDet(){
+function efectivoDet0(){
   var vend=0, comp=0, dep=0, ret=0, aFut=0, deFut=0;
   BD.ops.forEach(function(o){
     if(o.tipo==="traspaso"){
@@ -3315,6 +3396,18 @@ function todoSuDinero(){
   };
 }
 
+/* v39 · lo que gana o pierde, de spot y de futuros: lo usan la cifra grande
+   del Resumen y su refresco al segundo, así las dos dicen siempre lo mismo */
+function gananciasTodo(){
+  var S=carteraSpot(), T=carteraFut(BD.fut).tot;
+  var gs=S.tot.abierto+S.tot.realizado, gf=T.gan+T.flotante;
+  return {spot:gs, fut:gf, todo:gs+gf};
+}
+function conSignoUsd(x){ return (x>=0?"+":"−")+usd(Math.abs(x)); }
+function textoDeDonde(G){
+  return (G.spot||G.fut) ? ("spot "+conSignoUsd(G.spot)+" · futuros "+conSignoUsd(G.fut))
+                         : "sumando spot y futuros";
+}
 /* Ventas de monedas de verdad: sacar USDT a su banco NO es una venta */
 function nVentasSpot(){
   return BD.ops.filter(function(o){ return o.tipo==="venta" && !esDinero(o); }).length;
@@ -3412,15 +3505,21 @@ function estadoOp(f){
       if(margen>0&&flot<-margen){ flot=-margen; pctFlot=-100; topado=true; }
     }
   }
+  /* v39 · el % que se enseña junto al resultado es el del resultado (ya con la
+     comisión), para que la fila y el TOTAL digan lo mismo. Antes la fila
+     decía +68,2 % (antes de comisión) y el TOTAL +67,2 % (después). */
+  var pctNeto = (gan!=null&&margen>0) ? gan/margen*100 : null;
+  var pctFlotNeto = (flot!=null&&margen>0) ? flot/margen*100 : null;
   return {f:f, margen:margen, apal:apal, entrada:ent, valor:valor, monedas:monedas,
     salida:sal, pctPrecio:pctPrecio, pct: pctMargen!=null?pctMargen/100:null,
+    pctNeto:pctNeto, pctFlotNeto:pctFlotNeto,
     pctMargen:pctMargen, gan:gan, com:com, liq:liq, liquidado:liquidado, topado:topado,
     enPeligro:enPeligro, tp:tp, sl:sl, ganTp:ganTp, perSl:perSl, rr:rr,
     flot:flot, pctFlot:pctFlot, abierta: f.estado==="abierta",
     programada:programada, falta:falta, faltaPct:faltaPct, llego:llego};
 }
 
-function carteraFut(fuente){
+function carteraFut0(fuente){
   var lista=(fuente||[]).map(estadoOp);
   /* las PROGRAMADAS no entran en ningún total: todavía no ha entrado en ellas */
   var programadas=lista.filter(function(e){ return e.programada; });
@@ -3965,7 +4064,9 @@ function met(ico, etiqueta, valor, clase, sub, color, serie, ir){
     '<span>'+esc(etiqueta)+'</span></div><div class="v '+(clase||"")+(largo>=12?" chica":"")+'">'+valor+'</div>'+
     (sub?'<div class="s">'+sub+'</div>':'')+
     (ir?'<div class="mflecha">'+IC.flecha+'</div>':'')+
-    (serie&&serie.length>2?'<div class="msp">'+sparkSvg(serie,"currentColor")+'</div>':'')+'</div>';
+    /* v39 · la línea va en verde si sube y en rojo si baja */
+    (serie&&serie.length>2?'<div class="msp">'+sparkSvg(serie, tendencia(serie)>=0?"var(--up)":"var(--dn)",
+      "var(--cInk, currentColor)")+'</div>':'')+'</div>';
 }
 /* la misma tarjeta pero con el valor "vivo" (se mueve con el precio) */
 function metViva(ico, etiqueta, valorHtml, sub, color, serie, ir){
@@ -4010,14 +4111,18 @@ function irMet(orden){
 }
 document.addEventListener("click", function(ev){
   var t=ev.target.closest?ev.target.closest("[data-met]"):null;
-  if(t) irMet(t.getAttribute("data-met"));
+  if(!t) return;
+  /* un botón DENTRO de una tarjeta pulsable hace lo suyo, no lo de la tarjeta */
+  var b=ev.target.closest("button,a,input,select");
+  if(b && b!==t && t.contains(b)) return;
+  irMet(t.getAttribute("data-met"));
 });
 document.addEventListener("keydown", function(ev){
   if(ev.key!=="Enter"&&ev.key!==" ") return;
   var t=ev.target&&ev.target.closest?ev.target.closest("[data-met]"):null;
   if(t){ ev.preventDefault(); irMet(t.getAttribute("data-met")); }
 });
-function sparkSvg(h, color){
+function sparkSvg(h, color, halo){
   if(!h||h.length<3) return "";
   var lo=Math.min.apply(null,h), hi=Math.max.apply(null,h);
   if(hi===lo){ hi=lo*1.0001||1; }
@@ -4032,22 +4137,74 @@ function sparkSvg(h, color){
     '<stop offset="0" stop-color="'+color+'" stop-opacity=".45"/>'+
     '<stop offset="1" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'+
     '<path d="'+area+'" fill="url(#'+id+')"/>'+
-    '<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="1.8" stroke-linejoin="round" '+
-    'vector-effect="non-scaling-stroke"/></svg>';
+    /* el «halo»: un borde del color de las letras de la tarjeta, para que la
+       línea verde o roja se vea sobre cualquier color de fondo */
+    (halo?'<path d="'+d+'" fill="none" stroke="'+halo+'" stroke-width="4" stroke-linejoin="round" '+
+      'stroke-linecap="round" opacity=".55" vector-effect="non-scaling-stroke"/>':'')+
+    '<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="'+(halo?"2.2":"1.8")+'" stroke-linejoin="round" '+
+    'stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
 }
-/* historial de lo que valía todo su dinero, para la línea del hero */
+/* =====================================================================
+   v39 · LA LÍNEA DE CÓMO VA (Luis: «su propia gráfica… si está subiendo en
+   verde o si está en pérdidas en rojo»)
+   ---------------------------------------------------------------------
+   Dos guardados:
+     · histTot: lo de HOY, un punto por minuto mientras la aplicación está
+       abierta (solo en este aparato; para que el primer día ya haya línea).
+     · histDia: UN punto por día —el último valor de ese día— que viaja con
+       su cuenta y con las copias. Así el teléfono y la computadora dibujan
+       la misma línea, y a la semana se ve la semana, al mes el mes.
+   En cada punto se guarda el total (t) y lo que valen sus monedas (m).
+   Los días de antes de que existiera esto no se pueden inventar.
+   ===================================================================== */
+var HIST_DIAS_MAX=730;
 function anotarHistTot(){
   try{
-    var v=todoSuDinero().total;   /* la misma cifra que TODO SU DINERO */
-    if(!(v>0)) return;
+    var tot=todoSuDinero().total, mon=carteraSpot().tot.valor;
+    if(!(tot>0) && !(mon>0)) return;
     BD.histTot=BD.histTot||[];
     var u=BD.histTot[BD.histTot.length-1];
-    if(u && Math.abs(u.v-v)<1e-9) return;
-    BD.histTot.push({t:Date.now(), v:+v.toFixed(2)});
-    if(BD.histTot.length>300) BD.histTot=BD.histTot.slice(-300);
+    if(!(u && Math.abs(u.v-tot)<1e-9 && Math.abs((u.m||0)-mon)<1e-9)){
+      BD.histTot.push({t:Date.now(), v:+tot.toFixed(2), m:+mon.toFixed(2)});
+      if(BD.histTot.length>300) BD.histTot=BD.histTot.slice(-300);
+    }
+    /* el punto de hoy se va pisando: al final del día queda el último */
+    var d=hoy(); BD.histDia=BD.histDia||[];
+    var x=BD.histDia.length?BD.histDia[BD.histDia.length-1]:null;
+    if(!x || x.d!==d){ x={d:d}; BD.histDia.push(x); BD.histDia.sort(function(a,b){ return a.d<b.d?-1:1; }); }
+    x.t=+tot.toFixed(2); x.m=+mon.toFixed(2); x.mod=ahoraReal();
+    if(BD.histDia.length>HIST_DIAS_MAX) BD.histDia=BD.histDia.slice(-HIST_DIAS_MAX);
   }catch(e){}
 }
-function serieTot(){ return (BD.histTot||[]).map(function(x){ return x.v; }); }
+/* juntar los días de dos aparatos: de cada día, el punto tomado más tarde */
+function juntarHistDia(a, b){
+  var por={};
+  (a||[]).concat(b||[]).forEach(function(x){
+    if(!x||!x.d) return;
+    var y=por[x.d];
+    if(!y || (+x.mod||0)>(+y.mod||0)) por[x.d]=x;
+  });
+  return Object.keys(por).sort().slice(-HIST_DIAS_MAX).map(function(k){ return por[k]; });
+}
+/* la serie de la línea: por días si ya hay al menos dos días de antes;
+   si no, la de hoy minuto a minuto. El último punto es siempre el de ahora. */
+function serieDe2(campo, ahora){
+  var dias=(BD.histDia||[]).filter(function(x){ return x.d<hoy() && isFinite(x[campo]); });
+  var L;
+  if(dias.length>=2) L=dias.slice(-89).map(function(x){ return +x[campo]; });
+  else {
+    var k=campo==="t"?"v":"m";
+    L=(BD.histTot||[]).filter(function(x){ return isFinite(x[k]); }).map(function(x){ return +x[k]; });
+  }
+  if(isFinite(ahora)) L.push(ahora);
+  if(!L.some(function(v){ return v>0; })) return [];
+  return L;
+}
+function serieTodo(){ var a; try{ a=todoSuDinero().total; }catch(e){} return serieDe2("t", a); }
+function serieMonedas(){ var a; try{ a=carteraSpot().tot.valor; }catch(e){} return serieDe2("m", a); }
+function serieTot(){ return serieTodo(); }
+/* ¿la línea sube o baja? (de su primer punto al último) */
+function tendencia(s){ return (s&&s.length>1) ? (s[s.length-1]>=s[0] ? 1 : -1) : 0; }
 function serieDe(sym){ return HIST[sym]||[]; }
 function chip2(e,v,c,s,extra){
   return '<div class="hc"><div class="e">'+esc(e)+'</div><div class="v '+(c||"")+'"'+
@@ -4055,15 +4212,22 @@ function chip2(e,v,c,s,extra){
 }
 /* el hero: la cifra grande con su línea de fondo */
 function heroGrande(titulo, total, gan, dicho, ch, serie, extraHtml, sinMeta){
+  /* v39 · el color de la línea dice si VA SUBIENDO o BAJANDO (no la ganancia total) */
+  var sube = (serie&&serie.length>2) ? tendencia(serie)>=0 : gan>=0;
   var fondo = (serie&&serie.length>2)
-    ? '<div class="hfondo">'+sparkSvg(serie, gan>=0?"var(--up)":"var(--dn)")+'</div>' : '';
+    ? '<div class="hfondo">'+sparkSvg(serie, sube?"var(--up)":"var(--dn)")+'</div>' : '';
   return '<div class="hero'+(gan>=0?" gana":" pierde")+'">'+fondo+'<div class="hz">'+
     '<div class="hprin"><div class="he">'+esc(titulo)+'</div>'+
-    '<div class="hv mono">'+usd(total)+'<small>USD</small></div>'+
+    /* v39 · las tres piezas se mueven al segundo (data-v), igual que la barra
+       de la izquierda: antes la cifra grande se quedaba quieta y las dos se
+       separaban unos centavos cuando cambiaba el precio de una operación abierta */
+    '<div class="hv mono"><span data-v="todoTot">'+usd(total)+'</span><small>USD</small></div>'+
     '<div class="hg">'+
-      '<span class="'+(gan>0?"gpill p":gan<0?"gpill n":"gpill z")+'" '+
+      '<span class="'+(gan>0?"gpill p":gan<0?"gpill n":"gpill z")+'" data-v="todoGan" '+
       'style="font-size:15px;padding:6px 12px">'+(gan>=0?"+":"−")+usd(gan).replace("-","")+'</span>'+
-      '<span class="gp2 nt" style="font-weight:600">'+esc(dicho||"")+'</span>'+
+      /* v39 · solo «ganancia en total», sola y suelta: el reparto de la ganancia
+         (spot · futuros) va en el título de cada fila de tarjetas */
+      '<span class="hgEt">'+esc(dicho||"")+'</span>'+
       (ch&&ch.pct!=null?'<span class="gch '+cl(ch.pct)+'">24 h '+pct(ch.pct)+'</span>':'')+
       (PRE.vivo?'<span class="envivo"><i></i>EN VIVO</span>':'')+
     '</div>'+
@@ -4079,8 +4243,9 @@ function heroGrande(titulo, total, gan, dicho, ch, serie, extraHtml, sinMeta){
 }
 /* el hero de Futuros/Backtesting: el número grande es el RESULTADO, no la cartera */
 function heroResultado(titulo, gan, base, ahora, dicho, serie, nAb, flot){
+  var sube = (serie&&serie.length>2) ? tendencia(serie)>=0 : gan>=0;
   var fondo = (serie&&serie.length>2)
-    ? '<div class="hfondo">'+sparkSvg(serie, gan>=0?"var(--up)":"var(--dn)")+'</div>' : '';
+    ? '<div class="hfondo">'+sparkSvg(serie, sube?"var(--up)":"var(--dn)")+'</div>' : '';
   var pctB = base>0 ? (gan/base*100) : null;
   return '<div class="hero'+(gan>=0?" gana":" pierde")+'">'+fondo+'<div class="hz">'+
     '<div class="hprin"><div class="he">'+esc(titulo)+'</div>'+
@@ -4413,7 +4578,7 @@ function pintarSpot(){
         plural(vivas.length,"moneda","monedas")+" en el portafolio", 1,
         null, "#misMonedas")+
     met(IC.torta,"Vale hoy",'<span data-v="total">'+usd(S.tot.valor)+'</span>',"",
-        ch?("en 24 h "+pct(ch.pct,2)):"al precio de ahora", 6, serieTot(), "#misMonedas")+
+        ch?("en 24 h "+pct(ch.pct,2)):"al precio de ahora", 6, serieMonedas(), "#misMonedas")+
     met(IC.dolar,"Ganancia si vende hoy",
         (S.tot.abierto>=0?"+":"−")+usd(S.tot.abierto).replace("-",""),"",
         pct(S.tot.abiertoPct)+" de lo que puso", S.tot.abierto>=0?"gana":"pierde",
@@ -4474,7 +4639,7 @@ function pintarSpot(){
       '<td><div class="cri">'+iconoMoneda(e.sym,34)+'<div><b>'+esc(e.sym)+'</b><span>'+
         esc(nombreDe(e.sym))+'</span></div></div></td>'+
       '<td><span data-v="pr" data-s="'+esc(e.sym)+'">'+precio(e.precio)+'</span>'+
-        '<br><span style="font-size:11px" data-v="ch" data-s="'+esc(e.sym)+'" '+
+        '<br><span style="font-size:11px" class="'+cl(cambioDe(e.sym))+'" data-v="ch" data-s="'+esc(e.sym)+'" '+
         'data-cls="">'+(cambioDe(e.sym)!=null?pct(cambioDe(e.sym),1):"—")+'</span></td>'+
       '<td>'+cant(e.cantidad)+'<br><span style="font-size:11px;color:var(--t3)">'+esc(e.sym)+'</span></td>'+
       '<td class="opt">'+(f0?fechaCorta(f0.fecha):"—")+
@@ -4627,7 +4792,7 @@ function panelSeleccionada(){
       '<div class="mut">'+esc(nombreDe(s))+'</div></div>'+
       '<div style="text-align:right"><div class="mono" style="font-size:19px;font-weight:700" '+
       'data-v="pr" data-s="'+esc(s)+'">'+precio(e.precio)+'</div>'+
-      '<div class="mono" style="font-size:12px" data-v="ch" data-s="'+esc(s)+'" data-cls="">'+
+      '<div class="mono '+cl(cambioDe(s))+'" style="font-size:12px" data-v="ch" data-s="'+esc(s)+'" data-cls="mono">'+
       (cambioDe(s)!=null?pct(cambioDe(s),1):"—")+'</div></div>'+
     '</div>'+
     '<div class="kv" style="margin-top:0">'+
@@ -4695,7 +4860,7 @@ function historialSpot(){
         (k?'<span> · comisión '+usd(k)+'</span>':"")+
         (dd!=null?'<span> · hace '+plural(dd,"día","días")+'</span>':"")+
         (o.nota?'<span translate="no"> · '+esc(o.nota)+'</span>':"")+'</div></div>'+
-        '<div class="pg"><span>'+(v?"Recibió":"Pagó")+'</span><b class="'+(v?"up":"dn")+'">'+
+        '<div class="pg"><span>'+(v?"Recibió":"Pagó")+'</span><b>'+
         (v?"+":"−")+usd(tot).replace("-","")+'</b></div>'+
         col+
         '<div class="acc"><button class="b sm" data-ed="'+esc(o.id)+'">Editar</button></div></div>';
@@ -4716,7 +4881,7 @@ function tarjetaMejorPeor(conP){
       '<div class="mpc">'+icono(e.sym,27)+'<div><b>'+esc(e.sym)+'</b>'+
       '<span>'+esc(nombreDe(e.sym))+'</span></div></div>'+
       '<div class="mpv '+cl(e.abiertoPct)+'">'+pct(e.abiertoPct)+'</div>'+
-      '<div class="mps">'+(e.abierto>=0?"+":"−")+usd(e.abierto).replace("-","")+
+      '<div class="mps"><b class="'+cl(e.abierto)+'">'+(e.abierto>=0?"+":"−")+usd(e.abierto).replace("-","")+'</b>'+
       ' · puso '+usd(e.costo)+'</div></div>';
   }
   return '<div class="caja"><h2><span class="ic">'+IC.diana+'</span>Mejor y peor moneda</h2>'+
@@ -5298,26 +5463,29 @@ var BOLS_NOMBRE={spot:"Spot", fut:"Futuros"};
    --------------------------------------------------------------------- */
 function repartoDinero(){
   var T=todoSuDinero();
-  function lin(t, v, clase){
-    return '<div class="rpL"><span>'+t+'</span><b class="mono '+(clase||"")+'">'+v+'</b></div>';
+  /* v39 · cada cifra lleva su data-v: se mueven al segundo con el precio */
+  function lin(t, v, clase, clave){
+    return '<div class="rpL"><span'+(clave?' data-v="'+clave+'Et"':'')+'>'+t+'</span>'+
+      '<b class="mono '+(clase||"")+'"'+(clave?' data-v="'+clave+'" data-cls="mono"':'')+'>'+v+'</b></div>';
   }
-  var fl=T.fut.flotante;
+  /* v39 · «En operaciones» es lo que valen HOY sus operaciones abiertas (lo que
+     puso más lo que van ganando o perdiendo), igual que «En monedas» es lo que
+     valen hoy sus monedas. Así los dos recuadros se leen igual, y lo que va
+     ganando se ve en la fila de FUTUROS («Ganancia si cierra hoy»), no dos veces. */
+  var pulsa=' data-met="f:saldo" tabindex="0" role="button" title="Toque para ver de dónde sale cada dólar"';
   return '<div class="reparto">'+
-    '<div class="rpC">'+
-      '<div class="rpT"><span>Spot</span><b class="mono">'+usd(T.spot.total)+'</b></div>'+
-      lin("En monedas", usd(T.spot.monedas))+
+    '<div class="rpC pulsa"'+pulsa+'>'+
+      '<div class="rpT"><span>Spot</span><b class="mono" data-v="rpSpot">'+usd(T.spot.total)+'</b></div>'+
+      lin("En monedas", usd(T.spot.monedas), "", "rpMon")+
       lin("Disponible", usd(T.spot.disponible))+
       (T.spot.falta>0.005
         ? '<button type="button" class="rpFalta" data-din="depositar" data-bols="spot">'+
           'Falta anotar '+usd(T.spot.falta)+'</button>' : '')+
     '</div>'+
-    '<div class="rpC">'+
-      '<div class="rpT"><span>Futuros</span><b class="mono">'+usd(T.fut.total)+'</b></div>'+
-      lin("En operaciones", usd(T.fut.enUso))+
-      lin("Disponible", usd(T.fut.disponible))+
-      (Math.abs(fl)>=0.005
-        ? lin(fl>=0?"Va ganando":"Va perdiendo", (fl>=0?"+":"−")+usd(Math.abs(fl)), fl>=0?"up":"dn")
-        : '')+
+    '<div class="rpC pulsa"'+pulsa+'>'+
+      '<div class="rpT"><span>Futuros</span><b class="mono" data-v="rpFut">'+usd(T.fut.total)+'</b></div>'+
+      lin("En operaciones", usd(T.fut.enUso+T.fut.flotante), "", "rpOper")+
+      lin("Disponible", usd(T.fut.disponible), "", "rpFutDisp")+
       (T.fut.falta>0.005
         ? '<button type="button" class="rpFalta" data-din="depositar" data-bols="fut">'+
           'Falta anotar '+usd(T.fut.falta)+'</button>' : '')+
@@ -5375,6 +5543,14 @@ function disponibleEn(bols){
   if(bols==="fut") return futurosDet().disponible;
   var d=efectivoDet().total; return d>0?d:0;
 }
+/* v39 · en futuros, lo que está puesto en operaciones abiertas no se puede
+   sacar (como en Binance): «Todo» toma solo lo disponible, y se dice por qué */
+function notaEnUso(siFut){
+  if(!siFut) return "";
+  var u=futurosDet().enUso;
+  return u>0.005 ? '<div class="mut" style="font-size:12px;margin-top:4px;line-height:1.45">'+
+    usd(u)+' está en operaciones abiertas: ciérrelas para poder sacarlo.</div>' : "";
+}
 function hoyRepintar(){
   try{ repintar(); }catch(e){}
   try{ repintarCabecera(); }catch(e){}
@@ -5399,10 +5575,14 @@ function hojaDinero(modo, bols, id){
     '<div class="pill" id="dnB" style="margin-bottom:14px">'+
       '<button type="button" data-b="spot" class="'+(bols!=="fut"?"on v":"")+'">Spot</button>'+
       '<button type="button" data-b="fut" class="'+(bols==="fut"?"on v":"")+'">Futuros</button></div>'+
-    '<div class="campos">'+
+    /* v39 · lo que hay, y cómo va a quedar, antes de guardar */
+    '<div class="fcalc" id="dnHay"></div>'+
+    '<div class="campos" style="margin-top:12px">'+
       '<div class="campo"><label>Cuántos dólares</label>'+
-        '<input id="dnM" inputmode="decimal" placeholder="100" value="'+
-        (o?String(montoDinero(o)).replace(".",sepDecimal()):"")+'"></div>'+
+        '<div style="display:flex;gap:6px"><input id="dnM" inputmode="decimal" placeholder="100" '+
+        'style="flex:1;min-width:0" value="'+
+        (o?String(montoDinero(o)).replace(".",sepDecimal()):"")+'">'+
+        (dep?'':'<button type="button" class="b sm" id="dnTodo">Todo</button>')+'</div></div>'+
       '<div class="campo"><label>Fecha</label><input type="date" id="dnF" value="'+
         esc((o&&o.fecha)||hoy())+'"></div>'+
       '<div class="campo ancho"><label>Nota</label><input id="dnN" style="font-family:inherit" '+
@@ -5416,14 +5596,25 @@ function hojaDinero(modo, bols, id){
     '<button class="b ac" id="dnOk">'+(o?'Guardar':(dep?'Depositar':'Retirar'))+'</button></div></div>',
   function(M){
     var b=bols;
-    function ojo(){
+    /* lo que habría en este bolsillo sin este movimiento (al editar, se descuenta
+       lo que ya estaba anotado; si es nuevo, es simplemente lo disponible) */
+    function sinEste(){
+      var h=disponibleEn(b);
+      if(o && (o.bolsillo==="fut"?"fut":"spot")===b) h += dep ? -montoDinero(o) : montoDinero(o);
+      return h>0?h:0;
+    }
+    function pinta(){
+      var h=sinEste(), m=num(M.querySelector("#dnM").value)||0,
+          bn=BOLS_NOMBRE[b].toLowerCase(), despues = dep ? h+m : h-m;
+      var t='<div>Disponible en '+bn+': <b class="mono">'+usd(h)+'</b></div>';
+      if(m>0 && despues>-0.005)
+        t+='<div>Después tendrá disponible en '+bn+': <b class="mono">'+usd(despues>0?despues:0)+'</b></div>';
+      t+=notaEnUso(!dep && b==="fut");
+      M.querySelector("#dnHay").innerHTML=t;
       var n=M.querySelector("#dnOjo");
-      if(dep){ n.style.display="none"; return; }
-      var m=num(M.querySelector("#dnM").value)||0;
-      var hay=disponibleEn(b) + (o ? montoDinero(o) : 0);
-      if(m>hay+0.005){
+      if(!dep && m>h+0.005){
         n.style.display="";
-        n.innerHTML='<b>Solo tiene '+usd(hay)+' disponible en '+BOLS_NOMBRE[b].toLowerCase()+'.</b> '+
+        n.innerHTML='<b>Solo tiene '+usd(h)+' disponible en '+bn+'.</b> '+
           'Puede guardarlo igual, pero le quedará pendiente anotar de dónde salió el resto.';
       } else n.style.display="none";
     }
@@ -5432,11 +5623,16 @@ function hojaDinero(modo, bols, id){
         b=x.getAttribute("data-b");
         M.querySelectorAll("#dnB button").forEach(function(y){
           y.className = y.getAttribute("data-b")===b ? "on v" : ""; });
-        ojo();
+        pinta();
       };
     });
-    M.querySelector("#dnM").addEventListener("input", ojo);
-    ojo();
+    M.querySelector("#dnM").addEventListener("input", pinta);
+    var todo=M.querySelector("#dnTodo");
+    if(todo) todo.onclick=function(){
+      var h=sinEste(); M.querySelector("#dnM").value = h>0 ? String(Math.floor(h*100+1e-6)/100).replace(".",sepDecimal()) : "";
+      pinta();
+    };
+    pinta();
 
     M.querySelector("#dnOk").onclick=function(){
       var m=num(M.querySelector("#dnM").value);
@@ -5497,12 +5693,25 @@ function hojaMover(dir, id){
   function(M){
     var d=dir;
     function desde(){ return d==="aFut" ? "spot" : "fut"; }
-    function hay(){ return disponibleEn(desde()) + (o ? montoDinero(o) : 0); }
+    /* lo que habría en cada bolsillo sin este movimiento (si se está editando) */
+    function sinEste(bol){
+      var h=disponibleEn(bol);
+      if(o){ var mo=montoDinero(o); if(o.de===bol) h+=mo; else if(o.a===bol) h-=mo; }
+      return h>0?h:0;
+    }
+    function hay(){ return sinEste(desde()); }
     function pinta(){
-      M.querySelector("#mvHay").innerHTML='Disponible en '+BOLS_NOMBRE[desde()].toLowerCase()+
-        ': <b class="mono">'+usd(hay())+'</b>';
-      var m=num(M.querySelector("#mvM").value)||0, n=M.querySelector("#mvOjo");
-      if(m>hay()+0.005){
+      var de=desde(), a=(de==="spot"?"fut":"spot"), h=hay(),
+          m=num(M.querySelector("#mvM").value)||0, n=M.querySelector("#mvOjo");
+      var t='<div>Disponible en '+BOLS_NOMBRE[de].toLowerCase()+': <b class="mono">'+usd(h)+'</b></div>';
+      if(m>0 && m<=h+0.005){
+        var q={}; q[de]=Math.max(h-m,0); q[a]=sinEste(a)+m;
+        t+='<div>Después tendrá disponible en spot: <b class="mono">'+usd(q.spot)+'</b></div>'+
+           '<div>Después tendrá disponible en futuros: <b class="mono">'+usd(q.fut)+'</b></div>';
+      }
+      t+=notaEnUso(de==="fut");
+      M.querySelector("#mvHay").innerHTML=t;
+      if(m>h+0.005){
         n.style.display="";
         n.innerHTML='<b>Eso es más de lo que tiene disponible.</b> Si guarda igual, le quedará '+
           'pendiente anotar de dónde salió el resto.';
@@ -5518,7 +5727,7 @@ function hojaMover(dir, id){
     });
     M.querySelector("#mvM").addEventListener("input", pinta);
     M.querySelector("#mvTodo").onclick=function(){
-      var h=hay(); M.querySelector("#mvM").value = h>0 ? String(Math.floor(h*100)/100).replace(".",sepDecimal()) : "";
+      var h=hay(); M.querySelector("#mvM").value = h>0 ? String(Math.floor(h*100+1e-6)/100).replace(".",sepDecimal()) : "";
       pinta();
     };
     pinta();
@@ -5588,7 +5797,7 @@ function filaDinero(o, conBoton, desde){
     '<div class="lg">'+icono("USDT",30)+'</div>'+
     '<div class="q"><div class="l1">'+q.t+'</div>'+
       (o.nota?'<div class="l2">'+esc(o.nota)+'</div>':'')+'</div>'+
-    '<div class="pg"><span>Monto</span><b class="mono '+cls+'">'+signo+usd(m)+'</b></div>'+
+    '<div class="pg"><span>Monto</span><b class="mono">'+signo+usd(m)+'</b></div>'+
     (conBoton!==false
       ? '<div class="acc"><button class="b sm" data-eddin="'+esc(o.id)+'">Editar</button></div>' : '')+
     '</div>';
@@ -5666,7 +5875,7 @@ function verMoneda(sym){
       '<div class="mono" style="font-size:13px;color:var(--t2);display:flex;gap:7px;'+
       'flex-wrap:wrap;align-items:center"><span data-v="pr" data-s="'+esc(sym)+'">'+
       precio(e.precio)+'</span>'+
-      '<span data-v="ch" data-s="'+esc(sym)+'" data-cls="">'+
+      '<span class="'+cl(cambioDe(sym))+'" data-v="ch" data-s="'+esc(sym)+'" data-cls="">'+
       (cambioDe(sym)!=null?pct(cambioDe(sym),1):"")+'</span>'+
       (Object.keys(casas).length?Object.keys(casas).map(function(k){
         return logoCasa(k,17); }).join(""):'')+'</div></div>'+
@@ -6399,7 +6608,16 @@ function pintarAmbito(k){
   var cartera=A.cfg.cartera;
   var base = (A.k==="back"&&A.prueba) ? (+A.prueba.capital||cartera) : cartera;
   var ahoraC = base + T.gan + T.flotante;
-  var curva=[]; (function(){ var ac=0; F.cerradas.forEach(function(e){ ac+=e.gan; curva.push(ac); }); })();
+  /* v39 · la línea de cómo va: empieza en 0, suma cada operación cerrada en
+     el orden en que se cerró, y termina con lo que ganaría si cerrara ahora */
+  var curva=[0]; (function(){
+    var ac=0;
+    F.cerradas.slice().sort(function(a,b){
+      var x=(a.f.cierre||a.f.fecha||""), y=(b.f.cierre||b.f.fecha||"");
+      return x<y?-1:x>y?1:((+a.f.n||0)-(+b.f.n||0));
+    }).forEach(function(e){ ac+=e.gan; curva.push(ac); });
+    if(T.nAb) curva.push(ac+T.flotante);
+  })();
   var dicho = T.n ? (plural(T.n,"operación cerrada","operaciones cerradas")+
                      (T.nAb?" · "+plural(T.nAb,"abierta","abiertas"):""))
                   : (T.nAb?plural(T.nAb,"operación abierta","operaciones abiertas"):"todavía sin operaciones");
@@ -6521,8 +6739,8 @@ function tablaAbiertas(abiertas,k){
         '<td><span class="'+(e.flot>0?"gpill p":e.flot<0?"gpill n":"gpill z")+'" data-v="futFlot" '+
           'data-f="'+esc(f.id)+'" data-cls="">'+
           (e.flot!=null?((e.flot>=0?"+":"−")+usdF(e.flot).replace("-","")):"sin precio")+'</span>'+
-          '<span class="sub '+cl(e.pctFlot)+'" data-v="futFlotP" data-f="'+esc(f.id)+'" data-cls="sub">'+
-          (e.pctFlot!=null?pct(e.pctFlot,1)+" del margen":"")+'</span></td>'+
+          '<span class="sub '+cl(e.pctFlotNeto)+'" data-v="futFlotP" data-f="'+esc(f.id)+'" data-cls="sub">'+
+          (e.pctFlotNeto!=null?pct(e.pctFlotNeto,1)+" del margen":"")+'</span></td>'+
         '<td><div style="display:flex;gap:7px;justify-content:flex-end">'+
           '<button class="b sm ac" data-cerrarop="'+esc(f.id)+'" data-amb="'+k+'">Cerrar</button>'+
           '<button class="b sm" data-edop="'+esc(f.id)+'" data-amb="'+k+'">Editar</button></div></td></tr>';
@@ -6562,8 +6780,8 @@ function filaAbierta(e,k){
       '<b><span class="'+(e.flot>0?"gpill p":e.flot<0?"gpill n":"gpill z")+'" data-v="futFlot" '+
       'data-f="'+esc(f.id)+'" data-cls="">'+
       (e.flot!=null?((e.flot>=0?"+":"−")+usdF(e.flot).replace("-","")):"sin precio")+'</span> '+
-      '<span class="gsub '+cl(e.pctFlot)+'" style="display:inline" data-v="futFlotP" data-f="'+esc(f.id)+'" data-cls="">'+
-      (e.pctFlot!=null?pct(e.pctFlot,1)+" del margen":"")+'</span></b></div>'+
+      '<span class="gsub '+cl(e.pctFlotNeto)+'" style="display:inline" data-v="futFlotP" data-f="'+esc(f.id)+'" data-cls="">'+
+      (e.pctFlotNeto!=null?pct(e.pctFlotNeto,1)+" del margen":"")+'</span></b></div>'+
     '<div class="acc">'+
       '<button class="b sm ac" data-cerrarop="'+esc(f.id)+'" data-amb="'+k+'">Cerrar</button>'+
       '<button class="b sm" data-edop="'+esc(f.id)+'" data-amb="'+k+'">Editar</button></div>'+
@@ -6740,7 +6958,7 @@ function tablaHistorial(F,k,T){
         (f.auto?' · <span class="chip a" title="Se cerró sola al tocar el '+esc(f.auto)+'">SOLA · '+esc(f.auto.toUpperCase())+'</span>':'')+
         (f.estr?' · '+esc(f.estr):'')+'</div></div>'+
       '<div class="r"><span>Resultado</span><b class="'+cl(e.gan)+'">'+(e.gan>=0?"+":"−")+usdF(e.gan).replace("-","")+'</b>'+
-        '<span>'+(e.pctMargen!=null?pct(e.pctMargen,1)+" del margen":"")+'</span></div>'+
+        '<span class="'+cl(e.gan)+'">'+(e.pctNeto!=null?pct(e.pctNeto,1)+" del margen":"")+'</span></div>'+
       '<div class="pg"><span>Lista de antes de entrar</span><b><span class="chip '+(n===PLAN.length?"l":n>=PLAN.length-2?"g":"s")+'">'+n+' de '+PLAN.length+'</span>'+
         (f.animo?' <span class="mut" style="font-size:12px;font-weight:500">'+esc(f.animo)+'</span>':'')+'</b></div>'+
       '<div class="acc"><button class="b sm" data-edop="'+esc(f.id)+'" data-amb="'+k+'">Editar</button></div>'+
@@ -6752,7 +6970,8 @@ function tablaHistorial(F,k,T){
     h+='<div class="fcalc" style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">'+
       '<span>TOTAL · '+plural(ver.length,"operación","operaciones")+(lista.length>ver.length?" (de "+lista.length+")":"")+'</span>'+
       '<span>margen puesto <b>'+usdF(sm)+'</b></span>'+
-      '<span style="margin-left:auto">resultado <b class="'+cl(sg)+'">'+(sg>=0?"+":"−")+usdF(sg).replace("-","")+'</b> · '+pct(sm?sg/sm*100:0,1)+' del margen</span></div>';
+      '<span style="margin-left:auto">resultado <b class="'+cl(sg)+'">'+(sg>=0?"+":"−")+usdF(sg).replace("-","")+'</b> · '+
+        '<span class="'+cl(sg)+'">'+pct(sm?sg/sm*100:0,1)+' del margen</span></span></div>';
   }
   h+=(lista.length>ver.length
       ? '<div style="text-align:center;margin-top:10px"><button class="b" id="fuMas">Ver '+
@@ -8230,7 +8449,8 @@ function dichoOperacion(e){
 function cuadroFicha(et, val, sub, clase){
   return '<div class="lc"><div class="e">'+esc(et)+'</div>'+
     '<div class="v '+(clase||"")+'">'+val+'</div>'+
-    (sub?'<div class="s">'+sub+'</div>':'')+'</div>';
+    /* v39 · el % de debajo del resultado, del mismo color que el resultado */
+    (sub?'<div class="s'+(clase==="up"||clase==="dn"?" "+clase:"")+'">'+sub+'</div>':'')+'</div>';
 }
 
 function verOperacion(id, amb){
@@ -8277,7 +8497,7 @@ function verOperacion(id, amb){
         (e.abierta&&e.flot!=null
           ? cuadroFicha("SI LA CIERRA AHORA",
               (e.flot>=0?"+":"−")+usdF(Math.abs(e.flot)),
-              e.pctFlot!=null?pct(e.pctFlot,1)+" del margen":"", cl(e.flot))
+              e.pctFlotNeto!=null?pct(e.pctFlotNeto,1)+" del margen":"", cl(e.flot))
           : "")+
         (!e.abierta&&!e.programada&&e.gan!=null
           ? cuadroFicha("RESULTADO", (e.gan>=0?"+":"−")+usdF(Math.abs(e.gan)),
@@ -8432,7 +8652,8 @@ function apuntarHuella(){
   return navigator.credentials.create({publicKey:{
     challenge:reto,
     rp:{name:APP_NOMBRE},
-    user:{id:idU, name:(CTA.correo||"usuario"), displayName:(CTA.nombre||"Usuario")},
+    /* el teléfono puede enseñar este nombre al guardar la huella: tapado también */
+    user:{id:idU, name:(CTA.correo?correoTapado(CTA.correo):"usuario"), displayName:(CTA.nombre||"Usuario")},
     pubKeyCredParams:[{type:"public-key",alg:-7},{type:"public-key",alg:-257}],
     authenticatorSelection:{authenticatorAttachment:"platform", userVerification:"required",
                             residentKey:"preferred"},
@@ -9032,44 +9253,52 @@ function pintarRes(){
      que se peleaban. Ahora el reparto de debajo suma exacto la cifra. */
   var TD = todoSuDinero();
   var totalTodo = TD.total;
-  var ganTodo = S.tot.abierto + S.tot.realizado + T.gan + T.flotante;
+  var G = gananciasTodo();
+  var ganTodo = G.todo;
 
   var h=alertaPrecios()+avisoAlertas()+avisoVentasSinCompra();
 
-  /* De dónde sale la ganancia o la pérdida grande de arriba. Sin esto,
-     ver «$9.975» de total y «−$1.861.460» de pérdida no se entiende:
-     lo de futuros es dinero que ya salió, no lo que queda hoy. */
-  var ganSpot=S.tot.abierto+S.tot.realizado, ganFut=T.gan+T.flotante;
-  function conSigno(x){ return (x>=0?"+":"−")+usd(Math.abs(x)); }
-  var deDonde = (ganSpot||ganFut)
-    ? ("spot "+conSigno(ganSpot)+" · futuros "+conSigno(ganFut))
-    : "sumando spot y futuros";
-
-  h+='<div class="cima">'+heroGrande("TODO SU DINERO", totalTodo, ganTodo, deDonde, ch, serieTot(),
+  /* v39 · EL RESUMEN EN DOS FILAS, UNA FRENTE A LA OTRA (Luis, con foto:
+     «Ya ganado en ventas, ¿pero de spot o de qué?… Debería estar bien
+     separado… que se aprenda a distinguir», y la línea «+1,13 spot −0,08 ·
+     futuros +1,21» «muy apretada… hecho una sola da confusión»).
+       · arriba, TODO SU DINERO: la cifra, y solo «+$1,12 ganancia en total»;
+         debajo, dónde está (spot y futuros), como en Binance;
+       · a la derecha, dos filas con su nombre y su ganancia:
+           SPOT     Ganancia si vende hoy · Ya ganado en ventas · Comisiones
+           FUTUROS  Ganancia si cierra hoy · Ya ganado al cerrar · Comisiones
+         Las dos primeras de cada fila suman la ganancia de esa fila. Lo de
+         spot va siempre en la fila de spot; lo de futuros, en la de futuros. */
+  function grupoRes(nombre, ico, clave, g, tarjetas){
+    return '<div class="grupo"><div class="grT">'+
+      '<span class="grN"><span class="ic">'+ico+'</span><span>'+nombre+'</span></span>'+
+      '<span class="grG"><span>Ganancia</span><b class="mono '+(Math.abs(g)<0.005?"nt":cl(g))+'" data-v="'+clave+'" data-cls="mono">'+
+        conSignoUsd(g)+'</b></span></div>'+
+      '<div class="mets">'+tarjetas+'</div></div>';
+  }
+  var colorSigno=function(x, neutro){ return Math.abs(x)<0.005 ? neutro : (x>0?"gana":"pierde"); };
+  h+='<div class="cima">'+heroGrande("TODO SU DINERO", totalTodo, ganTodo, "ganancia en total", ch, serieTodo(),
                                     repartoDinero())+
-    '<div class="mets">'+
-      met(IC.spot,"Spot: vale hoy",'<span data-v="total">'+usd(S.tot.valor)+'</span>',"",
-          plural(vivas.length,"moneda","monedas")+" · "+pct(S.tot.abiertoPct,1)+" sobre lo que puso", 2,
-          serieTot(), "v:spot")+
-      met(IC.fut,"Futuros: resultado",
-          (T.gan>=0?"+":"−")+usdF(T.gan).replace("-",""),"",
+    '<div class="grupos">'+
+    grupoRes("Spot", IC.spot, "ganSpot", G.spot,
+      met(IC.dolar,"Ganancia si vende hoy",
+          vivas.length ? '<span data-v="ganMon">'+conSignoUsd(S.tot.abierto)+'</span>' : "—","",
+          vivas.length ? pct(S.tot.abiertoPct,1)+" sobre lo que puso" : "Todavía no tiene monedas",
+          vivas.length ? colorSigno(S.tot.abierto, 2) : 2, null, "v:spot#misMonedas")+
+      met(IC.sube,"Ya ganado en ventas", conSignoUsd(S.tot.realizado),"",
+          plural(nVentasSpot(),"venta","ventas"), colorSigno(S.tot.realizado, 4), null, "v:spot#histSpot")+
+      met(IC.banco,"Comisiones", usdF(K.spot),"", "de sus compras y ventas", 5, null, "f:comisiones"))+
+    grupoRes("Futuros", IC.fut, "ganFut", G.fut,
+      met(IC.mov,"Ganancia si cierra hoy",
+          T.nAb ? '<span data-v="futTot">'+(T.flotante>=0?"+":"−")+usdF(T.flotante).replace("-","")+'</span>' : "—","",
+          T.nAb ? plural(T.nAb,"operación abierta","operaciones abiertas") : "nada abierto",
+          T.nAb ? colorSigno(T.flotante, 3) : 3, null, T.nAb?"v:fut#abiertasFut":"v:fut")+
+      met(IC.fut,"Ya ganado al cerrar", (T.gan>=0?"+":"−")+usdF(T.gan).replace("-",""),"",
           plural(T.n,"operación cerrada","operaciones cerradas")+(T.aciertos!=null?" · acierta el "+T.aciertos.toFixed(0)+"%":""),
-          T.gan>=0?"gana":"pierde", null, "v:fut#histFut")+
-      met(IC.mov,"Futuros abiertos", T.nAb?usdF(T.margenAbierto):"—","",
-          T.nAb?(plural(T.nAb,"operación","operaciones")+" · margen puesto"):"nada abierto", 3,
-          null, T.nAb?"v:fut#abiertasFut":"v:fut")+
-      /* SALDO DISPONIBLE: la suma de las dos partes, diciendo de dónde sale cada una.
-         Antes decía "USDT disponible" en una pantalla donde también hay futuros,
-         y no se entendía de qué hablaba. */
-      met(IC.dolar,"Saldo disponible", usd(L.total),"",
-          "<b>"+usd(L.spot)+"</b> en spot · <b>"+usd(L.fut)+"</b> en futuros", 6,
-          null, "f:saldo")+
-      met(IC.sube,"Ya ganado en ventas",
-          (S.tot.realizado>=0?"+":"−")+usd(S.tot.realizado).replace("-",""),"",
-          plural(nVentasSpot(),"venta","ventas"), 4, null, "v:spot#histSpot")+
-      met(IC.banco,"Comisiones", usdF(K.total),"",
-          "<b>"+usdF(K.spot)+"</b> en spot · <b>"+usdF(K.fut)+"</b> en futuros", 5,
-          null, "f:comisiones")+
+          colorSigno(T.gan, 4), null, "v:fut#histFut")+
+      met(IC.banco,"Comisiones", usdF(K.fut),"",
+          K.futAbiertas>0 ? "+ "+usdF(K.futAbiertas)+" en las que tiene abiertas" : "de sus operaciones",
+          5, null, "f:comisiones"))+
     '</div></div>';
 
   /* ---- sus monedas ---- */
@@ -10416,7 +10645,7 @@ function filaNube(cual){
       '<span class="mut" style="font-size:12px">con su cuenta de '+cuenta+'</span>'+
       '<span class="sp" style="flex:1"></span>'+chip+'</div>';
   if(vin){
-    h+='<div class="fcalc">Vinculada'+(correo?(' con <b>'+esc(correo)+'</b>'):'')+
+    h+='<div class="fcalc">Vinculada'+(correo?(' con <b translate="no">'+esc(correoTapado(correo))+'</b>'):'')+
       ' · se guarda sola en la carpeta <b>'+NUBE_CARPETA+'</b> de su '+nom+
       (cuando?(' · última subida '+hora(cuando)):' · todavía no se ha subido nada')+
       (E.error?('<br><span class="dn">'+esc(E.error)+'</span>'):'')+'</div>'+
@@ -10625,11 +10854,10 @@ function ctaHecha(){ return !!ctaClaves(); }
 function ctaDentro(){ return !!(CTA.u && CTA.u.uid); }
 
 /* =====================================================================
-   EL CORREO: TAPADO EN EL CANDADO, ENTERO DENTRO
+   EL CORREO: SIEMPRE TAPADO
    ---------------------------------------------------------------------
-   Tapado (primera letra, puntos y el dominio) SOLO en el candado, donde
-   todavía no se sabe quién tiene el teléfono. Dentro de la aplicación va
-   entero (v38: lo pidió Luis, y tenía razón).
+   Tapado (primera letra, puntos y el dominio) en TODOS los sitios, y sin
+   ningún toque que lo destape (v39, lo que quedó con Luis).
    ===================================================================== */
 function correoTapado(correo){
   var c=String(correo||"").trim();
@@ -10637,15 +10865,17 @@ function correoTapado(correo){
   if(i<1) return c;
   return c.charAt(0)+"•••••"+c.slice(i);
 }
-/* v38 · Dentro de la aplicación el correo va ENTERO. Taparlo con un «toque
-   para verlo» no protegía nada: quien tiene el teléfono en la mano lo toca
-   y lo ve. Lo que protege es el candado, y en el candado sí va tapado
-   (correoTapado, en 09e-llave.js), porque ahí todavía no se sabe quién es.
+/* v39 · EL CORREO VA TAPADO EN TODOS LOS SITIOS, Y NO SE DESTAPA.
+   Lo que quedó con Luis: sale la primera letra, unos puntos y el dominio
+   (l•••••@gmail.com), en el perfil, en Ajustes, en la hoja de salir, en el
+   globito del círculo y en el candado. En la v37 se destapaba al tocarlo
+   (no servía de nada) y en la v38 salió entero (peor). Ya no hay ninguna
+   forma de verlo entero dentro de la aplicación.
    La función conserva su nombre para no tocar los sitios que la usan. */
 function correoTocable(correo, clase){
   var c=String(correo||"").trim();
   if(!c) return "";
-  return '<span class="correoEntero'+(clase?" "+clase:"")+'" translate="no">'+esc(c)+'</span>';
+  return '<span class="correoEntero'+(clase?" "+clase:"")+'" translate="no">'+esc(correoTapado(c))+'</span>';
 }
 function engancharCorreos(){ /* ya no hay nada que destapar */ }
 /* Google no deja entrar con una cuenta desde un archivo del disco */
@@ -10935,7 +11165,10 @@ function ajustesQueViajan(a){
    y los precios que usted escribió a mano */
 function firmaCuenta(){
   var extra="";
-  try{ extra=JSON.stringify([ajustesQueViajan(BD.ajustes), BD.tema, preciosManuales()]); }catch(e){}
+  /* el día del último punto de la línea: así se sube UNA vez al día aunque no
+     haya cambiado nada más (y no cada minuto, que gastaría escrituras) */
+  var dia=(BD.histDia&&BD.histDia.length)?BD.histDia[BD.histDia.length-1].d:"";
+  try{ extra=JSON.stringify([ajustesQueViajan(BD.ajustes), BD.tema, preciosManuales(), dia]); }catch(e){}
   return firmaNube()+"|"+extra;
 }
 /* la hora del último cambio de lo que viaja. Se mantiene sola en guardar() */
@@ -11111,7 +11344,7 @@ function traerDeCuenta(){
 /* --- junta lo que vino de la cuenta con lo de este equipo ---
    Devuelve cuántos registros nuevos llegaron. No se pierde nada: de cada
    movimiento queda el más reciente y lo borrado no revive. */
-function aplicarDeCuenta(r){
+function aplicarDeCuenta(r, enVivo){
   if(!r||!Array.isArray(r.ops)) return 0;
   var antes=(BD.ops||[]).length+(BD.fut||[]).length+(BD.back||[]).length;
   var bor=limpiarBorrados((BD.borrados||[]).concat(r.borrados||[]));
@@ -11124,7 +11357,10 @@ function aplicarDeCuenta(r){
              + loQueSePierde(BD.pruebas, r.pruebas, bor);
   if(pierde>0){
     copiaDeRescate("juntar con la cuenta");
-    try{
+    /* v39 · si llega EN VIVO desde su otro aparato, es usted mismo borrando
+       allá: no se avisa (la copia de rescate se guarda igual, por si acaso).
+       Sí se avisa al entrar con la cuenta, que es cuando puede sorprender. */
+    if(!enVivo) try{
       aviso("<b>Ojo:</b> al juntar con su cuenta se quitaron "+pierde+" "+
         pal(pierde,"registro","registros")+" que estaban borrados en su cuenta. "+
         "Guardé una copia de rescate: en Ajustes puede volver atrás.", true);
@@ -11138,6 +11374,8 @@ function aplicarDeCuenta(r){
   BD.ordenes = juntar(BD.ordenes, r.ordenes, BD.borrados);
   BD.alertas = juntarAlertas(BD.alertas, r.alertas, BD.borrados);
   BD.monedas = Object.assign({}, r.monedas||{}, BD.monedas||{});
+  /* v39 · la línea de cómo va: los días de los dos aparatos */
+  if(Array.isArray(r.histDia)) BD.histDia = juntarHistDia(BD.histDia, r.histDia);
   if(!BD.sembrado && r.sembrado) BD.sembrado=r.sembrado;
   /* los ajustes, los colores y los precios a mano: todo lo suyo */
   var man=r.manuales||null;
@@ -11213,15 +11451,15 @@ function escucharCuenta(){
         textoDeDoc(x).then(function(txtR){ try{
         var r=null; try{ r=JSON.parse(txtR); }catch(e){ anotarSync("llegó algo que no se pudo leer"); return; }
         var antesF=firmaCuenta();
-        var nuevos=aplicarDeCuenta(r);
+        var nuevos=aplicarDeCuenta(r, true);
         var cambio=firmaCuenta()!==antesF;
-        anotarSync(cambio?"recibido de":"recibido de (ya lo tenía)", x.equipo||"otro equipo");
-        if(cambio){
-          aviso(nuevos>0
-            ? ("Llegaron "+plural(nuevos,"registro nuevo","registros nuevos")+" desde su cuenta.")
-            : "Se actualizó con los cambios de su cuenta.");
-          try{ pintarMenu(); }catch(e){}
-        } else pintarCuentaPronto();
+        anotarSync(cambio?"recibido de":"recibido de (ya lo tenía)", (x.equipo||"otro equipo")+(nuevos>0?" · "+nuevos+" nuevos":""));
+        /* v39 · SIN AVISO. Luis: «¿tú crees que es bueno que esté saliendo cada
+           rato que uno haga un cambio en la PC o en el teléfono?». No: lo que
+           hace en un aparato aparece en el otro y ya, como en Binance o en
+           Google. Solo se avisa cuando algo sale mal. */
+        if(cambio){ try{ pintarMenu(); }catch(e){} }
+        else pintarCuentaPronto();
         }catch(e){ anotarSync("error al recibir", (e&&e.message)||""); }
         }, function(e){ anotarSync("llegó algo que no se pudo leer", (e&&e.message)||""); });
       }catch(e){ anotarSync("error al recibir", (e&&e.message)||""); }
@@ -11400,7 +11638,7 @@ function pintarChipCuenta(){
   if(!c) return;
   if(ctaDentro()){
     c.innerHTML='<button type="button" class="chipCta" id="chipCta" '+
-      'title="'+esc(CTA.correo||"Su cuenta")+'" aria-label="Su cuenta">'+
+      'title="'+esc(CTA.correo?correoTapado(CTA.correo):"Su cuenta")+'" aria-label="Su cuenta">'+
       (CTA.foto
         ? '<img src="'+esc(CTA.foto)+'" alt="">'
         : '<span class="ini">'+esc(inicialCuenta())+'</span>')+
@@ -12512,6 +12750,7 @@ function aplicarCopia(d){
         BD.monedas=(d.monedas&&typeof d.monedas==="object")?d.monedas:{};
         BD.alertas=Array.isArray(d.alertas)?d.alertas:[];
         BD.borrados=Array.isArray(d.borrados)?d.borrados:[];
+        if(Array.isArray(d.histDia)) BD.histDia=juntarHistDia(BD.histDia, d.histDia);
         BD.ajustes=Object.assign({}, BD.ajustes, d.ajustes||{}, {git:tk});
         if(d.tema) BD.tema=Object.assign({}, BD.tema, d.tema);
         ordenarDatosViejos();
@@ -12642,7 +12881,7 @@ function arrancar(){
   BD.ajustes=Object.assign({auto:true, cada:60, riesgo:1, apal:10, comPct:0.05, cartera:0},
                            BD.ajustes||{});
   BD.alertas=BD.alertas||[];
-  BD.back=BD.back||[]; BD.pruebas=BD.pruebas||[]; BD.ordenes=BD.ordenes||[]; BD.histTot=BD.histTot||[];
+  BD.back=BD.back||[]; BD.pruebas=BD.pruebas||[]; BD.ordenes=BD.ordenes||[]; BD.histTot=BD.histTot||[]; BD.histDia=BD.histDia||[];
   BD.logos=BD.logos||{}; BD.monedas=BD.monedas||{};
   if(BD.ajustes.marca===undefined) BD.ajustes.marca=true;
   if(BD.ajustes.marcaCada===undefined) BD.ajustes.marcaCada=14;
@@ -12836,7 +13075,7 @@ function datosInforme(){
       filas:X.lista.map(function(e){
         var est = e.programada ? "Programada" : e.abierta ? "Abierta" : (e.liquidado ? "Liquidada" : "Cerrada");
         var res = e.abierta ? e.flot : e.gan;
-        var rp  = e.abierta ? e.pctFlot : e.pctMargen;
+        var rp  = e.abierta ? e.pctFlotNeto : e.pctNeto;   /* v39 · el % del resultado, con la comisión */
         return [+e.f.n||null, e.f.fecha||"", e.f.sym||"", e.f.lado==="SHORT"?"Corto":"Largo", est,
                 e.margen, e.apal+"x", e.entrada||null, e.sl, e.tp, e.salida,
                 e.programada?null:res, e.programada?null:rp, e.com, e.f.nota||""];
@@ -13985,6 +14224,26 @@ function engancharIdioma(box){
    Se respeta el orden de los huecos tal como salen en español.
    ===================================================================== */
 DIC.en={
+/* v39 · el Resumen en dos filas (spot y futuros) */
+"Ganancia si cierra hoy":"Gain if you close today",
+"Ya ganado al cerrar":"Already gained on closed trades",
+"de sus compras y ventas":"from your buys and sells",
+"de sus operaciones":"from your trades",
+"ganancia en total":"total gain",
+"· puso $#":"· put in $#",
+"# operaciones abiertas":"# open trades",
+/* v39 · el Resumen más claro y lo que queda antes de guardar */
+"Sus monedas valen hoy":"Your coins are worth today",
+"Todavía no tiene monedas":"No coins yet",
+"cuando tenga monedas":"once you have coins",
+"# monedas · puso $#":"# coins · put in $#",
+"# moneda · puso $#":"# coin · put in $#",
+"+#% sobre lo que puso":"+#% on what you put in",
+"#% sobre lo que puso":"#% on what you put in",
+"$# está en operaciones abiertas: ciérrelas para poder sacarlo.":"$# is in open trades: close them to be able to withdraw it.",
+"Después tendrá disponible en spot:":"Afterwards, available in spot:",
+"Después tendrá disponible en futuros:":"Afterwards, available in futures:",
+"Toque para ver de dónde sale cada dólar":"Tap to see where each dollar comes from",
 /* palabras sueltas */
 "En":"On","No":"No","N°":"No.","Sí":"Yes","Lado":"Side","Nota":"Note","Pagó":"Paid",
 "Plan":"Plan","Spot":"Spot","como":"as","op #":"trade #","pagó":"paid","repo":"repo",
@@ -15587,6 +15846,26 @@ DIC.en={
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
+/* v39 · el Resumen en dos filas (spot y futuros) */
+"Ganancia si cierra hoy":"Ganho se fechar hoje",
+"Ya ganado al cerrar":"Já ganho ao fechar",
+"de sus compras y ventas":"das suas compras e vendas",
+"de sus operaciones":"das suas operações",
+"ganancia en total":"ganho no total",
+"· puso $#":"· pôs $#",
+"# operaciones abiertas":"# operações abertas",
+/* v39 · el Resumen más claro y lo que queda antes de guardar */
+"Sus monedas valen hoy":"Suas moedas valem hoje",
+"Todavía no tiene monedas":"Ainda não tem moedas",
+"cuando tenga monedas":"quando tiver moedas",
+"# monedas · puso $#":"# moedas · colocou $#",
+"# moneda · puso $#":"# moeda · colocou $#",
+"+#% sobre lo que puso":"+#% sobre o que colocou",
+"#% sobre lo que puso":"#% sobre o que colocou",
+"$# está en operaciones abiertas: ciérrelas para poder sacarlo.":"$# está em operações abertas: feche-as para poder sacá-lo.",
+"Después tendrá disponible en spot:":"Depois terá disponível em spot:",
+"Después tendrá disponible en futuros:":"Depois terá disponível em futuros:",
+"Toque para ver de dónde sale cada dólar":"Toque para ver de onde vem cada dólar",
 "En":"Em","No":"Não","N°":"N°","Sí":"Sim","Lado":"Lado","Nota":"Nota","Pagó":"Pagou",
 "Plan":"Plano","Spot":"Spot","como":"como","op #":"op #","pagó":"pagou","repo":"repo",
 "stop":"stop","y el":"e o","¡ya!":"já!","Apal.":"Alav.","@ a":"@ a","Crear":"Criar",
@@ -17182,6 +17461,26 @@ DIC.pt={
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
+/* v39 · el Resumen en dos filas (spot y futuros) */
+"Ganancia si cierra hoy":"Gain si vous clôturez aujourd'hui",
+"Ya ganado al cerrar":"Déjà gagné en clôturant",
+"de sus compras y ventas":"sur vos achats et ventes",
+"de sus operaciones":"sur vos opérations",
+"ganancia en total":"gain au total",
+"· puso $#":"· a mis $#",
+"# operaciones abiertas":"# opérations ouvertes",
+/* v39 · el Resumen más claro y lo que queda antes de guardar */
+"Sus monedas valen hoy":"Vos monnaies valent aujourd'hui",
+"Todavía no tiene monedas":"Pas encore de monnaies",
+"cuando tenga monedas":"quand vous aurez des monnaies",
+"# monedas · puso $#":"# monnaies · vous avez mis $#",
+"# moneda · puso $#":"# monnaie · vous avez mis $#",
+"+#% sobre lo que puso":"+#% sur ce que vous avez mis",
+"#% sobre lo que puso":"#% sur ce que vous avez mis",
+"$# está en operaciones abiertas: ciérrelas para poder sacarlo.":"$# est dans des opérations ouvertes : fermez-les pour pouvoir le retirer.",
+"Después tendrá disponible en spot:":"Ensuite, disponible en Spot :",
+"Después tendrá disponible en futuros:":"Ensuite, disponible en Futures :",
+"Toque para ver de dónde sale cada dólar":"Touchez pour voir d'où vient chaque dollar",
 "En":"Le","No":"Non","N°":"N°","Sí":"Oui","Lado":"Sens","Nota":"Note","Pagó":"Payé",
 "Plan":"Plan","Spot":"Spot","como":"comme","op #":"op #","pagó":"payé","repo":"dépôt",
 "stop":"stop","y el":"et le","¡ya!":"c'est fait !","Apal.":"Levier","@ a":"@ à","Crear":"Créer",
@@ -18777,6 +19076,26 @@ DIC.fr={
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
+/* v39 · el Resumen en dos filas (spot y futuros) */
+"Ganancia si cierra hoy":"Gewinn bei Schließen heute",
+"Ya ganado al cerrar":"Schon beim Schließen gewonnen",
+"de sus compras y ventas":"aus Ihren Käufen und Verkäufen",
+"de sus operaciones":"aus Ihren Trades",
+"ganancia en total":"Gewinn insgesamt",
+"· puso $#":"· $# eingesetzt",
+"# operaciones abiertas":"# offene Trades",
+/* v39 · el Resumen más claro y lo que queda antes de guardar */
+"Sus monedas valen hoy":"Wert Ihrer Münzen heute",
+"Todavía no tiene monedas":"Noch keine Münzen",
+"cuando tenga monedas":"sobald Sie Münzen haben",
+"# monedas · puso $#":"# Münzen · eingesetzt $#",
+"# moneda · puso $#":"# Münze · eingesetzt $#",
+"+#% sobre lo que puso":"+#% auf Ihren Einsatz",
+"#% sobre lo que puso":"#% auf Ihren Einsatz",
+"$# está en operaciones abiertas: ciérrelas para poder sacarlo.":"$# steckt in offenen Trades: Schließen Sie sie, um es auszahlen zu können.",
+"Después tendrá disponible en spot:":"Danach verfügbar im Spot:",
+"Después tendrá disponible en futuros:":"Danach verfügbar in Futures:",
+"Toque para ver de dónde sale cada dólar":"Tippen, um zu sehen, woher jeder Dollar kommt",
 "En":"Am","No":"Nein","N°":"Nr.","Sí":"Ja","Lado":"Richtung","Nota":"Notiz","Pagó":"Bezahlt",
 "Plan":"Plan","Spot":"Spot","como":"als","op #":"Trade #","pagó":"bezahlt","repo":"Repo",
 "stop":"Stop","y el":"und der","¡ya!":"fertig!","Apal.":"Hebel","@ a":"@ auf","Crear":"Anlegen",
@@ -20372,6 +20691,26 @@ DIC.de={
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
+/* v39 · el Resumen en dos filas (spot y futuros) */
+"Ganancia si cierra hoy":"Guadagno se chiude oggi",
+"Ya ganado al cerrar":"Già guadagnato chiudendo",
+"de sus compras y ventas":"dei suoi acquisti e vendite",
+"de sus operaciones":"delle sue operazioni",
+"ganancia en total":"guadagno totale",
+"· puso $#":"· ha messo $#",
+"# operaciones abiertas":"# operazioni aperte",
+/* v39 · el Resumen más claro y lo que queda antes de guardar */
+"Sus monedas valen hoy":"Le sue monete valgono oggi",
+"Todavía no tiene monedas":"Non ha ancora monete",
+"cuando tenga monedas":"quando avrà delle monete",
+"# monedas · puso $#":"# monete · ha messo $#",
+"# moneda · puso $#":"# moneta · ha messo $#",
+"+#% sobre lo que puso":"+#% su quanto ha messo",
+"#% sobre lo que puso":"#% su quanto ha messo",
+"$# está en operaciones abiertas: ciérrelas para poder sacarlo.":"$# è in operazioni aperte: le chiuda per poterlo prelevare.",
+"Después tendrá disponible en spot:":"Dopo avrà disponibile nello spot:",
+"Después tendrá disponible en futuros:":"Dopo avrà disponibile nei futures:",
+"Toque para ver de dónde sale cada dólar":"Tocchi per vedere da dove viene ogni dollaro",
 "En":"Il","No":"No","N°":"N°","Sí":"Sì","Lado":"Lato","Nota":"Nota","Pagó":"Pagato",
 "Plan":"Piano","Spot":"Spot","como":"come","op #":"op #","pagó":"pagato","repo":"repo",
 "stop":"stop","y el":"e il","¡ya!":"fatto!","Apal.":"Leva","@ a":"@ a","Crear":"Creare",
@@ -21967,6 +22306,26 @@ DIC.it={
 };
 /* NEDERLANDS · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.nl={
+/* v39 · el Resumen en dos filas (spot y futuros) */
+"Ganancia si cierra hoy":"Winst als u nu sluit",
+"Ya ganado al cerrar":"Al verdiend met sluiten",
+"de sus compras y ventas":"van uw aan- en verkopen",
+"de sus operaciones":"van uw trades",
+"ganancia en total":"winst in totaal",
+"· puso $#":"· inleg $#",
+"# operaciones abiertas":"# open trades",
+/* v39 · el Resumen más claro y lo que queda antes de guardar */
+"Sus monedas valen hoy":"Waarde van uw munten vandaag",
+"Todavía no tiene monedas":"U hebt nog geen munten",
+"cuando tenga monedas":"zodra u munten hebt",
+"# monedas · puso $#":"# munten · inleg $#",
+"# moneda · puso $#":"# munt · inleg $#",
+"+#% sobre lo que puso":"+#% op uw inleg",
+"#% sobre lo que puso":"#% op uw inleg",
+"$# está en operaciones abiertas: ciérrelas para poder sacarlo.":"$# zit in open trades: sluit ze om het te kunnen opnemen.",
+"Después tendrá disponible en spot:":"Daarna beschikbaar in spot:",
+"Después tendrá disponible en futuros:":"Daarna beschikbaar in futures:",
+"Toque para ver de dónde sale cada dólar":"Tik om te zien waar elke dollar vandaan komt",
 "En":"Bij",
 "No":"Nee",
 "N°":"Nr.",
@@ -23848,6 +24207,26 @@ DIC.nl={
 };
 /* POLSKI · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.pl={
+/* v39 · el Resumen en dos filas (spot y futuros) */
+"Ganancia si cierra hoy":"Zysk przy zamknięciu dziś",
+"Ya ganado al cerrar":"Już zarobione na zamknięciu",
+"de sus compras y ventas":"z Twoich zakupów i sprzedaży",
+"de sus operaciones":"z Twoich transakcji",
+"ganancia en total":"zysk łącznie",
+"· puso $#":"· zainwestowano $#",
+"# operaciones abiertas":"Otwarte transakcje: #",
+/* v39 · el Resumen más claro y lo que queda antes de guardar */
+"Sus monedas valen hoy":"Wartość Twoich monet dziś",
+"Todavía no tiene monedas":"Nie masz jeszcze monet",
+"cuando tenga monedas":"gdy będziesz mieć monety",
+"# monedas · puso $#":"Monety: # · wkład $#",
+"# moneda · puso $#":"# moneta · wkład $#",
+"+#% sobre lo que puso":"+#% względem wkładu",
+"#% sobre lo que puso":"#% względem wkładu",
+"$# está en operaciones abiertas: ciérrelas para poder sacarlo.":"$# jest w otwartych transakcjach: zamknij je, aby móc to wypłacić.",
+"Después tendrá disponible en spot:":"Potem dostępne w Spot:",
+"Después tendrá disponible en futuros:":"Potem dostępne w Futures:",
+"Toque para ver de dónde sale cada dólar":"Dotknij, aby zobaczyć, skąd pochodzi każdy dolar",
 "En":"W sekcji",
 "No":"Nie",
 "N°":"Nr",
@@ -25729,6 +26108,26 @@ DIC.pl={
 };
 /* TÜRKÇE · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.tr={
+/* v39 · el Resumen en dos filas (spot y futuros) */
+"Ganancia si cierra hoy":"Bugün kapatırsanız kâr",
+"Ya ganado al cerrar":"Kapanışlardan gerçekleşen kâr",
+"de sus compras y ventas":"alış ve satışlarınızdan",
+"de sus operaciones":"işlemlerinizden",
+"ganancia en total":"toplam kâr",
+"· puso $#":"· yatırdığınız $#",
+"# operaciones abiertas":"# açık işlem",
+/* v39 · el Resumen más claro y lo que queda antes de guardar */
+"Sus monedas valen hoy":"Coinlerinizin bugünkü değeri",
+"Todavía no tiene monedas":"Henüz coin'iniz yok",
+"cuando tenga monedas":"coin'iniz olduğunda",
+"# monedas · puso $#":"# coin · yatırdığınız $#",
+"# moneda · puso $#":"# coin · yatırdığınız $#",
+"+#% sobre lo que puso":"yatırdığınıza göre +#%",
+"#% sobre lo que puso":"yatırdığınıza göre #%",
+"$# está en operaciones abiertas: ciérrelas para poder sacarlo.":"$# açık işlemlerde: çekebilmek için onları kapatın.",
+"Después tendrá disponible en spot:":"Ardından Spot'ta kullanılabilir:",
+"Después tendrá disponible en futuros:":"Ardından vadeli işlemlerde kullanılabilir:",
+"Toque para ver de dónde sale cada dólar":"Her doların nereden geldiğini görmek için dokunun",
 "En":"Şu bölümde:",
 "No":"Hayır",
 "N°":"No.",
@@ -27610,6 +28009,26 @@ DIC.tr={
 };
 /* РУССКИЙ · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ru={
+/* v39 · el Resumen en dos filas (spot y futuros) */
+"Ganancia si cierra hoy":"Прибыль при закрытии сейчас",
+"Ya ganado al cerrar":"Уже заработано на закрытых",
+"de sus compras y ventas":"с ваших покупок и продаж",
+"de sus operaciones":"с ваших сделок",
+"ganancia en total":"прибыль всего",
+"· puso $#":"· вложено $#",
+"# operaciones abiertas":"Открытых сделок: #",
+/* v39 · el Resumen más claro y lo que queda antes de guardar */
+"Sus monedas valen hoy":"Стоимость ваших монет сегодня",
+"Todavía no tiene monedas":"Монет пока нет",
+"cuando tenga monedas":"когда появятся монеты",
+"# monedas · puso $#":"Монет: # · вложено $#",
+"# moneda · puso $#":"Монет: # · вложено $#",
+"+#% sobre lo que puso":"+#% к вложенному",
+"#% sobre lo que puso":"#% к вложенному",
+"$# está en operaciones abiertas: ciérrelas para poder sacarlo.":"$# в открытых сделках: закройте их, чтобы вывести эти деньги.",
+"Después tendrá disponible en spot:":"После этого доступно на споте:",
+"Después tendrá disponible en futuros:":"После этого доступно на фьючерсах:",
+"Toque para ver de dónde sale cada dólar":"Нажмите, чтобы увидеть, откуда берётся каждый доллар",
 "En":"В разделе",
 "No":"Нет",
 "N°":"№",
@@ -29491,6 +29910,26 @@ DIC.ru={
 };
 /* УКРАЇНСЬКА · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.uk={
+/* v39 · el Resumen en dos filas (spot y futuros) */
+"Ganancia si cierra hoy":"Прибуток, якщо закрити сьогодні",
+"Ya ganado al cerrar":"Уже зароблено на закритих",
+"de sus compras y ventas":"з ваших купівель і продажів",
+"de sus operaciones":"з ваших угод",
+"ganancia en total":"прибуток загалом",
+"· puso $#":"· вкладено $#",
+"# operaciones abiertas":"Відкритих угод: #",
+/* v39 · el Resumen más claro y lo que queda antes de guardar */
+"Sus monedas valen hoy":"Вартість ваших монет сьогодні",
+"Todavía no tiene monedas":"Монет поки немає",
+"cuando tenga monedas":"коли з'являться монети",
+"# monedas · puso $#":"Монет: # · вкладено $#",
+"# moneda · puso $#":"# монета · вкладено $#",
+"+#% sobre lo que puso":"+#% до вкладеного",
+"#% sobre lo que puso":"#% до вкладеного",
+"$# está en operaciones abiertas: ciérrelas para poder sacarlo.":"$# у відкритих угодах: закрийте їх, щоб вивести ці гроші.",
+"Después tendrá disponible en spot:":"Після цього доступно в споті:",
+"Después tendrá disponible en futuros:":"Після цього доступно у ф'ючерсах:",
+"Toque para ver de dónde sale cada dólar":"Торкніться, щоб побачити, звідки береться кожен долар",
 "En":"У розділі",
 "No":"Ні",
 "N°":"№",
@@ -31372,6 +31811,26 @@ DIC.uk={
 };
 /* BAHASA INDONESIA · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.id={
+/* v39 · el Resumen en dos filas (spot y futuros) */
+"Ganancia si cierra hoy":"Untung jika ditutup hari ini",
+"Ya ganado al cerrar":"Sudah untung dari penutupan",
+"de sus compras y ventas":"dari pembelian dan penjualan Anda",
+"de sus operaciones":"dari transaksi Anda",
+"ganancia en total":"keuntungan total",
+"· puso $#":"· modal $#",
+"# operaciones abiertas":"# transaksi terbuka",
+/* v39 · el Resumen más claro y lo que queda antes de guardar */
+"Sus monedas valen hoy":"Nilai koin Anda hari ini",
+"Todavía no tiene monedas":"Belum ada koin",
+"cuando tenga monedas":"setelah Anda punya koin",
+"# monedas · puso $#":"# koin · modal $#",
+"# moneda · puso $#":"# koin · modal $#",
+"+#% sobre lo que puso":"+#% dari modal Anda",
+"#% sobre lo que puso":"#% dari modal Anda",
+"$# está en operaciones abiertas: ciérrelas para poder sacarlo.":"$# ada di transaksi terbuka: tutup transaksinya agar bisa ditarik.",
+"Después tendrá disponible en spot:":"Setelah itu tersedia di Spot:",
+"Después tendrá disponible en futuros:":"Setelah itu tersedia di Futures:",
+"Toque para ver de dónde sale cada dólar":"Ketuk untuk melihat asal setiap dolar",
 "En":"Di",
 "No":"Tidak",
 "N°":"No.",
@@ -33253,6 +33712,26 @@ DIC.id={
 };
 /* TIẾNG VIỆT · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.vi={
+/* v39 · el Resumen en dos filas (spot y futuros) */
+"Ganancia si cierra hoy":"Lãi nếu đóng hôm nay",
+"Ya ganado al cerrar":"Đã lãi từ các lệnh đã đóng",
+"de sus compras y ventas":"từ các lần mua và bán của bạn",
+"de sus operaciones":"từ các lệnh của bạn",
+"ganancia en total":"lãi tổng cộng",
+"· puso $#":"· đã bỏ vào $#",
+"# operaciones abiertas":"# lệnh đang mở",
+/* v39 · el Resumen más claro y lo que queda antes de guardar */
+"Sus monedas valen hoy":"Giá trị các đồng coin của bạn hôm nay",
+"Todavía no tiene monedas":"Bạn chưa có đồng coin nào",
+"cuando tenga monedas":"khi bạn có đồng coin",
+"# monedas · puso $#":"# đồng coin · đã bỏ vào $#",
+"# moneda · puso $#":"# đồng coin · đã bỏ vào $#",
+"+#% sobre lo que puso":"+#% so với vốn bỏ ra",
+"#% sobre lo que puso":"#% so với vốn bỏ ra",
+"$# está en operaciones abiertas: ciérrelas para poder sacarlo.":"$# đang nằm trong lệnh đang mở: hãy đóng lệnh để có thể rút.",
+"Después tendrá disponible en spot:":"Sau đó khả dụng ở Spot:",
+"Después tendrá disponible en futuros:":"Sau đó khả dụng ở Futures:",
+"Toque para ver de dónde sale cada dólar":"Chạm để xem mỗi đô la đến từ đâu",
 "En":"Tại",
 "No":"Không",
 "N°":"STT",
@@ -35134,6 +35613,26 @@ DIC.vi={
 };
 /* हिन्दी · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.hi={
+/* v39 · el Resumen en dos filas (spot y futuros) */
+"Ganancia si cierra hoy":"आज बंद करें तो मुनाफ़ा",
+"Ya ganado al cerrar":"बंद ट्रेडों से हुआ मुनाफ़ा",
+"de sus compras y ventas":"आपकी ख़रीद और बिक्री से",
+"de sus operaciones":"आपके ट्रेडों से",
+"ganancia en total":"कुल मुनाफ़ा",
+"· puso $#":"· लगाए $#",
+"# operaciones abiertas":"# खुले ट्रेड",
+/* v39 · el Resumen más claro y lo que queda antes de guardar */
+"Sus monedas valen hoy":"आज आपके कॉइन की कीमत",
+"Todavía no tiene monedas":"अभी कोई कॉइन नहीं",
+"cuando tenga monedas":"जब आपके पास कॉइन होंगे",
+"# monedas · puso $#":"# कॉइन · लगाए $#",
+"# moneda · puso $#":"# कॉइन · लगाए $#",
+"+#% sobre lo que puso":"लगाए पैसे पर +#%",
+"#% sobre lo que puso":"लगाए पैसे पर #%",
+"$# está en operaciones abiertas: ciérrelas para poder sacarlo.":"$# खुले ट्रेडों में है: इसे निकालने के लिए उन्हें बंद करें.",
+"Después tendrá disponible en spot:":"इसके बाद स्पॉट में उपलब्ध:",
+"Después tendrá disponible en futuros:":"इसके बाद फ्यूचर्स में उपलब्ध:",
+"Toque para ver de dónde sale cada dólar":"हर डॉलर कहाँ से आता है, देखने के लिए टैप करें",
 "En":"फिर",
 "No":"नहीं",
 "N°":"नं.",
@@ -37015,6 +37514,26 @@ DIC.hi={
 };
 /* 日本語 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ja={
+/* v39 · el Resumen en dos filas (spot y futuros) */
+"Ganancia si cierra hoy":"今日決済した場合の損益",
+"Ya ganado al cerrar":"確定利益（決済分）",
+"de sus compras y ventas":"売買にかかった分",
+"de sus operaciones":"取引にかかった分",
+"ganancia en total":"合計損益",
+"· puso $#":"· 投入 $#",
+"# operaciones abiertas":"保有中の取引 #件",
+/* v39 · el Resumen más claro y lo que queda antes de guardar */
+"Sus monedas valen hoy":"保有コインの現在価値",
+"Todavía no tiene monedas":"まだコインがありません",
+"cuando tenga monedas":"コインを保有すると表示",
+"# monedas · puso $#":"コイン #種類 · 投入 $#",
+"# moneda · puso $#":"コイン #種類 · 投入 $#",
+"+#% sobre lo que puso":"投入額に対して +#%",
+"#% sobre lo que puso":"投入額に対して #%",
+"$# está en operaciones abiertas: ciérrelas para poder sacarlo.":"$# は保有中の取引に入っています。出金するには決済してください。",
+"Después tendrá disponible en spot:":"その後の現物の利用可能額：",
+"Después tendrá disponible en futuros:":"その後の先物の利用可能額：",
+"Toque para ver de dónde sale cada dólar":"タップして各ドルの出どころを表示",
 "En":"入力先：",
 "No":"いいえ",
 "N°":"No.",
@@ -38896,6 +39415,26 @@ DIC.ja={
 };
 /* 한국어 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ko={
+/* v39 · el Resumen en dos filas (spot y futuros) */
+"Ganancia si cierra hoy":"오늘 종료 시 손익",
+"Ya ganado al cerrar":"종료로 실현한 손익",
+"de sus compras y ventas":"매수·매도에서 발생",
+"de sus operaciones":"거래에서 발생",
+"ganancia en total":"총 손익",
+"· puso $#":"· 투입 $#",
+"# operaciones abiertas":"진행 중인 거래 #건",
+/* v39 · el Resumen más claro y lo que queda antes de guardar */
+"Sus monedas valen hoy":"내 코인의 오늘 가치",
+"Todavía no tiene monedas":"아직 코인이 없습니다",
+"cuando tenga monedas":"코인이 생기면 표시",
+"# monedas · puso $#":"코인 #개 · 투입 $#",
+"# moneda · puso $#":"코인 #개 · 투입 $#",
+"+#% sobre lo que puso":"투입 금액 대비 +#%",
+"#% sobre lo que puso":"투입 금액 대비 #%",
+"$# está en operaciones abiertas: ciérrelas para poder sacarlo.":"$#이(가) 진행 중인 거래에 있습니다. 출금하려면 거래를 종료하세요.",
+"Después tendrá disponible en spot:":"이후 현물 사용 가능:",
+"Después tendrá disponible en futuros:":"이후 선물 사용 가능:",
+"Toque para ver de dónde sale cada dólar":"탭하여 각 달러의 출처 보기",
 "En":"항목:",
 "No":"아니요",
 "N°":"번호",
@@ -40777,6 +41316,26 @@ DIC.ko={
 };
 /* 中文（简体） · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.zh={
+/* v39 · el Resumen en dos filas (spot y futuros) */
+"Ganancia si cierra hoy":"今日平仓的盈利",
+"Ya ganado al cerrar":"平仓已实现盈利",
+"de sus compras y ventas":"来自您的买入和卖出",
+"de sus operaciones":"来自您的交易",
+"ganancia en total":"总盈利",
+"· puso $#":"· 投入 $#",
+"# operaciones abiertas":"# 笔未平仓交易",
+/* v39 · el Resumen más claro y lo que queda antes de guardar */
+"Sus monedas valen hoy":"您的币种今日价值",
+"Todavía no tiene monedas":"您还没有币种",
+"cuando tenga monedas":"有币种后显示",
+"# monedas · puso $#":"# 个币种 · 投入 $#",
+"# moneda · puso $#":"# 个币种 · 投入 $#",
+"+#% sobre lo que puso":"较投入 +#%",
+"#% sobre lo que puso":"较投入 #%",
+"$# está en operaciones abiertas: ciérrelas para poder sacarlo.":"$# 在未平仓交易中：平仓后才能提现。",
+"Después tendrá disponible en spot:":"之后现货可用：",
+"Después tendrá disponible en futuros:":"之后合约可用：",
+"Toque para ver de dónde sale cada dólar":"点击查看每一美元的来源",
 "En":"在",
 "No":"否",
 "N°":"编号",
