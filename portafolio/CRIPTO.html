@@ -1373,6 +1373,11 @@ body.conCerrojo #aviso{z-index:10001}
   .franja .comSel{grid-template-columns:1fr 1fr}
 }
 .franja .comSel select{font-size:13px;padding:8px 6px}
+/* v41 · aviso de que la comisión ya no cuadra con el tamaño */
+.avComi{margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  font-size:12px;line-height:1.45;color:var(--t2)}
+.avComi.dif{color:var(--ojoTx);font-weight:600}
+.avComi .b{padding:4px 9px;font-size:11.5px}
 </style>
 </head>
 <body>
@@ -1425,7 +1430,7 @@ body.conCerrojo #aviso{z-index:10001}
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por su cuenta de Google.
    ===================================================================== */
-var VERSION="40";
+var VERSION="41";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -6723,6 +6728,12 @@ function engancharFranja(box, A){
    --------------------------------------------------------------------- */
 /* 0,05 % y 0,055 % sin ceros de más (caben en la casilla del teléfono) */
 function pctCorto(x){ return String(+(+x).toFixed(3)).replace(".",sepDecimal())+"%"; }
+/* la comisión con los decimales que hagan falta: en una operación chiquita,
+   «$0,02» no sirve para compararla con la que tiene anotada ($0,01684) */
+function comiTexto(x){
+  var a=Math.abs(+x||0);
+  return "$"+fmtNum(a, 2, a>=1 ? 2 : 5);
+}
 function hojaComision(A){
   var c=A.cfg, v=valoresFU(A);
   var R = (v.entrada>0&&v.sl>0) ? (porMonto() ? calcLotePorMonto(c, v.entrada, v.sl, FU.lado, v.tp, num(FU.margenMano))
@@ -7917,7 +7928,12 @@ function editarOperacion(id, k){
         '<option value="programada"'+(f.estado==="programada"?" selected":"")+'>No, esperando el precio</option>'+
         '</select></div>'+
       '<div class="campo"><label>Comisión</label><input id="eK" inputmode="decimal" value="'+
-        (f.com?String(+(+f.com).toFixed(6)).replace(".",sepDecimal()):"")+'" placeholder="sin comisión"></div>'+
+        (f.com?String(+(+f.com).toFixed(6)).replace(".",sepDecimal()):"")+'" placeholder="sin comisión">'+
+        /* v41 · si cambia el margen o el apalancamiento, la comisión de antes se
+           queda vieja (a Luis le pasó con su SOL: $0,01794 de una operación que
+           después quedó en $16,84). Se avisa y se ofrece ponerla al día; no se
+           cambia sola, porque a veces la anotada es la que de verdad le cobraron. */
+        '<div id="eKav" class="avComi" style="display:none"></div></div>'+
       '<div class="campo ancho"><label>Estrategia</label><input id="eEs" style="font-family:inherit" '+
         'value="'+esc(f.estr||"")+'" list="listaEstr2"></div>'+
       '<div class="campo ancho"><label>Nota</label><input id="eNo" style="font-family:inherit" '+
@@ -7961,8 +7977,29 @@ function editarOperacion(id, k){
         sym:f.sym, estado: num(M.querySelector("#eX").value)==null
           ? (M.querySelector("#eY").value||"abierta") : "cerrada"};
     }
+    /* v41 · debajo de la comisión, siempre, la que saldría con este tamaño. Si la
+       anotada es otra, sale el botón para ponerla al día. No se cambia sola: la
+       anotada puede ser la que de verdad le cobró la casa (con BNB, con funding). */
+    function avisoComision(d){
+      var av=M.querySelector("#eKav"); if(!av) return;
+      var pos=(+d.monto||0)*Math.max(1,+d.apal||1), c=A.cfg.com;
+      if(!(pos>0) || !(c>0)){ av.style.display="none"; return; }
+      var deb=pos*c/100*2, dif=Math.abs((+d.com||0)-deb)>Math.max(0.00005, deb*0.002);
+      av.style.display="";
+      av.className = dif ? "avComi dif" : "avComi";
+      av.innerHTML='<span>'+(dif
+        ? "Al "+pctCorto(c)+" sobre este tamaño sería "+comiTexto(deb)+"."
+        : "Al "+pctCorto(c)+" sobre este tamaño: "+comiTexto(deb)+".")+'</span>'+
+        (dif?'<button type="button" class="b sm" id="eKpon">'+tr("Ponerla al día")+'</button>':'');
+      var bp=av.querySelector("#eKpon");
+      if(bp) bp.onclick=function(){
+        M.querySelector("#eK").value=String(+deb.toFixed(6)).replace(".",sepDecimal());
+        rec();
+      };
+    }
     function rec(){
       var d=leer(), r=M.querySelector("#eR");
+      avisoComision(d);
       if(!(d.monto>0)||!(d.entrada>0)){
         r.innerHTML='<div class="lc" style="grid-column:1/-1"><div class="s">'+
           'Revise el margen y la entrada.</div></div>'; return;
@@ -10266,7 +10303,59 @@ function hojaSaldo(){
       '<button class="b vd" data-din="lista">Movimientos de dinero</button>'+
     '</div></div>');
 }
+/* v41 · LA HOJA MIRA DÓNDE ESTÁ USTED (Luis, con su archivo: en Backtesting
+   la tarjeta decía $80.000 y la hoja $50,02, que eran sus futuros de verdad).
+   Desde Backtesting enseña la prueba abierta; desde el Resumen o Futuros,
+   su dinero de verdad. */
+/* las comisiones de la prueba de Backtesting que tenga abierta */
+function hojaComisionesPrueba(){
+  var pr=pruebaActiva();
+  if(!pr){ aviso("Primero abra una prueba de backtesting.",true); return; }
+  var T=carteraFut(opsDePrueba(pr.id)).tot;
+  var cuanto = T.bruto>0 && T.comision>0 ? T.comision/T.bruto*100 : null;
+  var c=cfgPrueba(pr);
+  abrir('<div class="hoja"><div class="hh"><span class="ic">'+IC.banco+'</span>'+
+    '<h3>Comisiones de la prueba</h3><button class="x" data-cerrar>×</button></div><div class="hb">'+
+    '<p class="mut" style="margin:0 0 10px">Esto es de su prueba de backtesting'+
+      '<span translate="no"> «'+esc(pr.nombre||"")+'»</span>. '+
+      'No es dinero de verdad: su dinero está en Futuros.</p>'+
+    '<div class="granCifra"><span>COMISIONES DE ESTA PRUEBA</span><b>'+usdF(T.comision)+'</b>'+
+      '<i>de lo que ya cerró en la prueba</i></div>'+
+
+    '<div class="fsec">De dónde sale</div>'+
+    filaDet("Operaciones cerradas", String(T.n),
+            T.n?plural(T.n,"operación cerrada","operaciones cerradas"):"ninguna operación cerrada")+
+    filaDet("Comisión de la prueba", usdF(T.comision), pctCorto(c.com)+" al abrir y al cerrar")+
+    (T.comisionAb>0
+      ? filaDet("Pendiente, en las abiertas", usdF(T.comisionAb),
+                "todavía no cuenta: la operación sigue en curso")
+      : "")+
+
+    (cuanto!=null
+      ? '<div class="fsec">Cuánto le pesa en la prueba</div>'+
+        filaDet("Ganó antes de comisiones", usdF(T.bruto), "sumando sus operaciones cerradas")+
+        filaDet("Se fue en comisiones", "−"+usdF(T.comision),
+                "de cada $100 que ganó, "+usdF(cuanto))+
+        filaDet("Le quedó limpio", usdF(T.gan), "", T.gan>=0?"up":"dn")
+      : "")+
+
+    '<div class="nota">En futuros se paga <b>dos veces</b>: al entrar y al salir. '+
+    'Como en la prueba puede poner cantidades enormes, aquí se ve clarísimo cuánto '+
+    'se lleva la casa de cambio cuando la operación es grande.</div>'+
+    '</div><div class="hf">'+
+      '<button class="b" data-cerrar>Cerrar</button>'+
+      '<button class="b vd" id="kpIr">Ver las operaciones</button>'+
+    '</div></div>',
+  function(M){
+    M.querySelector("#kpIr").onclick=function(){
+      cerrar(); FUT_res="COM"; FUT_lado="TODO";
+      if(vista!=="back") irA("back"); else pintarBack();
+      irAParte("histFut");
+    };
+  });
+}
 function hojaComisiones(){
+  if(vista==="back"){ hojaComisionesPrueba(); return; }
   var K=comisionesDet(), F=carteraFut(BD.fut), T=F.tot;
   var nSpot=BD.ops.filter(function(o){ return (+o.com||0)>0; }).length;
   var cuanto = T.bruto>0 && K.fut>0 ? K.fut/T.bruto*100 : null;
@@ -11632,6 +11721,129 @@ function salirDeCuenta(){
       };
     });
 }
+/* ---------------------------------------------------------------------
+   v41 · BORRAR LA CUENTA DESDE DENTRO DE LA APLICACIÓN
+   Google lo exige a toda aplicación que deje entrar con una cuenta: el
+   cliente tiene que poder borrarla y borrar sus datos sin escribirle a
+   nadie. Aquí se borra de verdad:
+     · el portafolio guardado en la nube (portafolios/<su uid>)
+     · la cuenta de Google dentro de esta aplicación
+   Lo que NO se borra: su cuenta de Google de verdad (esa es suya y sigue
+   igual), y lo que tenga en este aparato, salvo que lo pida.
+
+   Antes de borrar se le ofrece la copia, se le hace escribir su correo
+   entero y se le avisa de que no hay vuelta atrás. Si Google pide entrar
+   otra vez (por seguridad, cuando hace rato que entró), se vuelve a
+   entrar y se sigue solo.
+   --------------------------------------------------------------------- */
+function borrarMiCuenta(){
+  if(!ctaDentro()){ aviso("Primero entre con su cuenta.",true); return; }
+  var correo=CTA.correo||"", n=cuantoHayAqui();
+  abrir('<div class="hoja"><div class="hh"><span class="ic">'+IC.persona+'</span>'+
+    '<h3>Borrar mi cuenta</h3><button class="x" data-cerrar>×</button></div><div class="hb">'+
+    (correo
+      ? '<p style="margin:0 0 2px;font-size:14px">Va a borrar esta cuenta:</p>'+
+        '<div style="margin:0 0 12px;font-size:15px;font-weight:700">'+correoTocable(correo)+'</div>'
+      : '')+
+
+    '<div class="fsec">Qué se borra</div>'+
+    filaDet("Su portafolio guardado en la nube", "se borra", "lo que subió a su cuenta", "dn")+
+    filaDet("Su cuenta dentro de esta aplicación", "se borra", "", "dn")+
+    '<div class="fsec">Qué NO se borra</div>'+
+    filaDet("Su cuenta de Google", "sigue igual", "esta aplicación no la toca")+
+    filaDet("Lo de este aparato", "usted elige", "se lo pregunto abajo")+
+
+    '<div class="nota ojo" style="margin-top:12px"><b>Esto no tiene vuelta atrás.</b> '+
+    'Una vez borrado, nadie puede devolverle lo que tenía en la nube: ni usted, ni nosotros, '+
+    'ni Google. Si quiere conservarlo, baje antes la copia.</div>'+
+
+    '<div style="margin-top:12px"><button type="button" class="b ac" id="bcCopia">'+
+      'Descargar una copia antes de borrar</button></div>'+
+
+    '<div class="fsec">Para confirmar, escriba su correo entero</div>'+
+    '<input id="bcCorreo" autocomplete="off" inputmode="email" translate="no" '+
+      'style="font-family:inherit" placeholder="su@correo.com">'+
+    '<div class="nota mal" id="bcMal" style="display:none"></div>'+
+
+    '<div class="fsec">Y lo de este aparato</div>'+
+    '<div class="opSalir" id="bcQuedan"><b>Borrar la cuenta y dejar mis datos aquí</b>'+
+      '<i>Sigue usando la aplicación sin cuenta, con todo lo que tiene'+(n?' ('+n+' registros)':'')+
+      '. Deja de guardarse en la nube.</i></div>'+
+    '<div class="opSalir mala" id="bcTodo"><b>Borrar la cuenta y borrar también este aparato</b>'+
+      '<i>No queda nada, ni aquí ni en la nube. La aplicación arranca como recién instalada.</i></div>'+
+
+    '</div><div class="hf"><button class="b" data-cerrar>Cancelar</button></div></div>',
+  function(M){
+    var campo=M.querySelector("#bcCorreo"), mal=M.querySelector("#bcMal");
+    M.querySelector("#bcCopia").onclick=function(){ descargarCopia(); };
+    function correoBien(){
+      var e=(campo.value||"").trim().toLowerCase();
+      if(e && e===String(correo||"").trim().toLowerCase()) return true;
+      mal.style.display="";
+      mal.textContent = e ? tr("Ese no es el correo de esta cuenta. Fíjese en el de arriba.")
+                          : tr("Escriba su correo entero para confirmar que es usted.");
+      campo.focus();
+      return false;
+    }
+    campo.addEventListener("input", function(){ mal.style.display="none"; });
+    function pedir(tambien){
+      if(!correoBien()) return;
+      cerrar();
+      confirmar("Borrar mi cuenta",
+        (tambien
+          ? "<b>Se borra su cuenta y todo lo de este aparato.</b>"
+          : "<b>Se borra su cuenta y lo que tenía guardado en la nube.</b>")+"<br>"+
+        "No hay forma de recuperarlo después.",
+        "Borrar mi cuenta", function(){ hacerBorradoCuenta(tambien); }, true);
+    }
+    M.querySelector("#bcQuedan").onclick=function(){ pedir(false); };
+    M.querySelector("#bcTodo").onclick=function(){ pedir(true); };
+  });
+}
+
+/* el trabajo de verdad. Primero el portafolio de la nube y después la
+   cuenta: si se borrara la cuenta primero, ya no habría permiso para
+   borrar el portafolio y quedaría ahí colgado para siempre. */
+function hacerBorradoCuenta(tambienAparato){
+  aviso("Borrando su cuenta…");
+  callarCuentaYAnotar();                 /* que no se vuelva a subir nada mientras tanto */
+  CTA.borrando=true;
+  cargarFirebase().then(function(S){
+    var u=S.auth.currentUser;
+    if(!u) throw new Error("La sesión se cerró. Entre otra vez y vuelva a intentarlo.");
+    return Promise.resolve()
+      .then(function(){ return S.F.deleteDoc(docDeCuenta(S)); })
+      .then(function(){ return borrarUsuario(S, u); });
+  }).then(function(){
+    CTA.borrando=false;
+    CTA.u=null; CTA.correo=""; CTA.nombre=""; CTA.foto=""; CTA.firma="";
+    var c=ctaCfg(); c.correo=""; c.uid=""; c.hora=0;
+    if(tambienAparato) vaciarEsteAparato();
+    guardar();
+    try{ pintarCuenta(); }catch(e){}
+    volverABienvenida(tambienAparato);
+    aviso("Su cuenta quedó borrada. No guardamos nada suyo.");
+  }).catch(function(e){
+    CTA.borrando=false;
+    try{ escucharCuenta(); }catch(x){}
+    aviso("<b>No se pudo borrar la cuenta.</b> "+mensajeCuenta(e)+
+          " No se borró nada: puede volver a intentarlo.", true);
+  });
+}
+/* Google pide haber entrado hace poco para borrar una cuenta. Si hace
+   rato, se vuelve a entrar y se sigue sin que el cliente haga nada raro. */
+function borrarUsuario(S, u){
+  return S.A.deleteUser(u).catch(function(e){
+    var cod=(e&&e.code)||"";
+    if(cod!=="auth/requires-recent-login") throw e;
+    aviso("Google pide que entre otra vez para confirmar que es usted.");
+    var prov=new S.A.GoogleAuthProvider();
+    return S.A.reauthenticateWithPopup(u, prov).then(function(){
+      return S.A.deleteUser(S.auth.currentUser||u);
+    });
+  });
+}
+
 /* el trabajo de verdad: cerrar la sesión y, si toca, vaciar este aparato */
 function hacerSalida(borrar){
   function rematar(){
@@ -11834,6 +12046,7 @@ function docDeCuenta(S){
 }
 function subirACuenta(forzar){
   if(!ctaDentro()) return Promise.resolve(false);
+  if(CTA.borrando) return Promise.resolve(false);   /* v41 · se está borrando la cuenta */
   var f=firmaCuenta();
   if(!forzar && f===CTA.firma) return Promise.resolve(false);
   /* si hay una subida en curso, NO se tira esta: se apunta para ir en
@@ -12208,7 +12421,8 @@ function panelCuenta(){
         '<button class="b vd" id="ctaSube">Guardar ahora</button>'+
         '<button class="b" id="ctaJunta">Juntar con lo de la cuenta</button>'+
         '<button class="b" id="ctaBaja">Traer lo de mi cuenta</button>'+
-        '<button class="b gh" id="ctaSale">Salir de la cuenta</button></div>'+
+        '<button class="b gh" id="ctaSale">Salir de la cuenta</button>'+
+        '<button class="b gh" id="ctaBorra" style="margin-left:auto">Borrar mi cuenta</button></div>'+
       '<div class="chk" style="margin-top:12px"><button type="button" id="ctaAuto" class="'+
         (c.auto!==false?"on":"")+'"><span class="cj">✓</span>Guardar solo cada vez que cambio algo'+
         '</button></div>';
@@ -12330,6 +12544,7 @@ function engancharCuenta(box){
   engancharCorreos(box);   /* el correo tapado, para que se destape al tocarlo */
   if((x=box.querySelector("#ctaEntra"))) x.onclick=function(){ entrarConGoogle(); };
   if((x=box.querySelector("#ctaSale")))  x.onclick=salirDeCuenta;
+  if((x=box.querySelector("#ctaBorra"))) x.onclick=borrarMiCuenta;
   if((x=box.querySelector("#ctaSube")))  x.onclick=function(){
     subirACuenta(true).then(function(ok){ if(ok) aviso("Guardado en su cuenta."); });
   };
@@ -14837,6 +15052,52 @@ function engancharIdioma(box){
    Se respeta el orden de los huecos tal como salen en español.
    ===================================================================== */
 DIC.en={
+"sobre $# que puso":"on the $# you put in",
+/* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
+"#% al abrir y al cerrar":"#% on opening and on closing",
+". No es dinero de verdad: su dinero está en Futuros.":". It is not real money: your money is in Futures.",
+": al entrar y al salir. Como en la prueba puede poner cantidades enormes, aquí se ve clarísimo cuánto se lleva la casa de cambio cuando la operación es grande.":": on entry and on exit. Since in a test you can put in huge amounts, here you see very clearly how much the exchange takes when the trade is big.",
+"Al #% sobre este tamaño sería $#":"At #% on this size it would be $#",
+"Borrar la cuenta y borrar también este aparato":"Delete the account and delete this device too",
+"Borrar la cuenta y dejar mis datos aquí":"Delete the account and leave my data here",
+"Borrar mi cuenta":"Delete my account",
+"COMISIONES DE ESTA PRUEBA":"FEES OF THIS TEST",
+"Comisiones de la prueba":"Fees of the test",
+"Comisión de la prueba":"Test fee",
+"Descargar una copia antes de borrar":"Download a copy before deleting",
+"Esto es de su prueba de backtesting":"This is from your backtesting test",
+"Esto no tiene vuelta atrás.":"There is no going back.",
+"Lo de este aparato":"What is on this device",
+"No queda nada, ni aquí ni en la nube. La aplicación arranca como recién instalada.":"Nothing is left, neither here nor in the cloud. The app starts up as if it had just been installed.",
+"Operaciones cerradas":"Closed trades",
+"Para confirmar, escriba su correo entero":"To confirm, type your full email",
+"Ponerla al día":"Bring it up to date",
+"Qué NO se borra":"What does NOT get deleted",
+"Qué se borra":"What gets deleted",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene (# registros). Deja de guardarse en la nube.":"You keep using the app without an account, with everything you have (# records). It stops being saved in the cloud.",
+"Su cuenta dentro de esta aplicación":"Your account inside this app",
+"Su portafolio guardado en la nube":"Your portfolio saved in the cloud",
+"Una vez borrado, nadie puede devolverle lo que tenía en la nube: ni usted, ni nosotros, ni Google. Si quiere conservarlo, baje antes la copia.":"Once it is deleted, nobody can give you back what you had in the cloud: not you, not us, not Google. If you want to keep it, download the copy first.",
+"Va a borrar esta cuenta:":"You are going to delete this account:",
+"Y lo de este aparato":"And what is on this device",
+"de lo que ya cerró en la prueba":"of what you have already closed in the test",
+"esta aplicación no la toca":"this app does not touch it",
+"lo que subió a su cuenta":"what you uploaded to your account",
+"se borra":"gets deleted",
+"se lo pregunto abajo":"I ask you below",
+"sigue igual":"stays as it is",
+"usted elige":"you choose",
+"Borrando su cuenta…":"Deleting your account…",
+"Su cuenta quedó borrada. No guardamos nada suyo.":"Your account has been deleted. We keep nothing of yours.",
+"Google pide que entre otra vez para confirmar que es usted.":"Google asks you to sign in again to confirm it is you.",
+"La sesión se cerró. Entre otra vez y vuelva a intentarlo.":"The session was closed. Sign in again and try once more.",
+"No se pudo borrar la cuenta.":"The account could not be deleted.",
+"No se borró nada: puede volver a intentarlo.":"Nothing was deleted: you can try again.",
+"Se borra su cuenta y todo lo de este aparato.":"Your account and everything on this device get deleted.",
+"Se borra su cuenta y lo que tenía guardado en la nube.":"Your account and what you had saved in the cloud get deleted.",
+"No hay forma de recuperarlo después.":"There is no way to get it back afterwards.",
+"Al #% sobre este tamaño: $#":"At #% on this size: $#",
+"Primero abra una prueba de backtesting.":"Open a backtesting test first.",
 /* v40 · futuros: la comisión según dónde opera, el stop y la gráfica */
 "#% × # sobre el tamaño":"#% × # on the trade size",
 "% al abrir y al cerrar":"% when opening and when closing",
@@ -16549,6 +16810,52 @@ DIC.en={
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
+"sobre $# que puso":"sobre os $# que colocou",
+/* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
+"#% al abrir y al cerrar":"#% ao abrir e ao fechar",
+". No es dinero de verdad: su dinero está en Futuros.":". Não é dinheiro de verdade: o seu dinheiro está em Futuros.",
+": al entrar y al salir. Como en la prueba puede poner cantidades enormes, aquí se ve clarísimo cuánto se lleva la casa de cambio cuando la operación es grande.":": ao entrar e ao sair. Como no teste pode pôr quantias enormes, aqui vê-se muito bem quanto a corretora leva quando a operação é grande.",
+"Al #% sobre este tamaño sería $#":"A #% sobre este tamanho seria $#",
+"Borrar la cuenta y borrar también este aparato":"Apagar a conta e apagar também este aparelho",
+"Borrar la cuenta y dejar mis datos aquí":"Apagar a conta e deixar os meus dados aqui",
+"Borrar mi cuenta":"Apagar a minha conta",
+"COMISIONES DE ESTA PRUEBA":"COMISSÕES DESTE TESTE",
+"Comisiones de la prueba":"Comissões do teste",
+"Comisión de la prueba":"Comissão do teste",
+"Descargar una copia antes de borrar":"Baixar uma cópia antes de apagar",
+"Esto es de su prueba de backtesting":"Isto é do seu teste de backtesting",
+"Esto no tiene vuelta atrás.":"Isto não tem volta.",
+"Lo de este aparato":"O deste aparelho",
+"No queda nada, ni aquí ni en la nube. La aplicación arranca como recién instalada.":"Não fica nada, nem aqui nem na nuvem. A aplicação arranca como se estivesse recém-instalada.",
+"Operaciones cerradas":"Operações fechadas",
+"Para confirmar, escriba su correo entero":"Para confirmar, escreva o seu correio inteiro",
+"Ponerla al día":"Pôr em dia",
+"Qué NO se borra":"O que NÃO se apaga",
+"Qué se borra":"O que se apaga",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene (# registros). Deja de guardarse en la nube.":"Continua a usar a aplicação sem conta, com tudo o que tem (# registos). Deixa de se guardar na nuvem.",
+"Su cuenta dentro de esta aplicación":"A sua conta dentro desta aplicação",
+"Su portafolio guardado en la nube":"O seu portfólio guardado na nuvem",
+"Una vez borrado, nadie puede devolverle lo que tenía en la nube: ni usted, ni nosotros, ni Google. Si quiere conservarlo, baje antes la copia.":"Uma vez apagado, ninguém lhe pode devolver o que tinha na nuvem: nem você, nem nós, nem a Google. Se quiser conservá-lo, baixe antes a cópia.",
+"Va a borrar esta cuenta:":"Vai apagar esta conta:",
+"Y lo de este aparato":"E o deste aparelho",
+"de lo que ya cerró en la prueba":"do que já fechou no teste",
+"esta aplicación no la toca":"esta aplicação não lhe toca",
+"lo que subió a su cuenta":"o que subiu para a sua conta",
+"se borra":"apaga-se",
+"se lo pregunto abajo":"pergunto-lhe em baixo",
+"sigue igual":"fica igual",
+"usted elige":"você escolhe",
+"Borrando su cuenta…":"A apagar a sua conta…",
+"Su cuenta quedó borrada. No guardamos nada suyo.":"A sua conta ficou apagada. Não guardamos nada seu.",
+"Google pide que entre otra vez para confirmar que es usted.":"A Google pede que entre outra vez para confirmar que é você.",
+"La sesión se cerró. Entre otra vez y vuelva a intentarlo.":"A sessão fechou-se. Entre outra vez e tente de novo.",
+"No se pudo borrar la cuenta.":"Não foi possível apagar a conta.",
+"No se borró nada: puede volver a intentarlo.":"Não se apagou nada: pode tentar outra vez.",
+"Se borra su cuenta y todo lo de este aparato.":"Apaga-se a sua conta e tudo o que há neste aparelho.",
+"Se borra su cuenta y lo que tenía guardado en la nube.":"Apaga-se a sua conta e o que tinha guardado na nuvem.",
+"No hay forma de recuperarlo después.":"Não há forma de o recuperar depois.",
+"Al #% sobre este tamaño: $#":"A #% sobre este tamanho: $#",
+"Primero abra una prueba de backtesting.":"Primeiro abra um teste de backtesting.",
 /* v40 · futuros: la comisión según dónde opera, el stop y la gráfica */
 "#% × # sobre el tamaño":"#% × # sobre o tamanho",
 "% al abrir y al cerrar":"% ao abrir e ao fechar",
@@ -18254,6 +18561,52 @@ DIC.pt={
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
+"sobre $# que puso":"sur les $# que vous avez mis",
+/* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
+"#% al abrir y al cerrar":"#% à l'ouverture et à la clôture",
+". No es dinero de verdad: su dinero está en Futuros.":". Ce n'est pas de l'argent réel : votre argent est dans Futures.",
+": al entrar y al salir. Como en la prueba puede poner cantidades enormes, aquí se ve clarísimo cuánto se lleva la casa de cambio cuando la operación es grande.":": à l'entrée et à la sortie. Comme dans un test vous pouvez mettre des montants énormes, on voit ici très clairement ce que la plateforme prend quand l'opération est grosse.",
+"Al #% sobre este tamaño sería $#":"À #% sur cette taille, ce serait $#",
+"Borrar la cuenta y borrar también este aparato":"Supprimer le compte et effacer aussi cet appareil",
+"Borrar la cuenta y dejar mis datos aquí":"Supprimer le compte et laisser mes données ici",
+"Borrar mi cuenta":"Supprimer mon compte",
+"COMISIONES DE ESTA PRUEBA":"COMMISSIONS DE CE TEST",
+"Comisiones de la prueba":"Commissions du test",
+"Comisión de la prueba":"Commission du test",
+"Descargar una copia antes de borrar":"Télécharger une copie avant de supprimer",
+"Esto es de su prueba de backtesting":"Ceci vient de votre test de backtesting",
+"Esto no tiene vuelta atrás.":"Il n'y a pas de retour en arrière.",
+"Lo de este aparato":"Ce qui est sur cet appareil",
+"No queda nada, ni aquí ni en la nube. La aplicación arranca como recién instalada.":"Il ne reste rien, ni ici ni dans le nuage. L'application démarre comme si elle venait d'être installée.",
+"Operaciones cerradas":"Opérations fermées",
+"Para confirmar, escriba su correo entero":"Pour confirmer, saisissez votre courriel en entier",
+"Ponerla al día":"Mettre à jour",
+"Qué NO se borra":"Ce qui n'est PAS supprimé",
+"Qué se borra":"Ce qui est supprimé",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene (# registros). Deja de guardarse en la nube.":"Vous continuez à utiliser l'application sans compte, avec tout ce que vous avez (# enregistrements). Elle cesse d'être enregistrée dans le nuage.",
+"Su cuenta dentro de esta aplicación":"Votre compte dans cette application",
+"Su portafolio guardado en la nube":"Votre portefeuille enregistré dans le nuage",
+"Una vez borrado, nadie puede devolverle lo que tenía en la nube: ni usted, ni nosotros, ni Google. Si quiere conservarlo, baje antes la copia.":"Une fois supprimé, personne ne peut vous rendre ce que vous aviez dans le nuage : ni vous, ni nous, ni Google. Si vous voulez le garder, téléchargez d'abord la copie.",
+"Va a borrar esta cuenta:":"Vous allez supprimer ce compte :",
+"Y lo de este aparato":"Et ce qui est sur cet appareil",
+"de lo que ya cerró en la prueba":"de ce que vous avez déjà clôturé dans le test",
+"esta aplicación no la toca":"cette application n'y touche pas",
+"lo que subió a su cuenta":"ce que vous avez envoyé sur votre compte",
+"se borra":"est supprimé",
+"se lo pregunto abajo":"je vous le demande plus bas",
+"sigue igual":"reste tel quel",
+"usted elige":"vous choisissez",
+"Borrando su cuenta…":"Suppression de votre compte…",
+"Su cuenta quedó borrada. No guardamos nada suyo.":"Votre compte a été supprimé. Nous ne gardons rien de vous.",
+"Google pide que entre otra vez para confirmar que es usted.":"Google demande que vous vous reconnectiez pour confirmer que c'est bien vous.",
+"La sesión se cerró. Entre otra vez y vuelva a intentarlo.":"La session s'est fermée. Reconnectez-vous et réessayez.",
+"No se pudo borrar la cuenta.":"Le compte n'a pas pu être supprimé.",
+"No se borró nada: puede volver a intentarlo.":"Rien n'a été supprimé : vous pouvez réessayer.",
+"Se borra su cuenta y todo lo de este aparato.":"Votre compte et tout ce qui est sur cet appareil sont supprimés.",
+"Se borra su cuenta y lo que tenía guardado en la nube.":"Votre compte et ce que vous aviez enregistré dans le nuage sont supprimés.",
+"No hay forma de recuperarlo después.":"Il n'y a aucun moyen de le récupérer ensuite.",
+"Al #% sobre este tamaño: $#":"À #% sur cette taille : $#",
+"Primero abra una prueba de backtesting.":"Ouvrez d'abord un test de backtesting.",
 /* v40 · futuros: la comisión según dónde opera, el stop y la gráfica */
 "#% × # sobre el tamaño":"#% × # sur la taille",
 "% al abrir y al cerrar":"% à l'ouverture et à la clôture",
@@ -19959,6 +20312,52 @@ DIC.fr={
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
+"sobre $# que puso":"auf die eingesetzten $#",
+/* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
+"#% al abrir y al cerrar":"#% beim Öffnen und beim Schließen",
+". No es dinero de verdad: su dinero está en Futuros.":". Das ist kein echtes Geld: Ihr Geld liegt in Futures.",
+": al entrar y al salir. Como en la prueba puede poner cantidades enormes, aquí se ve clarísimo cuánto se lleva la casa de cambio cuando la operación es grande.":": beim Einstieg und beim Ausstieg. Da Sie im Test riesige Beträge eintragen können, sieht man hier ganz deutlich, wie viel die Börse nimmt, wenn der Trade groß ist.",
+"Al #% sobre este tamaño sería $#":"Bei #% auf diese Größe wären es $#",
+"Borrar la cuenta y borrar también este aparato":"Konto löschen und dieses Gerät auch löschen",
+"Borrar la cuenta y dejar mis datos aquí":"Konto löschen und meine Daten hier lassen",
+"Borrar mi cuenta":"Mein Konto löschen",
+"COMISIONES DE ESTA PRUEBA":"GEBÜHREN DIESES TESTS",
+"Comisiones de la prueba":"Gebühren des Tests",
+"Comisión de la prueba":"Gebühr des Tests",
+"Descargar una copia antes de borrar":"Vor dem Löschen eine Kopie herunterladen",
+"Esto es de su prueba de backtesting":"Das kommt aus Ihrem Backtesting-Test",
+"Esto no tiene vuelta atrás.":"Das lässt sich nicht zurücknehmen.",
+"Lo de este aparato":"Was auf diesem Gerät ist",
+"No queda nada, ni aquí ni en la nube. La aplicación arranca como recién instalada.":"Es bleibt nichts, weder hier noch in der Cloud. Die App startet wie neu installiert.",
+"Operaciones cerradas":"Geschlossene Trades",
+"Para confirmar, escriba su correo entero":"Zum Bestätigen geben Sie Ihre vollständige E-Mail ein",
+"Ponerla al día":"Aktualisieren",
+"Qué NO se borra":"Was NICHT gelöscht wird",
+"Qué se borra":"Was gelöscht wird",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene (# registros). Deja de guardarse en la nube.":"Sie nutzen die App weiter ohne Konto, mit allem, was Sie haben (# Einträge). Sie wird nicht mehr in der Cloud gespeichert.",
+"Su cuenta dentro de esta aplicación":"Ihr Konto in dieser App",
+"Su portafolio guardado en la nube":"Ihr Portfolio in der Cloud",
+"Una vez borrado, nadie puede devolverle lo que tenía en la nube: ni usted, ni nosotros, ni Google. Si quiere conservarlo, baje antes la copia.":"Einmal gelöscht, kann Ihnen niemand zurückgeben, was Sie in der Cloud hatten: weder Sie, noch wir, noch Google. Wenn Sie es behalten möchten, laden Sie vorher die Kopie herunter.",
+"Va a borrar esta cuenta:":"Sie löschen dieses Konto:",
+"Y lo de este aparato":"Und was auf diesem Gerät ist",
+"de lo que ya cerró en la prueba":"von dem, was Sie im Test schon geschlossen haben",
+"esta aplicación no la toca":"diese App rührt es nicht an",
+"lo que subió a su cuenta":"was Sie in Ihr Konto hochgeladen haben",
+"se borra":"wird gelöscht",
+"se lo pregunto abajo":"frage ich Sie unten",
+"sigue igual":"bleibt unverändert",
+"usted elige":"Sie entscheiden",
+"Borrando su cuenta…":"Ihr Konto wird gelöscht…",
+"Su cuenta quedó borrada. No guardamos nada suyo.":"Ihr Konto ist gelöscht. Wir behalten nichts von Ihnen.",
+"Google pide que entre otra vez para confirmar que es usted.":"Google möchte, dass Sie sich noch einmal anmelden, damit klar ist, dass Sie es sind.",
+"La sesión se cerró. Entre otra vez y vuelva a intentarlo.":"Die Sitzung wurde beendet. Melden Sie sich erneut an und versuchen Sie es wieder.",
+"No se pudo borrar la cuenta.":"Das Konto konnte nicht gelöscht werden.",
+"No se borró nada: puede volver a intentarlo.":"Es wurde nichts gelöscht: Sie können es erneut versuchen.",
+"Se borra su cuenta y todo lo de este aparato.":"Ihr Konto und alles auf diesem Gerät werden gelöscht.",
+"Se borra su cuenta y lo que tenía guardado en la nube.":"Ihr Konto und alles, was Sie in der Cloud hatten, werden gelöscht.",
+"No hay forma de recuperarlo después.":"Danach gibt es keine Möglichkeit, es zurückzuholen.",
+"Al #% sobre este tamaño: $#":"Bei #% auf diese Größe: $#",
+"Primero abra una prueba de backtesting.":"Öffnen Sie zuerst einen Backtesting-Test.",
 /* v40 · futuros: la comisión según dónde opera, el stop y la gráfica */
 "#% × # sobre el tamaño":"#% × # auf die Positionsgröße",
 "% al abrir y al cerrar":"% beim Eröffnen und beim Schließen",
@@ -21664,6 +22063,52 @@ DIC.de={
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
+"sobre $# que puso":"sui $# che ha messo",
+/* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
+"#% al abrir y al cerrar":"#% all'apertura e alla chiusura",
+". No es dinero de verdad: su dinero está en Futuros.":". Non sono soldi veri: i suoi soldi sono in Futures.",
+": al entrar y al salir. Como en la prueba puede poner cantidades enormes, aquí se ve clarísimo cuánto se lleva la casa de cambio cuando la operación es grande.":": all'entrata e all'uscita. Siccome nella prova può mettere importi enormi, qui si vede benissimo quanto si prende la borsa quando l'operazione è grande.",
+"Al #% sobre este tamaño sería $#":"Al #% su questa dimensione sarebbe $#",
+"Borrar la cuenta y borrar también este aparato":"Cancellare l'account e cancellare anche questo apparecchio",
+"Borrar la cuenta y dejar mis datos aquí":"Cancellare l'account e lasciare i miei dati qui",
+"Borrar mi cuenta":"Cancellare il mio account",
+"COMISIONES DE ESTA PRUEBA":"COMMISSIONI DI QUESTA PROVA",
+"Comisiones de la prueba":"Commissioni della prova",
+"Comisión de la prueba":"Commissione della prova",
+"Descargar una copia antes de borrar":"Scaricare una copia prima di cancellare",
+"Esto es de su prueba de backtesting":"Questo viene dalla sua prova di backtesting",
+"Esto no tiene vuelta atrás.":"Da qui non si torna indietro.",
+"Lo de este aparato":"Quello che c'è su questo apparecchio",
+"No queda nada, ni aquí ni en la nube. La aplicación arranca como recién instalada.":"Non resta niente, né qui né nel cloud. L'applicazione riparte come appena installata.",
+"Operaciones cerradas":"Operazioni chiuse",
+"Para confirmar, escriba su correo entero":"Per confermare, scriva la sua email per intero",
+"Ponerla al día":"Aggiornare",
+"Qué NO se borra":"Cosa NON si cancella",
+"Qué se borra":"Cosa si cancella",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene (# registros). Deja de guardarse en la nube.":"Continua a usare l'applicazione senza account, con tutto quello che ha (# registrazioni). Smette di salvarsi nel cloud.",
+"Su cuenta dentro de esta aplicación":"Il suo account dentro questa applicazione",
+"Su portafolio guardado en la nube":"Il suo portafoglio salvato nel cloud",
+"Una vez borrado, nadie puede devolverle lo que tenía en la nube: ni usted, ni nosotros, ni Google. Si quiere conservarlo, baje antes la copia.":"Una volta cancellato, nessuno può restituirle quello che aveva nel cloud: né lei, né noi, né Google. Se vuole conservarlo, scarichi prima la copia.",
+"Va a borrar esta cuenta:":"Sta per cancellare questo account:",
+"Y lo de este aparato":"E quello di questo apparecchio",
+"de lo que ya cerró en la prueba":"di quello che ha già chiuso nella prova",
+"esta aplicación no la toca":"questa applicazione non la tocca",
+"lo que subió a su cuenta":"quello che ha caricato sul suo account",
+"se borra":"si cancella",
+"se lo pregunto abajo":"glielo chiedo qui sotto",
+"sigue igual":"resta uguale",
+"usted elige":"sceglie lei",
+"Borrando su cuenta…":"Cancellazione del suo account…",
+"Su cuenta quedó borrada. No guardamos nada suyo.":"Il suo account è stato cancellato. Non conserviamo niente di suo.",
+"Google pide que entre otra vez para confirmar que es usted.":"Google chiede che entri un'altra volta per confermare che è lei.",
+"La sesión se cerró. Entre otra vez y vuelva a intentarlo.":"La sessione si è chiusa. Entri un'altra volta e riprovi.",
+"No se pudo borrar la cuenta.":"Non si è potuto cancellare l'account.",
+"No se borró nada: puede volver a intentarlo.":"Non si è cancellato niente: può riprovare.",
+"Se borra su cuenta y todo lo de este aparato.":"Si cancella il suo account e tutto quello che c'è su questo apparecchio.",
+"Se borra su cuenta y lo que tenía guardado en la nube.":"Si cancella il suo account e quello che aveva salvato nel cloud.",
+"No hay forma de recuperarlo después.":"Dopo non c'è modo di recuperarlo.",
+"Al #% sobre este tamaño: $#":"Al #% su questa dimensione: $#",
+"Primero abra una prueba de backtesting.":"Prima apra una prova di backtesting.",
 /* v40 · futuros: la comisión según dónde opera, el stop y la gráfica */
 "#% × # sobre el tamaño":"#% × # sulla dimensione",
 "% al abrir y al cerrar":"% all'apertura e alla chiusura",
@@ -23369,6 +23814,52 @@ DIC.it={
 };
 /* NEDERLANDS · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.nl={
+"sobre $# que puso":"op de $# die u inlegde",
+/* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
+"#% al abrir y al cerrar":"#% bij openen en bij sluiten",
+". No es dinero de verdad: su dinero está en Futuros.":". Het is geen echt geld: uw geld staat in Futures.",
+": al entrar y al salir. Como en la prueba puede poner cantidades enormes, aquí se ve clarísimo cuánto se lleva la casa de cambio cuando la operación es grande.":": bij instappen en bij uitstappen. Omdat u in een test enorme bedragen kunt invullen, ziet u hier heel duidelijk hoeveel de exchange pakt als de trade groot is.",
+"Al #% sobre este tamaño sería $#":"Bij #% op deze omvang zou het $# zijn",
+"Borrar la cuenta y borrar también este aparato":"Account verwijderen en dit apparaat ook wissen",
+"Borrar la cuenta y dejar mis datos aquí":"Account verwijderen en mijn gegevens hier laten",
+"Borrar mi cuenta":"Mijn account verwijderen",
+"COMISIONES DE ESTA PRUEBA":"KOSTEN VAN DEZE TEST",
+"Comisiones de la prueba":"Kosten van de test",
+"Comisión de la prueba":"Testkosten",
+"Descargar una copia antes de borrar":"Een back-up downloaden voordat u wist",
+"Esto es de su prueba de backtesting":"Dit komt uit uw backtesting-test",
+"Esto no tiene vuelta atrás.":"Dit kunt u niet terugdraaien.",
+"Lo de este aparato":"Wat op dit apparaat staat",
+"No queda nada, ni aquí ni en la nube. La aplicación arranca como recién instalada.":"Er blijft niets over, niet hier en niet in de cloud. De app start op als net geïnstalleerd.",
+"Operaciones cerradas":"Gesloten trades",
+"Para confirmar, escriba su correo entero":"Typ uw volledige e-mailadres om te bevestigen",
+"Ponerla al día":"Bijwerken",
+"Qué NO se borra":"Wat NIET wordt verwijderd",
+"Qué se borra":"Wat wordt verwijderd",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene (# registros). Deja de guardarse en la nube.":"U blijft de app zonder account gebruiken, met alles wat u hebt (# registraties). Er wordt niets meer in de cloud opgeslagen.",
+"Su cuenta dentro de esta aplicación":"Uw account binnen deze app",
+"Su portafolio guardado en la nube":"Uw portfolio dat in de cloud staat",
+"Una vez borrado, nadie puede devolverle lo que tenía en la nube: ni usted, ni nosotros, ni Google. Si quiere conservarlo, baje antes la copia.":"Zodra het weg is, kan niemand u teruggeven wat u in de cloud had: u niet, wij niet en Google niet. Wilt u het bewaren, download dan eerst de back-up.",
+"Va a borrar esta cuenta:":"U gaat dit account verwijderen:",
+"Y lo de este aparato":"En wat op dit apparaat staat",
+"de lo que ya cerró en la prueba":"van wat u in de test al hebt gesloten",
+"esta aplicación no la toca":"deze app komt er niet aan",
+"lo que subió a su cuenta":"wat u naar uw account hebt gestuurd",
+"se borra":"wordt verwijderd",
+"se lo pregunto abajo":"dat vraag ik u hieronder",
+"sigue igual":"blijft zoals het is",
+"usted elige":"u kiest",
+"Borrando su cuenta…":"Uw account wordt verwijderd…",
+"Su cuenta quedó borrada. No guardamos nada suyo.":"Uw account is verwijderd. Wij bewaren niets van u.",
+"Google pide que entre otra vez para confirmar que es usted.":"Google vraagt u om opnieuw in te loggen om te bevestigen dat u het bent.",
+"La sesión se cerró. Entre otra vez y vuelva a intentarlo.":"De sessie is afgesloten. Log opnieuw in en probeer het nog eens.",
+"No se pudo borrar la cuenta.":"Het account kon niet worden verwijderd.",
+"No se borró nada: puede volver a intentarlo.":"Er is niets verwijderd: u kunt het opnieuw proberen.",
+"Se borra su cuenta y todo lo de este aparato.":"Uw account en alles op dit apparaat worden verwijderd.",
+"Se borra su cuenta y lo que tenía guardado en la nube.":"Uw account en wat u in de cloud had staan worden verwijderd.",
+"No hay forma de recuperarlo después.":"Daarna is er geen manier om het terug te halen.",
+"Al #% sobre este tamaño: $#":"Bij #% op deze omvang: $#",
+"Primero abra una prueba de backtesting.":"Open eerst een backtesting-test.",
 /* v40 · futuros: la comisión según dónde opera, el stop y la gráfica */
 "#% × # sobre el tamaño":"#% × # over de tradegrootte",
 "% al abrir y al cerrar":"% bij openen en bij sluiten",
@@ -25360,6 +25851,52 @@ DIC.nl={
 };
 /* POLSKI · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.pl={
+"sobre $# que puso":"od wpłaconych $#",
+/* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
+"#% al abrir y al cerrar":"#% przy otwarciu i przy zamknięciu",
+". No es dinero de verdad: su dinero está en Futuros.":". To nie są prawdziwe pieniądze: Twoje pieniądze są w Futures.",
+": al entrar y al salir. Como en la prueba puede poner cantidades enormes, aquí se ve clarísimo cuánto se lleva la casa de cambio cuando la operación es grande.":": przy wejściu i przy wyjściu. Ponieważ w teście możesz wpisać ogromne kwoty, widać tu bardzo wyraźnie, ile zabiera giełda, gdy transakcja jest duża.",
+"Al #% sobre este tamaño sería $#":"Przy #% od tej wielkości byłoby to $#",
+"Borrar la cuenta y borrar también este aparato":"Usuń konto i usuń także to urządzenie",
+"Borrar la cuenta y dejar mis datos aquí":"Usuń konto i zostaw moje dane tutaj",
+"Borrar mi cuenta":"Usuń moje konto",
+"COMISIONES DE ESTA PRUEBA":"PROWIZJE TEGO TESTU",
+"Comisiones de la prueba":"Prowizje testu",
+"Comisión de la prueba":"Prowizja testu",
+"Descargar una copia antes de borrar":"Pobierz kopię przed usunięciem",
+"Esto es de su prueba de backtesting":"To pochodzi z Twojego testu Backtesting",
+"Esto no tiene vuelta atrás.":"Tego nie da się cofnąć.",
+"Lo de este aparato":"To, co jest na tym urządzeniu",
+"No queda nada, ni aquí ni en la nube. La aplicación arranca como recién instalada.":"Nie zostaje nic, ani tutaj, ani w chmurze. Aplikacja uruchamia się jak świeżo zainstalowana.",
+"Operaciones cerradas":"Zamknięte transakcje",
+"Para confirmar, escriba su correo entero":"Aby potwierdzić, wpisz pełny adres e-mail",
+"Ponerla al día":"Zaktualizuj",
+"Qué NO se borra":"Czego NIE usuwamy",
+"Qué se borra":"Co zostanie usunięte",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene (# registros). Deja de guardarse en la nube.":"Korzystasz z aplikacji dalej bez konta, ze wszystkim, co masz (rekordy: #). Dane przestają zapisywać się w chmurze.",
+"Su cuenta dentro de esta aplicación":"Twoje konto w tej aplikacji",
+"Su portafolio guardado en la nube":"Twój portfel zapisany w chmurze",
+"Una vez borrado, nadie puede devolverle lo que tenía en la nube: ni usted, ni nosotros, ni Google. Si quiere conservarlo, baje antes la copia.":"Po usunięciu nikt nie przywróci tego, co było w chmurze: ani Ty, ani my, ani Google. Jeśli chcesz to zachować, pobierz najpierw kopię.",
+"Va a borrar esta cuenta:":"Zamierzasz usunąć to konto:",
+"Y lo de este aparato":"A to, co jest na tym urządzeniu",
+"de lo que ya cerró en la prueba":"z tego, co już zamknięto w teście",
+"esta aplicación no la toca":"ta aplikacja tego nie rusza",
+"lo que subió a su cuenta":"to, co trafiło na Twoje konto",
+"se borra":"zostaje usunięte",
+"se lo pregunto abajo":"pytam o to niżej",
+"sigue igual":"zostaje bez zmian",
+"usted elige":"Ty decydujesz",
+"Borrando su cuenta…":"Usuwanie Twojego konta…",
+"Su cuenta quedó borrada. No guardamos nada suyo.":"Twoje konto zostało usunięte. Nie przechowujemy niczego Twojego.",
+"Google pide que entre otra vez para confirmar que es usted.":"Google prosi o ponowne zalogowanie, aby potwierdzić, że to Ty.",
+"La sesión se cerró. Entre otra vez y vuelva a intentarlo.":"Sesja została zamknięta. Zaloguj się ponownie i spróbuj jeszcze raz.",
+"No se pudo borrar la cuenta.":"Nie udało się usunąć konta.",
+"No se borró nada: puede volver a intentarlo.":"Nic nie zostało usunięte: możesz spróbować ponownie.",
+"Se borra su cuenta y todo lo de este aparato.":"Usuwamy Twoje konto i wszystko z tego urządzenia.",
+"Se borra su cuenta y lo que tenía guardado en la nube.":"Usuwamy Twoje konto i to, co było zapisane w chmurze.",
+"No hay forma de recuperarlo después.":"Później nie da się tego odzyskać.",
+"Al #% sobre este tamaño: $#":"Przy #% od tej wielkości: $#",
+"Primero abra una prueba de backtesting.":"Najpierw otwórz test Backtesting.",
 /* v40 · futuros: la comisión según dónde opera, el stop y la gráfica */
 "#% × # sobre el tamaño":"#% × # od wielkości transakcji",
 "% al abrir y al cerrar":"% przy otwarciu i przy zamknięciu",
@@ -27351,6 +27888,52 @@ DIC.pl={
 };
 /* TÜRKÇE · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.tr={
+"sobre $# que puso":"yatırdığınız $# üzerinden",
+/* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
+"#% al abrir y al cerrar":"#% açılışta ve kapanışta",
+". No es dinero de verdad: su dinero está en Futuros.":". Bu gerçek para değildir: paranız Vadeli'de.",
+": al entrar y al salir. Como en la prueba puede poner cantidades enormes, aquí se ve clarísimo cuánto se lleva la casa de cambio cuando la operación es grande.":": girişte ve çıkışta. Testte çok büyük tutarlar girebildiğiniz için, işlem büyük olduğunda borsanın ne kadar aldığı burada çok net görünür.",
+"Al #% sobre este tamaño sería $#":"Bu büyüklükte #% ile $# olurdu",
+"Borrar la cuenta y borrar también este aparato":"Hesabı sil ve bu cihazı da sil",
+"Borrar la cuenta y dejar mis datos aquí":"Hesabı sil, verilerimi burada bırak",
+"Borrar mi cuenta":"Hesabımı sil",
+"COMISIONES DE ESTA PRUEBA":"BU TESTİN KOMİSYONLARI",
+"Comisiones de la prueba":"Testin komisyonları",
+"Comisión de la prueba":"Test komisyonu",
+"Descargar una copia antes de borrar":"Silmeden önce bir yedek indir",
+"Esto es de su prueba de backtesting":"Bu, backtesting testinizden geliyor",
+"Esto no tiene vuelta atrás.":"Bunun geri dönüşü yok.",
+"Lo de este aparato":"Bu cihazdakiler",
+"No queda nada, ni aquí ni en la nube. La aplicación arranca como recién instalada.":"Ne burada ne de bulutta hiçbir şey kalır. Uygulama yeni kurulmuş gibi açılır.",
+"Operaciones cerradas":"Kapanan işlemler",
+"Para confirmar, escriba su correo entero":"Onaylamak için e-posta adresinizin tamamını yazın",
+"Ponerla al día":"Güncelle",
+"Qué NO se borra":"Neler SİLİNMEZ",
+"Qué se borra":"Neler silinir",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene (# registros). Deja de guardarse en la nube.":"Uygulamayı hesapsız olarak, elinizdeki her şeyle (# kayıt) kullanmaya devam edersiniz. Artık buluta kaydedilmez.",
+"Su cuenta dentro de esta aplicación":"Bu uygulamadaki hesabınız",
+"Su portafolio guardado en la nube":"Bulutta saklanan portföyünüz",
+"Una vez borrado, nadie puede devolverle lo que tenía en la nube: ni usted, ni nosotros, ni Google. Si quiere conservarlo, baje antes la copia.":"Bir kez silindikten sonra bulutta olanları kimse size geri veremez: ne siz, ne biz, ne de Google. Saklamak istiyorsanız önce yedeği indirin.",
+"Va a borrar esta cuenta:":"Bu hesabı sileceksiniz:",
+"Y lo de este aparato":"Ve bu cihazdakiler",
+"de lo que ya cerró en la prueba":"testte zaten kapattıklarınızdan",
+"esta aplicación no la toca":"bu uygulama ona dokunmaz",
+"lo que subió a su cuenta":"hesabınıza yüklediğiniz şeyler",
+"se borra":"silinir",
+"se lo pregunto abajo":"bunu aşağıda soruyorum",
+"sigue igual":"aynı kalır",
+"usted elige":"siz seçersiniz",
+"Borrando su cuenta…":"Hesabınız siliniyor…",
+"Su cuenta quedó borrada. No guardamos nada suyo.":"Hesabınız silindi. Size ait hiçbir şey tutmuyoruz.",
+"Google pide que entre otra vez para confirmar que es usted.":"Google, siz olduğunuzu doğrulamak için tekrar giriş yapmanızı istiyor.",
+"La sesión se cerró. Entre otra vez y vuelva a intentarlo.":"Oturum kapandı. Tekrar giriş yapın ve yeniden deneyin.",
+"No se pudo borrar la cuenta.":"Hesap silinemedi.",
+"No se borró nada: puede volver a intentarlo.":"Hiçbir şey silinmedi: tekrar deneyebilirsiniz.",
+"Se borra su cuenta y todo lo de este aparato.":"Hesabınız ve bu cihazdaki her şey silinir.",
+"Se borra su cuenta y lo que tenía guardado en la nube.":"Hesabınız ve bulutta sakladıklarınız silinir.",
+"No hay forma de recuperarlo después.":"Sonrasında geri getirmenin bir yolu yok.",
+"Al #% sobre este tamaño: $#":"Bu büyüklükte #% ile: $#",
+"Primero abra una prueba de backtesting.":"Önce bir backtesting testi açın.",
 /* v40 · futuros: la comisión según dónde opera, el stop y la gráfica */
 "#% × # sobre el tamaño":"işlem büyüklüğü üzerinden #% × #",
 "% al abrir y al cerrar":"% açılışta ve kapanışta",
@@ -29342,6 +29925,52 @@ DIC.tr={
 };
 /* РУССКИЙ · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ru={
+"sobre $# que puso":"на вложенные $#",
+/* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
+"#% al abrir y al cerrar":"#% при открытии и при закрытии",
+". No es dinero de verdad: su dinero está en Futuros.":". Это не настоящие деньги: ваши деньги — на Фьючерсах.",
+": al entrar y al salir. Como en la prueba puede poner cantidades enormes, aquí se ve clarísimo cuánto se lleva la casa de cambio cuando la operación es grande.":": при входе и при выходе. А так как в тесте можно ставить огромные суммы, здесь особенно хорошо видно, сколько забирает биржа, когда сделка крупная.",
+"Al #% sobre este tamaño sería $#":"При #% с этого размера было бы $#",
+"Borrar la cuenta y borrar también este aparato":"Удалить аккаунт и стереть данные с этого устройства",
+"Borrar la cuenta y dejar mis datos aquí":"Удалить аккаунт и оставить данные здесь",
+"Borrar mi cuenta":"Удалить мой аккаунт",
+"COMISIONES DE ESTA PRUEBA":"КОМИССИИ ЭТОГО ТЕСТА",
+"Comisiones de la prueba":"Комиссии теста",
+"Comisión de la prueba":"Комиссия теста",
+"Descargar una copia antes de borrar":"Скачать копию перед удалением",
+"Esto es de su prueba de backtesting":"Это из вашего теста бэктестинга",
+"Esto no tiene vuelta atrás.":"Это нельзя отменить.",
+"Lo de este aparato":"Данные на этом устройстве",
+"No queda nada, ni aquí ni en la nube. La aplicación arranca como recién instalada.":"Не останется ничего — ни здесь, ни в облаке. Приложение запустится как только что установленное.",
+"Operaciones cerradas":"Закрытые сделки",
+"Para confirmar, escriba su correo entero":"Чтобы подтвердить, впишите свою почту полностью",
+"Ponerla al día":"Подставить расчёт",
+"Qué NO se borra":"Что НЕ удаляется",
+"Qué se borra":"Что удаляется",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene (# registros). Deja de guardarse en la nube.":"Вы продолжите пользоваться приложением без аккаунта, со всеми данными (записей: #). В облако больше ничего сохраняться не будет.",
+"Su cuenta dentro de esta aplicación":"Ваш аккаунт внутри этого приложения",
+"Su portafolio guardado en la nube":"Ваш портфель, сохранённый в облаке",
+"Una vez borrado, nadie puede devolverle lo que tenía en la nube: ni usted, ni nosotros, ni Google. Si quiere conservarlo, baje antes la copia.":"После удаления никто не сможет вернуть то, что было в облаке: ни вы, ни мы, ни Google. Если хотите это сохранить, сначала скачайте копию.",
+"Va a borrar esta cuenta:":"Вы удаляете этот аккаунт:",
+"Y lo de este aparato":"А данные на этом устройстве",
+"de lo que ya cerró en la prueba":"по уже закрытым сделкам в тесте",
+"esta aplicación no la toca":"это приложение его не трогает",
+"lo que subió a su cuenta":"то, что загружено в ваш аккаунт",
+"se borra":"удаляется",
+"se lo pregunto abajo":"спрошу вас ниже",
+"sigue igual":"остаётся как есть",
+"usted elige":"вы выбираете",
+"Borrando su cuenta…":"Удаляем ваш аккаунт…",
+"Su cuenta quedó borrada. No guardamos nada suyo.":"Ваш аккаунт удалён. Мы не храним ничего вашего.",
+"Google pide que entre otra vez para confirmar que es usted.":"Google просит войти ещё раз, чтобы подтвердить, что это вы.",
+"La sesión se cerró. Entre otra vez y vuelva a intentarlo.":"Сессия закрылась. Войдите снова и попробуйте ещё раз.",
+"No se pudo borrar la cuenta.":"Не удалось удалить аккаунт.",
+"No se borró nada: puede volver a intentarlo.":"Ничего не удалено: можно попробовать снова.",
+"Se borra su cuenta y todo lo de este aparato.":"Удаляется ваш аккаунт и всё, что есть на этом устройстве.",
+"Se borra su cuenta y lo que tenía guardado en la nube.":"Удаляется ваш аккаунт и то, что было сохранено в облаке.",
+"No hay forma de recuperarlo después.":"Потом это нельзя будет восстановить.",
+"Al #% sobre este tamaño: $#":"При #% с этого размера: $#",
+"Primero abra una prueba de backtesting.":"Сначала откройте тест в бэктестинге.",
 /* v40 · futuros: la comisión según dónde opera, el stop y la gráfica */
 "#% × # sobre el tamaño":"#% × # от размера позиции",
 "% al abrir y al cerrar":"% при открытии и при закрытии",
@@ -31333,6 +31962,52 @@ DIC.ru={
 };
 /* УКРАЇНСЬКА · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.uk={
+"sobre $# que puso":"на вкладені $#",
+/* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
+"#% al abrir y al cerrar":"#% під час відкриття й закриття",
+". No es dinero de verdad: su dinero está en Futuros.":". Це не справжні гроші: ваші гроші — у Ф'ючерсах.",
+": al entrar y al salir. Como en la prueba puede poner cantidades enormes, aquí se ve clarísimo cuánto se lleva la casa de cambio cuando la operación es grande.":": на вході й на виході. А оскільки в тесті можна ставити величезні суми, тут особливо добре видно, скільки забирає біржа, коли угода велика.",
+"Al #% sobre este tamaño sería $#":"За #% із цього розміру було б $#",
+"Borrar la cuenta y borrar también este aparato":"Видалити акаунт і стерти дані з цього пристрою",
+"Borrar la cuenta y dejar mis datos aquí":"Видалити акаунт і залишити дані тут",
+"Borrar mi cuenta":"Видалити мій акаунт",
+"COMISIONES DE ESTA PRUEBA":"КОМІСІЇ ЦЬОГО ТЕСТУ",
+"Comisiones de la prueba":"Комісії тесту",
+"Comisión de la prueba":"Комісія тесту",
+"Descargar una copia antes de borrar":"Завантажити копію перед видаленням",
+"Esto es de su prueba de backtesting":"Це з вашого тесту бектестингу",
+"Esto no tiene vuelta atrás.":"Це не можна скасувати.",
+"Lo de este aparato":"Дані на цьому пристрої",
+"No queda nada, ni aquí ni en la nube. La aplicación arranca como recién instalada.":"Не залишиться нічого — ні тут, ні в хмарі. Застосунок запуститься як щойно встановлений.",
+"Operaciones cerradas":"Закриті угоди",
+"Para confirmar, escriba su correo entero":"Щоб підтвердити, впишіть свою пошту повністю",
+"Ponerla al día":"Підставити розрахунок",
+"Qué NO se borra":"Що НЕ видаляється",
+"Qué se borra":"Що видаляється",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene (# registros). Deja de guardarse en la nube.":"Ви й далі користуватиметеся застосунком без акаунта, з усім, що маєте (записів: #). У хмару більше нічого не зберігатиметься.",
+"Su cuenta dentro de esta aplicación":"Ваш акаунт у цьому застосунку",
+"Su portafolio guardado en la nube":"Ваш портфель, збережений у хмарі",
+"Una vez borrado, nadie puede devolverle lo que tenía en la nube: ni usted, ni nosotros, ni Google. Si quiere conservarlo, baje antes la copia.":"Після видалення ніхто не зможе повернути те, що було в хмарі: ні ви, ні ми, ні Google. Якщо хочете це зберегти, спершу завантажте копію.",
+"Va a borrar esta cuenta:":"Ви видаляєте цей акаунт:",
+"Y lo de este aparato":"А дані на цьому пристрої",
+"de lo que ya cerró en la prueba":"за вже закритими угодами в тесті",
+"esta aplicación no la toca":"цей застосунок його не торкається",
+"lo que subió a su cuenta":"те, що вивантажено до вашого акаунта",
+"se borra":"видаляється",
+"se lo pregunto abajo":"запитаю вас нижче",
+"sigue igual":"залишається як є",
+"usted elige":"ви вибираєте",
+"Borrando su cuenta…":"Видаляємо ваш акаунт…",
+"Su cuenta quedó borrada. No guardamos nada suyo.":"Ваш акаунт видалено. Ми не зберігаємо нічого вашого.",
+"Google pide que entre otra vez para confirmar que es usted.":"Google просить увійти ще раз, щоб підтвердити, що це ви.",
+"La sesión se cerró. Entre otra vez y vuelva a intentarlo.":"Сеанс завершено. Увійдіть знову і спробуйте ще раз.",
+"No se pudo borrar la cuenta.":"Не вдалося видалити акаунт.",
+"No se borró nada: puede volver a intentarlo.":"Нічого не видалено: можна спробувати знову.",
+"Se borra su cuenta y todo lo de este aparato.":"Видаляється ваш акаунт і все, що є на цьому пристрої.",
+"Se borra su cuenta y lo que tenía guardado en la nube.":"Видаляється ваш акаунт і те, що було збережено в хмарі.",
+"No hay forma de recuperarlo después.":"Потім це не можна буде відновити.",
+"Al #% sobre este tamaño: $#":"За #% із цього розміру: $#",
+"Primero abra una prueba de backtesting.":"Спершу відкрийте тест у бектестингу.",
 /* v40 · futuros: la comisión según dónde opera, el stop y la gráfica */
 "#% × # sobre el tamaño":"#% × # від розміру угоди",
 "% al abrir y al cerrar":"% під час відкриття й закриття",
@@ -33324,6 +33999,52 @@ DIC.uk={
 };
 /* BAHASA INDONESIA · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.id={
+"sobre $# que puso":"dari modal $#",
+/* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
+"#% al abrir y al cerrar":"#% saat membuka dan menutup",
+". No es dinero de verdad: su dinero está en Futuros.":". Ini bukan uang sungguhan: uang Anda ada di Futures.",
+": al entrar y al salir. Como en la prueba puede poner cantidades enormes, aquí se ve clarísimo cuánto se lleva la casa de cambio cuando la operación es grande.":": saat membuka dan saat menutup. Karena di uji Anda bisa memakai jumlah yang sangat besar, di sini terlihat sangat jelas berapa yang diambil bursa saat transaksinya besar.",
+"Al #% sobre este tamaño sería $#":"Dengan #% atas ukuran ini seharusnya $#",
+"Borrar la cuenta y borrar también este aparato":"Hapus akun dan hapus juga perangkat ini",
+"Borrar la cuenta y dejar mis datos aquí":"Hapus akun dan biarkan data saya di sini",
+"Borrar mi cuenta":"Hapus akun saya",
+"COMISIONES DE ESTA PRUEBA":"BIAYA UJI INI",
+"Comisiones de la prueba":"Biaya uji ini",
+"Comisión de la prueba":"Biaya uji",
+"Descargar una copia antes de borrar":"Unduh cadangan sebelum menghapus",
+"Esto es de su prueba de backtesting":"Ini berasal dari uji backtesting Anda",
+"Esto no tiene vuelta atrás.":"Ini tidak bisa dibatalkan.",
+"Lo de este aparato":"Data di perangkat ini",
+"No queda nada, ni aquí ni en la nube. La aplicación arranca como recién instalada.":"Tidak ada yang tersisa, baik di sini maupun di cloud. Aplikasi mulai lagi seperti baru dipasang.",
+"Operaciones cerradas":"Transaksi ditutup",
+"Para confirmar, escriba su correo entero":"Untuk mengonfirmasi, tulis email Anda lengkap",
+"Ponerla al día":"Pakai hitungan ini",
+"Qué NO se borra":"Yang TIDAK dihapus",
+"Qué se borra":"Yang dihapus",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene (# registros). Deja de guardarse en la nube.":"Anda tetap memakai aplikasi tanpa akun, dengan semua data yang ada (# catatan). Data berhenti disimpan ke cloud.",
+"Su cuenta dentro de esta aplicación":"Akun Anda di dalam aplikasi ini",
+"Su portafolio guardado en la nube":"Portofolio Anda yang tersimpan di cloud",
+"Una vez borrado, nadie puede devolverle lo que tenía en la nube: ni usted, ni nosotros, ni Google. Si quiere conservarlo, baje antes la copia.":"Setelah dihapus, tidak ada yang bisa mengembalikan apa yang ada di cloud: tidak Anda, tidak kami, tidak juga Google. Jika ingin menyimpannya, unduh cadangan lebih dulu.",
+"Va a borrar esta cuenta:":"Anda akan menghapus akun ini:",
+"Y lo de este aparato":"Dan data di perangkat ini",
+"de lo que ya cerró en la prueba":"dari yang sudah Anda tutup di uji ini",
+"esta aplicación no la toca":"aplikasi ini tidak menyentuhnya",
+"lo que subió a su cuenta":"yang terunggah ke akun Anda",
+"se borra":"dihapus",
+"se lo pregunto abajo":"saya tanyakan di bawah",
+"sigue igual":"tetap sama",
+"usted elige":"Anda yang memilih",
+"Borrando su cuenta…":"Menghapus akun Anda…",
+"Su cuenta quedó borrada. No guardamos nada suyo.":"Akun Anda sudah dihapus. Kami tidak menyimpan apa pun milik Anda.",
+"Google pide que entre otra vez para confirmar que es usted.":"Google meminta Anda masuk sekali lagi untuk memastikan ini benar Anda.",
+"La sesión se cerró. Entre otra vez y vuelva a intentarlo.":"Sesi berakhir. Masuk lagi lalu coba sekali lagi.",
+"No se pudo borrar la cuenta.":"Akun tidak bisa dihapus.",
+"No se borró nada: puede volver a intentarlo.":"Tidak ada yang terhapus: Anda bisa mencoba lagi.",
+"Se borra su cuenta y todo lo de este aparato.":"Akun Anda dan semua data di perangkat ini akan dihapus.",
+"Se borra su cuenta y lo que tenía guardado en la nube.":"Akun Anda dan semua yang tersimpan di cloud akan dihapus.",
+"No hay forma de recuperarlo después.":"Setelah itu tidak ada cara untuk mengembalikannya.",
+"Al #% sobre este tamaño: $#":"Dengan #% atas ukuran ini: $#",
+"Primero abra una prueba de backtesting.":"Buka dulu sebuah uji backtesting.",
 /* v40 · futuros: la comisión según dónde opera, el stop y la gráfica */
 "#% × # sobre el tamaño":"#% × # dari ukuran transaksi",
 "% al abrir y al cerrar":"% saat membuka dan menutup",
@@ -35315,6 +36036,52 @@ DIC.id={
 };
 /* TIẾNG VIỆT · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.vi={
+"sobre $# que puso":"trên $# đã bỏ vào",
+/* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
+"#% al abrir y al cerrar":"#% khi mở và khi đóng lệnh",
+". No es dinero de verdad: su dinero está en Futuros.":". Đây không phải tiền thật: tiền của bạn nằm ở Futures.",
+": al entrar y al salir. Como en la prueba puede poner cantidades enormes, aquí se ve clarísimo cuánto se lleva la casa de cambio cuando la operación es grande.":": khi vào lệnh và khi đóng lệnh. Vì trong bài thử bạn có thể đặt những số tiền rất lớn, ở đây thấy rất rõ sàn lấy bao nhiêu khi lệnh lớn.",
+"Al #% sobre este tamaño sería $#":"Với #% trên quy mô này thì sẽ là $#",
+"Borrar la cuenta y borrar también este aparato":"Xóa tài khoản và xóa luôn thiết bị này",
+"Borrar la cuenta y dejar mis datos aquí":"Xóa tài khoản và giữ dữ liệu ở đây",
+"Borrar mi cuenta":"Xóa tài khoản của tôi",
+"COMISIONES DE ESTA PRUEBA":"PHÍ CỦA BÀI THỬ NÀY",
+"Comisiones de la prueba":"Phí của bài thử",
+"Comisión de la prueba":"Phí bài thử",
+"Descargar una copia antes de borrar":"Tải bản sao lưu xuống trước khi xóa",
+"Esto es de su prueba de backtesting":"Đây là số liệu từ bài thử backtesting của bạn",
+"Esto no tiene vuelta atrás.":"Việc này không thể hoàn tác.",
+"Lo de este aparato":"Dữ liệu trên thiết bị này",
+"No queda nada, ni aquí ni en la nube. La aplicación arranca como recién instalada.":"Không còn lại gì, cả ở đây lẫn trên đám mây. Ứng dụng sẽ khởi động như vừa mới cài.",
+"Operaciones cerradas":"Lệnh đã đóng",
+"Para confirmar, escriba su correo entero":"Để xác nhận, hãy nhập đầy đủ email của bạn",
+"Ponerla al día":"Lấy số đã tính",
+"Qué NO se borra":"Những gì KHÔNG bị xóa",
+"Qué se borra":"Những gì bị xóa",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene (# registros). Deja de guardarse en la nube.":"Bạn tiếp tục dùng ứng dụng không cần tài khoản, với mọi thứ đang có (# bản ghi). Dữ liệu sẽ không còn được lưu lên đám mây.",
+"Su cuenta dentro de esta aplicación":"Tài khoản của bạn trong ứng dụng này",
+"Su portafolio guardado en la nube":"Danh mục của bạn đã lưu trên đám mây",
+"Una vez borrado, nadie puede devolverle lo que tenía en la nube: ni usted, ni nosotros, ni Google. Si quiere conservarlo, baje antes la copia.":"Một khi đã xóa, không ai lấy lại được những gì bạn có trên đám mây: bạn cũng không, chúng tôi cũng không, Google cũng không. Nếu muốn giữ lại, hãy tải bản sao lưu xuống trước.",
+"Va a borrar esta cuenta:":"Bạn sắp xóa tài khoản này:",
+"Y lo de este aparato":"Và dữ liệu trên thiết bị này",
+"de lo que ya cerró en la prueba":"từ những lệnh bạn đã đóng trong bài thử",
+"esta aplicación no la toca":"ứng dụng này không hề chạm tới",
+"lo que subió a su cuenta":"những gì đã tải lên tài khoản của bạn",
+"se borra":"bị xóa",
+"se lo pregunto abajo":"tôi sẽ hỏi bạn ở dưới",
+"sigue igual":"vẫn như cũ",
+"usted elige":"bạn chọn",
+"Borrando su cuenta…":"Đang xóa tài khoản của bạn…",
+"Su cuenta quedó borrada. No guardamos nada suyo.":"Tài khoản của bạn đã bị xóa. Chúng tôi không giữ lại gì của bạn.",
+"Google pide que entre otra vez para confirmar que es usted.":"Google yêu cầu bạn đăng nhập lại để xác nhận đúng là bạn.",
+"La sesión se cerró. Entre otra vez y vuelva a intentarlo.":"Phiên đã đóng. Hãy đăng nhập lại rồi thử lần nữa.",
+"No se pudo borrar la cuenta.":"Không xóa được tài khoản.",
+"No se borró nada: puede volver a intentarlo.":"Chưa có gì bị xóa: bạn có thể thử lại.",
+"Se borra su cuenta y todo lo de este aparato.":"Tài khoản của bạn và mọi thứ trên thiết bị này sẽ bị xóa.",
+"Se borra su cuenta y lo que tenía guardado en la nube.":"Tài khoản của bạn và những gì đã lưu trên đám mây sẽ bị xóa.",
+"No hay forma de recuperarlo después.":"Sau đó không có cách nào lấy lại được.",
+"Al #% sobre este tamaño: $#":"Với #% trên quy mô này: $#",
+"Primero abra una prueba de backtesting.":"Hãy mở một bài thử backtesting trước.",
 /* v40 · futuros: la comisión según dónde opera, el stop y la gráfica */
 "#% × # sobre el tamaño":"#% × # trên quy mô lệnh",
 "% al abrir y al cerrar":"% khi mở và khi đóng lệnh",
@@ -37306,6 +38073,52 @@ DIC.vi={
 };
 /* हिन्दी · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.hi={
+"sobre $# que puso":"लगाए $# पर",
+/* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
+"#% al abrir y al cerrar":"#% खोलते और बंद करते समय",
+". No es dinero de verdad: su dinero está en Futuros.":". यह असली पैसा नहीं है: आपका पैसा फ्यूचर्स में है.",
+": al entrar y al salir. Como en la prueba puede poner cantidades enormes, aquí se ve clarísimo cuánto se lleva la casa de cambio cuando la operación es grande.":": ट्रेड खोलते समय और बंद करते समय. टेस्ट में आप बहुत बड़ी रकम डाल सकते हैं, इसलिए यहाँ बिलकुल साफ़ दिखता है कि ट्रेड बड़ा होने पर एक्सचेंज कितना ले जाता है.",
+"Al #% sobre este tamaño sería $#":"#% पर इस साइज़ पर यह $# होता",
+"Borrar la cuenta y borrar también este aparato":"खाता मिटाएँ और यह डिवाइस भी साफ़ करें",
+"Borrar la cuenta y dejar mis datos aquí":"खाता मिटाएँ, मेरा डेटा यहीं रहे",
+"Borrar mi cuenta":"मेरा खाता मिटाएँ",
+"COMISIONES DE ESTA PRUEBA":"इस टेस्ट के शुल्क",
+"Comisiones de la prueba":"टेस्ट के शुल्क",
+"Comisión de la prueba":"टेस्ट का शुल्क",
+"Descargar una copia antes de borrar":"मिटाने से पहले बैकअप डाउनलोड करें",
+"Esto es de su prueba de backtesting":"यह आपकी बैकटेस्टिंग टेस्ट का डेटा है:",
+"Esto no tiene vuelta atrás.":"इसे वापस नहीं लाया जा सकता.",
+"Lo de este aparato":"इस डिवाइस का डेटा",
+"No queda nada, ni aquí ni en la nube. La aplicación arranca como recién instalada.":"कुछ भी नहीं बचेगा, न यहाँ न क्लाउड में. ऐप अभी-अभी इंस्टॉल हुई जैसी शुरू होगी.",
+"Operaciones cerradas":"बंद ट्रेड",
+"Para confirmar, escriba su correo entero":"पुष्टि के लिए, अपना पूरा ईमेल लिखें",
+"Ponerla al día":"हिसाब वाला डालें",
+"Qué NO se borra":"क्या नहीं मिटता",
+"Qué se borra":"क्या मिटता है",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene (# registros). Deja de guardarse en la nube.":"आप बिना खाते के ऐप इस्तेमाल करते रहेंगे, अपने पूरे डेटा (# रिकॉर्ड) के साथ. क्लाउड में सेव होना बंद हो जाएगा.",
+"Su cuenta dentro de esta aplicación":"इस ऐप के अंदर आपका खाता",
+"Su portafolio guardado en la nube":"क्लाउड में सेव आपका पोर्टफ़ोलियो",
+"Una vez borrado, nadie puede devolverle lo que tenía en la nube: ni usted, ni nosotros, ni Google. Si quiere conservarlo, baje antes la copia.":"एक बार मिट जाने पर, क्लाउड में जो था उसे कोई वापस नहीं दे सकता: न आप, न हम, न Google. अगर उसे रखना है, तो पहले बैकअप डाउनलोड कर लें.",
+"Va a borrar esta cuenta:":"आप यह खाता मिटाने जा रहे हैं:",
+"Y lo de este aparato":"और इस डिवाइस का डेटा",
+"de lo que ya cerró en la prueba":"टेस्ट में जो आप बंद कर चुके हैं, उसका",
+"esta aplicación no la toca":"यह ऐप उसे छूती नहीं",
+"lo que subió a su cuenta":"जो आपके खाते में अपलोड हुआ",
+"se borra":"मिट जाता है",
+"se lo pregunto abajo":"नीचे पूछ रहा हूँ",
+"sigue igual":"वैसा ही रहता है",
+"usted elige":"आप चुनें",
+"Borrando su cuenta…":"आपका खाता मिटाया जा रहा है…",
+"Su cuenta quedó borrada. No guardamos nada suyo.":"आपका खाता मिट गया. हम आपका कुछ भी नहीं रखते.",
+"Google pide que entre otra vez para confirmar que es usted.":"Google चाहता है कि आप दोबारा साइन इन करके पुष्टि करें कि यह आप ही हैं.",
+"La sesión se cerró. Entre otra vez y vuelva a intentarlo.":"सेशन बंद हो गया. दोबारा साइन इन करें और फिर कोशिश करें.",
+"No se pudo borrar la cuenta.":"खाता मिटाया नहीं जा सका.",
+"No se borró nada: puede volver a intentarlo.":"कुछ भी नहीं मिटा: आप फिर कोशिश कर सकते हैं.",
+"Se borra su cuenta y todo lo de este aparato.":"आपका खाता और इस डिवाइस का सारा डेटा मिट जाएगा.",
+"Se borra su cuenta y lo que tenía guardado en la nube.":"आपका खाता और क्लाउड में सेव सब कुछ मिट जाएगा.",
+"No hay forma de recuperarlo después.":"बाद में इसे वापस लाने का कोई तरीका नहीं है.",
+"Al #% sobre este tamaño: $#":"#% पर इस साइज़ पर: $#",
+"Primero abra una prueba de backtesting.":"पहले कोई बैकटेस्टिंग टेस्ट खोलें.",
 /* v40 · futuros: la comisión según dónde opera, el stop y la gráfica */
 "#% × # sobre el tamaño":"ट्रेड के आकार पर #% × #",
 "% al abrir y al cerrar":"% खोलते और बंद करते समय",
@@ -39297,6 +40110,52 @@ DIC.hi={
 };
 /* 日本語 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ja={
+"sobre $# que puso":"投入した $# に対して",
+/* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
+"#% al abrir y al cerrar":"#%（エントリー時と決済時）",
+". No es dinero de verdad: su dinero está en Futuros.":"。本物のお金ではありません。あなたのお金は先物にあります。",
+": al entrar y al salir. Como en la prueba puede poner cantidades enormes, aquí se ve clarísimo cuánto se lleva la casa de cambio cuando la operación es grande.":"：エントリー時と決済時です。テストでは非常に大きな金額を入れられるので、取引が大きいときに取引所がどれだけ取っていくのかがはっきり分かります。",
+"Al #% sobre este tamaño sería $#":"#%でこのサイズなら$#になります",
+"Borrar la cuenta y borrar también este aparato":"アカウントを削除し、この端末のデータも消す",
+"Borrar la cuenta y dejar mis datos aquí":"アカウントを削除し、データはこの端末に残す",
+"Borrar mi cuenta":"アカウントを削除",
+"COMISIONES DE ESTA PRUEBA":"このテストの手数料",
+"Comisiones de la prueba":"テストの手数料",
+"Comisión de la prueba":"テスト分の手数料",
+"Descargar una copia antes de borrar":"削除する前にバックアップをダウンロード",
+"Esto es de su prueba de backtesting":"これはバックテストのテストの数字です：",
+"Esto no tiene vuelta atrás.":"これは元に戻せません。",
+"Lo de este aparato":"この端末のデータ",
+"No queda nada, ni aquí ni en la nube. La aplicación arranca como recién instalada.":"ここにもクラウドにも、何も残りません。アプリはインストールしたばかりの状態で起動します。",
+"Operaciones cerradas":"決済済みの取引",
+"Para confirmar, escriba su correo entero":"確認のため、メールアドレスを全部入力してください",
+"Ponerla al día":"計算値を入れる",
+"Qué NO se borra":"削除されないもの",
+"Qué se borra":"削除されるもの",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene (# registros). Deja de guardarse en la nube.":"アカウントなしで、今あるデータ（#件の記録）をそのまま使い続けられます。クラウドへの保存は止まります。",
+"Su cuenta dentro de esta aplicación":"このアプリ内のアカウント",
+"Su portafolio guardado en la nube":"クラウドに保存されたポートフォリオ",
+"Una vez borrado, nadie puede devolverle lo que tenía en la nube: ni usted, ni nosotros, ni Google. Si quiere conservarlo, baje antes la copia.":"いったん削除すると、クラウドにあったものは誰も元に戻せません。あなたも、私たちも、Googleもです。残しておきたい場合は、先にバックアップをダウンロードしてください。",
+"Va a borrar esta cuenta:":"削除するアカウント：",
+"Y lo de este aparato":"この端末のデータについて",
+"de lo que ya cerró en la prueba":"テストで決済済みの分",
+"esta aplicación no la toca":"このアプリは触りません",
+"lo que subió a su cuenta":"アカウントにアップロードされた分",
+"se borra":"削除されます",
+"se lo pregunto abajo":"下でお聞きします",
+"sigue igual":"そのまま",
+"usted elige":"お選びください",
+"Borrando su cuenta…":"アカウントを削除しています…",
+"Su cuenta quedó borrada. No guardamos nada suyo.":"アカウントを削除しました。お客様のデータは何も保持していません。",
+"Google pide que entre otra vez para confirmar que es usted.":"本人確認のため、Googleがもう一度のログインを求めています。",
+"La sesión se cerró. Entre otra vez y vuelva a intentarlo.":"セッションが切れました。もう一度ログインして、やり直してください。",
+"No se pudo borrar la cuenta.":"アカウントを削除できませんでした。",
+"No se borró nada: puede volver a intentarlo.":"何も削除されていません。もう一度お試しいただけます。",
+"Se borra su cuenta y todo lo de este aparato.":"アカウントと、この端末のデータすべてを削除します。",
+"Se borra su cuenta y lo que tenía guardado en la nube.":"アカウントと、クラウドに保存されていたデータを削除します。",
+"No hay forma de recuperarlo después.":"あとから元に戻す方法はありません。",
+"Al #% sobre este tamaño: $#":"#%でこのサイズなら：$#",
+"Primero abra una prueba de backtesting.":"先にバックテストのテストを開いてください。",
 /* v40 · futuros: la comisión según dónde opera, el stop y la gráfica */
 "#% × # sobre el tamaño":"#% × #（ポジションサイズに対して）",
 "% al abrir y al cerrar":"%（エントリー時と決済時）",
@@ -41288,6 +42147,52 @@ DIC.ja={
 };
 /* 한국어 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ko={
+"sobre $# que puso":"투입한 $# 대비",
+/* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
+"#% al abrir y al cerrar":"#% (진입 시와 종료 시)",
+". No es dinero de verdad: su dinero está en Futuros.":". 실제 돈이 아닙니다. 실제 돈은 선물에 있습니다.",
+": al entrar y al salir. Como en la prueba puede poner cantidades enormes, aquí se ve clarísimo cuánto se lleva la casa de cambio cuando la operación es grande.":": 진입할 때와 종료할 때 냅니다. 테스트에서는 아주 큰 금액을 넣을 수 있으므로, 거래가 클 때 거래소가 얼마나 가져가는지 아주 분명하게 보입니다.",
+"Al #% sobre este tamaño sería $#":"#%로 이 규모라면 $#입니다",
+"Borrar la cuenta y borrar también este aparato":"계정을 삭제하고 이 기기에서도 삭제",
+"Borrar la cuenta y dejar mis datos aquí":"계정을 삭제하고 데이터는 여기에 두기",
+"Borrar mi cuenta":"내 계정 삭제",
+"COMISIONES DE ESTA PRUEBA":"이 테스트의 수수료",
+"Comisiones de la prueba":"테스트 수수료",
+"Comisión de la prueba":"테스트의 수수료",
+"Descargar una copia antes de borrar":"삭제 전에 백업 다운로드",
+"Esto es de su prueba de backtesting":"이 금액은 백테스트 테스트의 것입니다:",
+"Esto no tiene vuelta atrás.":"되돌릴 수 없습니다.",
+"Lo de este aparato":"이 기기의 데이터",
+"No queda nada, ni aquí ni en la nube. La aplicación arranca como recién instalada.":"여기에도 클라우드에도 아무것도 남지 않습니다. 앱은 새로 설치한 상태로 시작합니다.",
+"Operaciones cerradas":"종료된 거래",
+"Para confirmar, escriba su correo entero":"확인을 위해 이메일을 전부 입력하세요",
+"Ponerla al día":"계산값 넣기",
+"Qué NO se borra":"삭제되지 않는 것",
+"Qué se borra":"삭제되는 것",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene (# registros). Deja de guardarse en la nube.":"모든 데이터(기록 #건)를 그대로 두고 계정 없이 앱을 계속 사용합니다. 클라우드 저장은 중단됩니다.",
+"Su cuenta dentro de esta aplicación":"이 앱 안의 내 계정",
+"Su portafolio guardado en la nube":"클라우드에 저장된 내 포트폴리오",
+"Una vez borrado, nadie puede devolverle lo que tenía en la nube: ni usted, ni nosotros, ni Google. Si quiere conservarlo, baje antes la copia.":"한번 삭제하면 클라우드에 있던 것은 아무도 되돌려 줄 수 없습니다. 본인도, 저희도, Google도 할 수 없습니다. 보관하고 싶다면 먼저 백업을 다운로드하세요.",
+"Va a borrar esta cuenta:":"삭제할 계정:",
+"Y lo de este aparato":"그리고 이 기기의 데이터",
+"de lo que ya cerró en la prueba":"테스트에서 이미 종료한 거래 기준",
+"esta aplicación no la toca":"이 앱은 건드리지 않습니다",
+"lo que subió a su cuenta":"계정에 업로드된 내용",
+"se borra":"삭제됩니다",
+"se lo pregunto abajo":"아래에서 여쭤봅니다",
+"sigue igual":"그대로 유지됩니다",
+"usted elige":"직접 선택",
+"Borrando su cuenta…":"계정을 삭제하는 중…",
+"Su cuenta quedó borrada. No guardamos nada suyo.":"계정이 삭제되었습니다. 저희는 고객님의 데이터를 전혀 보관하지 않습니다.",
+"Google pide que entre otra vez para confirmar que es usted.":"본인 확인을 위해 Google이 다시 로그인하도록 요청합니다.",
+"La sesión se cerró. Entre otra vez y vuelva a intentarlo.":"세션이 종료되었습니다. 다시 로그인한 후 시도해 주세요.",
+"No se pudo borrar la cuenta.":"계정을 삭제할 수 없습니다.",
+"No se borró nada: puede volver a intentarlo.":"삭제된 것은 없습니다. 다시 시도할 수 있습니다.",
+"Se borra su cuenta y todo lo de este aparato.":"계정과 이 기기의 모든 데이터가 삭제됩니다.",
+"Se borra su cuenta y lo que tenía guardado en la nube.":"계정과 클라우드에 저장된 내용이 삭제됩니다.",
+"No hay forma de recuperarlo después.":"나중에 복구할 방법은 없습니다.",
+"Al #% sobre este tamaño: $#":"#%로 이 규모라면: $#",
+"Primero abra una prueba de backtesting.":"먼저 백테스트 테스트를 열어 주세요.",
 /* v40 · futuros: la comisión según dónde opera, el stop y la gráfica */
 "#% × # sobre el tamaño":"거래 규모의 #% × #",
 "% al abrir y al cerrar":"% (진입 시와 종료 시)",
@@ -43279,6 +44184,52 @@ DIC.ko={
 };
 /* 中文（简体） · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.zh={
+"sobre $# que puso":"基于投入的 $#",
+/* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
+"#% al abrir y al cerrar":"#%（开仓和平仓时）",
+". No es dinero de verdad: su dinero está en Futuros.":"。这不是真钱：您的钱在合约里。",
+": al entrar y al salir. Como en la prueba puede poner cantidades enormes, aquí se ve clarísimo cuánto se lleva la casa de cambio cuando la operación es grande.":"：开仓时一次，平仓时一次。测试里可以填很大的金额，所以在这里能特别清楚地看到，交易规模大时交易所拿走多少。",
+"Al #% sobre este tamaño sería $#":"按 #% 计算，这个规模应为 $#",
+"Borrar la cuenta y borrar también este aparato":"删除账户，并清空本设备",
+"Borrar la cuenta y dejar mis datos aquí":"删除账户，把数据留在这里",
+"Borrar mi cuenta":"删除我的账户",
+"COMISIONES DE ESTA PRUEBA":"本次测试的手续费",
+"Comisiones de la prueba":"测试的手续费",
+"Comisión de la prueba":"测试手续费",
+"Descargar una copia antes de borrar":"删除前先下载备份",
+"Esto es de su prueba de backtesting":"这是您回测测试的数据：",
+"Esto no tiene vuelta atrás.":"此操作无法撤销。",
+"Lo de este aparato":"本设备上的数据",
+"No queda nada, ni aquí ni en la nube. La aplicación arranca como recién instalada.":"这里和云端都不会留下任何东西。应用会像刚安装时一样重新开始。",
+"Operaciones cerradas":"已平仓交易",
+"Para confirmar, escriba su correo entero":"请输入完整邮箱以确认",
+"Ponerla al día":"按计算值填入",
+"Qué NO se borra":"不会删除的内容",
+"Qué se borra":"会删除的内容",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene (# registros). Deja de guardarse en la nube.":"继续不登录使用应用，保留现有的全部内容（# 条记录）。数据将不再保存到云端。",
+"Su cuenta dentro de esta aplicación":"您在本应用内的账户",
+"Su portafolio guardado en la nube":"保存在云端的投资组合",
+"Una vez borrado, nadie puede devolverle lo que tenía en la nube: ni usted, ni nosotros, ni Google. Si quiere conservarlo, baje antes la copia.":"一旦删除，云端的内容谁也无法还原：您不行，我们不行，Google 也不行。如果想保留，请先下载备份。",
+"Va a borrar esta cuenta:":"您将删除此账户：",
+"Y lo de este aparato":"以及本设备上的数据",
+"de lo que ya cerró en la prueba":"仅计测试中已平仓的部分",
+"esta aplicación no la toca":"本应用不会碰它",
+"lo que subió a su cuenta":"已上传到您账户的内容",
+"se borra":"会被删除",
+"se lo pregunto abajo":"下面会问您",
+"sigue igual":"保持不变",
+"usted elige":"您来选择",
+"Borrando su cuenta…":"正在删除您的账户…",
+"Su cuenta quedó borrada. No guardamos nada suyo.":"您的账户已删除。我们不保留您的任何数据。",
+"Google pide que entre otra vez para confirmar que es usted.":"Google 要求您再登录一次，以确认是您本人。",
+"La sesión se cerró. Entre otra vez y vuelva a intentarlo.":"登录状态已失效。请重新登录后再试。",
+"No se pudo borrar la cuenta.":"账户删除失败。",
+"No se borró nada: puede volver a intentarlo.":"没有删除任何内容：您可以再试一次。",
+"Se borra su cuenta y todo lo de este aparato.":"将删除您的账户和本设备上的全部数据。",
+"Se borra su cuenta y lo que tenía guardado en la nube.":"将删除您的账户和保存在云端的内容。",
+"No hay forma de recuperarlo después.":"之后无法恢复。",
+"Al #% sobre este tamaño: $#":"按 #% 计算，这个规模为：$#",
+"Primero abra una prueba de backtesting.":"请先打开一个回测测试。",
 /* v40 · futuros: la comisión según dónde opera, el stop y la gráfica */
 "#% × # sobre el tamaño":"按仓位大小 #% × #",
 "% al abrir y al cerrar":"%（开仓和平仓时）",
