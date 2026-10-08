@@ -1101,6 +1101,13 @@ body.conCerrojo{overflow:hidden}
   background:radial-gradient(130% 100% at 50% 0%,color-mix(in srgb,var(--ac) 12%,var(--b0)),var(--b0));
   animation:cjEntra .18s ease-out}
 #cerrojo.fuera{opacity:0;transition:opacity .24s}
+/* AQUÍ ESTABA EL FALLO DE «PULSO ¿OLVIDÓ SU CLAVE? Y NO SALE NADA»:
+   el candado está a 9999 y las hojas a 60, así que la hoja de ayuda se
+   abría DEBAJO del candado. Se abría de verdad — estaba en la pantalla —
+   pero tapada, y desde fuera parecía que el enlace no hacía nada.
+   Mientras el candado esté puesto, su ayuda y sus avisos van por encima. */
+body.conCerrojo #velo{z-index:10000}
+body.conCerrojo #aviso{z-index:10001}
 @keyframes cjEntra{from{opacity:0}to{opacity:1}}
 .cjCaja{width:100%;max-width:360px;text-align:center}
 .cjIco{width:72px;height:72px;margin:0 auto 18px;border-radius:22px;display:grid;place-items:center;
@@ -1130,6 +1137,36 @@ body.conCerrojo{overflow:hidden}
   font-size:14px;font-weight:700;color:var(--acTx);text-decoration:underline;
   text-underline-offset:3px;padding:10px}
 .cjOtra:hover{color:var(--ac)}
+
+/* ---------------------------------------------------------------------
+   EL CORREO TAPADO — sale l•••••@gmail.com y con un toque se destapa.
+   Es un botón, pero tiene que leerse como texto: hereda la letra y el
+   color de donde esté metido, y solo el subrayado de puntos avisa de que
+   se puede tocar. Así sirve igual dentro de una frase o solo en su línea.
+   --------------------------------------------------------------------- */
+.correoTap{display:inline;background:none;border:0;padding:0;margin:0;cursor:pointer;
+  font:inherit;color:inherit;letter-spacing:inherit;text-align:inherit;
+  text-decoration:underline dotted;text-underline-offset:3px;
+  max-width:100%;overflow-wrap:anywhere}
+.correoTap:hover{color:var(--acTx)}
+.correoTap:focus-visible{outline:2px solid var(--ac);outline-offset:2px;border-radius:4px}
+
+/* ---------------------------------------------------------------------
+   LA RECUPERACIÓN DE LA CLAVE, desde el candado.
+   --------------------------------------------------------------------- */
+.rcCorreo{display:block;text-align:center;font-size:17px;font-weight:700;color:var(--tx);
+  margin:0 0 4px;overflow-wrap:anywhere}
+.rcCifras{width:100%;box-sizing:border-box;text-align:center;letter-spacing:.42em;
+  font-size:26px;font-weight:700;padding:15px 12px 15px 21px;border-radius:12px;
+  background:var(--b1);border:1px solid var(--ln);color:var(--tx);
+  font-family:inherit;font-variant-numeric:tabular-nums}
+.rcCifras:focus{outline:none;border-color:var(--ac)}
+.rcOtra{background:none;border:0;cursor:pointer;font-family:inherit;font-size:13px;
+  font-weight:600;color:var(--t3);text-decoration:underline;text-underline-offset:3px;
+  padding:8px 0}
+.rcOtra:hover{color:var(--tx)}
+.rcOtra[disabled]{opacity:.5;cursor:default;text-decoration:none}
+
 .bvLegal{margin:14px 0 0;font-size:11.5px}
 .bvLegal a{color:var(--t3);text-decoration:underline;text-underline-offset:3px}
 .bvLegal a:hover{color:var(--ac)}
@@ -1214,7 +1251,7 @@ body.conCerrojo{overflow:hidden}
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por su cuenta de Google.
    ===================================================================== */
-var VERSION="36";
+var VERSION="37";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -7784,6 +7821,283 @@ function quitarLlave(){
 }
 
 /* =====================================================================
+   SI OLVIDÓ LA CLAVE — un código de 6 cifras a su correo
+   ---------------------------------------------------------------------
+   Antes aquí decía «no le llega ningún código al correo» y se le pedía
+   al cliente que borrara los datos de la aplicación y volviera a entrar.
+   Para algo que se vende, eso no es una recuperación: es una rendición.
+
+   CÓMO FUNCIONA, en corto: la clave no se puede mandar porque no existe
+   en ningún sitio — de ella solo se guarda una huella de una sola
+   dirección. Así que no se manda la vieja: se comprueba que usted es el
+   dueño del correo, y con eso pone una NUEVA.
+
+   El código nace y se comprueba EN EL VIGILANTE, nunca en el teléfono.
+   Si lo fabricara el teléfono, estaría dentro del teléfono, y el que se
+   lo robó lo sacaría de ahí sin abrir ningún correo.
+
+   El correo con el que entró está guardado en este aparato desde que
+   entró con Google (11c-cuenta.js), así que la pantalla ya sabe a quién
+   le toca escribir — por eso puede enseñarlo tapado sin preguntar nada.
+
+   LAS PERILLAS, TODAS JUNTAS Y A LA VISTA. Si algún día cambia la
+   dirección del vigilante o los minutos que vale el código, se cambia
+   aquí y en ningún otro sitio:
+   ===================================================================== */
+var RECU={
+  donde:      "https://recuperacion-clave.miportafoliocriptoapp.workers.dev",
+  clave:      "8b7fabd1c76411f15f2b3d8a75e6a02b53465234086a351f",
+  minutos:    10,   /* lo que vale el código; tiene que coincidir con el vigilante */
+  cifras:     6,
+  esperaOtro: 60    /* segundos antes de poder pedir otro código */
+};
+
+function recuLlamar(ruta, cuerpo){
+  return fetch(RECU.donde+ruta,{
+    method:"POST",
+    headers:{"Content-Type":"application/json","X-Clave-App":RECU.clave},
+    body:JSON.stringify(cuerpo)
+  }).then(function(r){
+    return r.text().then(function(t){
+      var j=null; try{ j=JSON.parse(t); }catch(e){}
+      return { bien:(r.status===200 && j && j.ok===true), estado:r.status, j:j||{} };
+    });
+  });
+}
+/* Lo que el vigilante contesta en seco, dicho para una persona. */
+function recuQueDice(x){
+  var e=(x && x.j && x.j.error)||"";
+  if(e==="espere")        return "Acaba de pedir uno. Espere un minuto y vuelva a intentarlo.";
+  if(e==="limite")        return "Ya pidió cinco códigos hoy con ese correo. Inténtelo mañana.";
+  if(e==="correo")        return "Ese correo no está bien escrito.";
+  if(e==="envio")         return "No se pudo mandar el correo ahora mismo. Inténtelo en un rato.";
+  if(e==="vencido")       return "Ese código ya no vale. Pida uno nuevo.";
+  if(e==="intentos")      return "Demasiados intentos. Pida un código nuevo.";
+  if(e==="no autorizado") return "Esta versión de la aplicación no puede pedir códigos. Traiga la versión nueva.";
+  if(e==="incorrecto")    return (+x.j.quedan>0)
+      ? "El código no coincide. Le quedan "+(+x.j.quedan)+" intentos."
+      : "El código no coincide.";
+  return "No se pudo. Inténtelo otra vez.";
+}
+
+/* El reparto: con cuenta hay camino de vuelta; sin cuenta, no lo hay, y
+   se dice sin maquillarlo. */
+function hojaOlvide(alEntrar){
+  var cc=(typeof ctaCfg==="function") ? ctaCfg() : null;
+  var correo=(cc && cc.correo) || "";
+  if(correo) recuPaso1(correo, alEntrar);
+  else       hojaOlvideInvitado();
+}
+
+/* ---------- paso 1: confirmar el correo y pedir el código ---------- */
+function recuPaso1(correo, alEntrar){
+  abrir('<div class="hoja"><div class="hh"><h3>¿Olvidó su clave?</h3>'+
+    '<button class="x" data-cerrar>×</button></div><div class="hb">'+
+
+    '<p style="font-size:14px;line-height:1.75;margin:0 0 14px">'+
+    '<b>Le mandamos un código a su correo y pone una clave nueva.</b> No pierde nada de lo '+
+    'que tiene guardado aquí.</p>'+
+
+    '<div class="fcalc" style="text-align:center">'+
+      '<span class="rcCorreo">'+esc(correoTapado(correo))+'</span>'+
+      'Escriba su correo entero para confirmar que es usted.</div>'+
+
+    '<div class="campos" style="margin-top:12px"><div class="campo ancho">'+
+      '<label>Su correo</label>'+
+      '<input id="rcCorreo" type="email" inputmode="email" autocomplete="email" '+
+      'spellcheck="false" style="font-family:inherit"></div></div>'+
+
+    '<div class="nota mal" id="rcMal" style="display:none"></div>'+
+    '<div style="text-align:center"><button class="rcOtra" id="rcSinCorreo">'+
+      'No puedo abrir ese correo</button></div>'+
+
+    '</div><div class="hf"><button class="b" data-cerrar>Cancelar</button>'+
+    '<button class="b ac" id="rcManda">Mandarme el código</button></div></div>',
+    function(M){
+      var campo=M.querySelector("#rcCorreo");
+      var boton=M.querySelector("#rcManda");
+      var malo =M.querySelector("#rcMal");
+      function mal(t){ malo.style.display=""; malo.textContent=t; }
+
+      M.querySelector("#rcSinCorreo").onclick=function(){ recuSinCorreo(correo, alEntrar); };
+
+      boton.onclick=function(){
+        var puesto=(campo.value||"").trim().toLowerCase();
+        if(!puesto) return mal("Escriba su correo.");
+        if(puesto!==String(correo).trim().toLowerCase())
+          return mal("Ese no es el correo con el que entró en este aparato.");
+        malo.style.display="none";
+        boton.disabled=true; boton.textContent="Mandando…";
+        recuLlamar("/enviar-codigo",{correo:puesto}).then(function(x){
+          boton.disabled=false; boton.textContent="Mandarme el código";
+          if(x.bien) recuPaso2(correo, alEntrar);
+          else mal(recuQueDice(x));
+        }).catch(function(){
+          boton.disabled=false; boton.textContent="Mandarme el código";
+          mal("Sin internet no se puede mandar el código. Conéctese y vuelva a intentarlo.");
+        });
+      };
+      try{ campo.focus(); }catch(e){}
+    });
+}
+
+/* ---------- paso 2: las 6 cifras ---------- */
+function recuPaso2(correo, alEntrar){
+  abrir('<div class="hoja"><div class="hh"><h3>Mire su correo</h3>'+
+    '<button class="x" data-cerrar>×</button></div><div class="hb">'+
+
+    /* el correo NO va metido dentro de la frase: cambia de un usuario a
+       otro, y una frase con un trozo variable en medio no se puede
+       traducir — se busca entera en el diccionario y nunca coincide */
+    '<p style="font-size:14px;line-height:1.75;margin:0 0 10px">'+
+    'Le mandamos un código de '+RECU.cifras+' cifras a este correo:</p>'+
+    '<div class="fcalc" style="text-align:center"><span class="rcCorreo">'+
+      esc(correoTapado(correo))+'</span>'+
+    'Vale por '+RECU.minutos+' minutos. Si no lo ve, mire en la carpeta de correo no '+
+    'deseado.</div>'+
+
+    '<input id="rcCifras" class="rcCifras" type="text" inputmode="numeric" '+
+    'autocomplete="one-time-code" maxlength="'+RECU.cifras+'" placeholder="000000" '+
+    'aria-label="El código de su correo">'+
+
+    '<div class="nota mal" id="rcMal2" style="display:none"></div>'+
+    '<div style="text-align:center"><button class="rcOtra" id="rcOtro">'+
+      'No me llegó, mandar otro</button></div>'+
+
+    '</div><div class="hf"><button class="b" data-cerrar>Cancelar</button>'+
+    '<button class="b ac" id="rcVer">Comprobar</button></div></div>',
+    function(M){
+      var campo=M.querySelector("#rcCifras");
+      var boton=M.querySelector("#rcVer");
+      var otro =M.querySelector("#rcOtro");
+      var malo =M.querySelector("#rcMal2");
+      function mal(t){ malo.style.display=""; malo.textContent=t; }
+
+      campo.addEventListener("input", function(){
+        campo.value=(campo.value||"").replace(/\D/g,"").slice(0,RECU.cifras);
+      });
+      campo.addEventListener("keydown", function(e){ if(e.key==="Enter") boton.click(); });
+
+      /* el vigilante no deja pedir otro antes de un minuto, así que el
+         enlace se apaga solo y enseña la cuenta atrás en vez de dejar al
+         usuario pulsando contra un error */
+      var faltan=RECU.esperaOtro;
+      otro.disabled=true;
+      (function cuenta(){
+        if(faltan<=0){ otro.disabled=false; otro.textContent="No me llegó, mandar otro"; return; }
+        otro.textContent="Puede pedir otro en "+faltan+" segundos";
+        faltan--;
+        setTimeout(cuenta, 1000);
+      })();
+
+      otro.onclick=function(){
+        if(otro.disabled) return;
+        otro.disabled=true; otro.textContent="Mandando…";
+        recuLlamar("/enviar-codigo",{correo:String(correo).trim().toLowerCase()}).then(function(x){
+          if(x.bien){ recuPaso2(correo, alEntrar); aviso("Le mandamos otro código."); }
+          else { otro.disabled=false; otro.textContent="No me llegó, mandar otro"; mal(recuQueDice(x)); }
+        }).catch(function(){
+          otro.disabled=false; otro.textContent="No me llegó, mandar otro";
+          mal("Sin internet no se puede mandar el código. Conéctese y vuelva a intentarlo.");
+        });
+      };
+
+      boton.onclick=function(){
+        var cod=(campo.value||"").trim();
+        if(cod.length!==RECU.cifras) return mal("El código son 6 números.");
+        malo.style.display="none";
+        boton.disabled=true; boton.textContent="Comprobando…";
+        recuLlamar("/verificar-codigo",{correo:String(correo).trim().toLowerCase(), codigo:cod})
+          .then(function(x){
+            boton.disabled=false; boton.textContent="Comprobar";
+            if(x.bien) recuPaso3(alEntrar);
+            else mal(recuQueDice(x));
+          }).catch(function(){
+            boton.disabled=false; boton.textContent="Comprobar";
+            mal("Sin internet no se puede comprobar el código. Conéctese y vuelva a intentarlo.");
+          });
+      };
+      try{ campo.focus(); }catch(e){}
+    });
+}
+
+/* ---------- paso 3: la clave nueva ---------- */
+function recuPaso3(alEntrar){
+  abrir('<div class="hoja"><div class="hh"><span class="ic">'+IC.candado+'</span>'+
+    '<h3>Su clave nueva</h3></div><div class="hb">'+
+    '<p class="mut" style="margin:0 0 12px">De 4 a 8 números. Es solo de este aparato.</p>'+
+    '<div class="campos">'+
+      '<div class="campo"><label>Clave nueva</label>'+
+        '<input id="rcA" type="password" inputmode="numeric" maxlength="8" autocomplete="off"></div>'+
+      '<div class="campo"><label>Otra vez, para no equivocarse</label>'+
+        '<input id="rcB" type="password" inputmode="numeric" maxlength="8" autocomplete="off"></div>'+
+    '</div>'+
+    '<div class="nota mal" id="rcMal3" style="display:none"></div>'+
+    '</div><div class="hf">'+
+    '<button class="b ac" id="rcGuarda">Guardar y entrar</button></div></div>',
+    function(M){
+      var malo=M.querySelector("#rcMal3");
+      function mal(t){ malo.style.display=""; malo.textContent=t; }
+      M.querySelector("#rcGuarda").onclick=function(){
+        var a=(M.querySelector("#rcA").value||"").trim();
+        var b=(M.querySelector("#rcB").value||"").trim();
+        if(!/^\d{4,8}$/.test(a)) return mal("La clave son de 4 a 8 números, nada más.");
+        if(a!==b) return mal("Las dos no coinciden.");
+        ponerPin(a).then(function(){
+          cerrar();
+          if(typeof alEntrar==="function") alEntrar();
+          aviso("Clave nueva guardada.");
+        });
+      };
+    });
+}
+
+/* ---------- el que no puede abrir su correo ---------- */
+function recuSinCorreo(correo, alEntrar){
+  abrir('<div class="hoja"><div class="hh"><h3>Si no puede abrir ese correo</h3>'+
+    '<button class="x" data-cerrar>×</button></div><div class="hb">'+
+
+    '<p style="font-size:14px;line-height:1.75;margin:0 0 12px">'+
+    '<b>Sus datos están en su cuenta, no en la clave.</b> Aunque no pueda abrir el correo, '+
+    'puede volver a entrar así:</p>'+
+    '<ol class="pasos" style="margin:0 0 12px">'+
+      '<li>Borre los datos de la aplicación — en los ajustes de su teléfono, o los del '+
+      'navegador si es la computadora.</li>'+
+      '<li>Abra la aplicación otra vez.</li>'+
+      '<li>Entre con el mismo correo de siempre.</li>'+
+    '</ol>'+
+    '<p style="font-size:14px;line-height:1.75;margin:0 0 4px">Le vuelven sus compras, sus '+
+    'operaciones y sus pruebas. Lo único que se pierde es la clave, y pone otra.</p>'+
+
+    '</div><div class="hf"><button class="b" id="rcVolver">Volver</button>'+
+    '<button class="b ac" data-cerrar>Entendido</button></div></div>',
+    function(M){
+      M.querySelector("#rcVolver").onclick=function(){ recuPaso1(correo, alEntrar); };
+    });
+}
+
+/* ---------- el invitado, sin cuenta: la verdad sin maquillar ---------- */
+function hojaOlvideInvitado(){
+  abrir('<div class="hoja"><div class="hh"><h3>¿Olvidó su clave?</h3>'+
+    '<button class="x" data-cerrar>×</button></div><div class="hb">'+
+
+    '<p style="font-size:14px;line-height:1.75;margin:0 0 14px">'+
+    '<b>Usted no entró con su cuenta, así que no hay a dónde mandarle un código.</b> '+
+    'La clave solo existe en este aparato y nadie más la sabe, ni nosotros.</p>'+
+
+    '<p style="font-size:14px;line-height:1.75;margin:0 0 12px">'+
+    '<b>Lo que tiene guardado sigue aquí, no se ha borrado.</b> Lo que no hay es forma de '+
+    'abrirlo sin la clave. La única salida es borrar los datos de la aplicación para poder '+
+    'entrar otra vez, y eso sí se lleva lo que tenga registrado.</p>'+
+
+    '<div class="nota ojo"><b>Cuando pueda entrar de nuevo, entre con su cuenta de Google.</b> '+
+    'Es gratis, y a partir de ahí olvidar la clave deja de ser un problema: le llega un código '+
+    'al correo y listo.</div>'+
+
+    '</div><div class="hf"><button class="b ac" data-cerrar>Entendido</button></div></div>');
+}
+
+/* =====================================================================
    LA PANTALLA QUE TAPA
    ===================================================================== */
 function bloquearSiToca(){
@@ -7903,38 +8217,11 @@ function pintarCerrojo(){
     num.addEventListener("keydown", function(e){ if(e.key==="Enter") probarPin(); });
     setTimeout(function(){ try{ if(!conHuella) num.focus(); }catch(e){} }, 300);
   }
-  z.querySelector("#cjOlvide").onclick=function(){
-    abrir('<div class="hoja"><div class="hh"><h3>¿Olvidó su clave?</h3>'+
-      '<button class="x" data-cerrar>×</button></div><div class="hb">'+
-
-      /* OJO al escribir esto: cada negrita parte la frase en un trozo
-         suelto, y cada trozo necesita su propia línea en los cinco
-         diccionarios. Por eso las negritas abarcan frases ENTERAS: así
-         cada frase se traduce de una pieza y no quedan cachos en español. */
-      '<p style="font-size:14px;line-height:1.75;margin:0 0 14px">'+
-      '<b>No le llega ningún código al correo.</b> Su clave no está guardada en ningún '+
-      'servidor: solo en este aparato, y revuelta. Nadie más la sabe, así que nadie se la '+
-      'puede mandar. Y desde aquí no se puede saltar: si se pudiera, no serviría de nada.</p>'+
-
-      '<p style="font-size:14px;line-height:1.75;margin:0 0 8px">'+
-      '<b>Si entra con su cuenta de Google, no pierde nada.</b> Sus datos están en su '+
-      'cuenta, no en la clave:</p>'+
-      '<ol class="pasos" style="margin:0 0 12px">'+
-        '<li>Borre los datos de la aplicación — en los ajustes de su teléfono, o los del '+
-        'navegador si es la computadora.</li>'+
-        '<li>Abra la aplicación otra vez.</li>'+
-        '<li>Entre con el mismo correo de siempre.</li>'+
-      '</ol>'+
-      '<p style="font-size:14px;line-height:1.75;margin:0 0 14px">Le vuelven sus compras, sus '+
-      'operaciones y sus pruebas. Lo único que se pierde es la clave, y pone otra.</p>'+
-
-      '<div class="nota ojo"><b>Si usa la aplicación sin cuenta, como invitado, y olvida la '+
-      'clave, no hay forma de recuperar nada.</b> Lo que tenga aquí se pierde. Por eso vale '+
-      'la pena entrar con su cuenta: es gratis y es lo único que le devuelve su información '+
-      'si pasa algo.</div>'+
-
-      '</div><div class="hf"><button class="b ac" data-cerrar>Entendido</button></div></div>');
-  };
+  /* OJO al escribir los textos de la recuperación: cada negrita parte la
+     frase en un trozo suelto, y cada trozo necesita su propia línea en los
+     cinco diccionarios. Por eso las negritas abarcan frases ENTERAS: así
+     cada frase se traduce de una pieza y no quedan cachos en español. */
+  z.querySelector("#cjOlvide").onclick=function(){ hojaOlvide(abrir2); };
   pintarEspera();
 }
 
@@ -8048,16 +8335,23 @@ function pedirPinNuevo(){
     /* lo que pasa si la olvida NO es lo mismo con cuenta que sin cuenta, y
        se lo decimos antes de ponerla, no después */
     (ctaDentro()
-      ? '<div class="nota">Si la olvida no hay forma de saltársela, pero no pierde nada: sus '+
-        'datos están en su cuenta. Borra los datos de la aplicación, entra con el mismo '+
-        'correo y le vuelve todo.</div>'
+      ? '<div class="nota"><b>Si la olvida, le llega un código a su correo y pone otra.</b> '+
+        'No pierde nada de lo que tiene guardado.</div>'
+      /* El aviso llevaba razón pero no llevaba salida: le decía «entre con
+         su cuenta» y lo dejaba buscando dónde. El botón va aquí mismo,
+         justo cuando está pensando en proteger sus cosas. */
       : '<div class="nota ojo"><b>Ojo: usted no ha entrado con su cuenta.</b> Si olvida esta '+
-        'clave, no hay forma de recuperar lo que tiene guardado aquí, ni por correo ni de '+
-        'ninguna otra manera. Entre con su cuenta de Google y deja de ser un problema: es '+
-        'gratis.</div>')+
+        'clave no hay a dónde mandarle un código, y la única salida sería borrar los datos de '+
+        'la aplicación, con todo lo que tenga registrado. Entrar con su cuenta es gratis y '+
+        'deja eso resuelto para siempre.'+
+        '<div style="margin-top:11px"><button class="b vd" id="pnCuenta">Entrar con mi '+
+        'cuenta</button></div></div>')+
     '</div><div class="hf"><button class="b" data-cerrar>Cancelar</button>'+
     '<button class="b ac" id="pnOk">Guardar la clave</button></div></div>',
     function(M){
+      var bCuenta=M.querySelector("#pnCuenta");
+      if(bCuenta) bCuenta.onclick=function(){ cerrar(); entrarConGoogle(); };
+
       M.querySelector("#pnOk").onclick=function(){
         var a=(M.querySelector("#pnA").value||"").trim();
         var b=(M.querySelector("#pnB").value||"").trim();
@@ -9670,6 +9964,54 @@ function ctaClaves(){
 }
 function ctaHecha(){ return !!ctaClaves(); }
 function ctaDentro(){ return !!(CTA.u && CTA.u.uid); }
+
+/* =====================================================================
+   EL CORREO NO SE ENSEÑA ENTERO EN NINGUNA PANTALLA
+   ---------------------------------------------------------------------
+   Si en el candado se va a enseñar tapado, no tiene sentido que en las
+   otras pantallas salga completo: cualquiera que mire de reojo se lo
+   lleva. Sale la primera letra, unos puntos y el dominio, y con un toque
+   se destapa diez segundos.
+
+   UNA SOLA FUNCIÓN para toda la aplicación. El correo sale en cuatro
+   sitios (la tarjeta de la cuenta, el panelito, el globito del círculo y
+   la hoja de salir) y antes cada uno lo escribía a su manera. Si algún
+   día se cambia la forma de taparlo, se cambia aquí y cambia en todos.
+   ===================================================================== */
+var CORREO_DESTAPADO_MS=10000;
+
+function correoTapado(correo){
+  var c=String(correo||"").trim();
+  var i=c.indexOf("@");
+  if(i<1) return c;
+  return c.charAt(0)+"•••••"+c.slice(i);
+}
+/* Devuelve el correo tapado dentro de un botón que lo destapa al tocarlo.
+   Se vuelve a tapar solo: si deja el teléfono en la mesa, no se queda
+   a la vista. */
+function correoTocable(correo, clase){
+  var c=String(correo||"").trim();
+  if(!c) return "";
+  return '<button type="button" class="correoTap'+(clase?" "+clase:"")+'" '+
+    'data-correo="'+esc(c)+'" title="Tocar para ver el correo" '+
+    'aria-label="Tocar para ver el correo entero">'+esc(correoTapado(c))+'</button>';
+}
+function engancharCorreos(caja){
+  if(!caja||!caja.querySelectorAll) return;
+  [].slice.call(caja.querySelectorAll(".correoTap")).forEach(function(b){
+    if(b.getAttribute("data-listo")) return;
+    b.setAttribute("data-listo","1");
+    var entero=b.getAttribute("data-correo")||"";
+    var reloj=0;
+    function tapar(){ b.textContent=correoTapado(entero); b.setAttribute("data-ver",""); }
+    b.onclick=function(){
+      if(reloj){ clearTimeout(reloj); reloj=0; }
+      if(b.getAttribute("data-ver")==="1"){ tapar(); return; }
+      b.textContent=entero; b.setAttribute("data-ver","1");
+      reloj=setTimeout(function(){ reloj=0; tapar(); }, CORREO_DESTAPADO_MS);
+    };
+  });
+}
 /* Google no deja entrar con una cuenta desde un archivo del disco */
 function ctaPuede(){ return nubeHttps(); }
 
@@ -9682,8 +10024,11 @@ function cargarFirebase(){
   var ultimo=null;
   function intentar(i){
     if(i>=FBV_LISTA.length){
-      throw new Error("No se pudo traer la librería de Google. Revise que haya internet."+
-        (ultimo?(" ("+ultimo+")"):""));
+      /* el detalle técnico va a la consola, no al mensaje: pegado al final
+         convertía una frase traducida en una frase que no coincide con
+         nada en el diccionario, y el cliente la veía en castellano */
+      if(ultimo){ try{ console.log("[cuenta] no se pudo traer Firebase:", ultimo); }catch(e){} }
+      throw new Error("No se pudo traer la librería de Google. Revise que haya internet.");
     }
     var base="https://www.gstatic.com/firebasejs/"+FBV_LISTA[i]+"/";
     return Promise.all([
@@ -9770,9 +10115,16 @@ function salirDeCuenta(){
   var n=cuantoHayAqui();
   abrir('<div class="hoja"><div class="hh"><h3>Salir de la cuenta</h3>'+
     '<button class="x" data-cerrar>×</button></div><div class="hb">'+
-    '<p style="margin:0 0 4px;font-size:14px;line-height:1.7">Entró con <b>'+esc(correo)+
-    '</b>. Al salir, lo que registre deja de guardarse en su cuenta y vuelve a la pantalla '+
-    'de inicio.</p>'+
+    /* el correo va en su propia línea, no metido dentro de la frase: una
+       frase partida por un trozo que cambia de usuario a usuario no se
+       puede traducir, porque se busca entera en el diccionario */
+    (CTA.correo
+      ? '<p style="margin:0 0 2px;font-size:14px">Entró con esta cuenta:</p>'+
+        '<div style="margin:0 0 10px;font-size:15px;font-weight:700">'+
+          correoTocable(CTA.correo)+'</div>'
+      : '')+
+    '<p style="margin:0 0 4px;font-size:14px;line-height:1.7">Al salir, lo que registre deja '+
+    'de guardarse en su cuenta y vuelve a la pantalla de inicio.</p>'+
 
     '<div class="opSalir" id="osQuedan">'+
       '<b>Salir y dejar mis datos aquí</b>'+
@@ -9782,18 +10134,20 @@ function salirDeCuenta(){
     '<div class="opSalir mala" id="osBorra">'+
       '<b>Salir y borrar este aparato</b>'+
       '<i>Para un teléfono prestado o un equipo que ya no es suyo. '+
-      '<b>Sus datos siguen en su cuenta</b> y vuelven al entrar con el mismo correo.</i>'+
+      '<b>Sus datos siguen en su cuenta y vuelven al entrar con el mismo correo.</b></i>'+
     '</div>'+
 
     '</div><div class="hf"><button class="b" data-cerrar>Cancelar</button></div></div>',
     function(M){
+      engancharCorreos(M);
       var q=M.querySelector("#osQuedan"), b=M.querySelector("#osBorra");
       if(q) q.onclick=function(){ cerrar(); hacerSalida(false); };
       if(b) b.onclick=function(){
         cerrar();
         confirmar("Borrar todo de este aparato",
-          "Se borra de ESTE aparato todo lo que tiene registrado. <b>En su cuenta se queda "+
-          "intacto</b> y vuelve en cuanto entre otra vez con "+esc(correo)+".<br><br>"+
+          "<b>Se borra de ESTE aparato todo lo que tiene registrado.</b><br>"+
+          "En su cuenta se queda intacto y vuelve en cuanto entre otra vez con el mismo "+
+          "correo.<br><br>"+
           "Si no piensa volver a entrar en este aparato, no habrá forma de recuperarlo desde aquí.",
           "Salir y borrar", function(){ hacerSalida(true); }, true);
       };
@@ -10306,7 +10660,7 @@ function panelCuenta(){
         '<span class="ic"><span class="disco" style="background:var(--ac);color:var(--acInk)">'+
         esc((CTA.correo||"?").charAt(0).toUpperCase())+'</span></span></div>')+
       '<div class="q"><div class="l1">'+esc(CTA.nombre||"Su cuenta")+'</div>'+
-      '<div class="l2">'+esc(CTA.correo)+'</div></div>'+
+      '<div class="l2">'+correoTocable(CTA.correo)+'</div></div>'+
       '<div class="r"><span>Guardado por última vez</span><b>'+
         (CTA.hora||c.hora ? hora(CTA.hora||c.hora) : "todavía no")+'</b></div></div>'+
       (CTA.error?'<div class="nota mal">'+esc(CTA.error)+'</div>':'')+
@@ -10358,7 +10712,7 @@ function pintarChipCuenta(){
   if(!c) return;
   if(ctaDentro()){
     c.innerHTML='<button type="button" class="chipCta" id="chipCta" '+
-      'title="'+esc(CTA.correo||"Su cuenta")+'" aria-label="Su cuenta">'+
+      'title="'+esc(CTA.correo?correoTapado(CTA.correo):"Su cuenta")+'" aria-label="Su cuenta">'+
       (CTA.foto
         ? '<img src="'+esc(CTA.foto)+'" alt="">'
         : '<span class="ini">'+esc(inicialCuenta())+'</span>')+
@@ -10399,7 +10753,7 @@ function panelitoCuenta(){
              :'<span class="ic"><span class="disco" style="background:var(--ac);color:var(--acInk)">'+
               esc(inicialCuenta())+'</span></span>')+
     '<div style="flex:1;min-width:0"><h3 style="font-size:17px">'+esc(CTA.nombre||"Su cuenta")+'</h3>'+
-    '<div class="mut" style="font-size:13px">'+esc(CTA.correo)+'</div></div>'+
+    '<div class="mut" style="font-size:13px">'+correoTocable(CTA.correo)+'</div></div>'+
     '<button class="x" data-cerrar>×</button></div>'+
     '<div class="hb">'+
       '<div class="fdet"><span class="e">Guardado en su cuenta</span>'+
@@ -10412,6 +10766,7 @@ function panelitoCuenta(){
       '<div style="margin-top:10px">'+
         '<button class="b gh" id="pcSale" style="width:100%">Salir de la cuenta</button></div>'+
     '</div></div>', function(M){
+      engancharCorreos(M);
       var x;
       if((x=M.querySelector("#pcGuarda"))) x.onclick=function(){
         subirACuenta(true).then(function(){ aviso("Guardado en su cuenta."); cerrar(); });
@@ -10433,6 +10788,7 @@ function pintarCuenta(){
 }
 function engancharCuenta(box){
   var x;
+  engancharCorreos(box);   /* el correo tapado, para que se destape al tocarlo */
   if((x=box.querySelector("#ctaEntra"))) x.onclick=function(){ entrarConGoogle(); };
   if((x=box.querySelector("#ctaSale")))  x.onclick=salirDeCuenta;
   if((x=box.querySelector("#ctaSube")))  x.onclick=function(){
@@ -10819,7 +11175,13 @@ function preciosAMano(){
 function pintarDat(){
   var box=document.getElementById("cuerpo");
   var t=BD.tema||{}, a=BD.ajustes;
-  box.innerHTML=
+
+  /* Cada caja se arma en su variable y el ORDEN se decide abajo, en un
+     solo sitio. Antes todo iba pegado en un chorro y el orden era el que
+     salió al escribirlo: lo primero que veía el cliente al abrir Ajustes
+     eran los colores. */
+
+  var cColores=
   '<div class="caja"><h2><span class="ic">'+IC.dat+'</span>Colores — libertad total, sin que deje de leerse</h2>'+
   '<div class="cp">'+
     '<label>Combinaciones listas</label>'+
@@ -10857,8 +11219,9 @@ function pintarDat(){
     'pérdida y las seis tarjetas. Las letras se calculan solas a partir del fondo y se comprueba '+
     'el contraste, así que <b>nunca va a quedar una pantalla que no se lea</b>. Todo se repinta al momento.</div>'+
     '<div style="margin-top:12px"><button class="b ac" id="tReset">Volver a los colores de fábrica</button></div>'+
-  '</div></div>'+
+  '</div></div>';
 
+  var cMarca=
   '<div class="caja"><h2><span class="ic">'+IC.torta+'</span>Marca de agua</h2><div class="cp">'+
   '<div class="campos">'+
     '<div class="campo"><label>Mostrarla</label><select id="mkOn">'+
@@ -10872,8 +11235,9 @@ function pintarDat(){
       (a.marcaOp!=null?a.marcaOp:5)+'%</b></label>'+
       '<input type="range" id="mkOp" min="0" max="22" step="0.5" value="'+
       (a.marcaOp!=null?a.marcaOp:5)+'"></div>'+
-  '</div></div></div>'+
+  '</div></div></div>';
 
+  var cPrecios=
   '<div class="caja"><h2><span class="ic">'+IC.dolar+'</span>Precios</h2><div class="cp">'+
   '<div class="fcalc">El precio llega <b>en vivo desde Binance</b>, al segundo. '+
     'Si esa moneda no está en Binance o no hay internet, se prueban CoinGecko, Coinbase y '+
@@ -10900,17 +11264,13 @@ function pintarDat(){
   '<div style="margin-top:12px;display:flex;gap:9px;flex-wrap:wrap">'+
     '<button class="b ac" onclick="preciosAMano()">Escribir precios a mano</button>'+
     '<button class="b" onclick="traerPrecios(false)">Actualizar ahora</button></div>'+
-  '</div></div>'+
-
-  panelIdioma()+
-  panelPrograma()+
+  '</div></div>';
 
   /* ===================================================================
      UN SOLO SITIO para todo lo de guardar. Antes eran cinco cajas
      separadas que hacían el mismo trabajo y nadie sabía cuál usar.
      =================================================================== */
-  panelLlave()+
-
+  var cGuardado=
   '<div class="caja grupo" id="cajaGuardado">'+
     '<h2><span class="ic">'+IC.escudo+'</span>Dónde se guarda su portafolio</h2>'+
     '<div class="cp">'+resumenGuardado()+'</div>'+
@@ -10920,9 +11280,24 @@ function pintarDat(){
       panelRespaldo()+
       cajaCopias()+
     '</div>'+
-  '</div>'+
+  '</div>';
 
-  cajaBorrar();
+  /* ===================================================================
+     EL ORDEN — de lo que no se puede perder a lo que es puro gusto.
+     Se baja, no se sube: idioma primero porque quien no entiende la
+     pantalla no puede hacer nada más; después lo que protege su dinero;
+     después lo del día a día; y al final lo decorativo. Lo peligroso
+     (borrar) se queda abajo del todo, donde no se pulsa sin querer.
+     =================================================================== */
+  box.innerHTML=
+    panelIdioma()+      /* 1 · si no lo entiende, lo demás da igual     */
+    cGuardado+          /* 2 · su cuenta, la nube, los respaldos        */
+    panelLlave()+       /* 3 · quién puede ver su portafolio            */
+    cPrecios+           /* 4 · lo que toca todos los días               */
+    panelPrograma()+    /* 5 · la versión y traer la nueva              */
+    cColores+           /* 6 · gusto                                    */
+    cMarca+             /* 7 · gusto                                    */
+    cajaBorrar();       /* 8 · lo que no tiene vuelta, al final         */
 
   engancharDat(box);
 }
@@ -11202,10 +11577,18 @@ function cajaCopias(){
     '<button class="b" id="dXls">Descargar Excel</button>'+
     '<button class="b" id="dImp">Imprimir</button>'+
     '<input type="file" id="dArch" accept=".json" style="display:none"></div>'+
-  '<div class="nota">'+plural(BD.ops.length,'movimiento','movimientos')+' de spot · '+
-  plural(BD.fut.length,'operación','operaciones')+' de futuros · '+BD.back.length+' de prueba en '+
-  plural(BD.pruebas.length,'prueba','pruebas')+' · '+plural((BD.alertas||[]).length,'alerta','alertas')+' · '+
-  plural((BD.ordenes||[]).length,'venta programada','ventas programadas')+'</div>'+
+  /* Cada conteo en su propia pieza. Antes iba todo pegado en una sola
+     frase, y como cada número cambia el singular por el plural, esa frase
+     tenía decenas de formas posibles: no coincidía con ninguna línea del
+     diccionario y el cliente la veía siempre en castellano. */
+  '<div class="nota">'+
+  ['<span>'+plural(BD.ops.length,'movimiento de spot','movimientos de spot')+'</span>',
+   '<span>'+plural(BD.fut.length,'operación de futuros','operaciones de futuros')+'</span>',
+   '<span>'+plural(BD.back.length,'operación de prueba','operaciones de prueba')+'</span>',
+   '<span>'+plural(BD.pruebas.length,'prueba','pruebas')+'</span>',
+   '<span>'+plural((BD.alertas||[]).length,'alerta','alertas')+'</span>',
+   '<span>'+plural((BD.ordenes||[]).length,'venta programada','ventas programadas')+'</span>'
+  ].join('<span> · </span>')+'</div>'+
   '<div class="fcalc"><b>En el teléfono:</b> «Enviar copia a…» abre el menú de compartir y la manda a '+
   'Google Drive, Gmail, Outlook o WhatsApp con un toque. <b>En la computadora:</b> active el '+
   '<b>respaldo automático</b> de aquí arriba y elija como carpeta la de <b>Google Drive</b> u '+
@@ -13132,21 +13515,81 @@ DIC.en={
 "Escriba su clave para entrar.":"Type your code to get in.",
 "Entrar con mi clave":"Use my code instead",
 "¿Olvidó su clave?":"Forgot your code?",
-"No le llega ningún código al correo.":"No code is sent to your email.",
-"Su clave no está guardada en ningún servidor: solo en este aparato, y revuelta. Nadie más la sabe, así que nadie se la puede mandar. Y desde aquí no se puede saltar: si se pudiera, no serviría de nada.":"Your code is not stored on any server: only on this device, and scrambled. Nobody else knows it, so nobody can send it to you. And it cannot be bypassed from here: if it could, it would be useless.",
-"Si entra con su cuenta de Google, no pierde nada.":"If you sign in with your Google account, you lose nothing.",
-"Sus datos están en su cuenta, no en la clave:":"Your data lives in your account, not in the code:",
 "Borre los datos de la aplicación — en los ajustes de su teléfono, o los del navegador si es la computadora.":"Clear the app's data — in your phone's settings, or the browser's if you are on the computer.",
 "Abra la aplicación otra vez.":"Open the app again.",
 "Entre con el mismo correo de siempre.":"Sign in with the same address as always.",
 "Le vuelven sus compras, sus operaciones y sus pruebas. Lo único que se pierde es la clave, y pone otra.":"Your buys, your trades and your tests all come back. The only thing lost is the code, and you set a new one.",
-"Si usa la aplicación sin cuenta, como invitado, y olvida la clave, no hay forma de recuperar nada.":"If you use the app without an account, as a guest, and you forget the code, there is no way to get anything back.",
-"Lo que tenga aquí se pierde. Por eso vale la pena entrar con su cuenta: es gratis y es lo único que le devuelve su información si pasa algo.":"Whatever you have here is lost. That is why signing in with your account is worth it: it is free, and it is the only thing that gives your data back if something happens.",
-"Si la olvida no hay forma de saltársela, pero no pierde nada: sus datos están en su cuenta. Borra los datos de la aplicación, entra con el mismo correo y le vuelve todo.":"If you forget it there is no way around it, but you lose nothing: your data is in your account. Clear the app's data, sign in with the same address and everything comes back.",
 "Ojo: usted no ha entrado con su cuenta.":"Careful: you have not signed in with your account.",
-"Si olvida esta clave, no hay forma de recuperar lo que tiene guardado aquí, ni por correo ni de ninguna otra manera. Entre con su cuenta de Google y deja de ser un problema: es gratis.":"If you forget this code, there is no way to get back what you have stored here — not by email, not any other way. Sign in with your Google account and it stops being a problem: it is free.",
 "Abrir":"Open",
 "Entrar":"Sign in",
+/* v37 · recuperar la clave por correo, el correo tapado y el aviso al invitado */
+"Le mandamos un código a su correo y pone una clave nueva.":"We send a code to your email and you set a new one.",
+"No pierde nada de lo que tiene guardado aquí.":"You lose nothing of what you have stored here.",
+"Escriba su correo entero para confirmar que es usted.":"Type your full email to confirm it is you.",
+"Su correo":"Your email",
+"Mandarme el código":"Send me the code",
+"Escriba su correo.":"Type your email.",
+"Ese no es el correo con el que entró en este aparato.":"That is not the email you signed in with on this device.",
+"No puedo abrir ese correo":"I cannot open that email",
+"Sin internet no se puede mandar el código. Conéctese y vuelva a intentarlo.":"Without internet the code cannot be sent. Get connected and try again.",
+"Mire su correo":"Check your email",
+"Le mandamos un código de # cifras a este correo:":"We sent a #-digit code to this email:",
+"Vale por # minutos. Si no lo ve, mire en la carpeta de correo no deseado.":"It is good for # minutes. If you do not see it, look in your spam folder.",
+"El código de su correo":"The code from your email",
+"El código son # números.":"The code is # numbers.",
+"No me llegó, mandar otro":"It did not arrive, send another",
+"Puede pedir otro en # segundos":"You can ask for another in # seconds",
+"Le mandamos otro código.":"We sent you another code.",
+"Sin internet no se puede comprobar el código. Conéctese y vuelva a intentarlo.":"Without internet the code cannot be checked. Get connected and try again.",
+"Su clave nueva":"Your new code",
+"Clave nueva":"New code",
+"Guardar y entrar":"Save and get in",
+"Clave nueva guardada.":"New code saved.",
+"Si no puede abrir ese correo":"If you cannot open that email",
+"Sus datos están en su cuenta, no en la clave.":"Your data is in your account, not in the code.",
+"Aunque no pueda abrir el correo, puede volver a entrar así:":"Even if you cannot open the email, you can get back in like this:",
+"Usted no entró con su cuenta, así que no hay a dónde mandarle un código.":"You did not sign in with your account, so there is nowhere to send you a code.",
+"La clave solo existe en este aparato y nadie más la sabe, ni nosotros.":"The code only exists on this device and nobody else knows it, not even us.",
+"Lo que tiene guardado sigue aquí, no se ha borrado.":"What you have stored is still here, nothing has been deleted.",
+"Lo que no hay es forma de abrirlo sin la clave. La única salida es borrar los datos de la aplicación para poder entrar otra vez, y eso sí se lleva lo que tenga registrado.":"What there is no way to do is open it without the code. The only way out is to clear the app's data so you can get in again, and that does take away everything you have recorded.",
+"Cuando pueda entrar de nuevo, entre con su cuenta de Google.":"Once you can get in again, sign in with your Google account.",
+"Es gratis, y a partir de ahí olvidar la clave deja de ser un problema: le llega un código al correo y listo.":"It is free, and from then on forgetting the code stops being a problem: a code reaches your email and that is it.",
+"Si la olvida, le llega un código a su correo y pone otra.":"If you forget it, a code reaches your email and you set another.",
+"No pierde nada de lo que tiene guardado.":"You lose nothing of what you have stored.",
+"Si olvida esta clave no hay a dónde mandarle un código, y la única salida sería borrar los datos de la aplicación, con todo lo que tenga registrado. Entrar con su cuenta es gratis y deja eso resuelto para siempre.":"If you forget this code there is nowhere to send you one, and the only way out would be to clear the app's data, along with everything you have recorded. Signing in with your account is free and settles that for good.",
+"Entrar con mi cuenta":"Sign in with my account",
+"Acaba de pedir uno. Espere un minuto y vuelva a intentarlo.":"You just asked for one. Wait a minute and try again.",
+"Ya pidió cinco códigos hoy con ese correo. Inténtelo mañana.":"You have already asked for five codes today with that email. Try tomorrow.",
+"Ese correo no está bien escrito.":"That email is not written correctly.",
+"No se pudo mandar el correo ahora mismo. Inténtelo en un rato.":"The email could not be sent right now. Try again in a while.",
+"Ese código ya no vale. Pida uno nuevo.":"That code is no longer good. Ask for a new one.",
+"Demasiados intentos. Pida un código nuevo.":"Too many attempts. Ask for a new code.",
+"Esta versión de la aplicación no puede pedir códigos. Traiga la versión nueva.":"This version of the app cannot ask for codes. Get the new version.",
+"El código no coincide. Le quedan # intentos.":"The code does not match. You have # attempts left.",
+"El código no coincide.":"The code does not match.",
+"No se pudo. Inténtelo otra vez.":"It did not work. Try again.",
+"Tocar para ver el correo":"Tap to see the email",
+"Tocar para ver el correo entero":"Tap to see the whole email",
+"Entró con esta cuenta:":"You signed in with this account:",
+"Al salir, lo que registre deja de guardarse en su cuenta y vuelve a la pantalla de inicio.":"Once you sign out, what you record stops being saved to your account and you go back to the start screen.",
+"Salir y dejar mis datos aquí":"Sign out and leave my data here",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene (# registros). Al volver a entrar, lo nuevo se sube solo.":"You keep using the app without an account, with everything you have (# records). When you sign in again, the new entries upload on their own.",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene. Al volver a entrar, lo nuevo se sube solo.":"You keep using the app without an account, with everything you have. When you sign in again, the new entries upload on their own.",
+"Salir y borrar este aparato":"Sign out and wipe this device",
+"Para un teléfono prestado o un equipo que ya no es suyo.":"For a borrowed phone or a computer that is no longer yours.",
+"Sus datos siguen en su cuenta y vuelven al entrar con el mismo correo.":"Your data stays in your account and comes back when you sign in with the same email.",
+"Se borra de ESTE aparato todo lo que tiene registrado.":"Everything you have recorded is wiped from THIS device.",
+"En su cuenta se queda intacto y vuelve en cuanto entre otra vez con el mismo correo.":"In your account it stays untouched and comes back as soon as you sign in again with the same email.",
+"Guardado en su cuenta":"Saved to your account",
+"hace un momento":"a moment ago",
+"sin conexión por ahora":"offline for now",
+"fallo de la cuenta":"account problem",
+"No se pudo conectar con su cuenta. Sus datos siguen enteros en este aparato. Inténtelo en un rato y, si sigue igual, escríbanos a miportafoliocriptoapp@gmail.com.":"Your account could not be reached. Your data is still whole on this device. Try again in a while and, if it stays the same, write to us at miportafoliocriptoapp@gmail.com.",
+"# movimientos de spot":"# spot entries",
+"# alerta":"# alert",
+"# alertas":"# alerts",
+"# venta programada":"# scheduled sale",
+"# ventas programadas":"# scheduled sales",
 "Hace # min · Binance":"# min ago · Binance"
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
@@ -14299,21 +14742,81 @@ DIC.pt={
 "Escriba su clave para entrar.":"Escreva a sua senha para entrar.",
 "Entrar con mi clave":"Entrar com a minha senha",
 "¿Olvidó su clave?":"Esqueceu-se da sua senha?",
-"No le llega ningún código al correo.":"Não lhe chega nenhum código ao correio.",
-"Su clave no está guardada en ningún servidor: solo en este aparato, y revuelta. Nadie más la sabe, así que nadie se la puede mandar. Y desde aquí no se puede saltar: si se pudiera, no serviría de nada.":"A sua senha não está guardada em nenhum servidor: só neste aparelho, e baralhada. Mais ninguém a sabe, por isso ninguém lha pode mandar. E daqui não se pode saltar: se fosse possível, não serviria de nada.",
-"Si entra con su cuenta de Google, no pierde nada.":"Se entrar com a sua conta Google, não perde nada.",
-"Sus datos están en su cuenta, no en la clave:":"Os seus dados estão na sua conta, não na senha:",
 "Borre los datos de la aplicación — en los ajustes de su teléfono, o los del navegador si es la computadora.":"Apague os dados da aplicação — nas definições do seu telefone, ou nas do navegador se for o computador.",
 "Abra la aplicación otra vez.":"Abra a aplicação outra vez.",
 "Entre con el mismo correo de siempre.":"Entre com o mesmo correio de sempre.",
 "Le vuelven sus compras, sus operaciones y sus pruebas. Lo único que se pierde es la clave, y pone otra.":"Voltam as suas compras, as suas operações e os seus testes. A única coisa que se perde é a senha, e põe outra.",
-"Si usa la aplicación sin cuenta, como invitado, y olvida la clave, no hay forma de recuperar nada.":"Se usar a aplicação sem conta, como convidado, e se esquecer da senha, não há forma de recuperar nada.",
-"Lo que tenga aquí se pierde. Por eso vale la pena entrar con su cuenta: es gratis y es lo único que le devuelve su información si pasa algo.":"O que tiver aqui perde-se. Por isso vale a pena entrar com a sua conta: é grátis e é a única coisa que lhe devolve a sua informação se acontecer algo.",
-"Si la olvida no hay forma de saltársela, pero no pierde nada: sus datos están en su cuenta. Borra los datos de la aplicación, entra con el mismo correo y le vuelve todo.":"Se se esquecer dela não há forma de a saltar, mas não perde nada: os seus dados estão na sua conta. Apaga os dados da aplicação, entra com o mesmo correio e volta tudo.",
 "Ojo: usted no ha entrado con su cuenta.":"Atenção: não entrou com a sua conta.",
-"Si olvida esta clave, no hay forma de recuperar lo que tiene guardado aquí, ni por correo ni de ninguna otra manera. Entre con su cuenta de Google y deja de ser un problema: es gratis.":"Se se esquecer desta senha, não há forma de recuperar o que tem guardado aqui, nem por correio nem de nenhuma outra maneira. Entre com a sua conta Google e deixa de ser um problema: é grátis.",
 "Abrir":"Abrir",
 "Entrar":"Entrar",
+/* v37 · recuperar la clave por correo, el correo tapado y el aviso al invitado */
+"Le mandamos un código a su correo y pone una clave nueva.":"Enviamos-lhe um código para o seu correio e põe uma senha nova.",
+"No pierde nada de lo que tiene guardado aquí.":"Não perde nada do que tem guardado aqui.",
+"Escriba su correo entero para confirmar que es usted.":"Escreva o seu correio inteiro para confirmar que é você.",
+"Su correo":"O seu correio",
+"Mandarme el código":"Enviar-me o código",
+"Escriba su correo.":"Escreva o seu correio.",
+"Ese no es el correo con el que entró en este aparato.":"Esse não é o correio com que entrou neste aparelho.",
+"No puedo abrir ese correo":"Não consigo abrir esse correio",
+"Sin internet no se puede mandar el código. Conéctese y vuelva a intentarlo.":"Sem internet não se pode enviar o código. Ligue-se e tente outra vez.",
+"Mire su correo":"Veja o seu correio",
+"Le mandamos un código de # cifras a este correo:":"Enviámos-lhe um código de # algarismos para este correio:",
+"Vale por # minutos. Si no lo ve, mire en la carpeta de correo no deseado.":"Vale por # minutos. Se não o vir, procure na pasta de correio não desejado.",
+"El código de su correo":"O código do seu correio",
+"El código son # números.":"O código são # números.",
+"No me llegó, mandar otro":"Não me chegou, enviar outro",
+"Puede pedir otro en # segundos":"Pode pedir outro dentro de # segundos",
+"Le mandamos otro código.":"Enviámos-lhe outro código.",
+"Sin internet no se puede comprobar el código. Conéctese y vuelva a intentarlo.":"Sem internet não se pode verificar o código. Ligue-se e tente outra vez.",
+"Su clave nueva":"A sua senha nova",
+"Clave nueva":"Senha nova",
+"Guardar y entrar":"Guardar e entrar",
+"Clave nueva guardada.":"Senha nova guardada.",
+"Si no puede abrir ese correo":"Se não conseguir abrir esse correio",
+"Sus datos están en su cuenta, no en la clave.":"Os seus dados estão na sua conta, não na senha.",
+"Aunque no pueda abrir el correo, puede volver a entrar así:":"Mesmo que não consiga abrir o correio, pode voltar a entrar assim:",
+"Usted no entró con su cuenta, así que no hay a dónde mandarle un código.":"Não entrou com a sua conta, por isso não há para onde lhe enviar um código.",
+"La clave solo existe en este aparato y nadie más la sabe, ni nosotros.":"A senha só existe neste aparelho e mais ninguém a sabe, nem nós.",
+"Lo que tiene guardado sigue aquí, no se ha borrado.":"O que tem guardado continua aqui, não se apagou.",
+"Lo que no hay es forma de abrirlo sin la clave. La única salida es borrar los datos de la aplicación para poder entrar otra vez, y eso sí se lleva lo que tenga registrado.":"O que não há é maneira de o abrir sem a senha. A única saída é apagar os dados da aplicação para poder entrar outra vez, e isso sim leva tudo o que tiver registado.",
+"Cuando pueda entrar de nuevo, entre con su cuenta de Google.":"Quando puder entrar de novo, entre com a sua conta Google.",
+"Es gratis, y a partir de ahí olvidar la clave deja de ser un problema: le llega un código al correo y listo.":"É grátis, e a partir daí esquecer-se da senha deixa de ser um problema: chega-lhe um código ao correio e pronto.",
+"Si la olvida, le llega un código a su correo y pone otra.":"Se se esquecer dela, chega-lhe um código ao correio e põe outra.",
+"No pierde nada de lo que tiene guardado.":"Não perde nada do que tem guardado.",
+"Si olvida esta clave no hay a dónde mandarle un código, y la única salida sería borrar los datos de la aplicación, con todo lo que tenga registrado. Entrar con su cuenta es gratis y deja eso resuelto para siempre.":"Se se esquecer desta senha não há para onde lhe enviar um código, e a única saída seria apagar os dados da aplicação, com tudo o que tiver registado. Entrar com a sua conta é grátis e resolve isso para sempre.",
+"Entrar con mi cuenta":"Entrar com a minha conta",
+"Acaba de pedir uno. Espere un minuto y vuelva a intentarlo.":"Acabou de pedir um. Espere um minuto e tente outra vez.",
+"Ya pidió cinco códigos hoy con ese correo. Inténtelo mañana.":"Já pediu cinco códigos hoje com esse correio. Tente amanhã.",
+"Ese correo no está bien escrito.":"Esse correio não está bem escrito.",
+"No se pudo mandar el correo ahora mismo. Inténtelo en un rato.":"Não foi possível enviar o correio agora. Tente daqui a um bocado.",
+"Ese código ya no vale. Pida uno nuevo.":"Esse código já não vale. Peça um novo.",
+"Demasiados intentos. Pida un código nuevo.":"Demasiadas tentativas. Peça um código novo.",
+"Esta versión de la aplicación no puede pedir códigos. Traiga la versión nueva.":"Esta versão da aplicação não pode pedir códigos. Traga a versão nova.",
+"El código no coincide. Le quedan # intentos.":"O código não coincide. Restam-lhe # tentativas.",
+"El código no coincide.":"O código não coincide.",
+"No se pudo. Inténtelo otra vez.":"Não foi possível. Tente outra vez.",
+"Tocar para ver el correo":"Tocar para ver o correio",
+"Tocar para ver el correo entero":"Tocar para ver o correio inteiro",
+"Entró con esta cuenta:":"Entrou com esta conta:",
+"Al salir, lo que registre deja de guardarse en su cuenta y vuelve a la pantalla de inicio.":"Ao sair, o que registar deixa de ser guardado na sua conta e volta ao ecrã inicial.",
+"Salir y dejar mis datos aquí":"Sair e deixar os meus dados aqui",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene (# registros). Al volver a entrar, lo nuevo se sube solo.":"Continua a usar a aplicação sem conta, com tudo o que tem (# registos). Ao voltar a entrar, o novo sobe sozinho.",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene. Al volver a entrar, lo nuevo se sube solo.":"Continua a usar a aplicação sem conta, com tudo o que tem. Ao voltar a entrar, o novo sobe sozinho.",
+"Salir y borrar este aparato":"Sair e apagar este aparelho",
+"Para un teléfono prestado o un equipo que ya no es suyo.":"Para um telemóvel emprestado ou um equipamento que já não é seu.",
+"Sus datos siguen en su cuenta y vuelven al entrar con el mismo correo.":"Os seus dados continuam na sua conta e voltam ao entrar com o mesmo correio.",
+"Se borra de ESTE aparato todo lo que tiene registrado.":"Apaga-se deste aparelho tudo o que tem registado.",
+"En su cuenta se queda intacto y vuelve en cuanto entre otra vez con el mismo correo.":"Na sua conta fica intacto e volta assim que entrar outra vez com o mesmo correio.",
+"Guardado en su cuenta":"Guardado na sua conta",
+"hace un momento":"há um momento",
+"sin conexión por ahora":"sem ligação por agora",
+"fallo de la cuenta":"falha da conta",
+"No se pudo conectar con su cuenta. Sus datos siguen enteros en este aparato. Inténtelo en un rato y, si sigue igual, escríbanos a miportafoliocriptoapp@gmail.com.":"Não foi possível ligar à sua conta. Os seus dados continuam inteiros neste aparelho. Tente daqui a um bocado e, se continuar igual, escreva-nos para miportafoliocriptoapp@gmail.com.",
+"# movimientos de spot":"# movimentos de spot",
+"# alerta":"# alerta",
+"# alertas":"# alertas",
+"# venta programada":"# venda programada",
+"# ventas programadas":"# vendas programadas",
 "Hace # min · Binance":"Há # min · Binance"
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
@@ -15466,21 +15969,81 @@ DIC.fr={
 "Escriba su clave para entrar.":"Saisissez votre code pour entrer.",
 "Entrar con mi clave":"Entrer avec mon code",
 "¿Olvidó su clave?":"Vous avez oublié votre code ?",
-"No le llega ningún código al correo.":"Aucun code ne vous est envoyé par courriel.",
-"Su clave no está guardada en ningún servidor: solo en este aparato, y revuelta. Nadie más la sabe, así que nadie se la puede mandar. Y desde aquí no se puede saltar: si se pudiera, no serviría de nada.":"Votre code n'est enregistré sur aucun serveur : uniquement sur cet appareil, et brouillé. Personne d'autre ne le connaît, donc personne ne peut vous l'envoyer. Et on ne peut pas le contourner d'ici : si c'était possible, cela ne servirait à rien.",
-"Si entra con su cuenta de Google, no pierde nada.":"Si vous vous connectez avec votre compte Google, vous ne perdez rien.",
-"Sus datos están en su cuenta, no en la clave:":"Vos données sont dans votre compte, pas dans le code :",
 "Borre los datos de la aplicación — en los ajustes de su teléfono, o los del navegador si es la computadora.":"Effacez les données de l'application — dans les réglages de votre téléphone, ou ceux du navigateur sur l'ordinateur.",
 "Abra la aplicación otra vez.":"Rouvrez l'application.",
 "Entre con el mismo correo de siempre.":"Connectez-vous avec la même adresse que d'habitude.",
 "Le vuelven sus compras, sus operaciones y sus pruebas. Lo único que se pierde es la clave, y pone otra.":"Vos achats, vos opérations et vos tests reviennent tous. La seule chose perdue est le code, et vous en mettez un autre.",
-"Si usa la aplicación sin cuenta, como invitado, y olvida la clave, no hay forma de recuperar nada.":"Si vous utilisez l'application sans compte, en invité, et que vous oubliez le code, il n'y a aucun moyen de rien récupérer.",
-"Lo que tenga aquí se pierde. Por eso vale la pena entrar con su cuenta: es gratis y es lo único que le devuelve su información si pasa algo.":"Tout ce que vous avez ici est perdu. C'est pourquoi se connecter avec votre compte en vaut la peine : c'est gratuit, et c'est la seule chose qui vous rende vos données s'il arrive quelque chose.",
-"Si la olvida no hay forma de saltársela, pero no pierde nada: sus datos están en su cuenta. Borra los datos de la aplicación, entra con el mismo correo y le vuelve todo.":"Si vous l'oubliez, impossible de le contourner, mais vous ne perdez rien : vos données sont dans votre compte. Effacez les données de l'application, connectez-vous avec la même adresse et tout revient.",
 "Ojo: usted no ha entrado con su cuenta.":"Attention : vous ne vous êtes pas connecté avec votre compte.",
-"Si olvida esta clave, no hay forma de recuperar lo que tiene guardado aquí, ni por correo ni de ninguna otra manera. Entre con su cuenta de Google y deja de ser un problema: es gratis.":"Si vous oubliez ce code, il n'y a aucun moyen de récupérer ce que vous avez enregistré ici, ni par courriel ni autrement. Connectez-vous avec votre compte Google et ce n'est plus un problème : c'est gratuit.",
 "Abrir":"Ouvrir",
 "Entrar":"Se connecter",
+/* v37 · recuperar la clave por correo, el correo tapado y el aviso al invitado */
+"Le mandamos un código a su correo y pone una clave nueva.":"Nous envoyons un code à votre courriel et vous en choisissez un nouveau.",
+"No pierde nada de lo que tiene guardado aquí.":"Vous ne perdez rien de ce que vous avez enregistré ici.",
+"Escriba su correo entero para confirmar que es usted.":"Saisissez votre courriel en entier pour confirmer que c'est bien vous.",
+"Su correo":"Votre courriel",
+"Mandarme el código":"M'envoyer le code",
+"Escriba su correo.":"Saisissez votre courriel.",
+"Ese no es el correo con el que entró en este aparato.":"Ce n'est pas le courriel avec lequel vous vous êtes connecté sur cet appareil.",
+"No puedo abrir ese correo":"Je ne peux pas ouvrir ce courriel",
+"Sin internet no se puede mandar el código. Conéctese y vuelva a intentarlo.":"Sans internet, le code ne peut pas être envoyé. Connectez-vous et réessayez.",
+"Mire su correo":"Regardez votre courriel",
+"Le mandamos un código de # cifras a este correo:":"Nous avons envoyé un code à # chiffres à ce courriel :",
+"Vale por # minutos. Si no lo ve, mire en la carpeta de correo no deseado.":"Il est valable # minutes. Si vous ne le voyez pas, regardez dans les indésirables.",
+"El código de su correo":"Le code reçu par courriel",
+"El código son # números.":"Le code comporte # chiffres.",
+"No me llegó, mandar otro":"Je ne l'ai pas reçu, en envoyer un autre",
+"Puede pedir otro en # segundos":"Vous pourrez en demander un autre dans # secondes",
+"Le mandamos otro código.":"Nous vous avons envoyé un autre code.",
+"Sin internet no se puede comprobar el código. Conéctese y vuelva a intentarlo.":"Sans internet, le code ne peut pas être vérifié. Connectez-vous et réessayez.",
+"Su clave nueva":"Votre nouveau code",
+"Clave nueva":"Nouveau code",
+"Guardar y entrar":"Enregistrer et entrer",
+"Clave nueva guardada.":"Nouveau code enregistré.",
+"Si no puede abrir ese correo":"Si vous ne pouvez pas ouvrir ce courriel",
+"Sus datos están en su cuenta, no en la clave.":"Vos données sont dans votre compte, pas dans le code.",
+"Aunque no pueda abrir el correo, puede volver a entrar así:":"Même si vous ne pouvez pas ouvrir le courriel, vous pouvez revenir ainsi :",
+"Usted no entró con su cuenta, así que no hay a dónde mandarle un código.":"Vous ne vous êtes pas connecté avec votre compte : il n'y a donc nulle part où vous envoyer un code.",
+"La clave solo existe en este aparato y nadie más la sabe, ni nosotros.":"Le code n'existe que sur cet appareil et personne d'autre ne le connaît, nous non plus.",
+"Lo que tiene guardado sigue aquí, no se ha borrado.":"Ce que vous avez enregistré est toujours là, rien n'a été effacé.",
+"Lo que no hay es forma de abrirlo sin la clave. La única salida es borrar los datos de la aplicación para poder entrar otra vez, y eso sí se lleva lo que tenga registrado.":"Ce qu'on ne peut pas faire, c'est l'ouvrir sans le code. La seule issue est d'effacer les données de l'application pour pouvoir entrer à nouveau, et cela emporte bien tout ce que vous avez enregistré.",
+"Cuando pueda entrar de nuevo, entre con su cuenta de Google.":"Quand vous pourrez entrer de nouveau, connectez-vous avec votre compte Google.",
+"Es gratis, y a partir de ahí olvidar la clave deja de ser un problema: le llega un código al correo y listo.":"C'est gratuit, et dès lors oublier le code n'est plus un problème : un code arrive dans votre courriel et c'est tout.",
+"Si la olvida, le llega un código a su correo y pone otra.":"Si vous l'oubliez, un code arrive dans votre courriel et vous en choisissez un autre.",
+"No pierde nada de lo que tiene guardado.":"Vous ne perdez rien de ce que vous avez enregistré.",
+"Si olvida esta clave no hay a dónde mandarle un código, y la única salida sería borrar los datos de la aplicación, con todo lo que tenga registrado. Entrar con su cuenta es gratis y deja eso resuelto para siempre.":"Si vous oubliez ce code, il n'y a nulle part où vous en envoyer un, et la seule issue serait d'effacer les données de l'application, avec tout ce que vous avez enregistré. Se connecter avec son compte est gratuit et règle cela pour de bon.",
+"Entrar con mi cuenta":"Me connecter avec mon compte",
+"Acaba de pedir uno. Espere un minuto y vuelva a intentarlo.":"Vous venez d'en demander un. Attendez une minute et réessayez.",
+"Ya pidió cinco códigos hoy con ese correo. Inténtelo mañana.":"Vous avez déjà demandé cinq codes aujourd'hui avec ce courriel. Réessayez demain.",
+"Ese correo no está bien escrito.":"Ce courriel n'est pas écrit correctement.",
+"No se pudo mandar el correo ahora mismo. Inténtelo en un rato.":"Le courriel n'a pas pu être envoyé pour le moment. Réessayez dans un instant.",
+"Ese código ya no vale. Pida uno nuevo.":"Ce code n'est plus valable. Demandez-en un nouveau.",
+"Demasiados intentos. Pida un código nuevo.":"Trop de tentatives. Demandez un nouveau code.",
+"Esta versión de la aplicación no puede pedir códigos. Traiga la versión nueva.":"Cette version de l'application ne peut pas demander de codes. Récupérez la nouvelle version.",
+"El código no coincide. Le quedan # intentos.":"Le code ne correspond pas. Il vous reste # tentatives.",
+"El código no coincide.":"Le code ne correspond pas.",
+"No se pudo. Inténtelo otra vez.":"Cela n'a pas marché. Réessayez.",
+"Tocar para ver el correo":"Toucher pour voir le courriel",
+"Tocar para ver el correo entero":"Toucher pour voir le courriel en entier",
+"Entró con esta cuenta:":"Vous vous êtes connecté avec ce compte :",
+"Al salir, lo que registre deja de guardarse en su cuenta y vuelve a la pantalla de inicio.":"En vous déconnectant, ce que vous enregistrez cesse d'être sauvegardé dans votre compte et vous revenez à l'écran d'accueil.",
+"Salir y dejar mis datos aquí":"Se déconnecter et laisser mes données ici",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene (# registros). Al volver a entrar, lo nuevo se sube solo.":"Vous continuez à utiliser l'application sans compte, avec tout ce que vous avez (# enregistrements). À la reconnexion, les nouveautés montent toutes seules.",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene. Al volver a entrar, lo nuevo se sube solo.":"Vous continuez à utiliser l'application sans compte, avec tout ce que vous avez. À la reconnexion, les nouveautés montent toutes seules.",
+"Salir y borrar este aparato":"Se déconnecter et effacer cet appareil",
+"Para un teléfono prestado o un equipo que ya no es suyo.":"Pour un téléphone prêté ou un ordinateur qui n'est plus le vôtre.",
+"Sus datos siguen en su cuenta y vuelven al entrar con el mismo correo.":"Vos données restent dans votre compte et reviennent en vous connectant avec le même courriel.",
+"Se borra de ESTE aparato todo lo que tiene registrado.":"Tout ce que vous avez enregistré est effacé de CET appareil.",
+"En su cuenta se queda intacto y vuelve en cuanto entre otra vez con el mismo correo.":"Dans votre compte, tout reste intact et revient dès que vous vous reconnectez avec le même courriel.",
+"Guardado en su cuenta":"Enregistré dans votre compte",
+"hace un momento":"à l'instant",
+"sin conexión por ahora":"hors ligne pour l'instant",
+"fallo de la cuenta":"problème de compte",
+"No se pudo conectar con su cuenta. Sus datos siguen enteros en este aparato. Inténtelo en un rato y, si sigue igual, escríbanos a miportafoliocriptoapp@gmail.com.":"La connexion à votre compte a échoué. Vos données sont intactes sur cet appareil. Réessayez dans un instant et, si rien ne change, écrivez-nous à miportafoliocriptoapp@gmail.com.",
+"# movimientos de spot":"# opérations spot",
+"# alerta":"# alerte",
+"# alertas":"# alertes",
+"# venta programada":"# vente programmée",
+"# ventas programadas":"# ventes programmées",
 "Hace # min · Binance":"Il y a # min · Binance"
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
@@ -16633,21 +17196,81 @@ DIC.de={
 "Escriba su clave para entrar.":"Geben Sie Ihren Code ein, um hineinzukommen.",
 "Entrar con mi clave":"Mit meinem Code hinein",
 "¿Olvidó su clave?":"Code vergessen?",
-"No le llega ningún código al correo.":"Es wird kein Code an Ihre E-Mail geschickt.",
-"Su clave no está guardada en ningún servidor: solo en este aparato, y revuelta. Nadie más la sabe, así que nadie se la puede mandar. Y desde aquí no se puede saltar: si se pudiera, no serviría de nada.":"Ihr Code liegt auf keinem Server: nur auf diesem Gerät, und verschlüsselt. Niemand sonst kennt ihn, also kann ihn Ihnen auch niemand schicken. Und von hier aus lässt er sich nicht umgehen: wäre es möglich, wäre er nutzlos.",
-"Si entra con su cuenta de Google, no pierde nada.":"Wenn Sie sich mit Ihrem Google-Konto anmelden, verlieren Sie nichts.",
-"Sus datos están en su cuenta, no en la clave:":"Ihre Daten liegen in Ihrem Konto, nicht im Code:",
 "Borre los datos de la aplicación — en los ajustes de su teléfono, o los del navegador si es la computadora.":"Löschen Sie die Daten der App — in den Einstellungen Ihres Telefons oder denen des Browsers am Computer.",
 "Abra la aplicación otra vez.":"Öffnen Sie die App erneut.",
 "Entre con el mismo correo de siempre.":"Melden Sie sich mit derselben Adresse wie immer an.",
 "Le vuelven sus compras, sus operaciones y sus pruebas. Lo único que se pierde es la clave, y pone otra.":"Ihre Käufe, Ihre Trades und Ihre Tests kommen alle zurück. Verloren geht nur der Code, und Sie legen einen neuen fest.",
-"Si usa la aplicación sin cuenta, como invitado, y olvida la clave, no hay forma de recuperar nada.":"Wenn Sie die App ohne Konto als Gast nutzen und den Code vergessen, lässt sich nichts zurückholen.",
-"Lo que tenga aquí se pierde. Por eso vale la pena entrar con su cuenta: es gratis y es lo único que le devuelve su información si pasa algo.":"Was Sie hier haben, ist weg. Deshalb lohnt sich die Anmeldung mit Ihrem Konto: sie ist kostenlos und das Einzige, was Ihnen Ihre Daten zurückgibt, wenn etwas passiert.",
-"Si la olvida no hay forma de saltársela, pero no pierde nada: sus datos están en su cuenta. Borra los datos de la aplicación, entra con el mismo correo y le vuelve todo.":"Wenn Sie ihn vergessen, führt kein Weg daran vorbei, aber Sie verlieren nichts: Ihre Daten liegen in Ihrem Konto. Daten der App löschen, mit derselben Adresse anmelden, und alles ist wieder da.",
 "Ojo: usted no ha entrado con su cuenta.":"Achtung: Sie haben sich nicht mit Ihrem Konto angemeldet.",
-"Si olvida esta clave, no hay forma de recuperar lo que tiene guardado aquí, ni por correo ni de ninguna otra manera. Entre con su cuenta de Google y deja de ser un problema: es gratis.":"Wenn Sie diesen Code vergessen, lässt sich nichts zurückholen, was Sie hier gespeichert haben — weder per E-Mail noch sonst wie. Melden Sie sich mit Ihrem Google-Konto an, dann ist es kein Problem mehr: es ist kostenlos.",
 "Abrir":"Öffnen",
 "Entrar":"Anmelden",
+/* v37 · recuperar la clave por correo, el correo tapado y el aviso al invitado */
+"Le mandamos un código a su correo y pone una clave nueva.":"Wir schicken einen Code an Ihre E-Mail und Sie vergeben einen neuen.",
+"No pierde nada de lo que tiene guardado aquí.":"Sie verlieren nichts von dem, was Sie hier gespeichert haben.",
+"Escriba su correo entero para confirmar que es usted.":"Geben Sie Ihre vollständige E-Mail ein, damit wir wissen, dass Sie es sind.",
+"Su correo":"Ihre E-Mail",
+"Mandarme el código":"Code schicken",
+"Escriba su correo.":"Geben Sie Ihre E-Mail ein.",
+"Ese no es el correo con el que entró en este aparato.":"Das ist nicht die E-Mail, mit der Sie sich auf diesem Gerät angemeldet haben.",
+"No puedo abrir ese correo":"Ich komme an diese E-Mail nicht heran",
+"Sin internet no se puede mandar el código. Conéctese y vuelva a intentarlo.":"Ohne Internet lässt sich der Code nicht schicken. Verbinden Sie sich und versuchen Sie es erneut.",
+"Mire su correo":"Sehen Sie in Ihre E-Mail",
+"Le mandamos un código de # cifras a este correo:":"Wir haben einen #-stelligen Code an diese E-Mail geschickt:",
+"Vale por # minutos. Si no lo ve, mire en la carpeta de correo no deseado.":"Er gilt # Minuten. Wenn Sie ihn nicht sehen, schauen Sie im Spam-Ordner nach.",
+"El código de su correo":"Der Code aus Ihrer E-Mail",
+"El código son # números.":"Der Code besteht aus # Ziffern.",
+"No me llegó, mandar otro":"Nicht angekommen, neuen schicken",
+"Puede pedir otro en # segundos":"In # Sekunden können Sie einen neuen anfordern",
+"Le mandamos otro código.":"Wir haben Ihnen einen neuen Code geschickt.",
+"Sin internet no se puede comprobar el código. Conéctese y vuelva a intentarlo.":"Ohne Internet lässt sich der Code nicht prüfen. Verbinden Sie sich und versuchen Sie es erneut.",
+"Su clave nueva":"Ihr neuer Code",
+"Clave nueva":"Neuer Code",
+"Guardar y entrar":"Speichern und hinein",
+"Clave nueva guardada.":"Neuer Code gespeichert.",
+"Si no puede abrir ese correo":"Wenn Sie an diese E-Mail nicht herankommen",
+"Sus datos están en su cuenta, no en la clave.":"Ihre Daten liegen in Ihrem Konto, nicht im Code.",
+"Aunque no pueda abrir el correo, puede volver a entrar así:":"Auch ohne Zugang zur E-Mail kommen Sie so wieder hinein:",
+"Usted no entró con su cuenta, así que no hay a dónde mandarle un código.":"Sie haben sich nicht mit Ihrem Konto angemeldet, also gibt es keine Adresse für einen Code.",
+"La clave solo existe en este aparato y nadie más la sabe, ni nosotros.":"Der Code existiert nur auf diesem Gerät, und niemand sonst kennt ihn, wir auch nicht.",
+"Lo que tiene guardado sigue aquí, no se ha borrado.":"Was Sie gespeichert haben, ist noch da, nichts wurde gelöscht.",
+"Lo que no hay es forma de abrirlo sin la clave. La única salida es borrar los datos de la aplicación para poder entrar otra vez, y eso sí se lleva lo que tenga registrado.":"Was nicht geht, ist es ohne den Code zu öffnen. Der einzige Ausweg ist, die Daten der App zu löschen, um wieder hineinzukommen — und das nimmt alles mit, was Sie erfasst haben.",
+"Cuando pueda entrar de nuevo, entre con su cuenta de Google.":"Sobald Sie wieder hineinkommen, melden Sie sich mit Ihrem Google-Konto an.",
+"Es gratis, y a partir de ahí olvidar la clave deja de ser un problema: le llega un código al correo y listo.":"Es ist kostenlos, und ab dann ist ein vergessener Code kein Problem mehr: ein Code kommt per E-Mail und fertig.",
+"Si la olvida, le llega un código a su correo y pone otra.":"Wenn Sie ihn vergessen, kommt ein Code per E-Mail und Sie vergeben einen neuen.",
+"No pierde nada de lo que tiene guardado.":"Sie verlieren nichts von dem, was Sie gespeichert haben.",
+"Si olvida esta clave no hay a dónde mandarle un código, y la única salida sería borrar los datos de la aplicación, con todo lo que tenga registrado. Entrar con su cuenta es gratis y deja eso resuelto para siempre.":"Wenn Sie diesen Code vergessen, gibt es keine Adresse für einen neuen, und der einzige Ausweg wäre, die Daten der App zu löschen — mit allem, was Sie erfasst haben. Die Anmeldung mit Ihrem Konto ist kostenlos und erledigt das ein für alle Mal.",
+"Entrar con mi cuenta":"Mit meinem Konto anmelden",
+"Acaba de pedir uno. Espere un minuto y vuelva a intentarlo.":"Sie haben gerade einen angefordert. Warten Sie eine Minute und versuchen Sie es erneut.",
+"Ya pidió cinco códigos hoy con ese correo. Inténtelo mañana.":"Sie haben heute schon fünf Codes mit dieser E-Mail angefordert. Versuchen Sie es morgen.",
+"Ese correo no está bien escrito.":"Diese E-Mail ist nicht richtig geschrieben.",
+"No se pudo mandar el correo ahora mismo. Inténtelo en un rato.":"Die E-Mail konnte gerade nicht geschickt werden. Versuchen Sie es später.",
+"Ese código ya no vale. Pida uno nuevo.":"Dieser Code gilt nicht mehr. Fordern Sie einen neuen an.",
+"Demasiados intentos. Pida un código nuevo.":"Zu viele Versuche. Fordern Sie einen neuen Code an.",
+"Esta versión de la aplicación no puede pedir códigos. Traiga la versión nueva.":"Diese Version der App kann keine Codes anfordern. Holen Sie die neue Version.",
+"El código no coincide. Le quedan # intentos.":"Der Code stimmt nicht. Sie haben noch # Versuche.",
+"El código no coincide.":"Der Code stimmt nicht.",
+"No se pudo. Inténtelo otra vez.":"Es hat nicht geklappt. Versuchen Sie es erneut.",
+"Tocar para ver el correo":"Tippen, um die E-Mail zu sehen",
+"Tocar para ver el correo entero":"Tippen, um die ganze E-Mail zu sehen",
+"Entró con esta cuenta:":"Sie haben sich mit diesem Konto angemeldet:",
+"Al salir, lo que registre deja de guardarse en su cuenta y vuelve a la pantalla de inicio.":"Nach dem Abmelden wird nichts mehr in Ihrem Konto gespeichert und Sie landen wieder im Startbildschirm.",
+"Salir y dejar mis datos aquí":"Abmelden und meine Daten hierlassen",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene (# registros). Al volver a entrar, lo nuevo se sube solo.":"Sie nutzen die App weiter ohne Konto, mit allem, was Sie haben (# Einträge). Beim nächsten Anmelden wird das Neue von selbst hochgeladen.",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene. Al volver a entrar, lo nuevo se sube solo.":"Sie nutzen die App weiter ohne Konto, mit allem, was Sie haben. Beim nächsten Anmelden wird das Neue von selbst hochgeladen.",
+"Salir y borrar este aparato":"Abmelden und dieses Gerät leeren",
+"Para un teléfono prestado o un equipo que ya no es suyo.":"Für ein geliehenes Telefon oder einen Rechner, der nicht mehr Ihnen gehört.",
+"Sus datos siguen en su cuenta y vuelven al entrar con el mismo correo.":"Ihre Daten bleiben in Ihrem Konto und kommen zurück, wenn Sie sich mit derselben E-Mail anmelden.",
+"Se borra de ESTE aparato todo lo que tiene registrado.":"Alles, was Sie erfasst haben, wird von DIESEM Gerät gelöscht.",
+"En su cuenta se queda intacto y vuelve en cuanto entre otra vez con el mismo correo.":"In Ihrem Konto bleibt alles unangetastet und kommt zurück, sobald Sie sich wieder mit derselben E-Mail anmelden.",
+"Guardado en su cuenta":"In Ihrem Konto gespeichert",
+"hace un momento":"gerade eben",
+"sin conexión por ahora":"gerade ohne Verbindung",
+"fallo de la cuenta":"Konto-Problem",
+"No se pudo conectar con su cuenta. Sus datos siguen enteros en este aparato. Inténtelo en un rato y, si sigue igual, escríbanos a miportafoliocriptoapp@gmail.com.":"Ihr Konto war nicht erreichbar. Ihre Daten sind auf diesem Gerät vollständig. Versuchen Sie es später und schreiben Sie uns, wenn es so bleibt, an miportafoliocriptoapp@gmail.com.",
+"# movimientos de spot":"# Spot-Einträge",
+"# alerta":"# Alarm",
+"# alertas":"# Alarme",
+"# venta programada":"# geplanter Verkauf",
+"# ventas programadas":"# geplante Verkäufe",
 "Hace # min · Binance":"Vor # Min · Binance"
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
@@ -17800,21 +18423,81 @@ DIC.it={
 "Escriba su clave para entrar.":"Scriva il suo codice per entrare.",
 "Entrar con mi clave":"Entrare con il mio codice",
 "¿Olvidó su clave?":"Ha dimenticato il suo codice?",
-"No le llega ningún código al correo.":"Non le arriva nessun codice per email.",
-"Su clave no está guardada en ningún servidor: solo en este aparato, y revuelta. Nadie más la sabe, así que nadie se la puede mandar. Y desde aquí no se puede saltar: si se pudiera, no serviría de nada.":"Il suo codice non è salvato su nessun server: solo su questo dispositivo, e mescolato. Nessun altro lo conosce, quindi nessuno glielo può mandare. E da qui non si può aggirare: se si potesse, non servirebbe a niente.",
-"Si entra con su cuenta de Google, no pierde nada.":"Se entra con il suo account Google, non perde nulla.",
-"Sus datos están en su cuenta, no en la clave:":"I suoi dati sono nel suo account, non nel codice:",
 "Borre los datos de la aplicación — en los ajustes de su teléfono, o los del navegador si es la computadora.":"Cancelli i dati dell'applicazione — nelle impostazioni del suo telefono, o in quelle del browser se è il computer.",
 "Abra la aplicación otra vez.":"Apra di nuovo l'applicazione.",
 "Entre con el mismo correo de siempre.":"Entri con lo stesso indirizzo di sempre.",
 "Le vuelven sus compras, sus operaciones y sus pruebas. Lo único que se pierde es la clave, y pone otra.":"Tornano i suoi acquisti, le sue operazioni e le sue prove. L'unica cosa che si perde è il codice, e ne mette un altro.",
-"Si usa la aplicación sin cuenta, como invitado, y olvida la clave, no hay forma de recuperar nada.":"Se usa l'applicazione senza account, come ospite, e dimentica il codice, non c'è modo di recuperare nulla.",
-"Lo que tenga aquí se pierde. Por eso vale la pena entrar con su cuenta: es gratis y es lo único que le devuelve su información si pasa algo.":"Quello che ha qui si perde. Per questo vale la pena entrare con il suo account: è gratis ed è l'unica cosa che le restituisce le sue informazioni se succede qualcosa.",
-"Si la olvida no hay forma de saltársela, pero no pierde nada: sus datos están en su cuenta. Borra los datos de la aplicación, entra con el mismo correo y le vuelve todo.":"Se lo dimentica non c'è modo di aggirarlo, ma non perde nulla: i suoi dati sono nel suo account. Cancella i dati dell'applicazione, entra con lo stesso indirizzo e torna tutto.",
 "Ojo: usted no ha entrado con su cuenta.":"Attenzione: non è entrato con il suo account.",
-"Si olvida esta clave, no hay forma de recuperar lo que tiene guardado aquí, ni por correo ni de ninguna otra manera. Entre con su cuenta de Google y deja de ser un problema: es gratis.":"Se dimentica questo codice, non c'è modo di recuperare quello che ha salvato qui, né per email né in nessun altro modo. Entri con il suo account Google e smette di essere un problema: è gratis.",
 "Abrir":"Aprire",
 "Entrar":"Accedere",
+/* v37 · recuperar la clave por correo, el correo tapado y el aviso al invitado */
+"Le mandamos un código a su correo y pone una clave nueva.":"Le mandiamo un codice alla sua email e ne imposta uno nuovo.",
+"No pierde nada de lo que tiene guardado aquí.":"Non perde niente di quello che ha salvato qui.",
+"Escriba su correo entero para confirmar que es usted.":"Scriva la sua email per intero per confermare che è lei.",
+"Su correo":"La sua email",
+"Mandarme el código":"Mandami il codice",
+"Escriba su correo.":"Scriva la sua email.",
+"Ese no es el correo con el que entró en este aparato.":"Questa non è l'email con cui è entrato in questo apparecchio.",
+"No puedo abrir ese correo":"Non riesco ad aprire quella email",
+"Sin internet no se puede mandar el código. Conéctese y vuelva a intentarlo.":"Senza internet non si può mandare il codice. Si colleghi e riprovi.",
+"Mire su correo":"Guardi la sua email",
+"Le mandamos un código de # cifras a este correo:":"Le abbiamo mandato un codice di # cifre a questa email:",
+"Vale por # minutos. Si no lo ve, mire en la carpeta de correo no deseado.":"Vale per # minuti. Se non lo vede, guardi nella cartella della posta indesiderata.",
+"El código de su correo":"Il codice della sua email",
+"El código son # números.":"Il codice sono # numeri.",
+"No me llegó, mandar otro":"Non mi è arrivato, mandane un altro",
+"Puede pedir otro en # segundos":"Può chiederne un altro fra # secondi",
+"Le mandamos otro código.":"Le abbiamo mandato un altro codice.",
+"Sin internet no se puede comprobar el código. Conéctese y vuelva a intentarlo.":"Senza internet non si può controllare il codice. Si colleghi e riprovi.",
+"Su clave nueva":"Il suo codice nuovo",
+"Clave nueva":"Codice nuovo",
+"Guardar y entrar":"Salvare ed entrare",
+"Clave nueva guardada.":"Codice nuovo salvato.",
+"Si no puede abrir ese correo":"Se non riesce ad aprire quella email",
+"Sus datos están en su cuenta, no en la clave.":"I suoi dati stanno nel suo account, non nel codice.",
+"Aunque no pueda abrir el correo, puede volver a entrar así:":"Anche se non riesce ad aprire l'email, può rientrare così:",
+"Usted no entró con su cuenta, así que no hay a dónde mandarle un código.":"Lei non è entrato con il suo account, quindi non c'è dove mandarle un codice.",
+"La clave solo existe en este aparato y nadie más la sabe, ni nosotros.":"Il codice esiste solo in questo apparecchio e nessun altro lo sa, neanche noi.",
+"Lo que tiene guardado sigue aquí, no se ha borrado.":"Quello che ha salvato è ancora qui, non si è cancellato.",
+"Lo que no hay es forma de abrirlo sin la clave. La única salida es borrar los datos de la aplicación para poder entrar otra vez, y eso sí se lleva lo que tenga registrado.":"Quello che non si può è aprirlo senza il codice. L'unica via d'uscita è cancellare i dati dell'applicazione per poter rientrare, e quello sì si porta via tutto quello che ha registrato.",
+"Cuando pueda entrar de nuevo, entre con su cuenta de Google.":"Quando potrà rientrare, entri con il suo account Google.",
+"Es gratis, y a partir de ahí olvidar la clave deja de ser un problema: le llega un código al correo y listo.":"È gratis, e da lì dimenticare il codice smette di essere un problema: le arriva un codice all'email e basta.",
+"Si la olvida, le llega un código a su correo y pone otra.":"Se lo dimentica, le arriva un codice all'email e ne imposta un altro.",
+"No pierde nada de lo que tiene guardado.":"Non perde niente di quello che ha salvato.",
+"Si olvida esta clave no hay a dónde mandarle un código, y la única salida sería borrar los datos de la aplicación, con todo lo que tenga registrado. Entrar con su cuenta es gratis y deja eso resuelto para siempre.":"Se dimentica questo codice non c'è dove mandargliene uno, e l'unica via d'uscita sarebbe cancellare i dati dell'applicazione, con tutto quello che ha registrato. Entrare con il suo account è gratis e risolve la cosa per sempre.",
+"Entrar con mi cuenta":"Entrare con il mio account",
+"Acaba de pedir uno. Espere un minuto y vuelva a intentarlo.":"Ne ha appena chiesto uno. Aspetti un minuto e riprovi.",
+"Ya pidió cinco códigos hoy con ese correo. Inténtelo mañana.":"Ha già chiesto cinque codici oggi con quella email. Riprovi domani.",
+"Ese correo no está bien escrito.":"Quella email non è scritta bene.",
+"No se pudo mandar el correo ahora mismo. Inténtelo en un rato.":"Non si è potuta mandare l'email adesso. Riprovi fra un po'.",
+"Ese código ya no vale. Pida uno nuevo.":"Quel codice non vale più. Ne chieda uno nuovo.",
+"Demasiados intentos. Pida un código nuevo.":"Troppi tentativi. Chieda un codice nuovo.",
+"Esta versión de la aplicación no puede pedir códigos. Traiga la versión nueva.":"Questa versione dell'applicazione non può chiedere codici. Scarichi la versione nuova.",
+"El código no coincide. Le quedan # intentos.":"Il codice non coincide. Le restano # tentativi.",
+"El código no coincide.":"Il codice non coincide.",
+"No se pudo. Inténtelo otra vez.":"Non è riuscito. Riprovi.",
+"Tocar para ver el correo":"Toccare per vedere l'email",
+"Tocar para ver el correo entero":"Toccare per vedere l'email intera",
+"Entró con esta cuenta:":"È entrato con questo account:",
+"Al salir, lo que registre deja de guardarse en su cuenta y vuelve a la pantalla de inicio.":"Uscendo, quello che registra smette di salvarsi nel suo account e torna alla schermata iniziale.",
+"Salir y dejar mis datos aquí":"Uscire e lasciare i miei dati qui",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene (# registros). Al volver a entrar, lo nuevo se sube solo.":"Continua a usare l'applicazione senza account, con tutto quello che ha (# registrazioni). Rientrando, il nuovo si carica da solo.",
+"Sigue usando la aplicación sin cuenta, con todo lo que tiene. Al volver a entrar, lo nuevo se sube solo.":"Continua a usare l'applicazione senza account, con tutto quello che ha. Rientrando, il nuovo si carica da solo.",
+"Salir y borrar este aparato":"Uscire e cancellare questo apparecchio",
+"Para un teléfono prestado o un equipo que ya no es suyo.":"Per un telefono prestato o un computer che non è più suo.",
+"Sus datos siguen en su cuenta y vuelven al entrar con el mismo correo.":"I suoi dati restano nel suo account e tornano entrando con la stessa email.",
+"Se borra de ESTE aparato todo lo que tiene registrado.":"Si cancella da QUESTO apparecchio tutto quello che ha registrato.",
+"En su cuenta se queda intacto y vuelve en cuanto entre otra vez con el mismo correo.":"Nel suo account resta intatto e torna appena rientra con la stessa email.",
+"Guardado en su cuenta":"Salvato nel suo account",
+"hace un momento":"un momento fa",
+"sin conexión por ahora":"senza connessione per ora",
+"fallo de la cuenta":"problema dell'account",
+"No se pudo conectar con su cuenta. Sus datos siguen enteros en este aparato. Inténtelo en un rato y, si sigue igual, escríbanos a miportafoliocriptoapp@gmail.com.":"Non si è potuto collegare al suo account. I suoi dati restano interi in questo apparecchio. Riprovi fra un po' e, se resta uguale, ci scriva a miportafoliocriptoapp@gmail.com.",
+"# movimientos de spot":"# movimenti spot",
+"# alerta":"# avviso",
+"# alertas":"# avvisi",
+"# venta programada":"# vendita programmata",
+"# ventas programadas":"# vendite programmate",
 "Hace # min · Binance":"# min fa · Binance"
 };
 </script>
