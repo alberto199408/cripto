@@ -721,7 +721,7 @@ function pintar(idi){
   if(ORDEN.indexOf(inicial)<0){ try{ inicial=localStorage.getItem("priv-idi")||""; }catch(e){} }
   if(ORDEN.indexOf(inicial)<0){
     var n=(navigator.language||"es").slice(0,2).toLowerCase();
-    inicial = ORDEN.indexOf(n)>=0 ? n : "es";
+    inicial = ORDEN.indexOf(n)>=0 ? n : (n==="es"?"es":"en");   /* v38: idioma sin traducción → inglés */
   }
   pintar(inicial);
 })();
