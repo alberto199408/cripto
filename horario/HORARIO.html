@@ -283,6 +283,7 @@ tbody tr.m100{box-shadow:inset 3px 0 0 var(--c100)}
 tbody tr.m50{box-shadow:inset 3px 0 0 var(--c50)}
 .chora input{width:96px;background:var(--b0);border:1px solid var(--ln);color:var(--tx);
   border-radius:8px;padding:6px 7px;font-family:Consolas,monospace;font-size:12.5px;text-align:center}
+.chora input.hhmm{width:84px;letter-spacing:.06em;font-size:14px}
 .chora input:focus{outline:0;border-color:var(--ac);background:var(--b2);
   box-shadow:0 0 0 3px color-mix(in srgb,var(--ac) 18%,transparent)}
 input.txt{width:100%;min-width:66px;background:var(--b0);border:1px solid var(--ln);color:var(--tx);
@@ -2726,7 +2727,8 @@ function sincronizar(silencioso){
     return subirRemoto(r.sha);
   }).then(function(){
     SYNC.ocupado=false; SYNC.ultimo=Date.now(); SYNC.error="";
-    guardar(); repintar();
+    guardar();
+    (function pintar(){ if(enCasilla()){ setTimeout(pintar, 3000); return; } repintar(); })();
     if(!silencioso) aviso("Sincronizado. Sus horas están en todos sus equipos.");
   }).catch(function(e){
     SYNC.ocupado=false; SYNC.error=String(e&&e.message||e);
@@ -3049,9 +3051,70 @@ function chip(t,v,s,cl){
     '<span class="v '+(cl||"")+'">'+v+'</span>'+
     '<span class="s">'+s+'</span></div>';
 }
+/* =====================================================================
+   LAS HORAS SE ESCRIBEN CON EL TECLADO NUMÉRICO
+   El campo «time» del navegador, en algunos teléfonos, se marca pero no
+   abre el teclado: no se podía escribir la entrada ni la salida. Ahora
+   son casillas de texto con teclado de números. Se escribe sin los dos
+   puntos y se arregla solo:  0830 → 08:30 · 1730 → 17:30 · 830 → 08:30 ·
+   8 → 08:00.  Se guarda siempre como «HH:MM» (24 horas), igual que antes,
+   así que lo ya guardado y lo de la nube siguen valiendo.
+   ===================================================================== */
+function hhmmNorm(txt){
+  var d=String(txt==null?"":txt).replace(/\D/g,"");
+  if(d==="") return "";
+  if(d.length>4) return null;
+  var h,m;
+  if(d.length<=2){ h=+d; m=0; }
+  else if(d.length===3){ h=+d.charAt(0); m=+d.slice(1); }
+  else { h=+d.slice(0,2); m=+d.slice(2); }
+  if(h>23||m>59) return null;
+  return ("0"+h).slice(-2)+":"+("0"+m).slice(-2);
+}
+function esHora(t){ return !!(t && t.classList && t.classList.contains("hhmm")); }
+/* mientras escribe: solo números; con 4 dígitos pone los dos puntos, guarda y pasa a la
+   siguiente casilla. Si escribe sobre una hora que ya estaba completa, empieza de nuevo. */
+function siguienteHora(t){
+  var todas=[].slice.call(document.querySelectorAll(".tdias [data-c]"));
+  var n=todas[todas.indexOf(t)+1];
+  if(n && esHora(n)) n.focus();
+}
+document.addEventListener("input", function(e){
+  var t=e.target; if(!esHora(t)) return;
+  var d=(t.value||"").replace(/\D/g,"");
+  if(d.length>4){                            /* escribió encima de una hora completa: empieza de nuevo */
+    var nuevo=String(e.data||"").replace(/\D/g,"");
+    d=(nuevo||d).slice(-4);
+  }
+  t.value = d.length===4 ? d.slice(0,2)+":"+d.slice(2) : d;
+  e.stopImmediatePropagation();              /* nadie guarda una hora a medias */
+  if(d.length===4 || d.length===0){
+    t.dispatchEvent(new Event("change",{bubbles:true}));
+    if(d.length===4 && hhmmNorm(d)!==null && t.hasAttribute("data-c")) siguienteHora(t);
+  }
+}, true);
+/* al terminar (otra casilla, Enter o tocar fuera): se arregla y se valida */
+document.addEventListener("change", function(e){
+  var t=e.target; if(!esHora(t)) return;
+  var r=hhmmNorm(t.value);
+  if(r===null){
+    aviso("Hora no válida. Escríbala así: 0830 o 1730 (24 horas).", true);
+    t.value=t.getAttribute("data-ok")||"";
+    e.stopImmediatePropagation(); return;
+  }
+  t.value=r; t.setAttribute("data-ok", r);
+}, true);
+function enCasilla(){
+  var a=document.activeElement;
+  return !!(a && a.matches && a.matches("[data-c], .hhmm"));
+}
+function horaHtml(v,extra){
+  v=esc(v||"");
+  return '<input class="hhmm" type="text" inputmode="numeric" autocomplete="off" '+
+    'enterkeyhint="next" placeholder="--:--" '+(extra||"")+' data-ok="'+v+'" value="'+v+'">';
+}
 function cel(f,campo){
-  return '<td class="chora"><input type="time" data-c="'+campo+'" value="'+
-    esc(f.d[campo]||"")+'"></td>';
+  return '<td class="chora">'+horaHtml(f.d[campo],'data-c="'+campo+'"')+'</td>';
 }
 function celT(f,campo,ph){
   return '<input class="txt" data-c="'+campo+'" placeholder="'+ph+'" value="'+
@@ -3123,7 +3186,11 @@ function engancharMes(c){
     var pv=document.getElementById("pieV");
     if(pv) pv.textContent=usd(c2.neto);
     clearTimeout(refrescarTotales._t);
-    refrescarTotales._t=setTimeout(function(){ if(vista==="mes") pintarMes(); }, 2500);
+    refrescarTotales._t=setTimeout(function otra(){
+      if(vista!=="mes") return;
+      if(enCasilla()){ refrescarTotales._t=setTimeout(otra, 2500); return; }   /* está escribiendo: espera */
+      pintarMes();
+    }, 2500);
   }
 
   /* moverse entre casillas como en Excel */
@@ -3739,7 +3806,7 @@ function inp(t,id,v,tipo){
     ' value="'+esc(v==null?"":v)+'"></div>';
 }
 function inpH(t,id,v){
-  return '<div class="campo"><label>'+t+'</label><input type="time" id="'+id+'" value="'+esc(v||"")+'"></div>';
+  return '<div class="campo"><label>'+t+'</label>'+horaHtml(v,'id="'+id+'"')+'</div>';
 }
 function inpP(t,id,v){
   return '<div class="campo"><label>'+t+' (%)</label><input id="'+id+'" inputmode="decimal" value="'+
