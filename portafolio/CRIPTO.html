@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="46">
+<meta name="v" content="47">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -1126,7 +1126,7 @@ a:hover{color:var(--ac2)}
   .mv .r,.mv .pg{order:3;text-align:left;min-width:0;flex:1 1 0;
     padding-top:8px;border-top:1px solid var(--ln)}
   .mv .r>span:first-child,.mv .pg>span:first-child{display:block;font-size:11.5px;
-    line-height:1.25;min-height:29px;margin-bottom:1px}
+    line-height:1.25;margin-bottom:1px}
   .mv .r>b,.mv .pg>b{font-size:16px;line-height:1.25}
   .mv .acc{order:4;flex:1 1 100%;justify-content:flex-end;align-items:center}
   .lote{grid-template-columns:1fr 1fr}
@@ -1155,6 +1155,9 @@ a:hover{color:var(--ac2)}
 /* (va DESPUÉS de la regla de 520 px, que si no la pisa) */
 @media(max-width:380px){
   .campos.dos{grid-template-columns:minmax(0,1fr)}
+}
+@media(min-width:381px) and (max-width:900px){
+  .opform .opbloq>.campos.dos:first-child{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media print{
@@ -1494,15 +1497,35 @@ body.conCerrojo #aviso{z-index:10001}
   .mv .l2{font-size:11.5px!important}
   .mv .lg em{font-size:8.5px!important;letter-spacing:.02em}
   .mv .lg{min-width:0}
-  .mv.moneda{display:grid!important;grid-template-columns:62px minmax(0,1fr) minmax(0,1fr)!important;gap:4px 8px!important;align-items:center}
-  .mv.moneda>.lg{grid-column:1;grid-row:1}
-  .mv.moneda>.cab2{grid-column:2 / span 2;grid-row:1}
-  .mv.moneda>.q{grid-column:1 / span 3;grid-row:2;margin:0!important;min-width:0!important}
-  .mv.moneda>.r{grid-column:1 / span 2;grid-row:3;margin:0!important;padding:0!important;border:0!important;text-align:left;min-width:0!important}
-  .mv.moneda>.pg{grid-column:3;grid-row:3;margin:0!important;padding:0!important;border:0!important;text-align:left;min-width:0!important}
-  .mv.moneda>.acc{grid-column:1 / span 3;grid-row:4;margin:0!important;padding:0!important;border:0!important}
+  .mv.moneda{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:6px 8px!important;align-items:center}
+  .mv.moneda>.lg{grid-column:1 / span 2;grid-row:1}
+  .mv.moneda>.cab2{grid-column:3 / span 4;grid-row:1}
+  .mv.moneda>.q{grid-column:1 / -1;grid-row:2;margin:0!important;min-width:0!important}
+  .mv.moneda>.r{grid-column:1 / span 3;grid-row:3;margin:0!important;padding:0!important;border:0!important;text-align:left;min-width:0!important}
+  .mv.moneda>.pg{grid-column:4 / span 3;grid-row:3;margin:0!important;padding:0!important;border:0!important;text-align:left;min-width:0!important}
+  .mv.moneda>.acc{grid-column:1 / -1;grid-row:4;margin:0!important;padding:0!important;border:0!important;align-items:center}
   .mv.moneda .r span,.mv.moneda .pg>span{font-size:11px!important;display:block}
   .mv.moneda .r b{font-size:16px!important}
+  .mv.moneda .pg>b{display:flex;align-items:center;gap:6px;white-space:nowrap}
+  .mv.moneda>.acc .b{min-height:40px!important;padding:6px 18px!important}
+  /* v47 · tres datos iguales, cada uno con su nombre arriba, repartidos a lo ancho */
+  .kv3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 8px;padding:7px 0;
+    border-top:1px solid var(--ln);border-bottom:1px solid var(--ln)}
+  .kv3>div{min-width:0}
+  .kv3 span{display:block;font-size:11px;color:var(--t2);margin-bottom:1px}
+  .kv3 b{display:block;font-size:14.5px;font-weight:700;color:var(--tx);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .kv3 b small{font-size:11px;font-weight:600;color:var(--t2)}
+  .totTel{margin:0 13px 13px;padding:10px 12px;border:1px solid var(--ln);border-radius:11px;background:var(--b0)}
+  .totTel .ttt{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--t2);margin-bottom:5px}
+  .totTel .kv3{border:0;padding:0}
+  /* v47 · operación en espera: dos filas de tres datos y los dos botones */
+  .kv3.sinBorde{border-top:0;padding-top:2px}
+  .mv.prog{display:grid!important;grid-template-columns:44px minmax(0,1fr)!important;gap:4px 8px!important;align-items:center;padding:10px 12px!important}
+  .mv.prog>.lg{grid-column:1;grid-row:1}
+  .mv.prog>.cab2{grid-column:2;grid-row:1}
+  .mv.prog>.q{grid-column:1 / -1;grid-row:2;margin:0!important;padding:0!important;border:0!important}
+  .mv.prog>.acc{grid-column:1 / -1;grid-row:3;margin:0!important;padding:0!important;border:0!important;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .mv.prog>.acc .b{min-height:38px!important;justify-content:center}
 
   /* ---- tarjeta de operación abierta (Futuros, Backtesting y Resumen) ---- */
   .mv.fut{display:grid!important;grid-template-columns:62px minmax(0,1fr) auto!important;gap:4px 8px!important;align-items:center}
@@ -1511,28 +1534,60 @@ body.conCerrojo #aviso{z-index:10001}
   .mv.fut>.q{grid-column:1 / span 3;min-width:0!important}
   .mv.fut>.pg{grid-column:1 / span 2;margin:0!important;padding:0!important;border:0!important;min-width:0!important}
   .mv.fut>.acc{grid-column:3;margin:0!important;padding:0!important;border:0!important;display:flex;gap:6px}
-  .mv.fut>.acc .b{padding:6px 10px!important;min-height:34px!important}
+  .mv.fut>.pg{grid-column:1 / -1;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .mv.fut>.pg>b{display:flex;align-items:center;gap:8px;white-space:nowrap}
+  .mv.fut>.acc{grid-column:1 / -1;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .mv.fut>.acc .b{padding:6px 10px!important;min-height:40px!important;width:100%}
   .mv.fut>.nota{grid-column:1 / span 3}
   .mv.fut .kv{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:4px 8px!important}
   .mv.fut .kv>div{padding:0!important;border:0!important;min-width:0}
   .mv.fut .kv span{font-size:10.5px!important;display:block}
   .mv.fut .kv b{font-size:13.5px!important;line-height:1.15}
   .mv.fut .kv small{display:block;font-size:10px!important}
+  /* v47 · los datos de la operación abierta, repartidos a lo ancho y alineados */
+  .mv.fut .kv{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:8px 8px!important;padding-top:2px}
+  .mv.fut .kv>div{grid-column:span 2}
+  .mv.fut .kv>div:nth-child(4){grid-column:1 / -1;display:flex;justify-content:space-between;align-items:baseline;
+    gap:8px;border-top:1px solid var(--ln)!important;padding-top:7px!important}
+  .mv.fut .kv>div:nth-child(4) span{margin:0}
+  .mv.fut .kv>div:nth-child(4) b small{display:inline!important;margin-left:6px}
+  .mv.fut .kv>div:nth-child(5),.mv.fut .kv>div:nth-child(6){grid-column:span 3}
 
   /* ---- tarjetas del historial (compra / venta / depósito / retiro) ----
      fecha | texto (todo el ancho) · abajo: lo que pagó/recibió y el resultado.
      «Editar» va chiquito en la esquina de arriba. */
-  .mv.compra,.mv.dinero,.mv.venta,.mv.retiro{display:grid!important;grid-template-columns:44px minmax(0,1fr) auto!important;gap:4px 10px!important;align-items:center;position:relative}
-  .mv.compra>.fh,.mv.dinero>.fh,.mv.venta>.fh,.mv.retiro>.fh{grid-column:1;grid-row:1;padding:4px!important;margin:0!important;min-width:0!important;align-self:start}
+  .mv.compra,.mv.dinero,.mv.venta,.mv.retiro{display:grid!important;grid-template-columns:44px minmax(0,1fr) auto!important;gap:2px 10px!important;align-items:start;position:relative}
+  .mv.compra>.fh,.mv.dinero>.fh,.mv.venta>.fh,.mv.retiro>.fh{grid-column:1;grid-row:1 / span 2;padding:4px!important;margin:0!important;min-width:0!important;align-self:center}
   .mv.compra>.lg,.mv.dinero>.lg,.mv.venta>.lg,.mv.retiro>.lg{display:none!important}
   .mv.compra>.q,.mv.dinero>.q,.mv.venta>.q,.mv.retiro>.q{grid-column:2 / span 2;grid-row:1;margin:0!important;min-width:0!important}
-  .mv.compra>.q .l1,.mv.dinero>.q .l1,.mv.venta>.q .l1,.mv.retiro>.q .l1{padding-right:56px}
+  .mv.compra>.q .l1,.mv.dinero>.q .l1,.mv.venta>.q .l1,.mv.retiro>.q .l1{padding-right:62px}
   .mv.compra>.acc,.mv.dinero>.acc,.mv.venta>.acc,.mv.retiro>.acc{position:absolute;top:8px;right:10px;margin:0!important;padding:0!important;border:0!important}
-  .mv.compra>.acc .b,.mv.dinero>.acc .b,.mv.venta>.acc .b,.mv.retiro>.acc .b{min-height:28px!important;padding:3px 9px!important;font-size:12px!important}
-  .mv.compra>.pg,.mv.dinero>.pg,.mv.venta>.pg,.mv.retiro>.pg{grid-column:1 / span 2;grid-row:2;margin:0!important;padding:0!important;border:0!important;
-    display:flex;gap:10px;align-items:baseline;text-align:left;min-width:0!important}
+  .mv.compra>.acc .b,.mv.dinero>.acc .b,.mv.venta>.acc .b,.mv.retiro>.acc .b{min-height:30px!important;padding:3px 10px!important;font-size:12px!important}
+  .mv.compra>.pg,.mv.dinero>.pg,.mv.venta>.pg,.mv.retiro>.pg{grid-column:2;grid-row:2;margin:0!important;padding:0!important;border:0!important;
+    display:block;text-align:left;min-width:0!important}
   .mv.compra>.r,.mv.venta>.r{grid-column:3;grid-row:2;margin:0!important;padding:0!important;border:0!important;text-align:right;min-width:0!important}
+  .mv.compra>.pg>span:first-child,.mv.dinero>.pg>span:first-child,.mv.venta>.pg>span:first-child,.mv.retiro>.pg>span:first-child,
+  .mv.compra>.r>span:first-child,.mv.venta>.r>span:first-child{display:block;font-size:11px!important;margin-bottom:1px}
   .mv.compra .pg b,.mv.dinero .pg b{font-size:15px!important}
+  .mv.compra>.r>b,.mv.venta>.r>b{font-size:15px!important;white-space:nowrap}
+
+  /* ---- v47 · formularios: casillas y botones más bajos, sin achicar la letra ---- */
+  .opform>h2{padding:6px 12px!important}
+  .opform .pill.grande{padding:2px!important}
+  .opform .pill.grande button{min-height:34px!important;padding:2px 6px!important;line-height:1.15}
+  .opform .cp{padding:10px 12px!important}
+  .opform .campo input,.opform .campo select{min-height:38px!important;padding:7px 12px!important}
+  .opform .selector{padding:6px 12px!important}
+  .opform label,.formSpot label{margin-bottom:3px!important}
+  .opform .campos.dos{gap:8px 10px!important}
+  /* «ahora» sube a la casilla del precio: queda DENTRO de la casilla, sin una fila de más */
+  .conBtn:has(#fuHoy,#spHoy){display:block!important;position:relative}
+  .conBtn:has(#fuHoy,#spHoy) input{width:100%;padding-right:62px!important}
+  .conBtn:has(#fuHoy,#spHoy) .b{position:absolute!important;right:5px;top:50%;transform:translateY(-50%);
+    min-height:28px!important;height:28px;padding:0 9px!important;font-size:12px!important;width:auto!important;flex:none}
+  .opform label small{display:block;font-size:10.5px;line-height:1.15;font-weight:600}
+  .opform .modoLote .pill button{min-height:34px!important;padding:2px 6px!important;line-height:1.15}
+  .opform .modoLote{gap:6px}
 
   /* ---- tarjeta de alerta de precio: una sola fila ---- */
   .mv.alr{display:grid!important;grid-template-columns:34px minmax(0,1fr) auto auto!important;gap:4px 10px!important;align-items:center}
@@ -1572,6 +1627,20 @@ body.conCerrojo #aviso{z-index:10001}
   .hero .gp2,.hero .hgEt{order:5;font-size:12px!important;align-self:center;white-space:nowrap}
   .hero .hlin>span{order:6;font-size:12px!important;color:var(--t2);white-space:nowrap}
   .hero .hg .envivo{order:2}
+  /* v47 · resultado de Futuros/Backtesting: título + EN VIVO, cifra + %, y tres datos iguales */
+  .heroRes .hprin{display:block!important}
+  .heroRes .hT{display:flex;align-items:center;gap:8px}
+  .heroRes .hT .he{flex:1 1 auto}
+  .heroRes .hM{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:3px}
+  .heroRes .hM .hv{flex:none}
+  .heroRes .hR{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:0;flex:1 1 auto}
+  .heroRes .hM .gch{white-space:normal;text-align:right;line-height:1.2;border-radius:12px;padding:3px 10px!important}
+  .heroRes .hD{font-size:12px;font-weight:600;color:var(--t2);text-align:right;line-height:1.25}
+  .heroRes .hC{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:0 10px;margin-top:9px;padding-top:8px;
+    border-top:1px solid color-mix(in srgb,var(--tx) 14%,transparent)}
+  .heroRes .hC>div{min-width:0}
+  .heroRes .hC span{display:block;font-size:11px;color:var(--t2);margin-bottom:1px}
+  .heroRes .hC b{display:block;font-size:15px;font-weight:700;white-space:nowrap}
   .hero .meta,.hero .reparto,.hero .rpBot{order:7;flex:1 1 100%}
   .hero .meta{margin-top:6px!important}
   .hero .reparto{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-top:8px!important}
@@ -1603,13 +1672,21 @@ body.conCerrojo #aviso{z-index:10001}
   .opform>.cp>#fuDet{order:4}
 
   /* ---- Futuros: los ajustes de riesgo plegados en UNA línea ---- */
-  .frResumen{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--ln);border-radius:12px;
-    background:var(--b1);font-size:13px;line-height:1.3;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent}
-  .frResumen .frDatos{display:flex;flex-wrap:wrap;gap:2px 12px;min-width:0;flex:1}
-  .frResumen .frI{white-space:nowrap}
-  .frResumen .frI>span:first-child{color:var(--t2)}
+  .frResumen{display:block;padding:8px 12px 7px;border:1px solid var(--ln);border-radius:12px;
+    background:var(--b1);font-size:13px;line-height:1.25;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .frResumen .frNom{font-weight:700;margin-bottom:5px}
+  .frResumen .frDatos{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.5fr) auto;gap:0 10px}
+  .frResumen .frI{display:flex;flex-direction:column;min-width:0}
+  .frResumen .frL{font-size:11px;color:var(--t2);font-weight:600;line-height:1.2;margin-bottom:2px}
+  .frResumen .frI b{font-size:16px;line-height:1.2;white-space:nowrap}
   .frResumen b{font-weight:700;color:var(--tx)}
-  .frResumen small{font-size:11.5px;color:var(--t2);margin-left:2px}
+  .frResumen small{font-size:13px;color:var(--t2);margin-left:5px;font-weight:600}
+  .frResumen .frV{white-space:nowrap}
+  .frResumen .frI:last-child .frL{white-space:nowrap}
+  .frResumen .frPie{display:flex;align-items:center;gap:8px;margin-top:5px;padding-top:5px;border-top:1px solid var(--ln)}
+  .frResumen .frCasa{display:flex;flex-wrap:wrap;gap:0 5px;min-width:0;flex:1;font-size:12px;color:var(--t2)}
+  .frResumen .frCasa>span:not(:last-child)::after{content:"·";margin-left:5px}
+  .frResumen .frCasa b{color:var(--tx);font-weight:700}
   .frResumen .cambiar{margin-left:auto;color:var(--acTx);font-weight:700;white-space:nowrap;flex:none;font-size:12.5px}
   .frResumen .cambiar .lCe,.frResumen.abierto .cambiar .lAb{display:none}
   .frResumen.abierto .cambiar .lCe{display:inline}
@@ -1661,6 +1738,55 @@ body.conCerrojo #aviso{z-index:10001}
   .caja>h2 .b.sm{padding:4px 9px;font-size:12px;min-height:30px}
   /* en Resumen, «EN VIVO» ya está arriba: en el título de las abiertas no cabe junto a «Ver futuros» */
   body[data-v="res"] .caja>h2 .envivo{display:none}
+
+  /* ======= v47 · segunda pasada: aprovechar el ancho y quitar aire ======= */
+  .hero .rpBot{grid-auto-rows:40px}
+  .hero .rpBot .b{min-height:40px!important}
+  .mv.prog{grid-template-columns:62px minmax(0,1fr)!important}
+  .mv.prog>.cab2{flex-wrap:wrap;gap:4px 6px}
+  .mv.fut>.lg,.mv.prog>.lg{max-width:62px;overflow:hidden}
+  .mv.fut>.lg em,.mv.prog>.lg em{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mv.prog>.cab2 .espera{margin-left:auto;padding:2px 8px}
+
+  /* ---- el encabezado de cada pantalla: icono + título + «EN VIVO» en el mismo bloque,
+     «Entrar» a la derecha y los dos botones a TODO el ancho (antes el chip de «Entrar»
+     les quitaba 52 px a los botones y «EN VIVO» ocupaba un renglón entero) ---- */
+  .encab{display:grid!important;grid-template-columns:50px minmax(0,1fr) auto;
+    grid-template-rows:auto auto auto;gap:4px 10px!important;align-items:center;
+    padding-right:0!important;margin-bottom:10px!important}
+  .encab .tit,.encab .der{display:contents!important}
+  .encab .gic{grid-column:1;grid-row:1 / span 2;width:50px;height:50px;border-radius:15px}
+  .encab .gic svg{width:30px;height:30px}
+  .encab .tit>div{grid-column:2;grid-row:1;align-self:end;min-width:0}
+  .encab .estado{grid-column:2 / span 2;grid-row:2;align-self:start;display:flex;gap:6px;min-width:0}
+  .encab .cuentaChip{position:static!important;grid-column:3;grid-row:1;justify-self:end;align-self:center}
+  .encab .acciones{grid-column:1 / -1;grid-row:3;margin-top:4px}
+  .encab .der .b{min-height:38px}
+
+  /* ---- aire entre cajas y dentro de ellas: un poco menos, con la MISMA letra ---- */
+  .caja>h2{padding:7px 12px!important}
+  .caja .cp{padding:10px!important}
+  .caja .cp[style*="padding-top:0"]{padding-top:0!important}
+  .caja{margin-bottom:8px!important}
+  .met{padding:7px 10px!important}
+  .mets,.cima .mets{gap:6px!important;margin-top:8px!important}
+  /* buscador + Imprimir + Excel en UN renglón, y los botones de dinero repartidos a lo ancho */
+  .caja>h2 .busca{flex:1 1 120px!important;max-width:none!important;min-width:0;min-height:36px!important;padding:6px 10px!important}
+  .barraDin .bdB{display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:6px;width:100%}
+  .barraDin .bdB .b{min-height:36px!important;justify-content:center;white-space:normal;line-height:1.1;padding:6px 4px!important}
+  /* los grupos de botones llenan el renglón en vez de quedarse pegados a la izquierda */
+  .gcab{flex-wrap:wrap}
+  .gint{flex:1 1 100%}
+  .gint button{flex:1;min-height:34px!important}
+  .filaPrueba{margin:-4px 0 10px!important;gap:6px!important}
+  .filaPrueba .b{flex:1 1 auto;margin-left:0!important;justify-content:center}
+  #histFut>h2 .pill:first-of-type{flex:1 1 100%}
+  #histFut>h2 .pill:last-of-type{flex:1 1 150px}
+  #histFut>h2 .pill button{flex:1}
+  /* resultado de Futuros/Backtesting: la frase («1 operación cerrada · 1 abierta») va en su propio renglón */
+  .heroRes .hM{flex-wrap:wrap;row-gap:2px}
+  .heroRes .hR{display:contents}
+  .heroRes .hD{flex:1 1 100%;order:5;text-align:left}
 }
 
 /* ---- teléfonos angostos (320–360 px): el menú de abajo no parte «Backtesting» ---- */
@@ -1668,6 +1794,18 @@ body.conCerrojo #aviso{z-index:10001}
   aside nav button span.tx{font-size:10px;letter-spacing:-.045em}
   .encab h1{font-size:20px}
   .encab .der .b{font-size:11.5px;padding:6px 6px;white-space:nowrap}
+  .frResumen .frL{font-size:10.5px}
+  .frResumen .frDatos{gap:0 6px}
+  .frResumen .frI b{font-size:15px}
+}
+@media(max-width:340px){
+  .kv3{gap:0 5px}
+  .kv3 b{font-size:13px}
+  .kv3 b small{font-size:10px}
+  .heroRes .hC{gap:0 5px}
+  .heroRes .hC b{font-size:13px}
+  .frResumen .frDatos{grid-template-columns:minmax(0,1fr) minmax(0,1.35fr) auto}
+  .frResumen .frI b{font-size:14px}
 }
 @media(max-width:330px){
   aside nav button span.tx{font-size:9.5px;letter-spacing:-.05em}
@@ -1725,7 +1863,7 @@ body.conCerrojo #aviso{z-index:10001}
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por su cuenta de Google.
    ===================================================================== */
-var VERSION="46";
+var VERSION="47";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -4204,21 +4342,32 @@ function carteraFut0(fuente){
 var PLAN=[
   ["ten","Tendencia principal identificada"],
   ["zon","Zona de entrada confirmada"],
-  ["adx","ADX a favor"],
-  ["kon","Konkorde a favor"],
+  ["con","Las señales de mi estrategia están a favor"],
   ["sl", "Stop loss puesto en el gráfico"],
   ["not","Sin noticias importantes a la vista"],
   ["cab","Entro con la cabeza fría, no por apuro"]
 ];
 var ANIMOS=["Tranquilo","Confiado","Con apuro","Con miedo","Con rabia","Aburrido"];
+/* v47 · la lista es la misma para todos (antes traía «ADX a favor» y «Konkorde a favor», que son
+   de UNA estrategia). Lo que ya se guardó sigue valiendo: un registro viejo con las dos marcadas
+   cuenta como «las señales de mi estrategia están a favor». */
+function planOk(p,k){
+  if(!p) return false;
+  return k==="con" ? !!(p.con || (p.adx && p.kon)) : !!p[k];
+}
+function planNormal(p){
+  var q=Object.assign({},p||{});
+  if(planOk(q,"con")) q.con=true;
+  return q;
+}
 function planCompleto(f){
   var p=f&&f.plan;
   if(!p||typeof p!=="object") return false;
-  return PLAN.every(function(x){ return !!p[x[0]]; });
+  return PLAN.every(function(x){ return planOk(p,x[0]); });
 }
 function planCuantos(f){
   var p=(f&&f.plan)||{};
-  return PLAN.filter(function(x){ return !!p[x[0]]; }).length;
+  return PLAN.filter(function(x){ return planOk(p,x[0]); }).length;
 }
 
 /* =====================================================================
@@ -4955,6 +5104,22 @@ function heroResultado(titulo, gan, base, ahora, dicho, serie, nAb, flot, vivo){
   var fondo = (serie&&serie.length>2)
     ? '<div class="hfondo">'+sparkSvg(serie, sube?"var(--up)":"var(--dn)")+'</div>' : '';
   var pctB = base>0 ? (gan/base*100) : null;
+  /* v47 · en el teléfono, el resultado se reparte a lo ancho: arriba el título y EN VIVO;
+     la cifra grande a la izquierda y el % a la derecha; y debajo tres datos iguales,
+     cada uno con su nombre arriba (antes iba todo en renglones sueltos pegados a la izquierda) */
+  if(esTel()){
+    return '<div class="hero heroRes'+(gan>=0?" gana":" pierde")+'">'+fondo+'<div class="hz"><div class="hprin">'+
+      '<div class="hT"><div class="he">'+esc(titulo)+'</div>'+
+        (PRE.vivo&&nAb?'<span class="envivo"><i></i>EN VIVO</span>':'')+'</div>'+
+      '<div class="hM"><div class="hv mono"><span class="'+cl(gan)+'"'+dv("futRes")+' data-cls="">'+(gan>=0?"+":"−")+usdF(gan).replace("-","")+'</span><small>USD</small></div>'+
+        '<div class="hR">'+(pctB!=null?'<span class="gch '+cl(pctB)+'"'+dv("futResP")+' data-cls="gch">'+pct(pctB,1)+' sobre lo que puso</span>':'')+
+          (dicho?'<div class="hD">'+esc(dicho)+'</div>':'')+'</div></div>'+
+      (base>0?'<div class="hC"><div><span>Empezó con</span><b>'+usd(base)+'</b></div>'+
+        '<div><span>Ahora tiene</span><b'+dv("futAhora")+'>'+usd(ahora)+'</b></div>'+
+        (nAb?'<div><span>Abiertas ahora</span><b class="'+cl(flot)+'"'+(vivo?dv("futResFl"):' data-v="futTot"')+' data-cls="">'+(flot>=0?"+":"−")+usdF(flot).replace("-","")+'</b></div>':'')+
+        '</div>':'')+
+      '</div></div></div>';
+  }
   return '<div class="hero'+(gan>=0?" gana":" pierde")+'">'+fondo+'<div class="hz">'+
     '<div class="hprin"><div class="he">'+esc(titulo)+'</div>'+
     '<div class="hv mono"><span class="'+cl(gan)+'"'+dv("futRes")+' data-cls="">'+(gan>=0?"+":"−")+usdF(gan).replace("-","")+'</span><small>USD</small></div>'+
@@ -4981,7 +5146,9 @@ function listaMonedasTel(lista, conVender){
         '<span data-v="ch" data-s="'+esc(e.sym)+'" data-cls="" class="'+cl(chg)+'">'+(chg!=null?pct(chg,1):"")+'</span>'+
         /* v46 · ese % es lo que se movió el PRECIO en 24 h, no su ganancia: se dice */
         (chg!=null?' <span class="mut" translate="no" style="font-size:10.5px">24 h</span>':'')+'</div></div></div>'+
-      '<div class="q"><div class="l2">'+cant(e.cantidad)+' '+esc(e.sym)+' · promedio <b>'+precioC(e.promedio)+'</b> · puso <b>'+usd(e.costo)+'</b></div></div>'+
+      '<div class="q"><div class="kv3"><div><span>Cantidad</span><b>'+cant(e.cantidad)+' <small translate="no">'+esc(e.sym)+'</small></b></div>'+
+        '<div><span>Precio promedio</span><b>'+precioC(e.promedio)+'</b></div>'+
+        '<div><span>Puso</span><b>'+usd(e.costo)+'</b></div></div></div>'+
       '<div class="r"><span>Vale hoy</span><b data-v="spVal" data-s="'+esc(e.sym)+'">'+(e.valor!=null?usd(e.valor):"—")+'</b></div>'+
       '<div class="pg"><span>Ganancia si vende hoy</span><b><span class="'+(e.abierto>0?"gpill p":e.abierto<0?"gpill n":"gpill z")+'" '+
         'data-v="spGan" data-s="'+esc(e.sym)+'" data-cls="">'+
@@ -5404,9 +5571,10 @@ function pintarSpot(){
       '<span class="gsub '+cl(S.tot.abiertoPct)+'" data-v="totGanP2" data-cls="gsub">'+pct(S.tot.abiertoPct)+'</span></td>'+
     '<td></td></tr></tfoot></table></div>'+
     listaMonedasTel(mostrar, true)+
-    (mostrar.length?'<div class="soloTel fcalc" style="margin:0 13px 13px">TOTAL · '+plural(vivas.length,"moneda","monedas")+
-      ' · puso <b>'+usd(S.tot.costo)+'</b> · vale hoy <b data-v="total">'+usd(S.tot.valor)+'</b> · '+
-      '<b class="'+cl(S.tot.abierto)+'" data-v="totGanB" data-cls="">'+(S.tot.abierto>=0?"+":"−")+usd(S.tot.abierto).replace("-","")+'</b></div>':'')+
+    (mostrar.length?'<div class="soloTel totTel"><div class="ttt">TOTAL · '+plural(vivas.length,"moneda","monedas")+'</div>'+
+      '<div class="kv3"><div><span>Puso</span><b>'+usd(S.tot.costo)+'</b></div>'+
+      '<div><span>Vale hoy</span><b data-v="total">'+usd(S.tot.valor)+'</b></div>'+
+      '<div><span>Ganancia</span><b class="'+cl(S.tot.abierto)+'" data-v="totGanB" data-cls="">'+(S.tot.abierto>=0?"+":"−")+usd(S.tot.abierto).replace("-","")+'</b></div></div></div>':'')+
     '</div>';
 
   /* ---- las que ya vendió del todo ---- */
@@ -5467,7 +5635,7 @@ function panelRegistro(){
             }).join("")+'</div></div>'+
           '<div class="campo"><label>Precio por moneda</label><div class="conBtn">'+
             '<input id="spP" inputmode="decimal" placeholder="'+esc(ejemploPrecio(SP.sym,1))+'">'+
-            '<button type="button" class="b" id="spHoy" title="Pone el precio de este momento">precio de ahora</button></div></div>'+
+            '<button type="button" class="b" id="spHoy" title="Pone el precio de este momento">'+(esTel()?"ahora":"precio de ahora")+'</button></div></div>'+
           '<div class="campo"><label>Fecha</label><input type="date" id="spF" value="'+hoy()+'"></div>'+
           '<div class="campo"><label>Comisión (USD)</label>'+
             '<input id="spK" inputmode="decimal" placeholder="déjelo vacío si no pagó"></div>'+
@@ -5486,7 +5654,7 @@ function panelRegistro(){
             '<input id="spM" inputmode="decimal" placeholder="ej. 200"></div>'+
           '<div class="campo"><label>Precio por moneda</label><div class="conBtn">'+
             '<input id="spP" inputmode="decimal" placeholder="'+esc(ejemploPrecio(SP.sym,1))+'">'+
-            '<button type="button" class="b" id="spHoy" title="Pone el precio de este momento">precio de ahora</button></div></div>'+
+            '<button type="button" class="b" id="spHoy" title="Pone el precio de este momento">'+(esTel()?"ahora":"precio de ahora")+'</button></div></div>'+
           '<div class="campo"><label>Cantidad'+(SP.sym?" de "+esc(SP.sym):"")+' <small>· sale sola</small></label>'+
             '<input id="spC" inputmode="decimal" placeholder="sale del monto y el precio"></div>'+
           '<div class="campo"><label>Fecha</label><input type="date" id="spF" value="'+hoy()+'"></div>'+
@@ -7308,14 +7476,20 @@ function franjaPlegada(A){
   var ab=!!UI_PLG[k];
   var riesgoUSD=c.cartera*c.riesgo/100, K=casaFut(c.casa), p=A.prueba;
   var ordenT=c.casa==="otra" ? "" : (c.orden==="limite" ? "Límite" : "A mercado");
-  var r='<div class="frResumen'+(ab?" abierto":"")+'" data-plg="'+k+'"><div class="frDatos">'+
-    (A.k==="back"&&p ? '<span class="frI"><b translate="no">'+esc(p.nombre)+'</b></span>' : '')+
-    '<span class="frI"><span>Cartera</span> <b>'+usd(c.cartera)+'</b></span>'+
-    '<span class="frI"><span>Arriesga</span> <b>'+usdF(riesgoUSD)+'</b><small>'+pctCorto(c.riesgo)+'</small></span>'+
-    '<span class="frI"><b>'+(+c.apal||1)+'x</b></span>'+
-    '<span class="frI">'+(K?'<span translate="no">'+esc(K[1])+'</span>':'<span>Otra</span>')+
-      (ordenT?' <span>'+ordenT+'</span>':'')+' <b>'+pctCorto(c.com)+'</b></span>'+
-    '</div><span class="cambiar"><span class="lAb">Cambiar</span><span class="lCe">Cerrar</span></span></div>';
+  /* v47 · cada dato con su nombre arriba (antes iban pegados: «Cartera $30 · Arriesga $0,30 1 % · 10x»
+     y el «1» chiquito no se sabía qué era). Misma altura de teléfono: dos renglones. */
+  var r='<div class="frResumen'+(ab?" abierto":"")+'" data-plg="'+k+'">'+
+    (A.k==="back"&&p ? '<div class="frNom" translate="no">'+esc(p.nombre)+'</div>' : '')+
+    '<div class="frDatos">'+
+      '<div class="frI"><span class="frL">Cartera</span> <b>'+usd(c.cartera)+'</b></div>'+
+      '<div class="frI"><span class="frL">Riesgo por operación</span> <span class="frV"><b>'+pctCorto(c.riesgo)+'</b><small>= '+usdF(riesgoUSD)+'</small></span></div>'+
+      '<div class="frI"><span class="frL">Apalancamiento</span> <b>'+(+c.apal||1)+'x</b></div>'+
+    '</div>'+
+    '<div class="frPie"><span class="frCasa">'+
+      (K?'<span translate="no">'+esc(K[1])+'</span>':'<span>Otra</span>')+
+      (ordenT?'<span>'+ordenT+'</span>':'')+
+      '<span>Comisión <b>'+pctCorto(c.com)+'</b></span></span>'+
+      '<span class="cambiar"><span class="lAb">Cambiar</span><span class="lCe">Cerrar</span></span></div></div>';
   return r+franjaRiesgo(A).replace('<div class="franja">','<div class="franja'+(ab?'':' plegada')+'">');
 }
 function engancharFranja(box, A){
@@ -7435,7 +7609,7 @@ function panelOperacion(A){
         '<div class="campo"><label><i class="pt ent"></i>Precio de entrada</label><div class="conBtn">'+
           '<input id="fuE" inputmode="decimal" value="'+esc(FU.entrada)+'" placeholder="'+
           esc(ejemploPrecio(FU.sym,1))+'">'+
-          '<button type="button" class="b" id="fuHoy" title="Pone el precio de este momento">precio de ahora</button></div></div>'+
+          '<button type="button" class="b" id="fuHoy" title="Pone el precio de este momento">'+(esTel()?"ahora":"precio de ahora")+'</button></div></div>'+
       '</div>'+
       '<div class="campos dos" style="margin-top:11px">'+
         '<div class="campo"><label><i class="pt sl"></i><span class="dn">STOP LOSS</span> '+
@@ -7494,7 +7668,7 @@ function panelOperacion(A){
               esc(a)+'</button>'; }).join("")+'</div>'+
         '<div class="campos" style="margin-top:12px">'+
           '<div class="campo"><label>Estrategia</label><input id="fuEstr" style="font-family:inherit" '+
-            'value="'+esc(FU.estr)+'" placeholder="ADX + Konkorde" list="listaEstr"></div>'+
+            'value="'+esc(FU.estr)+'" placeholder="Ruptura de rango" list="listaEstr"></div>'+
           '<div class="campo"><label>Precio de salida <small>· solo si ya la cerró</small></label>'+
             '<input id="fuX" inputmode="decimal" value="'+esc(FU.salida)+'" placeholder="déjelo vacío si sigue abierta"></div>'+
           '<div class="campo ancho"><label>Nota — qué vio, cómo se sintió</label>'+
@@ -7516,7 +7690,7 @@ function ejemploPrecio(sym, factor){
 function estrategiasUsadas(){
   var s={};
   BD.fut.concat(BD.back).forEach(function(f){ if(f.estr) s[f.estr]=1; });
-  ["ADX + Konkorde","Patrón chartista","Ruptura de rango","Reversión","Tendencia",
+  ["Patrón chartista","Ruptura de rango","Reversión","Tendencia",
    "Scalping"].forEach(function(x){ s[x]=1; });
   return Object.keys(s);
 }
@@ -8064,16 +8238,13 @@ function filaProgramada(e,k){
       '<span class="chip a">'+e.apal+'x</span>'+
       '<span class="espera"><i></i>ESPERANDO</span></div>'+
     '<div class="q" style="flex:1 1 100%">'+
-      '<div class="l2">'+(e.faltaPct!=null
-        ? ("el precio tiene que "+(e.faltaPct>0?"subir":"bajar")+" hasta <b>"+precio(e.entrada)+
-           "</b> · ahora está en <b data-v=\"pr\" data-s=\""+esc(f.sym)+"\">"+precio(pr)+
-           "</b> · falta "+pctS(Math.abs(e.faltaPct),2))
-        : ("el precio tiene que llegar a <b>"+precio(e.entrada)+"</b>"))+'</div>'+
+      '<div class="kv3"><div><span>Entra en</span><b>'+precio(e.entrada)+'</b></div>'+
+        '<div><span>Precio ahora</span><b data-v="pr" data-s="'+esc(f.sym)+'">'+precio(pr)+'</b></div>'+
+        '<div><span>Falta</span><b>'+(e.faltaPct!=null?((e.faltaPct>0?"▲ ":"▼ ")+pctS(Math.abs(e.faltaPct),2)):"—")+'</b></div></div>'+
+      '<div class="kv3 sinBorde"><div><span>Stop</span><b class="dn">'+(e.sl!=null?precio(e.sl):"—")+'</b></div>'+
+        '<div><span>Objetivo</span><b class="up">'+(e.tp!=null?precio(e.tp):"—")+'</b></div>'+
+        '<div><span>Pondrá</span><b>'+usdF(e.margen)+'</b></div></div>'+
     '</div>'+
-    '<div class="r"><span>Pondrá cuando entre</span><b>'+usdF(e.margen)+'</b></div>'+
-    '<div class="pg"><span>Stop y objetivo</span><b class="dn" style="font-size:14px">'+
-      (e.sl!=null?precio(e.sl):"—")+'</b>'+
-      '<span class="up">'+(e.tp!=null?precio(e.tp):"sin objetivo")+'</span></div>'+
     '<div class="acc">'+
       '<button class="b sm vd" data-entrar="'+esc(f.id)+'" data-amb="'+k+'">Ya entré</button>'+
       '<button class="b sm" data-edop="'+esc(f.id)+'" data-amb="'+k+'">Editar</button></div>'+
@@ -8590,7 +8761,7 @@ function editarOperacion(id, k){
   var f=A.lista.filter(function(x){ return x.id===id; })[0];
   if(!f){ aviso("Esa operación ya no existe.",true); return; }
   MIRANDO=String(f.sym).toUpperCase();
-  var plan=Object.assign({},f.plan||{});
+  var plan=planNormal(f.plan);
   var animo=f.animo||"";
   abrir('<div class="hoja ancha '+(f.lado==="SHORT"?"esc":"elar")+'"><div class="hh">'+
     icono(f.sym,30)+'<h3>Operación N° '+esc(String(f.n||""))+'</h3>'+
@@ -16021,6 +16192,8 @@ function engancharIdioma(box){
    Se respeta el orden de los huecos tal como salen en español.
    ===================================================================== */
 DIC.en={
+"Ruptura de rango":"Range breakout",
+"Las señales de mi estrategia están a favor":"My strategy's signals are in my favour",
 "al precio de ahora":"at today's price",
 "Cartera":"Account",
 "Cambiar":"Change",
@@ -17831,6 +18004,8 @@ DIC.en={
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
+"Ruptura de rango":"Rompimento de intervalo",
+"Las señales de mi estrategia están a favor":"Os sinais da minha estratégia estão a favor",
 "al precio de ahora":"ao preço de agora",
 "Cartera":"Banca",
 "Cambiar":"Mudar",
@@ -19634,6 +19809,8 @@ DIC.pt={
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
+"Ruptura de rango":"Cassure de range",
+"Las señales de mi estrategia están a favor":"Les signaux de ma stratégie sont favorables",
 "al precio de ahora":"au prix actuel",
 "Cartera":"Capital",
 "Cambiar":"Changer",
@@ -21437,6 +21614,8 @@ DIC.fr={
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
+"Ruptura de rango":"Ausbruch aus der Range",
+"Las señales de mi estrategia están a favor":"Die Signale meiner Strategie sprechen dafür",
 "al precio de ahora":"zum aktuellen Kurs",
 "Cartera":"Kapital",
 "Cambiar":"Ändern",
@@ -23240,6 +23419,8 @@ DIC.de={
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
+"Ruptura de rango":"Rottura di range",
+"Las señales de mi estrategia están a favor":"I segnali della mia strategia sono a favore",
 "al precio de ahora":"al prezzo di adesso",
 "Cartera":"Capitale",
 "Cambiar":"Modifica",
@@ -25043,6 +25224,8 @@ DIC.it={
 };
 /* NEDERLANDS · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.nl={
+"Ruptura de rango":"Range-uitbraak",
+"Las señales de mi estrategia están a favor":"De signalen van mijn strategie zijn gunstig",
 "al precio de ahora":"tegen de prijs van nu",
 "Cartera":"Saldo",
 "Cambiar":"Wijzigen",
@@ -27132,6 +27315,8 @@ DIC.nl={
 };
 /* POLSKI · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.pl={
+"Ruptura de rango":"Wybicie z konsolidacji",
+"Las señales de mi estrategia están a favor":"Sygnały mojej strategii sprzyjają",
 "al precio de ahora":"po obecnej cenie",
 "Cartera":"Saldo",
 "Cambiar":"Zmień",
@@ -29221,6 +29406,8 @@ DIC.pl={
 };
 /* TÜRKÇE · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.tr={
+"Ruptura de rango":"Aralık kırılımı",
+"Las señales de mi estrategia están a favor":"Stratejimin sinyalleri lehime",
 "al precio de ahora":"şu anki fiyatla",
 "Cartera":"Bakiye",
 "Cambiar":"Değiştir",
@@ -31310,6 +31497,8 @@ DIC.tr={
 };
 /* РУССКИЙ · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ru={
+"Ruptura de rango":"Пробой диапазона",
+"Las señales de mi estrategia están a favor":"Сигналы моей стратегии подтверждают вход",
 "al precio de ahora":"по текущей цене",
 "Cartera":"Баланс",
 "Cambiar":"Изменить",
@@ -33399,6 +33588,8 @@ DIC.ru={
 };
 /* УКРАЇНСЬКА · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.uk={
+"Ruptura de rango":"Пробій діапазону",
+"Las señales de mi estrategia están a favor":"Сигнали моєї стратегії підтверджують вхід",
 "al precio de ahora":"за поточною ціною",
 "Cartera":"Баланс",
 "Cambiar":"Змінити",
@@ -35488,6 +35679,8 @@ DIC.uk={
 };
 /* BAHASA INDONESIA · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.id={
+"Ruptura de rango":"Breakout rentang",
+"Las señales de mi estrategia están a favor":"Sinyal strategi saya mendukung",
 "al precio de ahora":"dengan harga saat ini",
 "Cartera":"Saldo",
 "Cambiar":"Ubah",
@@ -37577,6 +37770,8 @@ DIC.id={
 };
 /* TIẾNG VIỆT · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.vi={
+"Ruptura de rango":"Phá vỡ vùng đi ngang",
+"Las señales de mi estrategia están a favor":"Tín hiệu của chiến lược của tôi đang thuận lợi",
 "al precio de ahora":"theo giá hiện tại",
 "Cartera":"Số dư",
 "Cambiar":"Đổi",
@@ -39666,6 +39861,8 @@ DIC.vi={
 };
 /* हिन्दी · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.hi={
+"Ruptura de rango":"रेंज ब्रेकआउट",
+"Las señales de mi estrategia están a favor":"मेरी रणनीति के संकेत पक्ष में हैं",
 "al precio de ahora":"अभी के भाव पर",
 "Cartera":"बैलेंस",
 "Cambiar":"बदलें",
@@ -41755,6 +41952,8 @@ DIC.hi={
 };
 /* 日本語 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ja={
+"Ruptura de rango":"レンジブレイク",
+"Las señales de mi estrategia están a favor":"自分の戦略のシグナルが有利に出ている",
 "al precio de ahora":"現在の価格で",
 "Cartera":"残高",
 "Cambiar":"変更",
@@ -43844,6 +44043,8 @@ DIC.ja={
 };
 /* 한국어 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ko={
+"Ruptura de rango":"박스권 돌파",
+"Las señales de mi estrategia están a favor":"내 전략의 신호가 유리하게 나와 있음",
 "al precio de ahora":"현재 가격 기준",
 "Cartera":"잔고",
 "Cambiar":"변경",
@@ -45933,6 +46134,8 @@ DIC.ko={
 };
 /* 中文（简体） · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.zh={
+"Ruptura de rango":"区间突破",
+"Las señales de mi estrategia están a favor":"我的策略信号有利",
 "al precio de ahora":"按当前价格",
 "Cartera":"余额",
 "Cambiar":"更改",
