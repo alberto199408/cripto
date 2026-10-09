@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="42">
+<meta name="v" content="43">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -1484,7 +1484,7 @@ body.conCerrojo #aviso{z-index:10001}
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por su cuenta de Google.
    ===================================================================== */
-var VERSION="42";
+var VERSION="43";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -13412,8 +13412,9 @@ function pintarDat(){
       var sup=osc?aclarar(x.bg,0.07):oscurecer(x.bg,0.06);
       return '<button data-tema="'+i+'" class="'+(t.bg===x.bg&&t.ac===x.ac?"on":"")+'" '+
         'style="background:'+x.bg+';color:'+tx+'" title="'+esc(x.n)+'">'+
-        '<span class="tp" style="background:'+sup+'"><i style="background:'+x.ac+'"></i>'+
-        '<b>$1.250</b><em style="background:'+x.ac+';color:'+tintaPara(x.ac)+'">+2,4%</em></span>'+
+        '<span class="tp" aria-hidden="true" style="background:'+sup+'"><i style="background:'+x.ac+'"></i>'+
+        '<b style="height:7px;flex:1;border-radius:4px;background:'+tx+';opacity:.5"></b>'+
+        '<em style="width:28px;height:11px;padding:0;border-radius:999px;background:'+x.ac+'"></em></span>'+
         '<span class="tn">'+esc(x.n)+'</span></button>';
     }).join("")+'</div>'+
     '<div class="campos">'+
@@ -13761,6 +13762,9 @@ function engancharDat(box){
        '<div>'+plural(BD.pruebas.length,"prueba de backtesting","pruebas de backtesting")+'</div>',
        '<div>'+plural((BD.alertas||[]).length,"alerta","alertas")+'</div>'].join("")+'</div>'+
       alcanceFrase()+"<br>"+
+      /* v43 · Luis: «si borro todos los datos, la aplicación queda virgen y no
+         debería pedirme la clave». Con «Borrar todo» la clave también se va. */
+      (llavePuesta()?'<div style="margin:6px 0">También se quita su clave de bloqueo.</div>':"")+
       "Se guarda aquí una copia de rescate por si se arrepiente.",
       "Sí, borrar todo", function(){
         copiaDeRescate("borrar todo");
@@ -13771,6 +13775,7 @@ function engancharDat(box){
         (BD.alertas||[]).forEach(function(a){ anotarBorrado(a.id, a.mod); });
         BD.ops=[]; BD.fut=[]; BD.back=[]; BD.pruebas=[]; BD.alertas=[];
         BD.ajustes.prueba="";
+        quitarLlave();                 /* v43 · clave, huella y bloqueo se van con todo lo demás */
         guardar(); repintar();
         aviso("Todo en blanco. Si se arrepiente, en Ajustes está «Volver atrás».");
       }, true);
@@ -15907,6 +15912,7 @@ DIC.en={
 "Settings → Developer settings → Personal access tokens → Tokens (classic)":"Settings → Developer settings → Personal access tokens → Tokens (classic)",
 "Cada punto es una compra suya · verde las que van ganando, rojo las que no":"Each dot is a buy of yours · green the ones winning, red the ones not",
 ", y así no se puede instalar. Abra en Chrome o Edge su dirección de internet:":", and it cannot be installed that way. Open your web address in Chrome or Edge:",
+"También se quita su clave de bloqueo.":"Your lock code is removed too.",
 "«Borrar todo» quita sus movimientos de spot, sus futuros, sus pruebas y sus alertas":"«Delete all» removes your spot entries, your futures, your tests and your alerts",
 "de más arriba apuntando a su carpeta de Google Drive de esta computadora hace lo mismo.":"above, pointed at your Google Drive folder on this computer, does the same thing.",
 "las criptomonedas que existen, no solo las de Binance. Si escribe una que no aparece, pulse":"the cryptocurrencies there are, not just the Binance ones. If you type one that does not show up, press",
@@ -17709,6 +17715,7 @@ DIC.pt={
 "Settings → Developer settings → Personal access tokens → Tokens (classic)":"Settings → Developer settings → Personal access tokens → Tokens (classic)",
 "Cada punto es una compra suya · verde las que van ganando, rojo las que no":"Cada ponto é uma compra sua · verde as que vão ganhando, vermelho as que não",
 ", y así no se puede instalar. Abra en Chrome o Edge su dirección de internet:":", e assim não dá para instalar. Abra no Chrome ou Edge o seu endereço de internet:",
+"También se quita su clave de bloqueo.":"A sua senha de bloqueio também é retirada.",
 "«Borrar todo» quita sus movimientos de spot, sus futuros, sus pruebas y sus alertas":"«Apagar tudo» tira os seus movimentos de spot, os seus futuros, os seus testes e os seus alertas",
 "de más arriba apuntando a su carpeta de Google Drive de esta computadora hace lo mismo.":"acima, apontando para a sua pasta do Google Drive deste computador, faz a mesma coisa.",
 "las criptomonedas que existen, no solo las de Binance. Si escribe una que no aparece, pulse":"as criptomoedas que existem, não só as da Binance. Se escrever uma que não aparece, clique",
@@ -19505,6 +19512,7 @@ DIC.fr={
 "Settings → Developer settings → Personal access tokens → Tokens (classic)":"Settings → Developer settings → Personal access tokens → Tokens (classic)",
 "Cada punto es una compra suya · verde las que van ganando, rojo las que no":"Chaque point est un de vos achats · vert ceux qui gagnent, rouge ceux qui non",
 ", y así no se puede instalar. Abra en Chrome o Edge su dirección de internet:":", et ainsi on ne peut pas l'installer. Ouvrez dans Chrome ou Edge votre adresse internet :",
+"También se quita su clave de bloqueo.":"Votre code de verrouillage est aussi retiré.",
 "«Borrar todo» quita sus movimientos de spot, sus futuros, sus pruebas y sus alertas":"« Tout effacer » retire vos mouvements spot, vos futurs, vos tests et vos alertes",
 "de más arriba apuntando a su carpeta de Google Drive de esta computadora hace lo mismo.":"ci-dessus, pointée sur votre dossier Google Drive de cet ordinateur, fait la même chose.",
 "las criptomonedas que existen, no solo las de Binance. Si escribe una que no aparece, pulse":"les cryptomonnaies qui existent, pas seulement celles de Binance. Si vous en écrivez une qui n'apparaît pas, cliquez",
@@ -21301,6 +21309,7 @@ DIC.de={
 "Settings → Developer settings → Personal access tokens → Tokens (classic)":"Settings → Developer settings → Personal access tokens → Tokens (classic)",
 "Cada punto es una compra suya · verde las que van ganando, rojo las que no":"Jeder Punkt ist ein Kauf von Ihnen · grün die, die im Plus sind, rot die anderen",
 ", y así no se puede instalar. Abra en Chrome o Edge su dirección de internet:":", und so lässt es sich nicht installieren. Öffnen Sie in Chrome oder Edge Ihre Internetadresse:",
+"También se quita su clave de bloqueo.":"Auch Ihr Sperrcode wird entfernt.",
 "«Borrar todo» quita sus movimientos de spot, sus futuros, sus pruebas y sus alertas":"„Alles löschen“ entfernt Ihre Spot-Buchungen, Ihre Futures, Ihre Tests und Ihre Alarme",
 "de más arriba apuntando a su carpeta de Google Drive de esta computadora hace lo mismo.":"von oben, auf Ihren Google-Drive-Ordner auf diesem Computer gerichtet, dasselbe.",
 "las criptomonedas que existen, no solo las de Binance. Si escribe una que no aparece, pulse":"die Kryptowährungen, die es gibt, nicht nur die von Binance. Wenn Sie eine schreiben, die nicht auftaucht, klicken Sie",
@@ -23097,6 +23106,7 @@ DIC.it={
 "Settings → Developer settings → Personal access tokens → Tokens (classic)":"Settings → Developer settings → Personal access tokens → Tokens (classic)",
 "Cada punto es una compra suya · verde las que van ganando, rojo las que no":"Ogni punto è un suo acquisto · verde quelli in guadagno, rosso quelli no",
 ", y así no se puede instalar. Abra en Chrome o Edge su dirección de internet:":", e così non si può installare. Apra in Chrome o Edge il suo indirizzo internet:",
+"También se quita su clave de bloqueo.":"Viene tolto anche il suo codice di blocco.",
 "«Borrar todo» quita sus movimientos de spot, sus futuros, sus pruebas y sus alertas":"«Cancellare tutto» toglie i suoi movimenti spot, i suoi futures, le sue prove e i suoi avvisi",
 "de más arriba apuntando a su carpeta de Google Drive de esta computadora hace lo mismo.":"qui sopra, puntato alla sua cartella di Google Drive di questo computer, fa la stessa cosa.",
 "las criptomonedas que existen, no solo las de Binance. Si escribe una que no aparece, pulse":"le criptovalute che esistono, non solo quelle di Binance. Se ne scrive una che non compare, prema",
@@ -25123,6 +25133,7 @@ DIC.nl={
 "Settings → Developer settings → Personal access tokens → Tokens (classic)":"Settings → Developer settings → Personal access tokens → Tokens (classic)",
 "Cada punto es una compra suya · verde las que van ganando, rojo las que no":"Elke stip is een aankoop van u · groen staat in de winst, rood niet",
 ", y así no se puede instalar. Abra en Chrome o Edge su dirección de internet:":", en zo kan het niet worden geïnstalleerd. Open uw webadres in Chrome of Edge:",
+"También se quita su clave de bloqueo.":"Ook uw pincode voor de vergrendeling wordt verwijderd.",
 "«Borrar todo» quita sus movimientos de spot, sus futuros, sus pruebas y sus alertas":"«Alles wissen» verwijdert uw spotboekingen, uw futures, uw tests en uw meldingen",
 "de más arriba apuntando a su carpeta de Google Drive de esta computadora hace lo mismo.":"hierboven, ingesteld op uw Google Drive-map op deze computer, hetzelfde.",
 "las criptomonedas que existen, no solo las de Binance. Si escribe una que no aparece, pulse":"cryptomunten die er bestaan, niet alleen die van Binance. Typt u er een die niet verschijnt, klik dan op",
@@ -27205,6 +27216,7 @@ DIC.pl={
 "Settings → Developer settings → Personal access tokens → Tokens (classic)":"Settings → Developer settings → Personal access tokens → Tokens (classic)",
 "Cada punto es una compra suya · verde las que van ganando, rojo las que no":"Każdy punkt to Twój zakup · zielone są na plusie, czerwone nie",
 ", y así no se puede instalar. Abra en Chrome o Edge su dirección de internet:":", a w ten sposób nie da się go zainstalować. Otwórz swój adres internetowy w Chrome lub Edge:",
+"También se quita su clave de bloqueo.":"Usunięty zostanie też Twój kod PIN blokady.",
 "«Borrar todo» quita sus movimientos de spot, sus futuros, sus pruebas y sus alertas":"„Usuń wszystko” usuwa Twoje operacje Spot, transakcje Futures, testy i alerty",
 "de más arriba apuntando a su carpeta de Google Drive de esta computadora hace lo mismo.":"powyżej, ustawiony na Twój folder Google Drive na tym komputerze, robi to samo.",
 "las criptomonedas que existen, no solo las de Binance. Si escribe una que no aparece, pulse":"istniejących kryptowalut, nie tylko tych z Binance. Jeśli wpiszesz taką, której nie ma na liście, naciśnij",
@@ -29287,6 +29299,7 @@ DIC.tr={
 "Settings → Developer settings → Personal access tokens → Tokens (classic)":"Settings (Ayarlar) → Developer settings → Personal access tokens → Tokens (classic)",
 "Cada punto es una compra suya · verde las que van ganando, rojo las que no":"Her nokta bir alışınız · yeşiller kârda, kırmızılar değil",
 ", y así no se puede instalar. Abra en Chrome o Edge su dirección de internet:":", bu şekilde yüklenemez. İnternet adresinizi Chrome veya Edge'de açın:",
+"También se quita su clave de bloqueo.":"Kilit PIN kodunuz da kaldırılır.",
 "«Borrar todo» quita sus movimientos de spot, sus futuros, sus pruebas y sus alertas":"«Tümünü sil» spot hareketlerinizi, vadeli işlemlerinizi, testlerinizi ve alarmlarınızı siler",
 "de más arriba apuntando a su carpeta de Google Drive de esta computadora hace lo mismo.":"özelliği, bu bilgisayardaki Google Drive klasörünüzü gösterecek şekilde ayarlanırsa aynı işi görür.",
 "las criptomonedas que existen, no solo las de Binance. Si escribe una que no aparece, pulse":"kripto paralar arasında yapılır, yalnızca Binance'tekiler arasında değil. Listede olmayan birini yazarsanız şuna basın:",
@@ -31369,6 +31382,7 @@ DIC.ru={
 "Settings → Developer settings → Personal access tokens → Tokens (classic)":"Settings → Developer settings → Personal access tokens → Tokens (classic)",
 "Cada punto es una compra suya · verde las que van ganando, rojo las que no":"Каждая точка — ваша покупка · зелёные в плюсе, красные — нет",
 ", y así no se puede instalar. Abra en Chrome o Edge su dirección de internet:":", поэтому установка невозможна. Откройте в Chrome или Edge адрес программы:",
+"También se quita su clave de bloqueo.":"Также будет удалён ПИН-код блокировки.",
 "«Borrar todo» quita sus movimientos de spot, sus futuros, sus pruebas y sus alertas":"«Удалить всё» удаляет ваши операции на споте, фьючерсы, тесты и оповещения",
 "de más arriba apuntando a su carpeta de Google Drive de esta computadora hace lo mismo.":"выше, настроенное на папку Google Drive на этом компьютере, делает то же самое.",
 "las criptomonedas que existen, no solo las de Binance. Si escribe una que no aparece, pulse":"существующих криптовалют, а не только на Binance. Если введённой монеты нет в списке, нажмите",
@@ -33451,6 +33465,7 @@ DIC.uk={
 "Settings → Developer settings → Personal access tokens → Tokens (classic)":"Settings → Developer settings → Personal access tokens → Tokens (classic)",
 "Cada punto es una compra suya · verde las que van ganando, rojo las que no":"Кожна точка — ваша покупка · зелені в прибутку, червоні — ні",
 ", y así no se puede instalar. Abra en Chrome o Edge su dirección de internet:":", і так її не встановити. Відкрийте в Chrome або Edge інтернет-адресу програми:",
+"También se quita su clave de bloqueo.":"Також буде вилучено PIN-код блокування.",
 "«Borrar todo» quita sus movimientos de spot, sus futuros, sus pruebas y sus alertas":"«Видалити все» прибирає ваші спотові операції, ф'ючерси, тести і сповіщення",
 "de más arriba apuntando a su carpeta de Google Drive de esta computadora hace lo mismo.":"вище, налаштоване на вашу папку Google Drive на цьому комп'ютері, робить те саме.",
 "las criptomonedas que existen, no solo las de Binance. Si escribe una que no aparece, pulse":"криптовалют, що існують, а не лише на Binance. Якщо введете монету, якої немає у списку, натисніть",
@@ -35533,6 +35548,7 @@ DIC.id={
 "Settings → Developer settings → Personal access tokens → Tokens (classic)":"Settings → Developer settings → Personal access tokens → Tokens (classic)",
 "Cada punto es una compra suya · verde las que van ganando, rojo las que no":"Setiap titik adalah satu pembelian Anda · hijau yang sedang untung, merah yang tidak",
 ", y así no se puede instalar. Abra en Chrome o Edge su dirección de internet:":", jadi tidak bisa dipasang. Buka alamat internetnya di Chrome atau Edge:",
+"También se quita su clave de bloqueo.":"PIN kunci layar Anda juga dihapus.",
 "«Borrar todo» quita sus movimientos de spot, sus futuros, sus pruebas y sus alertas":"“Hapus semua” menghapus mutasi Spot, transaksi Futures, uji, dan peringatan Anda",
 "de más arriba apuntando a su carpeta de Google Drive de esta computadora hace lo mismo.":"di atas, yang diarahkan ke folder Google Drive di komputer ini, juga melakukan hal yang sama.",
 "las criptomonedas que existen, no solo las de Binance. Si escribe una que no aparece, pulse":"kripto yang ada, bukan hanya yang ada di Binance. Jika Anda mengetik koin yang tidak muncul, tekan",
@@ -37615,6 +37631,7 @@ DIC.vi={
 "Settings → Developer settings → Personal access tokens → Tokens (classic)":"Settings → Developer settings → Personal access tokens → Tokens (classic)",
 "Cada punto es una compra suya · verde las que van ganando, rojo las que no":"Mỗi chấm là một lần mua của bạn · xanh là đang lãi, đỏ là chưa",
 ", y así no se puede instalar. Abra en Chrome o Edge su dirección de internet:":", nên không thể cài đặt. Hãy mở địa chỉ web của ứng dụng trong Chrome hoặc Edge:",
+"También se quita su clave de bloqueo.":"Mã PIN khóa của bạn cũng sẽ bị gỡ.",
 "«Borrar todo» quita sus movimientos de spot, sus futuros, sus pruebas y sus alertas":"“Xóa tất cả” sẽ xóa giao dịch Spot, lệnh Futures, bài thử và cảnh báo của bạn",
 "de más arriba apuntando a su carpeta de Google Drive de esta computadora hace lo mismo.":"ở phía trên, trỏ tới thư mục Google Drive trên máy tính này, cũng làm được việc tương tự.",
 "las criptomonedas que existen, no solo las de Binance. Si escribe una que no aparece, pulse":"các đồng tiền mã hóa hiện có, không chỉ trên Binance. Nếu bạn nhập một đồng không có trong danh sách, hãy nhấn",
@@ -39697,6 +39714,7 @@ DIC.hi={
 "Settings → Developer settings → Personal access tokens → Tokens (classic)":"Settings → Developer settings → Personal access tokens → Tokens (classic)",
 "Cada punto es una compra suya · verde las que van ganando, rojo las que no":"हर बिंदु आपकी एक खरीद है · हरे वाले मुनाफ़े में हैं, लाल वाले नहीं",
 ", y así no se puede instalar. Abra en Chrome o Edge su dirección de internet:":", और इस तरह इसे इंस्टॉल नहीं किया जा सकता. Chrome या Edge में ऐप का इंटरनेट पता खोलें:",
+"También se quita su clave de bloqueo.":"आपका लॉक पिन भी हटा दिया जाएगा.",
 "«Borrar todo» quita sus movimientos de spot, sus futuros, sus pruebas y sus alertas":"“सब मिटाएँ” आपके स्पॉट लेन-देन, फ्यूचर्स, टेस्ट और अलर्ट हटा देता है",
 "de más arriba apuntando a su carpeta de Google Drive de esta computadora hace lo mismo.":"— ऊपर वाला, जो इस कंप्यूटर के Google Drive फ़ोल्डर में सेव करता है — यही काम करता है.",
 "las criptomonedas que existen, no solo las de Binance. Si escribe una que no aparece, pulse":"मौजूद क्रिप्टोकरेंसी में होती है, सिर्फ़ Binance वालों में नहीं. अगर आप ऐसा कॉइन लिखें जो दिखाई न दे, तो दबाएँ:",
@@ -41779,6 +41797,7 @@ DIC.ja={
 "Settings → Developer settings → Personal access tokens → Tokens (classic)":"Settings → Developer settings → Personal access tokens → Tokens (classic)",
 "Cada punto es una compra suya · verde las que van ganando, rojo las que no":"各点はあなたの購入 · 緑は利益中、赤は損失中",
 ", y así no se puede instalar. Abra en Chrome o Edge su dirección de internet:":"、このままではインストールできません。Chrome または Edge で次のアドレスを開いてください：",
+"También se quita su clave de bloqueo.":"ロックの暗証番号も削除されます。",
 "«Borrar todo» quita sus movimientos de spot, sus futuros, sus pruebas y sus alertas":"「すべて削除」を押すと、現物の記録、先物、テスト、アラートがすべて消えます",
 "de más arriba apuntando a su carpeta de Google Drive de esta computadora hace lo mismo.":"（上にあります）をこのパソコンの Google Drive フォルダーに設定すれば、同じことができます。",
 "las criptomonedas que existen, no solo las de Binance. Si escribe una que no aparece, pulse":"の暗号資産です（Binance 以外も含みます）。入力したコインが表示されない場合は、次を押してください：",
@@ -43861,6 +43880,7 @@ DIC.ko={
 "Settings → Developer settings → Personal access tokens → Tokens (classic)":"Settings(설정) → Developer settings → Personal access tokens → Tokens (classic)",
 "Cada punto es una compra suya · verde las que van ganando, rojo las que no":"점 하나하나가 매수 기록입니다 · 초록은 수익 중, 빨강은 손실 중",
 ", y así no se puede instalar. Abra en Chrome o Edge su dirección de internet:":", 이 상태로는 설치할 수 없습니다. Chrome 또는 Edge에서 다음 인터넷 주소를 여세요:",
+"También se quita su clave de bloqueo.":"잠금 PIN 번호도 함께 제거됩니다.",
 "«Borrar todo» quita sus movimientos de spot, sus futuros, sus pruebas y sus alertas":"«모두 삭제»를 누르면 현물 내역, 선물, 테스트, 알림이 모두 지워집니다",
 "de más arriba apuntando a su carpeta de Google Drive de esta computadora hace lo mismo.":"기능(위쪽)을 이 컴퓨터의 Google Drive 폴더로 지정해 두면 같은 효과가 있습니다.",
 "las criptomonedas que existen, no solo las de Binance. Si escribe una que no aparece, pulse":"암호화폐에서 검색합니다(Binance 코인만이 아닙니다). 목록에 없는 코인을 입력했다면 다음을 누르세요:",
@@ -45943,6 +45963,7 @@ DIC.zh={
 "Settings → Developer settings → Personal access tokens → Tokens (classic)":"Settings → Developer settings → Personal access tokens → Tokens (classic)",
 "Cada punto es una compra suya · verde las que van ganando, rojo las que no":"每个点代表您的一笔买入 · 绿色为盈利中，红色为亏损中",
 ", y así no se puede instalar. Abra en Chrome o Edge su dirección de internet:":"，因此无法安装。请在 Chrome 或 Edge 中打开您的网址：",
+"También se quita su clave de bloqueo.":"锁定密码也会一并移除。",
 "«Borrar todo» quita sus movimientos de spot, sus futuros, sus pruebas y sus alertas":"“全部删除”会清除您的现货记录、合约、测试和提醒",
 "de más arriba apuntando a su carpeta de Google Drive de esta computadora hace lo mismo.":"（在上方）只要指向这台电脑上的 Google Drive 文件夹，效果也一样。",
 "las criptomonedas que existen, no solo las de Binance. Si escribe una que no aparece, pulse":"现有的加密货币中搜索，不只是 Binance 上的。如果您输入的币种没有出现，请点击",
