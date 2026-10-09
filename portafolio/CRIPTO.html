@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="45">
+<meta name="v" content="46">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -1431,6 +1431,248 @@ body.conCerrojo #aviso{z-index:10001}
   font-size:12px;line-height:1.45;color:var(--t2)}
 .avComi.dif{color:var(--ojoTx);font-weight:600}
 .avComi .b{padding:4px 9px;font-size:11.5px}
+
+/* =====================================================================
+   v46 · EL TELÉFONO, MÁS COMPACTO — UNA SOLA REGLA PARA TODAS LAS PANTALLAS
+   ---------------------------------------------------------------------
+   Luis, con fotos de su celular (384 px de ancho): «ocupan mucho espacio…
+   en el celular es mucho de estar deslizando… hay que compactar, y que
+   quede igual en Resumen, Spot, Backtesting, Alertas, Ajustes… no puede
+   quedar que corrijas el uno y el otro vuelta queda desproporcionado».
+   Todo esto vale SOLO hasta 900 px de ancho (teléfono y tablet chica).
+   En la computadora no cambia NADA: ninguna regla de este bloque la toca.
+   La regla es la misma en todas las pantallas:
+     · tarjetas de cifras: relleno 8×10, cifra 18 px, texto chico a 2 líneas
+     · cajas: título bajo (relleno 8×12) y cajas de ajustes que se pliegan
+     · casillas de 42 px de alto, botones de 32 px
+     · tarjetas de moneda y de operación: una cabecera y los datos en rejilla
+   ===================================================================== */
+.plgFl,.frResumen,.lzTel{display:none}
+@media(max-width:900px){
+  /* ---- tarjetas de cifras ---- */
+  .met{padding:8px 10px!important;min-height:0!important}
+  .met .cab{margin:0 0 2px!important;gap:6px!important}
+  .met .cab .ico{width:18px!important;height:18px!important;border-radius:6px!important}
+  .met .cab .ico svg{width:11px!important;height:11px!important}
+  .met .cab span{font-size:11px!important;line-height:1.15!important}
+  .met .v{font-size:18px!important;line-height:1.1!important;margin:0!important}
+  .met .v.chica{font-size:15px!important}
+  .met .s{font-size:10.5px!important;line-height:1.2!important;margin-top:1px!important;
+    display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .met .mflecha{display:none!important}
+  /* la línea chica de la tarjeta ya no se pone ENCIMA del texto (Spot, «Vale hoy») */
+  .met .msp{position:absolute!important;right:8px!important;top:7px!important;bottom:auto!important;width:44px!important;height:16px!important;opacity:.9}
+  .met .msp svg{width:100%;height:100%;display:block}
+  .met:has(.msp) .cab{padding-right:48px}
+  .mets,.cima .mets{gap:7px!important;margin-top:10px!important}
+  .cima{gap:10px!important;margin-bottom:12px!important}
+  .cima>.caja,.cima>.hero{margin:0!important}
+  .grupo .grT{padding:4px 2px!important}
+
+  /* ---- cajas ---- */
+  .caja>h2{padding:8px 12px!important;min-height:0!important;gap:8px!important}
+  .caja>h2 .ic{width:26px!important;height:26px!important}
+  .caja>h2 .ic svg{width:15px!important;height:15px!important}
+  .caja .cp{padding:12px!important}
+  .caja{margin-bottom:10px}
+  .caja.ancha2 p{margin:6px 0 0!important}
+
+  /* ---- cajas que se pliegan (solo el título; se abren con un toque) ---- */
+  .plegable>h2{cursor:pointer;-webkit-tap-highlight-color:transparent;flex-wrap:nowrap!important}
+  .plegable>h2 .plgFl{display:inline-block;margin-left:auto;flex:none;font-size:14px;opacity:.75;padding-left:8px;line-height:1}
+  .plegable>h2 .plgFl::before{content:'▾'}
+  .plegable.abierto>h2 .plgFl::before{content:'▴'}
+  .plegable:not(.abierto)>:not(h2){display:none!important}
+  .plegable:not(.abierto){margin-bottom:8px!important}
+  .plegable>h2 .sp+.plgFl{margin-left:0}
+  /* con «Registrar compra» plegado, el selector COMPRA/VENTA no hace falta */
+  .plegable:not(.abierto)>h2 .pill{display:none!important}
+
+  /* ---- tarjeta de moneda (Resumen y Spot) ---- */
+  .mv{padding:10px 12px!important}
+  .mv .l1{font-size:14px!important;line-height:1.25!important}
+  .mv .l2{font-size:11.5px!important}
+  .mv .lg em{font-size:8.5px!important;letter-spacing:.02em}
+  .mv .lg{min-width:0}
+  .mv.moneda{display:grid!important;grid-template-columns:62px minmax(0,1fr) minmax(0,1fr)!important;gap:4px 8px!important;align-items:center}
+  .mv.moneda>.lg{grid-column:1;grid-row:1}
+  .mv.moneda>.cab2{grid-column:2 / span 2;grid-row:1}
+  .mv.moneda>.q{grid-column:1 / span 3;grid-row:2;margin:0!important;min-width:0!important}
+  .mv.moneda>.r{grid-column:1 / span 2;grid-row:3;margin:0!important;padding:0!important;border:0!important;text-align:left;min-width:0!important}
+  .mv.moneda>.pg{grid-column:3;grid-row:3;margin:0!important;padding:0!important;border:0!important;text-align:left;min-width:0!important}
+  .mv.moneda>.acc{grid-column:1 / span 3;grid-row:4;margin:0!important;padding:0!important;border:0!important}
+  .mv.moneda .r span,.mv.moneda .pg>span{font-size:11px!important;display:block}
+  .mv.moneda .r b{font-size:16px!important}
+
+  /* ---- tarjeta de operación abierta (Futuros, Backtesting y Resumen) ---- */
+  .mv.fut{display:grid!important;grid-template-columns:62px minmax(0,1fr) auto!important;gap:4px 8px!important;align-items:center}
+  .mv.fut>.lg{grid-column:1;grid-row:1}
+  .mv.fut>.cab2{grid-column:2 / span 2;grid-row:1}
+  .mv.fut>.q{grid-column:1 / span 3;min-width:0!important}
+  .mv.fut>.pg{grid-column:1 / span 2;margin:0!important;padding:0!important;border:0!important;min-width:0!important}
+  .mv.fut>.acc{grid-column:3;margin:0!important;padding:0!important;border:0!important;display:flex;gap:6px}
+  .mv.fut>.acc .b{padding:6px 10px!important;min-height:34px!important}
+  .mv.fut>.nota{grid-column:1 / span 3}
+  .mv.fut .kv{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:4px 8px!important}
+  .mv.fut .kv>div{padding:0!important;border:0!important;min-width:0}
+  .mv.fut .kv span{font-size:10.5px!important;display:block}
+  .mv.fut .kv b{font-size:13.5px!important;line-height:1.15}
+  .mv.fut .kv small{display:block;font-size:10px!important}
+
+  /* ---- tarjetas del historial (compra / venta / depósito / retiro) ----
+     fecha | texto (todo el ancho) · abajo: lo que pagó/recibió y el resultado.
+     «Editar» va chiquito en la esquina de arriba. */
+  .mv.compra,.mv.dinero,.mv.venta,.mv.retiro{display:grid!important;grid-template-columns:44px minmax(0,1fr) auto!important;gap:4px 10px!important;align-items:center;position:relative}
+  .mv.compra>.fh,.mv.dinero>.fh,.mv.venta>.fh,.mv.retiro>.fh{grid-column:1;grid-row:1;padding:4px!important;margin:0!important;min-width:0!important;align-self:start}
+  .mv.compra>.lg,.mv.dinero>.lg,.mv.venta>.lg,.mv.retiro>.lg{display:none!important}
+  .mv.compra>.q,.mv.dinero>.q,.mv.venta>.q,.mv.retiro>.q{grid-column:2 / span 2;grid-row:1;margin:0!important;min-width:0!important}
+  .mv.compra>.q .l1,.mv.dinero>.q .l1,.mv.venta>.q .l1,.mv.retiro>.q .l1{padding-right:56px}
+  .mv.compra>.acc,.mv.dinero>.acc,.mv.venta>.acc,.mv.retiro>.acc{position:absolute;top:8px;right:10px;margin:0!important;padding:0!important;border:0!important}
+  .mv.compra>.acc .b,.mv.dinero>.acc .b,.mv.venta>.acc .b,.mv.retiro>.acc .b{min-height:28px!important;padding:3px 9px!important;font-size:12px!important}
+  .mv.compra>.pg,.mv.dinero>.pg,.mv.venta>.pg,.mv.retiro>.pg{grid-column:1 / span 2;grid-row:2;margin:0!important;padding:0!important;border:0!important;
+    display:flex;gap:10px;align-items:baseline;text-align:left;min-width:0!important}
+  .mv.compra>.r,.mv.venta>.r{grid-column:3;grid-row:2;margin:0!important;padding:0!important;border:0!important;text-align:right;min-width:0!important}
+  .mv.compra .pg b,.mv.dinero .pg b{font-size:15px!important}
+
+  /* ---- tarjeta de alerta de precio: una sola fila ---- */
+  .mv.alr{display:grid!important;grid-template-columns:34px minmax(0,1fr) auto auto!important;gap:4px 10px!important;align-items:center}
+  .mv.alr>.q{min-width:0!important;margin:0!important}
+  .mv.alr>.acc{margin:0!important}
+  .mv.alr>.acc .b{min-height:30px!important;padding:3px 10px!important;font-size:12px!important}
+
+  /* ---- cajitas de datos (largos/cortos, disciplina, mejor/peor) ---- */
+  .mp{padding:9px 11px!important}
+  .mpt{margin-bottom:3px!important}
+  .mpv{font-size:19px!important}
+  .mps{margin-top:2px!important}
+  .mpc{margin-bottom:4px!important}
+  .fcalc{padding:9px 12px!important;font-size:12.5px!important;line-height:1.4!important}
+
+  /* ---- Spot: el selector COMPRA/VENTA más chico para que el título quepa ---- */
+  #spT{width:128px!important;flex:none}
+  #spT button{padding:5px 4px!important;font-size:11px!important}
+
+  /* ---- Backtesting: los botones de la prueba, en una fila ---- */
+  .filaPrueba{margin:0 0 10px!important;gap:6px!important}
+  .filaPrueba .b{padding:5px 9px!important;font-size:12px!important;min-height:32px!important}
+
+  /* ---- Futuros: los ajustes abiertos, sin cajas de más ---- */
+  .franja{padding:10px 12px!important;gap:8px 10px!important}
+  .frResumen+.franja .fr:not(.frCom){background:none!important;border:0!important;padding:0!important;min-height:0!important;justify-content:flex-end}
+
+  /* ---- el resultado verde (Futuros / Backtesting) y el total (Resumen): cuatro líneas ---- */
+  .hero .hz{padding:10px 12px!important;gap:0!important}
+  .hero .hprin{min-width:0!important;flex:1 1 100%;display:flex;flex-wrap:wrap;align-items:baseline;gap:1px 12px}
+  .hero .hg,.hero .hlin{display:contents}
+  .hero .he{order:1;flex:1 1 55%;min-width:0;font-size:10.5px!important;letter-spacing:.12em;margin:0!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hero .envivo{order:2;margin-left:auto;flex:none}
+  .hero .hv{order:3;font-size:30px!important;line-height:1.05!important;margin:0!important}
+  .hero .hv small{font-size:12px!important}
+  .hero .gch,.hero .gpill{order:4;padding:3px 10px!important;font-size:12.5px!important;align-self:center}
+  .hero .gp2,.hero .hgEt{order:5;font-size:12px!important;align-self:center;white-space:nowrap}
+  .hero .hlin>span{order:6;font-size:12px!important;color:var(--t2);white-space:nowrap}
+  .hero .hg .envivo{order:2}
+  .hero .meta,.hero .reparto,.hero .rpBot{order:7;flex:1 1 100%}
+  .hero .meta{margin-top:6px!important}
+  .hero .reparto{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-top:8px!important}
+  .hero .rpC{padding:8px 10px!important}
+  .hero .rpL,.hero .rpT{font-size:12px!important;padding:1px 0!important;white-space:nowrap}
+  .hero .rpBot{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;margin-top:8px!important}
+  .hero .rpBot .b{font-size:11.5px!important;padding:6px 8px!important;min-height:34px!important;min-width:0!important;width:100%!important;
+    white-space:normal!important;line-height:1.15!important}
+  .rosca svg{width:118px!important;height:118px!important}
+  .rosca{gap:12px!important}
+  .barraDin{padding:8px 10px!important}
+
+  /* ---- formularios: casillas y botones más bajos ---- */
+  .campo input,.campo select{min-height:42px!important;height:42px!important}
+  .campo label{margin-bottom:3px!important;font-size:12.5px!important}
+  .conBtn{gap:4px!important}
+  .conBtn .b{min-height:32px!important;padding:2px 10px!important;font-size:12.5px!important}
+  .opbloq{padding:12px!important}
+  .modoLote{margin-top:8px!important}
+  /* v46 · la gráfica va DESPUÉS de «Registrar operación» (Luis: «primero registrar, la
+     gráfica es para mirar»), y lo opcional queda al final */
+  .opform>.cp{display:flex;flex-direction:column}
+  .opform>.cp>*{order:0}
+  .opform>.cp>#fuGraf{order:3;margin-top:10px}
+  .opform>.caja>h2,.opform>h2{flex-wrap:wrap}
+  .opform #fuL{flex:1 1 100%;max-width:none!important}
+  .pill.grande button{padding:6px 6px;font-size:13px;gap:0}
+  .pill.grande button span{font-size:10.5px}
+  .opform>.cp>#fuDet{order:4}
+
+  /* ---- Futuros: los ajustes de riesgo plegados en UNA línea ---- */
+  .frResumen{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--ln);border-radius:12px;
+    background:var(--b1);font-size:13px;line-height:1.3;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .frResumen .frDatos{display:flex;flex-wrap:wrap;gap:2px 12px;min-width:0;flex:1}
+  .frResumen .frI{white-space:nowrap}
+  .frResumen .frI>span:first-child{color:var(--t2)}
+  .frResumen b{font-weight:700;color:var(--tx)}
+  .frResumen small{font-size:11.5px;color:var(--t2);margin-left:2px}
+  .frResumen .cambiar{margin-left:auto;color:var(--acTx);font-weight:700;white-space:nowrap;flex:none;font-size:12.5px}
+  .frResumen .cambiar .lCe,.frResumen.abierto .cambiar .lAb{display:none}
+  .frResumen.abierto .cambiar .lCe{display:inline}
+  .frResumen .cambiar::after{content:' ▾'}
+  .frResumen.abierto .cambiar::after{content:' ▴'}
+  .franja.plegada{display:none!important}
+  /* con el resumen de arriba, esa frase de «Arriesga $… por operación» sobra */
+  .frResumen+.franja .fr:not(.frCom)>span{display:none}
+  .frResumen.abierto{margin-bottom:6px}
+
+  /* ---- el cuadro verde «cuánto dinero poner», en pocas líneas ---- */
+  .lotazo .lz,.lotazo .lfrase,.lotazo .ld{display:none}
+  .lotazo.falta .lz,.lotazo.mal .lz,.lotazo.mal .larr{display:block}
+  .lotazo.falta .lz{padding:10px 14px!important}
+  .lotazo.falta .lv{font-size:26px!important}
+  .lotazo.mal .lz{padding:10px 14px!important}
+  .opbloq .lotazo{margin:10px -13px -13px}
+  .lotazo .lzTel{display:block}
+  .lotazo .lzTop{display:flex;justify-content:space-between;align-items:flex-end;gap:8px;padding:10px 14px 8px}
+  .lotazo .lzTop .le{font-size:10.5px!important;letter-spacing:.12em;margin:0 0 2px!important}
+  .lotazo .lzTop .lv{font-size:34px!important;line-height:1!important}
+  .lotazo .lzR{text-align:right;font-size:11.5px;line-height:1.35;color:var(--t2);min-width:0}
+  .lotazo .lzR b{display:block;font-size:13.5px;color:var(--tx)}
+  .lotazo .lzR b em{font-style:normal;color:var(--dnTx)}
+  .lotazo .lzG{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);border-top:1px solid color-mix(in srgb,var(--up) 18%,var(--ln))}
+  .lotazo .lzG>div{padding:7px 14px;border-bottom:1px solid color-mix(in srgb,var(--up) 14%,var(--ln));min-width:0}
+  .lotazo .lzG>div:nth-child(odd){border-right:1px solid color-mix(in srgb,var(--up) 14%,var(--ln))}
+  .lotazo .lzG>div:last-child{grid-column:1 / -1;border-bottom:0;border-right:0}
+  .lotazo .lzG>div>span{display:block;font-size:11px;color:var(--t2);font-weight:600;margin:0}
+  .lotazo .lzG i span{display:inline}
+  .lotazo .lzR span{display:inline}
+  .lotazo .lzG b{display:block;font-size:16px;font-weight:800;line-height:1.15;color:var(--tx)}
+  .lotazo .lzG b.dn{color:var(--dnTx)}
+  .lotazo .lzG b.up{color:var(--upTx)}
+  .lotazo .lzG i{display:block;font-style:normal;font-size:10.5px;color:var(--t2);line-height:1.2;margin:0}
+  .lotazo .lzG .lzAncho{display:flex;align-items:baseline;gap:4px 10px;flex-wrap:wrap}
+  .lotazo .lzG .lzAncho>span{flex:none}
+  .lotazo .lzG .lzAncho i{flex:1 1 100%}
+  /* el aviso naranja, en una sola frase, sin título ni pie */
+  .nota.ojo{padding:8px 12px!important}
+  .nota.ojo .avTit,.nota.ojo .avPie{display:none!important}
+  .nota.ojo .avLin{font-size:12px!important;line-height:1.3!important;margin:3px 0!important}
+  .opform .nota{margin-top:8px}
+  #fuYa .campo{margin-top:8px!important}
+
+  /* ---- Ajustes y cajas largas: ya vienen plegadas con .plegable ---- */
+
+  /* ---- una caja que se abre sola (Resumen/Futuros): botones del título más chicos ---- */
+  .caja>h2 .b.sm{padding:4px 9px;font-size:12px;min-height:30px}
+  /* en Resumen, «EN VIVO» ya está arriba: en el título de las abiertas no cabe junto a «Ver futuros» */
+  body[data-v="res"] .caja>h2 .envivo{display:none}
+}
+
+/* ---- teléfonos angostos (320–360 px): el menú de abajo no parte «Backtesting» ---- */
+@media(max-width:360px){
+  aside nav button span.tx{font-size:10px;letter-spacing:-.045em}
+  .encab h1{font-size:20px}
+  .encab .der .b{font-size:11.5px;padding:6px 6px;white-space:nowrap}
+}
+@media(max-width:330px){
+  aside nav button span.tx{font-size:9.5px;letter-spacing:-.05em}
+  .encab h1{font-size:18px}
+}
 </style>
 </head>
 <body>
@@ -1483,7 +1725,7 @@ body.conCerrojo #aviso{z-index:10001}
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por su cuenta de Google.
    ===================================================================== */
-var VERSION="45";
+var VERSION="46";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -4443,6 +4685,73 @@ function pintarMenu(){
     b.onclick=function(){ irA(b.getAttribute("data-ir")); };
   });
 }
+
+/* =====================================================================
+   v46 · TELÉFONO: ¿estamos en pantalla angosta?, y cajas que se pliegan
+   ---------------------------------------------------------------------
+   Hasta 900 px de ancho la pantalla va compacta (ver el bloque de CSS «v46»).
+   Aquí lo poco que no se puede hacer solo con CSS:
+     · esTel(): para ordenar las cosas distinto (las operaciones abiertas
+       van ARRIBA, no al final) y para dibujar los ajustes en una línea;
+     · las cajas plegables: se abren con un toque en su título, y el
+       programa se acuerda de cuáles dejó abiertas aunque la pantalla se
+       vuelva a dibujar (UI_PLG).
+   En la computadora todo esto no hace nada.
+   ===================================================================== */
+function esTel(){ try{ return !!(window.matchMedia && window.matchMedia("(max-width:900px)").matches); }catch(e){ return false; } }
+var UI_PLG={};
+/* vuelve una caja plegable: solo el título a la vista, y la flechita */
+function plegarCaja(b, clave, abierta){
+  if(!b||!b.classList) return;
+  var h=b.firstElementChild;
+  if(!h||h.tagName!=="H2") return;
+  b.classList.add("plegable");
+  b.setAttribute("data-plg", clave);
+  if(UI_PLG[clave]===undefined) UI_PLG[clave]=!!abierta;
+  b.classList.toggle("abierto", !!UI_PLG[clave]);
+  if(!h.querySelector(".plgFl")){ var s=document.createElement("span"); s.className="plgFl"; h.appendChild(s); }
+}
+/* todas las cajas de primer nivel de una pantalla (Ajustes) */
+function plegarCajas(raiz, pref){
+  if(!raiz) return;
+  [].forEach.call(raiz.children, function(b,i){
+    if(b.classList && b.classList.contains("caja")) plegarCaja(b, pref+":"+i, false);
+  });
+}
+document.addEventListener("click", function(ev){
+  if(!esTel()) return;
+  var tg=ev.target;
+  if(!tg||!tg.closest) return;
+  /* los ajustes de riesgo de Futuros: una línea que se abre */
+  var fr=tg.closest(".frResumen");
+  if(fr){
+    var f=fr.nextElementSibling;
+    if(f&&f.classList.contains("franja")){
+      var ab=f.classList.contains("plegada");      /* estaba cerrada → ahora abre */
+      f.classList.toggle("plegada", !ab);
+      fr.classList.toggle("abierto", ab);
+      UI_PLG[fr.getAttribute("data-plg")]=ab;
+    }
+    return;
+  }
+  var h=tg.closest(".plegable>h2");
+  if(!h) return;
+  if(tg.closest("button,a,input,select,textarea,.pill")) return;
+  var b=h.parentNode, k=b.getAttribute("data-plg");
+  var ab2=b.classList.toggle("abierto");
+  if(k) UI_PLG[k]=ab2;
+});
+/* si la pantalla cambia de angosta a ancha (o al revés) se dibuja otra vez: el orden cambia */
+(function(){
+  try{
+    var mq=window.matchMedia("(max-width:900px)");
+    var alCambiar=function(){
+      try{ if(typeof vista!=="undefined" && {res:1,fut:1,back:1}[vista] && document.getElementById("cuerpo")) repintar(); }catch(e){}
+    };
+    if(mq.addEventListener) mq.addEventListener("change", alCambiar);
+    else if(mq.addListener) mq.addListener(alCambiar);
+  }catch(e){}
+})();
 /* tarjeta de cifra: todas iguales; solo el signo del dinero lleva color.
    El último dato, "ir", hace que la tarjeta se pueda pulsar y lleve a lo que dice. */
 function met(ico, etiqueta, valor, clase, sub, color, serie, ir){
@@ -4478,6 +4787,11 @@ function irAParte(ancla){
   setTimeout(function(){
     var el=document.getElementById(ancla);
     if(!el) return;
+    /* v46 · si está dentro de una caja plegada, se abre antes de bajar */
+    try{
+      var pl=el.closest?el.closest(".plegable"):null;
+      if(pl&&!pl.classList.contains("abierto")){ pl.classList.add("abierto"); var kp=pl.getAttribute("data-plg"); if(kp) UI_PLG[kp]=true; }
+    }catch(e){}
     el.scrollIntoView({behavior:"smooth", block:"start"});
     el.classList.add("resalta");
     setTimeout(function(){ el.classList.remove("resalta"); }, 1800);
@@ -4660,11 +4974,13 @@ function listaMonedasTel(lista, conVender){
   if(!lista.length) return '';
   return '<div class="soloTel cp" style="padding-top:10px">'+lista.map(function(e){
     var chg=cambioDe(e.sym);
-    return '<div class="mv" data-ver="'+esc(e.sym)+'" style="--fc:'+colDe(e.sym)+';cursor:pointer">'+
+    return '<div class="mv moneda" data-ver="'+esc(e.sym)+'" style="--fc:'+colDe(e.sym)+';cursor:pointer">'+
       iconoMoneda(e.sym,34)+
       '<div class="cab2"><div style="min-width:0;flex:1"><b>'+esc(e.sym)+'</b> <span class="mut">'+esc(nombreDe(e.sym))+'</span>'+
         '<div class="mut" style="font-size:12px">ahora <b data-v="pr" data-s="'+esc(e.sym)+'">'+precio(e.precio)+'</b> '+
-        '<span data-v="ch" data-s="'+esc(e.sym)+'" data-cls="" class="'+cl(chg)+'">'+(chg!=null?pct(chg,1):"")+'</span></div></div></div>'+
+        '<span data-v="ch" data-s="'+esc(e.sym)+'" data-cls="" class="'+cl(chg)+'">'+(chg!=null?pct(chg,1):"")+'</span>'+
+        /* v46 · ese % es lo que se movió el PRECIO en 24 h, no su ganancia: se dice */
+        (chg!=null?' <span class="mut" translate="no" style="font-size:10.5px">24 h</span>':'')+'</div></div></div>'+
       '<div class="q"><div class="l2">'+cant(e.cantidad)+' '+esc(e.sym)+' · promedio <b>'+precioC(e.promedio)+'</b> · puso <b>'+usd(e.costo)+'</b></div></div>'+
       '<div class="r"><span>Vale hoy</span><b data-v="spVal" data-s="'+esc(e.sym)+'">'+(e.valor!=null?usd(e.valor):"—")+'</b></div>'+
       '<div class="pg"><span>Ganancia si vende hoy</span><b><span class="'+(e.abierto>0?"gpill p":e.abierto<0?"gpill n":"gpill z")+'" '+
@@ -5028,8 +5344,10 @@ function pintarSpot(){
      Antes vivía abajo del todo, donde casi nadie lo veía. */
   h+=barraDineroSpot();
 
+  /* v46 · en el teléfono «Registrar compra» viene plegado: es un solo título y se abre con un toque */
+  if(UI_PLG.spReg===undefined) UI_PLG.spReg=vacioSpot;     /* quien todavía no registró nada lo ve abierto */
   h+='<div style="margin-bottom:14px" id="spZona">'+
-     '<div class="caja" style="margin:0" id="spPanel">'+panelRegistro()+'</div>'+
+     '<div class="caja plegable'+(UI_PLG.spReg?' abierto':'')+'" data-plg="spReg" style="margin:0" id="spPanel">'+panelRegistro()+'</div>'+
   '</div>';
 
   /* ---- la tabla ---- */
@@ -5133,7 +5451,7 @@ function panelRegistro(){
     '<div class="pill" id="spT" style="width:168px">'+
       '<button data-t="compra" class="'+(!esV?"on v":"")+'">COMPRA</button>'+
       '<button data-t="venta" class="'+(esV?"on r":"")+'">VENTA</button>'+
-    '</div></h2><div class="cp">'+
+    '</div><span class="plgFl"></span></h2><div class="cp">'+
     '<div class="campos">'+
       '<div class="campo ancho"><label>Criptomoneda</label>'+
         '<button class="selector" id="spS" type="button"></button></div>'+
@@ -5295,7 +5613,7 @@ function historialSpot(){
         '<span'+((o.casa||"OTRA")==="OTRA"?'':' translate="no"')+'>'+esc(nombreCasa(o.casa||"OTRA"))+'</span>'+
         (k?'<span> · comisión '+usd(k)+'</span>':"")+
         (v&&R.recortada?'<span> · se contaron '+cant(cantReal)+' de '+cant(o.cant)+'</span>':"")+
-        (dd!=null?'<span> · hace '+plural(dd,"día","días")+'</span>':"")+
+        (dd!=null?(dd===0?'<span> · </span><span>hoy</span>':'<span> · hace '+plural(dd,"día","días")+'</span>'):"")+
         (o.nota?'<span translate="no"> · '+esc(o.nota)+'</span>':"")+'</div></div>'+
         '<div class="pg"><span>'+(v?"Recibió":"Pagó")+'</span><b>'+
         (v?"+":"−")+usd(tot).replace("-","")+'</b></div>'+
@@ -6838,7 +7156,7 @@ function filasMov(e, sym, soloVentas){
       '<div class="l2">'+(o.casa?logoCasa(o.casa,14):"")+'<span>'+(v?"recibió ":"pagó ")+usd(tot)+'</span>'+
       ((+o.com)?'<span> · comisión '+usd(o.com)+'</span>':"")+
       (v&&R.recortada?'<span> · se contaron '+cant(cantReal)+' de '+cant(o.cant)+'</span>':"")+
-      (dd!=null?'<span> · hace '+plural(dd,"día","días")+'</span>':"")+
+      (dd!=null?(dd===0?'<span> · </span><span>hoy</span>':'<span> · hace '+plural(dd,"día","días")+'</span>'):"")+
       (o.nota?'<span translate="no"> · '+esc(o.nota)+'</span>':"")+'</div>'+
       '<div class="bar"><i style="width:'+(bruto/maxT*100).toFixed(1)+'%"></i></div></div>'+
       (v
@@ -6982,6 +7300,23 @@ function franjaRiesgo(A){
     '<div class="sw'+(autoActivo()?" on":"")+'" id="frAuto" title="Cuando el precio en vivo toque el stop o el objetivo, la operación se cierra sola en este registro">'+
       '<i></i><span>Cerrar sola cuando el precio toque el stop o el objetivo</span></div>'+
   '</div>';
+}
+/* v46 · en el teléfono, los ajustes de riesgo caben en UNA línea que se abre con un toque */
+function franjaPlegada(A){
+  var c=A.cfg, k="fr"+A.k;
+  if(UI_PLG[k]===undefined) UI_PLG[k]=false;
+  var ab=!!UI_PLG[k];
+  var riesgoUSD=c.cartera*c.riesgo/100, K=casaFut(c.casa), p=A.prueba;
+  var ordenT=c.casa==="otra" ? "" : (c.orden==="limite" ? "Límite" : "A mercado");
+  var r='<div class="frResumen'+(ab?" abierto":"")+'" data-plg="'+k+'"><div class="frDatos">'+
+    (A.k==="back"&&p ? '<span class="frI"><b translate="no">'+esc(p.nombre)+'</b></span>' : '')+
+    '<span class="frI"><span>Cartera</span> <b>'+usd(c.cartera)+'</b></span>'+
+    '<span class="frI"><span>Arriesga</span> <b>'+usdF(riesgoUSD)+'</b><small>'+pctCorto(c.riesgo)+'</small></span>'+
+    '<span class="frI"><b>'+(+c.apal||1)+'x</b></span>'+
+    '<span class="frI">'+(K?'<span translate="no">'+esc(K[1])+'</span>':'<span>Otra</span>')+
+      (ordenT?' <span>'+ordenT+'</span>':'')+' <b>'+pctCorto(c.com)+'</b></span>'+
+    '</div><span class="cambiar"><span class="lAb">Cambiar</span><span class="lCe">Cerrar</span></span></div>';
+  return r+franjaRiesgo(A).replace('<div class="franja">','<div class="franja'+(ab?'':' plegada')+'">');
 }
 function engancharFranja(box, A){
   var c=Object.assign({},A.cfg);
@@ -7313,7 +7648,26 @@ function recLote(A){
         : '<div><span>Si llega al objetivo</span><b>—</b><i>escriba el take profit</i></div>')+
       '<div><span>Lo liquidan en</span><b>'+precio(R.liq)+'</b>'+
         '<i>más allá de ahí pierde todo lo que puso</i></div>'+
-    '</div></div>', "lote");
+    '</div>'+
+    /* v46 · el mismo cuadro en el teléfono: pocas líneas (el de arriba se oculta con CSS) */
+    '<div class="lzTel"><div class="lzTop"><div><div class="le">'+tituloLote+'</div>'+
+      '<div class="lv">'+(mon?usdF(R.perdidaSL):usdF(R.margen))+'</div></div>'+
+      '<div class="lzR"><span>con '+R.apal+'x</span>'+(casaFut(c.casa)?' · <span translate="no">'+esc(casaFut(c.casa)[1])+'</span>':'')+
+        (mon ? '<b><span>Dinero que pone</span> <em>'+usdF(R.margen)+'</em></b>'
+             : '<b><span>Arriesga</span> <em>'+usdF(R.perdidaSL)+'</em></b>')+'</div></div>'+
+      '<div class="lzG">'+
+        '<div><span>Tamaño de la operación</span><b>'+usdF(R.posicion)+'</b><i>'+cant(R.monedas)+' '+esc(sym)+'</i></div>'+
+        '<div><span>Comisión</span><b>'+usdF(R.com)+'</b><i>'+pctCorto(c.com)+' × 2 sobre el tamaño</i></div>'+
+        '<div><span>Si llega al stop</span><b class="dn">−'+usdF(R.perdidaSL)+'</b>'+
+          '<i>en '+precio(v.sl)+(pctCart!=null?' · el '+pctS(pctCart,2)+' de su cartera':'')+'</i></div>'+
+        (R.ganTp!=null&&R.tpBien
+          ? '<div><span>Si llega al objetivo</span><b class="up">+'+usdF(R.ganTp)+'</b>'+
+            '<i><span>en '+precio(v.tp)+'</span>'+(R.rr!=null?' · <span>'+R.rr.toFixed(1).replace(".",sepDecimal())+' veces lo que arriesga</span>':'')+'</i></div>'
+          : '<div><span>Si llega al objetivo</span><b>—</b><i>escriba el take profit</i></div>')+
+        '<div class="lzAncho"><span>Lo liquidan en</span><b>'+precio(R.liq)+'</b>'+
+          '<i>más allá de ahí pierde todo lo que puso</i></div>'+
+      '</div></div>'+
+    '</div>', "lote");
 
   /* ---- AVISAR SÍ, PROHIBIR NO: cortos, con el número, y se registra igual ---- */
   var p=avisosRiesgo(R);
@@ -7442,8 +7796,10 @@ function pintarAmbito(k){
 
   /* ---- franja de riesgo ---- */
   var vacioFut = !A.lista.length;
-  h+=franjaRiesgo(A);
-  if(k==="back") h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:-6px 0 14px">'+
+  /* v46 · en el teléfono: ajustes en una línea, operaciones abiertas arriba del todo */
+  var TEL=esTel();
+  h+=(TEL && A.cfg.cartera>0) ? franjaPlegada(A) : franjaRiesgo(A);
+  if(k==="back") h+='<div class="filaPrueba" style="display:flex;gap:8px;flex-wrap:wrap;margin:-6px 0 14px">'+
     '<button class="b sm ac" onclick="nuevaPrueba()">+ Nueva prueba</button>'+
     (BD.pruebas.length>1?'<button class="b sm" onclick="compararPruebas()">Comparar las '+
       BD.pruebas.length+' pruebas</button>':'')+
@@ -7495,6 +7851,7 @@ function pintarAmbito(k){
     heroResultado(k==="back"?"RESULTADO DE LA PRUEBA":"RESULTADO EN FUTUROS", T.gan+T.flotante,
       base, ahoraC, dicho, curva, T.nAb, T.flotante,
       {g0:T.gan, ab:F.abiertas.map(function(e){ return e.f.id; }).join(",")})+
+    (TEL ? cajaAbiertas(F,k)+(F.programadas.length?cajaProgramadas(F.programadas,k):"") : "")+
     '<div class="mets">'+
       met(IC.diana,"Operaciones acertadas",
           T.decididas?(T.ganadas+" de "+T.decididas):"—","",
@@ -7507,7 +7864,8 @@ function pintarAmbito(k){
           null, T.n?"res:TODO":"")+
       met(IC.sube,"Ganancia promedio al acertar",
           T.ganaUsd==null?"—":("+"+usdF(T.ganaUsd)),"",
-          T.pierdeUsd!=null?("pérdida promedio al fallar: "+usdF(T.pierdeUsd)):"todavía no ha fallado ninguna",
+          T.pierdeUsd!=null?("pérdida promedio al fallar: "+usdF(T.pierdeUsd))
+            :(T.ganaUsd==null?"todavía no ha acertado ninguna":"todavía no ha fallado ninguna"),
           T.ganaUsd==null?6:"gana",
           null, T.ganaUsd!=null?"res:GANA":"")+
       /* Comisiones: solo las CERRADAS, que es lo ya pagado del todo. Lo de las
@@ -7531,20 +7889,15 @@ function pintarAmbito(k){
           T.flotante>=0?"gana":"pierde", null, "#abiertasFut"):"")+
     '</div></div>';
 
+  /* ---- programadas: esperando el precio, sin contar nada todavía ---- */
   /* ---- panel de registrar ---- */
   h+=panelOperacion(A);
 
-  /* ---- programadas: esperando el precio, sin contar nada todavía ---- */
-  if(F.programadas.length) h+=cajaProgramadas(F.programadas,k);
+  /* (en el teléfono las programadas ya salieron arriba, después de las abiertas) */
+  if((!TEL||vacioFut) && F.programadas.length) h+=cajaProgramadas(F.programadas,k);
 
-  /* ---- abiertas ---- */
-  if(F.abiertas.length){
-    h+='<div class="caja" id="abiertasFut"><h2><span class="ic">'+IC.fut+'</span>Operaciones abiertas'+
-      '<span class="chip v">'+F.abiertas.length+'</span><span class="sp"></span>'+
-      '<span class="envivo"><i></i>EN VIVO</span></h2>'+
-      tablaAbiertas(F.abiertas,k)+'<div class="soloTel cp" style="padding-top:0">'+
-      F.abiertas.map(function(e){ return filaAbierta(e,k); }).join("")+'</div></div>';
-  }
+  /* ---- abiertas (en el teléfono ya salieron arriba, junto al resultado) ---- */
+  if(!TEL || vacioFut) h+=cajaAbiertas(F,k);
 
   /* ---- disciplina ---- */
   if(T.conPlan||T.sinPlan) h+=cajaDisciplina(T);
@@ -7576,6 +7929,15 @@ function pintarAmbito(k){
 
   c.innerHTML=h;
   engancharAmbito(c,A);
+}
+/* las operaciones abiertas: la misma caja en el teléfono (arriba) y en la computadora (abajo) */
+function cajaAbiertas(F,k){
+  if(!F.abiertas.length) return "";
+  return '<div class="caja" id="abiertasFut"><h2><span class="ic">'+IC.fut+'</span>Operaciones abiertas'+
+    '<span class="chip v">'+F.abiertas.length+'</span><span class="sp"></span>'+
+    '<span class="envivo"><i></i>EN VIVO</span></h2>'+
+    tablaAbiertas(F.abiertas,k)+'<div class="soloTel cp" style="padding-top:0">'+
+    F.abiertas.map(function(e){ return filaAbierta(e,k); }).join("")+'</div></div>';
 }
 function pintarFut(){ pintarAmbito("fut"); }
 function pintarBack(){ pintarAmbito("back"); }
@@ -10265,10 +10627,24 @@ function pintarRes(){
   function viva(html, clave, neutro){
     return html.replace('<div class="met', '<div data-vmet="'+clave+'" data-neutro="'+neutro+'" class="met');
   }
+  /* v46 · en el teléfono, lo que ya está en marcha (abiertas, programadas) va justo
+     debajo del total, antes de las tarjetas de ganancias */
+  var TEL=esTel();
+  var hOpsRes="";
+  if(F.abiertas.length){
+    hOpsRes='<div class="caja"><h2><span class="ic">'+IC.fut+'</span>Operaciones abiertas'+
+      '<span class="chip v">'+F.abiertas.length+'</span><span class="sp"></span>'+
+      '<span class="envivo"><i></i>EN VIVO</span>'+
+      '<button class="b sm" onclick="irA(\'fut\')">Ver futuros</button></h2>'+
+      tablaAbiertas(F.abiertas,"fut")+
+      '<div class="soloTel cp" style="padding-top:0">'+
+      F.abiertas.map(function(e){ return filaAbierta(e,"fut"); }).join("")+'</div></div>';
+  }
   h+='<div class="cima">'+/* v45 · sin «24 h» al lado de «ganancia en total» (Luis: «no tiene nada que ver con mi ganancia»).
      Ese porcentaje era lo que se movió el PRECIO de sus monedas en Binance, no lo que ganó o perdió él. */
     heroGrande("TODO SU DINERO", totalTodo, ganTodo, "ganancia en total", null, serieTodo(),
                                     repartoDinero())+
+    (TEL ? hOpsRes+(F.programadas.length?cajaProgramadas(F.programadas,"fut"):"") : "")+
     '<div class="grupos">'+
     grupoRes("Spot", IC.spot, "ganSpot", G.spot,
       (vivas.length
@@ -10336,18 +10712,10 @@ function pintarRes(){
   }
 
   /* ---- futuros programados: esperando el precio, sin contar nada ---- */
-  if(F.programadas.length) h+=cajaProgramadas(F.programadas,"fut");
+  if(!TEL && F.programadas.length) h+=cajaProgramadas(F.programadas,"fut");
 
-  /* ---- futuros abiertos, como tabla ---- */
-  if(F.abiertas.length){
-    h+='<div class="caja"><h2><span class="ic">'+IC.fut+'</span>Operaciones abiertas'+
-      '<span class="chip v">'+F.abiertas.length+'</span><span class="sp"></span>'+
-      '<span class="envivo"><i></i>EN VIVO</span>'+
-      '<button class="b sm" onclick="irA(\'fut\')">Ver futuros</button></h2>'+
-      tablaAbiertas(F.abiertas,"fut")+
-      '<div class="soloTel cp" style="padding-top:0">'+
-      F.abiertas.map(function(e){ return filaAbierta(e,"fut"); }).join("")+'</div></div>';
-  }
+  /* ---- futuros abiertos, como tabla (en el teléfono ya salieron arriba) ---- */
+  if(!TEL) h+=hOpsRes;
 
   /* ---- abajo: reparto grande y, al lado, dónde compró y alertas ---- */
   h+='<div class="inf">';
@@ -10499,7 +10867,7 @@ function pintarAlr(){
       var p=precioDe(a.sym);
       var sono=alertaSuena(a);
       var falta=p!=null?(a.precio-p)/p*100:null;
-      h+='<div class="mv" style="--fc:'+colDe(a.sym)+(sono&&!a.visto?
+      h+='<div class="mv alr" style="--fc:'+colDe(a.sym)+(sono&&!a.visto?
         ';border-color:var(--ac);background:color-mix(in srgb,var(--ac) 10%,transparent)':'')+'">'+
         '<div class="lg">'+icono(a.sym,30)+'</div>'+
         '<div class="q"><div class="l1">'+esc(a.sym)+' '+(a.dir==="sube"?"sube a":"baja a")+
@@ -10518,6 +10886,7 @@ function pintarAlr(){
   /* todo lo de sonidos, vibración y notificaciones, en una sola caja */
   h+=cajaAvisos();
   c.innerHTML=h;
+  plegarCaja(document.getElementById("cajaAvisos"), "alr:avisos", false);   /* v46 · en el teléfono, solo el título */
   engancharAvisos(c);
   c.querySelectorAll("[data-avis]").forEach(function(b){
     b.onclick=function(){
@@ -13643,6 +14012,7 @@ function pintarDat(){
     cMarca+             /* 7 · gusto                                    */
     cajaBorrar();       /* 8 · lo que no tiene vuelta, al final         */
 
+  plegarCajas(box, "dat");   /* v46 · en el teléfono, cada caja es un título que se abre con un toque */
   engancharDat(box);
 }
 
@@ -15651,6 +16021,11 @@ function engancharIdioma(box){
    Se respeta el orden de los huecos tal como salen en español.
    ===================================================================== */
 DIC.en={
+"al precio de ahora":"at today's price",
+"Cartera":"Account",
+"Cambiar":"Change",
+"# veces lo que arriesga":"# times what you risk",
+"todavía no ha acertado ninguna":"no winning trade yet",
 "sobre $# que puso":"on the $# you put in",
 /* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
 "#% al abrir y al cerrar":"#% on opening and on closing",
@@ -17456,6 +17831,11 @@ DIC.en={
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
+"al precio de ahora":"ao preço de agora",
+"Cartera":"Banca",
+"Cambiar":"Mudar",
+"# veces lo que arriesga":"# vezes o que arrisca",
+"todavía no ha acertado ninguna":"ainda não acertou nenhuma",
 "sobre $# que puso":"sobre os $# que colocou",
 /* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
 "#% al abrir y al cerrar":"#% ao abrir e ao fechar",
@@ -19254,6 +19634,11 @@ DIC.pt={
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
+"al precio de ahora":"au prix actuel",
+"Cartera":"Capital",
+"Cambiar":"Changer",
+"# veces lo que arriesga":"# fois ce que vous risquez",
+"todavía no ha acertado ninguna":"aucune gagnante pour l'instant",
 "sobre $# que puso":"sur les $# que vous avez mis",
 /* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
 "#% al abrir y al cerrar":"#% à l'ouverture et à la clôture",
@@ -21052,6 +21437,11 @@ DIC.fr={
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
+"al precio de ahora":"zum aktuellen Kurs",
+"Cartera":"Kapital",
+"Cambiar":"Ändern",
+"# veces lo que arriesga":"# Mal so viel, wie Sie riskieren",
+"todavía no ha acertado ninguna":"noch kein Treffer",
 "sobre $# que puso":"auf die eingesetzten $#",
 /* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
 "#% al abrir y al cerrar":"#% beim Öffnen und beim Schließen",
@@ -22850,6 +23240,11 @@ DIC.de={
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
+"al precio de ahora":"al prezzo di adesso",
+"Cartera":"Capitale",
+"Cambiar":"Modifica",
+"# veces lo que arriesga":"# volte ciò che rischia",
+"todavía no ha acertado ninguna":"nessuna vinta finora",
 "sobre $# que puso":"sui $# che ha messo",
 /* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
 "#% al abrir y al cerrar":"#% all'apertura e alla chiusura",
@@ -24648,6 +25043,11 @@ DIC.it={
 };
 /* NEDERLANDS · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.nl={
+"al precio de ahora":"tegen de prijs van nu",
+"Cartera":"Saldo",
+"Cambiar":"Wijzigen",
+"# veces lo que arriesga":"# keer wat u riskeert",
+"todavía no ha acertado ninguna":"nog geen enkele gewonnen",
 "sobre $# que puso":"op de $# die u inlegde",
 /* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
 "#% al abrir y al cerrar":"#% bij openen en bij sluiten",
@@ -26732,6 +27132,11 @@ DIC.nl={
 };
 /* POLSKI · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.pl={
+"al precio de ahora":"po obecnej cenie",
+"Cartera":"Saldo",
+"Cambiar":"Zmień",
+"# veces lo que arriesga":"# razy tyle, ile ryzykujesz",
+"todavía no ha acertado ninguna":"na razie żadnej trafionej",
 "sobre $# que puso":"od wpłaconych $#",
 /* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
 "#% al abrir y al cerrar":"#% przy otwarciu i przy zamknięciu",
@@ -28816,6 +29221,11 @@ DIC.pl={
 };
 /* TÜRKÇE · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.tr={
+"al precio de ahora":"şu anki fiyatla",
+"Cartera":"Bakiye",
+"Cambiar":"Değiştir",
+"# veces lo que arriesga":"riskinizin # katı",
+"todavía no ha acertado ninguna":"henüz kazanan işlem yok",
 "sobre $# que puso":"yatırdığınız $# üzerinden",
 /* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
 "#% al abrir y al cerrar":"#% açılışta ve kapanışta",
@@ -30900,6 +31310,11 @@ DIC.tr={
 };
 /* РУССКИЙ · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ru={
+"al precio de ahora":"по текущей цене",
+"Cartera":"Баланс",
+"Cambiar":"Изменить",
+"# veces lo que arriesga":"в # раза больше риска",
+"todavía no ha acertado ninguna":"пока ни одной удачной",
 "sobre $# que puso":"на вложенные $#",
 /* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
 "#% al abrir y al cerrar":"#% при открытии и при закрытии",
@@ -32984,6 +33399,11 @@ DIC.ru={
 };
 /* УКРАЇНСЬКА · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.uk={
+"al precio de ahora":"за поточною ціною",
+"Cartera":"Баланс",
+"Cambiar":"Змінити",
+"# veces lo que arriesga":"у # раза більше за ризик",
+"todavía no ha acertado ninguna":"поки жодної вдалої",
 "sobre $# que puso":"на вкладені $#",
 /* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
 "#% al abrir y al cerrar":"#% під час відкриття й закриття",
@@ -35068,6 +35488,11 @@ DIC.uk={
 };
 /* BAHASA INDONESIA · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.id={
+"al precio de ahora":"dengan harga saat ini",
+"Cartera":"Saldo",
+"Cambiar":"Ubah",
+"# veces lo que arriesga":"# kali dari risikonya",
+"todavía no ha acertado ninguna":"belum ada yang berhasil",
 "sobre $# que puso":"dari modal $#",
 /* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
 "#% al abrir y al cerrar":"#% saat membuka dan menutup",
@@ -37152,6 +37577,11 @@ DIC.id={
 };
 /* TIẾNG VIỆT · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.vi={
+"al precio de ahora":"theo giá hiện tại",
+"Cartera":"Số dư",
+"Cambiar":"Đổi",
+"# veces lo que arriesga":"gấp # lần mức rủi ro",
+"todavía no ha acertado ninguna":"chưa thắng lệnh nào",
 "sobre $# que puso":"trên $# đã bỏ vào",
 /* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
 "#% al abrir y al cerrar":"#% khi mở và khi đóng lệnh",
@@ -39236,6 +39666,11 @@ DIC.vi={
 };
 /* हिन्दी · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.hi={
+"al precio de ahora":"अभी के भाव पर",
+"Cartera":"बैलेंस",
+"Cambiar":"बदलें",
+"# veces lo que arriesga":"जोखिम का # गुना",
+"todavía no ha acertado ninguna":"अभी तक कोई ट्रेड सफल नहीं हुआ",
 "sobre $# que puso":"लगाए $# पर",
 /* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
 "#% al abrir y al cerrar":"#% खोलते और बंद करते समय",
@@ -41320,6 +41755,11 @@ DIC.hi={
 };
 /* 日本語 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ja={
+"al precio de ahora":"現在の価格で",
+"Cartera":"残高",
+"Cambiar":"変更",
+"# veces lo que arriesga":"リスクの#倍",
+"todavía no ha acertado ninguna":"まだ勝ちはありません",
 "sobre $# que puso":"投入した $# に対して",
 /* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
 "#% al abrir y al cerrar":"#%（エントリー時と決済時）",
@@ -43404,6 +43844,11 @@ DIC.ja={
 };
 /* 한국어 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ko={
+"al precio de ahora":"현재 가격 기준",
+"Cartera":"잔고",
+"Cambiar":"변경",
+"# veces lo que arriesga":"리스크의 #배",
+"todavía no ha acertado ninguna":"아직 성공한 거래 없음",
 "sobre $# que puso":"투입한 $# 대비",
 /* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
 "#% al abrir y al cerrar":"#% (진입 시와 종료 시)",
@@ -45488,6 +45933,11 @@ DIC.ko={
 };
 /* 中文（简体） · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.zh={
+"al precio de ahora":"按当前价格",
+"Cartera":"余额",
+"Cambiar":"更改",
+"# veces lo que arriesga":"是风险的 # 倍",
+"todavía no ha acertado ninguna":"还没有盈利的交易",
 "sobre $# que puso":"基于投入的 $#",
 /* v41 · borrar la cuenta, las comisiones de la prueba y la comisión al editar */
 "#% al abrir y al cerrar":"#%（开仓和平仓时）",
