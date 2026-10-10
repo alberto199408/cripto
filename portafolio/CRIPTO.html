@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="48">
+<meta name="v" content="49">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -1822,8 +1822,7 @@ body.conCerrojo #aviso{z-index:10001}
   .encab .der,.encab .der .pulso{min-width:0;max-width:100%;box-sizing:border-box}
   .encab .der .pulso .pulsoX{flex:0 1 auto;white-space:normal;overflow:visible;line-height:1.25}
   .encab .der .pulso{border-radius:16px} }
-/* v48 · tarjetas de cifras (modelo G, panel teñido): misma receta que .caja/.hero; un solo acento (--vac*), verde/rojo solo para ganancia/pérdida. Solo teléfono */
-@media(max-width:900px){
+/* v48 · tarjetas de cifras (modelo G, panel teñido): misma receta que .caja/.hero; un solo acento (--vac*), verde/rojo solo para ganancia/pérdida. Teléfono y PC; esquinas nunca menos de 16 px aunque la perilla "Esquinas redondeadas" esté baja */
 .met.p1,.met.p2,.met.p3,.met.p4,.met.p5,.met.p6,.met{--c:var(--vac);--cF:var(--vacF);--cInk:var(--vacInk)}
 .met.gana{--c:var(--upG);--cF:var(--upF);--cInk:var(--upInk)}
 .met.pierde{--c:var(--dnG);--cF:var(--dnF);--cInk:var(--dnInk)}
@@ -1843,7 +1842,8 @@ body.conCerrojo #aviso{z-index:10001}
 .met{border:1px solid color-mix(in srgb,var(--c) 38%,var(--ln));
   background:linear-gradient(150deg,color-mix(in srgb,var(--c) 20%,var(--b1)),color-mix(in srgb,var(--c) 6%,var(--b1)) 70%);
   box-shadow:0 10px 26px rgba(0,0,0,.30), inset 0 1px 0 color-mix(in srgb,#fff 9%,transparent)}
-
+.met{border-radius:max(var(--rad),16px)}
+@media(max-width:900px){
   .mets>.met:last-child:nth-child(odd){display:grid!important;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"cab v" "s v";align-items:center;gap:0 10px;padding:7px 12px!important}
   .mets>.met:last-child:nth-child(odd) .cab{grid-area:cab;margin:0!important}
   .mets>.met:last-child:nth-child(odd) .v{grid-area:v;font-size:17px!important}
@@ -1901,7 +1901,7 @@ body.conCerrojo #aviso{z-index:10001}
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por su cuenta de Google.
    ===================================================================== */
-var VERSION="48";
+var VERSION="49";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
