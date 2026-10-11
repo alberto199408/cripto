@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="49">
+<meta name="v" content="50">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -1827,9 +1827,30 @@ body.conCerrojo #aviso{z-index:10001}
 .met.gana{--c:var(--upG);--cF:var(--upF);--cInk:var(--upInk)}
 .met.pierde{--c:var(--dnG);--cF:var(--dnF);--cInk:var(--dnInk)}
 .met::after{display:none}
-.met .cab .ico{width:28px;height:28px;border-radius:10px;color:var(--cInk);
-  background:linear-gradient(145deg,var(--c),var(--cF));
-  box-shadow:0 4px 12px color-mix(in srgb,var(--c) 42%,transparent)}
+/* v50 · COLORES DE LOS ICONOS (aquí y en ningún otro sitio). Cada tarjeta lleva el color de lo que mide, fijo
+   (no cambia con la pantalla ni con ganar/perder); el cuadro conserva el color de la pantalla. Sin verde ni rojo:
+   esos son solo para ganancia/pérdida. Qué color lleva cada tarjeta: tabla COL_ICO en la función met(). */
+:root{--i1:#4C8DFF;--i1F:#2F6BEA;--i1K:#05122E;--i2:#22C3EE;--i2F:#0FA3CC;--i2K:#032430;--i3:#F5A524;--i3F:#E08A0A;--i3K:#2B1800;--i4:#A66BFF;--i4F:#8447F0;--i4K:#1B0A3A;--i5:#F0559E;--i5F:#D93A86;--i5K:#33081D;--i6:#B7C3D6;--i6F:#93A3BB;--i6K:#101826;--i7:#2DD4BF;--i7F:#14B8A6;--i7K:#032925;--i8:#FB923C;--i8F:#EA7316;--i8K:#2A1100;}
+.met{--ic:var(--vac);--icF:var(--vacF);--icInk:var(--vacInk)}
+.met.i1{--ic:var(--i1);--icF:var(--i1F);--icInk:var(--i1K)}
+.met.i2{--ic:var(--i2);--icF:var(--i2F);--icInk:var(--i2K)}
+.met.i3{--ic:var(--i3);--icF:var(--i3F);--icInk:var(--i3K)}
+.met.i4{--ic:var(--i4);--icF:var(--i4F);--icInk:var(--i4K)}
+.met.i5{--ic:var(--i5);--icF:var(--i5F);--icInk:var(--i5K)}
+.met.i6{--ic:var(--i6);--icF:var(--i6F);--icInk:var(--i6K)}
+.met .cab .ico{width:28px;height:28px;border-radius:10px;color:var(--icInk);
+  background:linear-gradient(145deg,var(--ic),var(--icF));
+  box-shadow:0 4px 12px color-mix(in srgb,var(--ic) 42%,transparent)}
+/* v50 · Ajustes: cada caja con el icono de un color distinto (se repiten cada 8 cajas) */
+body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+1)>h2 .ic{background:linear-gradient(145deg,var(--i1),var(--i1F));color:var(--i1K);box-shadow:0 4px 12px color-mix(in srgb,var(--i1) 42%,transparent)}
+body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+2)>h2 .ic{background:linear-gradient(145deg,var(--i2),var(--i2F));color:var(--i2K);box-shadow:0 4px 12px color-mix(in srgb,var(--i2) 42%,transparent)}
+body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+3)>h2 .ic{background:linear-gradient(145deg,var(--i3),var(--i3F));color:var(--i3K);box-shadow:0 4px 12px color-mix(in srgb,var(--i3) 42%,transparent)}
+body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+4)>h2 .ic{background:linear-gradient(145deg,var(--i4),var(--i4F));color:var(--i4K);box-shadow:0 4px 12px color-mix(in srgb,var(--i4) 42%,transparent)}
+body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+5)>h2 .ic{background:linear-gradient(145deg,var(--i5),var(--i5F));color:var(--i5K);box-shadow:0 4px 12px color-mix(in srgb,var(--i5) 42%,transparent)}
+body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+6)>h2 .ic{background:linear-gradient(145deg,var(--i6),var(--i6F));color:var(--i6K);box-shadow:0 4px 12px color-mix(in srgb,var(--i6) 42%,transparent)}
+body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+7)>h2 .ic{background:linear-gradient(145deg,var(--i7),var(--i7F));color:var(--i7K);box-shadow:0 4px 12px color-mix(in srgb,var(--i7) 42%,transparent)}
+body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+8)>h2 .ic{background:linear-gradient(145deg,var(--i8),var(--i8F));color:var(--i8K);box-shadow:0 4px 12px color-mix(in srgb,var(--i8) 42%,transparent)}
+
 .met .cab .ico svg{width:15px;height:15px}
 .met .cab span{color:var(--t2);font-weight:600}
 .met .v{color:var(--tx);text-shadow:none}
@@ -1901,7 +1922,7 @@ body.conCerrojo #aviso{z-index:10001}
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por su cuenta de Google.
    ===================================================================== */
-var VERSION="49";
+var VERSION="50";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -3361,8 +3382,9 @@ function refrescarVivos(){
       ponTexto(el, e.pctFlotNeto!=null?(pct(e.pctFlotNeto,1)+" del margen"):"", "gsub "+cl(e.pctFlotNeto));
     }
     else if(v==="futTot"){
-      var T=fut().tot;
-      ponTexto(el, (T.flotante>=0?"+":"−")+usdF(T.flotante).replace("-",""), cl(T.flotante));
+      /* v50 · con data-ab (Futuros y Backtesting) suma SOLO esas operaciones; sin él (Resumen) son los Futuros reales */
+      var flT = el.hasAttribute("data-ab") ? flotDe(el.getAttribute("data-ab")) : fut().tot.flotante;
+      ponTexto(el, (flT>=0?"+":"−")+usdF(flT).replace("-",""), cl(flT));
     }
     else if(v==="riel"){
       o=unaFut(id); if(!o) return;
@@ -3380,7 +3402,7 @@ function refrescarVivos(){
   document.querySelectorAll("[data-vmet]").forEach(function(el){
     var k=el.getAttribute("data-vmet"), x=null;
     if(k==="spotAb") x=spot().tot.abierto;
-    else if(k==="futFlot") x=fut().tot.flotante;
+    else if(k==="futFlot") x=el.hasAttribute("data-ab") ? flotDe(el.getAttribute("data-ab")) : fut().tot.flotante;
     if(x==null) return;
     var neutro=el.getAttribute("data-neutro")||"", quiere=Math.abs(x)<0.005?neutro:(x>0?"gana":"pierde");
     if(!quiere || el.classList.contains(quiere)) return;
@@ -5172,9 +5194,17 @@ document.addEventListener("click", function(ev){
 })();
 /* tarjeta de cifra: todas iguales; solo el signo del dinero lleva color.
    El último dato, "ir", hace que la tarjeta se pueda pulsar y lleve a lo que dice. */
+/* v50 · color del ICONO de cada tarjeta, según lo que mide (1 azul · 2 celeste · 3 ámbar · 4 violeta · 5 rosa).
+   Los colores en sí están en el CSS («COLORES DE LOS ICONOS»). */
+var COL_ICO={"Dinero que puso":1,"Operaciones acertadas":1,
+  "Vale hoy":2,"Abiertas: si cierra ahora":2,
+  "Ganancia si vende hoy":3,"Ganancia si cierra hoy":3,"Promedio por operación":3,
+  "Ya ganado en ventas":4,"Ya ganado al cerrar":4,"Ganancia promedio al acertar":4,
+  "Comisiones":5,"Comisiones pagadas":5};
 function met(ico, etiqueta, valor, clase, sub, color, serie, ir){
   var paleta = typeof color==="number" ? (" p"+(((color-1)%6)+1))
              : color==="gana" ? " gana" : color==="pierde" ? " pierde" : "";
+  if(COL_ICO[etiqueta]) paleta+=" i"+COL_ICO[etiqueta];
   var largo = String(valor).replace(/<[^>]*>/g,"").length;
   return '<div class="met'+paleta+(ir?" pulsa":"")+'"'+
     (ir?' data-met="'+esc(ir)+'" tabindex="0" role="button" title="Toque para ver el detalle"':'')+
@@ -6229,10 +6259,12 @@ function avisoVentasSinCompra(){
   }
   return h;
 }
-function alertaPrecios(){
+function alertaPrecios(amb){
   var vivas={};
   carteraSpot().lista.forEach(function(e){ if(e.cantidad>0) vivas[e.sym]=1; });
-  BD.fut.forEach(function(f){ if(f.sym&&f.estado==="abierta") vivas[String(f.sym).toUpperCase()]=1; });
+  /* v50 · en Backtesting solo cuentan las operaciones de la PRUEBA; los Futuros reales no se mezclan */
+  var lf = amb==="back" ? ambito("back").lista : BD.fut;
+  lf.forEach(function(f){ if(f.sym&&f.estado==="abierta") vivas[String(f.sym).toUpperCase()]=1; });
   var syms=Object.keys(vivas).filter(function(s){ return !esEstable(s); });
   var sin=syms.filter(function(s){ return precioDe(s)==null; });
   if(!sin.length) return "";
@@ -8317,7 +8349,7 @@ function pintarAmbito(k){
   FU.amb=k;
   if(!FU.fecha) FU.fecha=hoy();
   var F=carteraFut(A.lista), T=F.tot;
-  var h=alertaPrecios();
+  var h=alertaPrecios(k);
 
   /* ---- franja de riesgo ---- */
   var vacioFut = !A.lista.length;
@@ -8407,11 +8439,12 @@ function pintarAmbito(k){
                        : "lo que le cobró la casa de cambio en las "+T.n+" operaciones cerradas"))+
           (T.comisionAb>0 ? "<br>+ "+usdF(T.comisionAb)+" en las que tiene abiertas" : ""),
           5, null, "f:comisiones")+
-      (T.nAb?met(IC.mov,"Abiertas: si cierra ahora", '<span data-v="futTot" class="'+cl(T.flotante)+'">'+
+      (T.nAb?met(IC.mov,"Abiertas: si cierra ahora", '<span data-v="futTot" data-ab="'+esc(F.abiertas.map(function(e){ return e.f.id; }).join(","))+'" class="'+cl(T.flotante)+'">'+
           (T.flotante>=0?"+":"−")+usdF(T.flotante).replace("-","")+'</span>',"",
           plural(T.nAb,"operación abierta","operaciones abiertas")+" · con el precio de este momento"+
                  (T.enRiesgo?" · "+T.enRiesgo+" a punto de liquidar":""),
-          T.flotante>=0?"gana":"pierde", null, "#abiertasFut"):"")+
+          T.flotante>=0?"gana":"pierde", null, "#abiertasFut").replace('<div class="met','<div data-vmet="futFlot" data-ab="'+
+            esc(F.abiertas.map(function(e){ return e.f.id; }).join(","))+'" data-neutro="gana" class="met'):"")+
     '</div></div>';
 
   /* ---- programadas: esperando el precio, sin contar nada todavía ---- */
