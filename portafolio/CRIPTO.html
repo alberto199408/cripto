@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="50">
+<meta name="v" content="51">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -1922,7 +1922,7 @@ body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+8)>h2 .ic{background:linear-grad
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por su cuenta de Google.
    ===================================================================== */
-var VERSION="50";
+var VERSION="51";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -2770,6 +2770,15 @@ function precioDe(sym){
   if(esEstable(sym)) return 1;
   return null;
 }
+/* v51 · un precio sirve para cerrar una operación SOLA solo si es de hace poco
+   (menos de 10 minutos) o si lo escribió su dueño a mano. Un precio viejo que se quedó
+   guardado de otro día no debe cerrar nada. */
+function precioVigente(sym){
+  var p=BD.precios[String(sym||"").toUpperCase()];
+  if(!p||typeof p.p!=="number") return null;
+  if(p.mano||!p.t||Math.abs(Date.now()-p.t)<600000) return p.p;
+  return null;
+}
 function cambioDe(sym){
   var p=BD.precios[String(sym||"").toUpperCase()];
   return (p&&typeof p.ch==="number")?p.ch:null;
@@ -2782,6 +2791,7 @@ function ponerPrecioMano(sym,v){
   sym=String(sym).toUpperCase();
   BD.precios[sym]=Object.assign({},BD.precios[sym],{p:v,mano:true,t:Date.now()});
   guardar();
+  alEntrarPrecios();
 }
 function quitarPrecioMano(sym){
   sym=String(sym).toUpperCase();
@@ -3183,7 +3193,10 @@ function traerPrecios(silencioso, quieto, soloOtras){
     } else {
       PRE.otras=PRE.otras.filter(function(s){ return otras.indexOf(s)>=0||faltan.indexOf(s)>=0; });
     }
-    guardar(); PRE.cargando=false; pintarPulso(); if(!quieto) repintar(); else pedirRefresco();
+    guardar(); PRE.cargando=false; pintarPulso();
+    /* v51 · los precios llegaron: se mira el stop ANTES de repintar (este camino antes solo repintaba) */
+    alEntrarPrecios();
+    if(!quieto) repintar(); else pedirRefresco();
     if(!silencioso) aviso("Precios al día · "+plural(n,"moneda","monedas")+" desde "+(primera||ultima)+
       (faltan.length?" · sin precio: "+faltan.join(", "):"."));
   }).catch(function(e){
@@ -3252,7 +3265,9 @@ function pedirRefresco(){
   var espera=Math.max(0, 280-(Date.now()-REF.ultimo));
   setTimeout(function(){
     REF.pedido=false; REF.ultimo=Date.now();
-    try{ refrescarVivos(); }catch(e){}
+    try{ refrescarVivos(); }catch(e){ try{ console.error("refrescarVivos", e); }catch(e2){} }
+    /* v51 · vigilar el stop NO depende de que la pantalla se haya pintado bien */
+    alEntrarPrecios();
   }, espera);
 }
 function ponTexto(el, txt, clase){
@@ -3286,6 +3301,7 @@ function refrescarVivos(){
   document.querySelectorAll("[data-v]").forEach(function(el){
     var v=el.getAttribute("data-v"), s=el.getAttribute("data-s"), id=el.getAttribute("data-f");
     var pr, e, o;
+    if(v==="avisoCierre"){ el.style.display=autoActivo()?"none":""; return; }
     if(v==="pr"){ ponTexto(el, precio(precioDe(s))); }
     else if(v==="ch"){
       var c=cambioDe(s);
@@ -3414,8 +3430,8 @@ function refrescarVivos(){
   TIC={};
   try{ pintarPulso(); }catch(e){}
   try{ refrescarGrafica(); }catch(e){}
-  try{ vigilarCierres(); }catch(e){}
-  try{ vigilarAlertas(); }catch(e){}
+  /* v51 · vigilarCierres() y vigilarAlertas() ya NO se llaman desde aquí: se llaman
+     desde alEntrarPrecios(), que corre con CADA precio nuevo, venga por el camino que venga. */
 }
 function unaFut(id){
   var l=BD.fut.filter(function(x){ return x.id===id; })[0];
@@ -7910,6 +7926,7 @@ function engancharFranja(box, A){
     BD.ajustes.autoCierre=!autoActivo();
     guardar();
     sw.classList.toggle("on", autoActivo());
+    try{ pedirRefresco(); }catch(e){}            /* v51 · el aviso rojo de las operaciones abiertas se enciende/apaga al momento */
     if(autoActivo()){
       pedirPermisoAvisos();
       aviso("Listo: cuando el precio toque el stop o el objetivo, la operación se cierra sola aquí y le aviso.");
@@ -8488,12 +8505,25 @@ function pintarAmbito(k){
   c.innerHTML=h;
   engancharAmbito(c,A);
 }
+/* v51 · si el cierre automático está apagado, las operaciones abiertas NO se cierran solas aunque el
+   precio toque su stop o su objetivo, y antes la tarjeta no decía nada. Ahora lo dice en rojo, con
+   botón para encenderlo. Está siempre dibujado y se muestra u oculta solo (data-v="avisoCierre"). */
+function avisoCierreApagado(abiertas){
+  if(!abiertas||!abiertas.length) return "";
+  var hay=abiertas.some(function(e){ return e.sl!=null||e.tp!=null; });
+  if(!hay) return "";
+  return '<div class="cp" data-v="avisoCierre" style="padding-bottom:12px;display:'+(autoActivo()?"none":"block")+'">'+
+    '<div class="nota mal" style="margin:0">'+
+    'El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo. '+
+    '<button type="button" class="b sm" onclick="encenderAutomatico()">Encenderlo</button></div></div>';
+}
 /* las operaciones abiertas: la misma caja en el teléfono (arriba) y en la computadora (abajo) */
 function cajaAbiertas(F,k){
   if(!F.abiertas.length) return "";
   return '<div class="caja" id="abiertasFut"><h2><span class="ic">'+IC.fut+'</span>Operaciones abiertas'+
     '<span class="chip v">'+F.abiertas.length+'</span><span class="sp"></span>'+
     '<span class="envivo"><i></i>EN VIVO</span></h2>'+
+    avisoCierreApagado(F.abiertas)+
     tablaAbiertas(F.abiertas,k)+'<div class="soloTel cp" style="padding-top:0">'+
     F.abiertas.map(function(e){ return filaAbierta(e,k); }).join("")+'</div></div>';
 }
@@ -9439,9 +9469,24 @@ function encenderAutomatico(){
   aviso("Encendido: cuando el precio llegue, la operación se cierra sola y la venta se registra sola.");
 }
 
-var VIG_ultimo=0;
+var VIG_ultimo=0, VIG_t=null;
+/* v51 · EL STOP SE COMPRUEBA CON CADA PRECIO NUEVO, POR CUALQUIER CAMINO.
+   Luis (11 oct): el precio ya había pasado el stop y la operación seguía abierta.
+   Antes esto solo corría al final de refrescarVivos(), que solo se llamaba con el canal en
+   vivo de Binance y con el sondeo; el camino normal de traerPrecios() repintaba la pantalla
+   con el precio nuevo y no miraba el stop. Ahora todo camino de precio termina aquí. */
+function alEntrarPrecios(){
+  try{ vigilarCierres(); }catch(e){ try{ console.error("vigilarCierres", e); }catch(e2){} }
+  try{ vigilarAlertas(); }catch(e){ try{ console.error("vigilarAlertas", e); }catch(e2){} }
+}
 function vigilarCierres(){
-  if(Date.now()-VIG_ultimo<900) return;          /* con una vez por segundo basta */
+  /* con una vez por segundo basta; si llega otro precio antes, se deja una pasada pendiente
+     para que NUNCA se quede sin mirar el último precio */
+  var falta=900-(Date.now()-VIG_ultimo);
+  if(falta>0){
+    if(!VIG_t) VIG_t=setTimeout(function(){ VIG_t=null; try{ vigilarCierres(); }catch(e){} }, falta+30);
+    return;
+  }
   VIG_ultimo=Date.now();
   var hechas=[];
 
@@ -9452,7 +9497,7 @@ function vigilarCierres(){
     (par[1]||[]).forEach(function(f){
       if(f.estado!=="programada"||!f.sym) return;
       var ent=+f.entrada||0; if(!(ent>0)) return;
-      var pr=precioDe(f.sym); if(pr==null) return;
+      var pr=precioVigente(f.sym); if(pr==null) return;
       /* en un corto se espera que el precio SUBA a la entrada; en un largo, que BAJE */
       var llego = (f.lado==="SHORT") ? (pr>=ent) : (pr<=ent);
       if(!llego) return;
@@ -9467,9 +9512,9 @@ function vigilarCierres(){
 
   /* --- futuros y pruebas: cierre automático (esto sí depende del interruptor) --- */
   if(autoActivo()) [["fut",BD.fut],["back",BD.back]].forEach(function(par){
-    (par[1]||[]).forEach(function(f){
+    (par[1]||[]).forEach(function(f){ try{
       if(f.estado!=="abierta"||!f.sym) return;
-      var pr=precioDe(f.sym); if(pr==null) return;
+      var pr=precioVigente(f.sym); if(pr==null) return;
       var sl=(f.sl!=null&&f.sl!=="")?+f.sl:null, tp=(f.tp!=null&&f.tp!=="")?+f.tp:null;
       var toco=null;
       if(f.lado==="SHORT"){
@@ -9487,12 +9532,12 @@ function vigilarCierres(){
         : (st.gan>=0 ? "La operación N° "+(f.n||"")+" de "+f.sym+" se cerró sola en el objetivo ("+precio(toco.p)+"): ganó "+usdF(Math.abs(st.gan))+"."
                      : "La operación N° "+(f.n||"")+" de "+f.sym+" se cerró sola en el objetivo ("+precio(toco.p)+"): perdió "+usdF(Math.abs(st.gan))+".");
       hechas.push({tipo:par[0], texto:(par[0]==="back"?tr("Backtesting")+" · ":"")+tr(fr), bueno:st.gan>=0});
-    });
+    }catch(e){ try{ console.error("cierre automático", f&&f.id, e); }catch(e2){} } });   /* v51 · una operación rara no frena a las demás */
   });
 
   /* --- ventas programadas de spot (también con el interruptor puesto) --- */
   if(autoActivo()) (BD.ordenes||[]).slice().forEach(function(o){
-    var pr=precioDe(o.sym); if(pr==null) return;
+    var pr=precioVigente(o.sym); if(pr==null) return;
     var toca = o.dir==="baja" ? pr<=o.precio : pr>=o.precio;
     if(!toca) return;
     var e=estadoDe(o.sym);
@@ -11194,6 +11239,7 @@ function pintarRes(){
       '<span class="chip v">'+F.abiertas.length+'</span><span class="sp"></span>'+
       '<span class="envivo"><i></i>EN VIVO</span>'+
       '<button class="b sm" onclick="irA(\'fut\')">Ver futuros</button></h2>'+
+      avisoCierreApagado(F.abiertas)+
       tablaAbiertas(F.abiertas,"fut")+
       '<div class="soloTel cp" style="padding-top:0">'+
       F.abiertas.map(function(e){ return filaAbierta(e,"fut"); }).join("")+'</div></div>';
@@ -15297,8 +15343,11 @@ function arrancar(){
   anotarHistTot();
   setInterval(function(){ anotarHistTot(); guardar(); }, 60000);
   setInterval(function(){ try{ refrescarGrafica(); }catch(e){} }, 30000);
+  /* v51 · red de seguridad: cada 5 s se mira el stop con el último precio vigente, pase lo que pase */
+  setInterval(alEntrarPrecios, 5000);
   document.addEventListener("visibilitychange", function(){
     if(!document.hidden){
+      alEntrarPrecios();
       conectarVivo();
       if(PRE.ultimo && Date.now()-PRE.ultimo>120000) traerPrecios(true);
     }
@@ -16586,6 +16635,7 @@ function engancharIdioma(box){
    Se respeta el orden de los huecos tal como salen en español.
    ===================================================================== */
 DIC.en={
+"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"Automatic closing is off: no trade closes by itself even if the price touches its stop or its target.",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Profit goal $# · #% there · $# to go",
 "Meta de ganancia $# · #% · va en −$#":"Profit goal $# · #% · you are at −$#",
 "Meta de ganancia (@)":"Profit goal (@)",
@@ -18439,6 +18489,7 @@ DIC.en={
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
+"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"O fechamento automático está desligado: nenhuma operação fecha sozinha, mesmo que o preço toque o stop ou o alvo.",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Meta de lucro $# · já atingiu #% · faltam $#",
 "Meta de ganancia $# · #% · va en −$#":"Meta de lucro $# · #% · está em −$#",
 "Meta de ganancia (@)":"Meta de lucro (@)",
@@ -20285,6 +20336,7 @@ DIC.pt={
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
+"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"La clôture automatique est désactivée : aucune opération ne se ferme toute seule, même si le prix touche son stop ou son objectif.",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Objectif de gain $# · #% atteint · il vous manque $#",
 "Meta de ganancia $# · #% · va en −$#":"Objectif de gain $# · #% · vous êtes à −$#",
 "Meta de ganancia (@)":"Objectif de gain (@)",
@@ -22131,6 +22183,7 @@ DIC.fr={
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
+"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"Das automatische Schließen ist aus: Kein Trade wird von selbst geschlossen, auch wenn der Preis seinen Stopp oder sein Ziel erreicht.",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Gewinnziel $# · #% erreicht · es fehlen $#",
 "Meta de ganancia $# · #% · va en −$#":"Gewinnziel $# · #% · Sie liegen bei −$#",
 "Meta de ganancia (@)":"Gewinnziel (@)",
@@ -23977,6 +24030,7 @@ DIC.de={
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
+"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"La chiusura automatica è spenta: nessuna operazione si chiude da sola anche se il prezzo tocca lo stop o l'obiettivo.",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Obiettivo di guadagno $# · è al #% · le mancano $#",
 "Meta de ganancia $# · #% · va en −$#":"Obiettivo di guadagno $# · #% · è a −$#",
 "Meta de ganancia (@)":"Obiettivo di guadagno (@)",
@@ -25823,6 +25877,7 @@ DIC.it={
 };
 /* NEDERLANDS · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.nl={
+"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"Automatisch sluiten staat uit: geen enkele trade sluit vanzelf, ook niet als de prijs de stop of het doel raakt.",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Winstdoel $# · #% bereikt · nog $# te gaan",
 "Meta de ganancia $# · #% · va en −$#":"Winstdoel $# · #% · u staat op −$#",
 "Meta de ganancia (@)":"Winstdoel (@)",
@@ -27955,6 +28010,7 @@ DIC.nl={
 };
 /* POLSKI · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.pl={
+"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"Automatyczne zamykanie jest wyłączone: żadna pozycja nie zamknie się sama, nawet gdy cena dotknie stopu lub celu.",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Cel zysku $# · osiągnięto #% · brakuje $#",
 "Meta de ganancia $# · #% · va en −$#":"Cel zysku $# · #% · jest na −$#",
 "Meta de ganancia (@)":"Cel zysku (@)",
@@ -30087,6 +30143,7 @@ DIC.pl={
 };
 /* TÜRKÇE · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.tr={
+"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"Otomatik kapatma kapalı: fiyat stop'a veya hedefe dokunsa bile hiçbir işlem kendiliğinden kapanmaz.",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Kâr hedefi $# · #% tamamlandı · kalan $#",
 "Meta de ganancia $# · #% · va en −$#":"Kâr hedefi $# · #% · şu an −$#",
 "Meta de ganancia (@)":"Kâr hedefi (@)",
@@ -32219,6 +32276,7 @@ DIC.tr={
 };
 /* РУССКИЙ · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ru={
+"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"Автоматическое закрытие выключено: ни одна сделка не закроется сама, даже если цена коснётся стопа или цели.",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Цель по прибыли $# · пройдено #% · осталось $#",
 "Meta de ganancia $# · #% · va en −$#":"Цель по прибыли $# · #% · сейчас −$#",
 "Meta de ganancia (@)":"Цель по прибыли (@)",
@@ -34351,6 +34409,7 @@ DIC.ru={
 };
 /* УКРАЇНСЬКА · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.uk={
+"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"Автоматичне закриття вимкнено: жодна угода не закриється сама, навіть якщо ціна торкнеться стопу або цілі.",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Ціль із прибутку $# · виконано #% · залишилося $#",
 "Meta de ganancia $# · #% · va en −$#":"Ціль із прибутку $# · #% · зараз −$#",
 "Meta de ganancia (@)":"Ціль із прибутку (@)",
@@ -36483,6 +36542,7 @@ DIC.uk={
 };
 /* BAHASA INDONESIA · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.id={
+"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"Penutupan otomatis mati: tidak ada posisi yang tertutup sendiri meskipun harga menyentuh stop atau targetnya.",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Target keuntungan $# · tercapai #% · kurang $#",
 "Meta de ganancia $# · #% · va en −$#":"Target keuntungan $# · #% · saat ini −$#",
 "Meta de ganancia (@)":"Target keuntungan (@)",
@@ -38615,6 +38675,7 @@ DIC.id={
 };
 /* TIẾNG VIỆT · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.vi={
+"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"Tính năng tự đóng đang tắt: không lệnh nào tự đóng dù giá chạm mức dừng lỗ hoặc mục tiêu.",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Mục tiêu lãi $# · đạt #% · còn thiếu $#",
 "Meta de ganancia $# · #% · va en −$#":"Mục tiêu lãi $# · #% · hiện đang −$#",
 "Meta de ganancia (@)":"Mục tiêu lãi (@)",
@@ -40747,6 +40808,7 @@ DIC.vi={
 };
 /* हिन्दी · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.hi={
+"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"ऑटोमैटिक क्लोज़िंग बंद है: कीमत स्टॉप या लक्ष्य को छू ले, तब भी कोई ट्रेड अपने-आप बंद नहीं होगा।",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"मुनाफ़े का लक्ष्य $# · #% पूरा · $# बाकी",
 "Meta de ganancia $# · #% · va en −$#":"मुनाफ़े का लक्ष्य $# · #% · अभी −$# पर",
 "Meta de ganancia (@)":"मुनाफ़े का लक्ष्य (@)",
@@ -42879,6 +42941,7 @@ DIC.hi={
 };
 /* 日本語 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ja={
+"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"自動クローズはオフです。価格がストップや目標に触れても、どのトレードも自動では閉じません。",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"利益目標 $# · #%達成 · あと$#",
 "Meta de ganancia $# · #% · va en −$#":"利益目標 $# · #% · 現在 −$#",
 "Meta de ganancia (@)":"利益目標 (@)",
@@ -45011,6 +45074,7 @@ DIC.ja={
 };
 /* 한국어 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ko={
+"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"자동 청산이 꺼져 있습니다. 가격이 스톱이나 목표에 닿아도 어떤 거래도 저절로 닫히지 않습니다.",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"수익 목표 $# · #% 달성 · $# 남음",
 "Meta de ganancia $# · #% · va en −$#":"수익 목표 $# · #% · 현재 −$#",
 "Meta de ganancia (@)":"수익 목표 (@)",
@@ -47143,6 +47207,7 @@ DIC.ko={
 };
 /* 中文（简体） · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.zh={
+"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"自动平仓已关闭：即使价格触及止损或目标，也不会有任何交易自动平仓。",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"盈利目标 $# · 已完成#% · 还差 $#",
 "Meta de ganancia $# · #% · va en −$#":"盈利目标 $# · #% · 目前 −$#",
 "Meta de ganancia (@)":"盈利目标 (@)",
