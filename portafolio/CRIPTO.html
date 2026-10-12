@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="51">
+<meta name="v" content="53">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -816,6 +816,14 @@ a:hover{color:var(--ac2)}
 .lg.verGraf:active{transform:scale(.95)}
 .mv.compra{border-left:3px solid var(--up)}
 .mv.venta{border-left:3px solid var(--dn)}
+.mv.venta.tp{border-left-color:var(--up)}
+.ordBtns{display:flex;gap:8px;margin-bottom:10px}.ordBtns .b{flex:1;justify-content:center}
+.mv.venta.cp2{border-left-color:var(--ac)}
+.mv.venta .l0.ac{color:var(--acTx)}
+.mv.venta .l0{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:2px}
+.mv.venta .l0.up{color:var(--upTx)}.mv.venta .l0.dn{color:var(--dnTx)}
+.campo label.up{color:var(--upTx)}.campo label.dn{color:var(--dnTx)}
+.nota .ojoL{margin-top:2px}.nota .up{color:var(--upTx)}.nota .dn{color:var(--dnTx)}
 .mv.fut{border-left:3px solid var(--ac)}
 .mv .fh{text-align:center;flex:none;min-width:50px;padding:5px 7px;border-radius:9px;background:var(--b2)}
 .mv .fh b{display:block;font-size:16px;font-weight:700;line-height:1}
@@ -1922,7 +1930,7 @@ body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+8)>h2 .ic{background:linear-grad
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por su cuenta de Google.
    ===================================================================== */
-var VERSION="51";
+var VERSION="53";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -2758,6 +2766,7 @@ function simbolos(){
   BD.fut.forEach(function(f){ if(f.sym) s[String(f.sym).toUpperCase()]=1; });
   BD.back.forEach(function(f){ if(f.sym) s[String(f.sym).toUpperCase()]=1; });
   (BD.alertas||[]).forEach(function(a){ if(a.sym) s[String(a.sym).toUpperCase()]=1; });
+  (BD.ordenes||[]).forEach(function(o){ if(o.sym) s[String(o.sym).toUpperCase()]=1; });   /* v53 · también las de compras programadas */
   if(typeof MIRANDO==="string" && MIRANDO) s[MIRANDO]=1;   /* la del formulario abierto */
   return Object.keys(s);
 }
@@ -3301,7 +3310,6 @@ function refrescarVivos(){
   document.querySelectorAll("[data-v]").forEach(function(el){
     var v=el.getAttribute("data-v"), s=el.getAttribute("data-s"), id=el.getAttribute("data-f");
     var pr, e, o;
-    if(v==="avisoCierre"){ el.style.display=autoActivo()?"none":""; return; }
     if(v==="pr"){ ponTexto(el, precio(precioDe(s))); }
     else if(v==="ch"){
       var c=cambioDe(s);
@@ -5958,7 +5966,7 @@ function pintarSpot(){
   }
 
   /* ---- ventas programadas, historial, USDT y reparto ---- */
-  if(vivas.length||(BD.ordenes||[]).length) h+=cajaOrdenes();
+  h+=cajaOrdenes();   /* v53 · siempre: también sirve para programar una compra sin tener nada */
   h+=historialSpot();
   h+='<div class="inf">';
   var conP=vivas.filter(function(e){ return e.abiertoPct!=null; })
@@ -7854,8 +7862,6 @@ function franjaRiesgo(A){
     '<div class="fr frCom"><span>'+"Comisión: "+pctCorto(c.com)+" del tamaño (su dinero × "+(+c.apal||1)+
       "), al abrir y otra vez al cerrar."+'</span> '+
       '<span>Si la deja abierta varias horas, se suma la financiación (funding).</span></div>'+
-    '<div class="sw'+(autoActivo()?" on":"")+'" id="frAuto" title="Cuando el precio en vivo toque el stop o el objetivo, la operación se cierra sola en este registro">'+
-      '<i></i><span>Cerrar sola cuando el precio toque el stop o el objetivo</span></div>'+
   '</div>';
 }
 /* v46 · en el teléfono, los ajustes de riesgo caben en UNA línea que se abre con un toque */
@@ -7921,18 +7927,6 @@ function engancharFranja(box, A){
   if(cq) cq.onclick=function(){ hojaComision(A); };
   var sel=box.querySelector("#frPrueba");
   if(sel) sel.onchange=function(){ BD.ajustes.prueba=this.value; guardar(); pintarBack(); };
-  var sw=box.querySelector("#frAuto");
-  if(sw) sw.onclick=function(){
-    BD.ajustes.autoCierre=!autoActivo();
-    guardar();
-    sw.classList.toggle("on", autoActivo());
-    try{ pedirRefresco(); }catch(e){}            /* v51 · el aviso rojo de las operaciones abiertas se enciende/apaga al momento */
-    if(autoActivo()){
-      pedirPermisoAvisos();
-      aviso("Listo: cuando el precio toque el stop o el objetivo, la operación se cierra sola aquí y le aviso.");
-      vigilarCierres();
-    } else aviso("Apagado: ni las operaciones se cierran solas, ni las ventas programadas de spot se registran solas. Todo lo tendrá que hacer usted.");
-  };
 }
 
 /* ---------------------------------------------------------------------
@@ -8505,25 +8499,12 @@ function pintarAmbito(k){
   c.innerHTML=h;
   engancharAmbito(c,A);
 }
-/* v51 · si el cierre automático está apagado, las operaciones abiertas NO se cierran solas aunque el
-   precio toque su stop o su objetivo, y antes la tarjeta no decía nada. Ahora lo dice en rojo, con
-   botón para encenderlo. Está siempre dibujado y se muestra u oculta solo (data-v="avisoCierre"). */
-function avisoCierreApagado(abiertas){
-  if(!abiertas||!abiertas.length) return "";
-  var hay=abiertas.some(function(e){ return e.sl!=null||e.tp!=null; });
-  if(!hay) return "";
-  return '<div class="cp" data-v="avisoCierre" style="padding-bottom:12px;display:'+(autoActivo()?"none":"block")+'">'+
-    '<div class="nota mal" style="margin:0">'+
-    'El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo. '+
-    '<button type="button" class="b sm" onclick="encenderAutomatico()">Encenderlo</button></div></div>';
-}
 /* las operaciones abiertas: la misma caja en el teléfono (arriba) y en la computadora (abajo) */
 function cajaAbiertas(F,k){
   if(!F.abiertas.length) return "";
   return '<div class="caja" id="abiertasFut"><h2><span class="ic">'+IC.fut+'</span>Operaciones abiertas'+
     '<span class="chip v">'+F.abiertas.length+'</span><span class="sp"></span>'+
     '<span class="envivo"><i></i>EN VIVO</span></h2>'+
-    avisoCierreApagado(F.abiertas)+
     tablaAbiertas(F.abiertas,k)+'<div class="soloTel cp" style="padding-top:0">'+
     F.abiertas.map(function(e){ return filaAbierta(e,k); }).join("")+'</div></div>';
 }
@@ -9013,6 +8994,8 @@ function guardarOperacion(A){
   }
   if(sal!=null&&sal<=0){ aviso("El precio de salida debe ser mayor que cero, o déjelo vacío.",true); return; }
   var esperando = sal==null && yaEntro()==="no";
+  /* v52 · el cierre automático avisa con sonido y notificación: se pide el permiso una vez (antes lo pedía el interruptor) */
+  try{ pedirPermisoAvisos(); }catch(e){}
   var lista=A.lista;
   var n=lista.reduce(function(m,x){ return Math.max(m,+x.n||0); },0)+1;
   var o={ id:idNuevo(), n:n, sym:String(FU.sym).toUpperCase(), lado:FU.lado,
@@ -9459,15 +9442,10 @@ function compararPruebas(){
    En los dos casos suena, avisa en pantalla y manda una notificación.
    (El programa no toca su cuenta de Binance: eso lo hace usted allá.)
    ===================================================================== */
-function autoActivo(){ return BD.ajustes.autoCierre!==false; }
-/* el mismo interruptor de Futuros, encendido desde la caja de ventas de spot */
-function encenderAutomatico(){
-  BD.ajustes.autoCierre=true; guardar();
-  try{ pedirPermisoAvisos(); }catch(e){}
-  try{ vigilarCierres(); }catch(e){}
-  try{ repintar(); }catch(e){}
-  aviso("Encendido: cuando el precio llegue, la operación se cierra sola y la venta se registra sola.");
-}
+/* v52 · YA NO HAY INTERRUPTOR. Luis (11 oct): «si uno pone el stop loss y el take profit, tiene que
+   cerrarse de forma automática, sin preguntar». El cierre automático está SIEMPRE encendido: el stop y el
+   objetivo de Futuros y Backtesting, y las ventas programadas de spot. Cerrar a mano (botón «Cerrar»)
+   funciona igual que siempre. Un valor viejo «autoCierre:false» que haya quedado guardado se ignora. */
 
 var VIG_ultimo=0, VIG_t=null;
 /* v51 · EL STOP SE COMPRUEBA CON CADA PRECIO NUEVO, POR CUALQUIER CAMINO.
@@ -9492,7 +9470,7 @@ function vigilarCierres(){
 
   /* --- operaciones PROGRAMADAS: se activan solas cuando el precio llega
          a la entrada. Hasta ese momento no ganan ni pierden nada.
-         Esto pasa siempre, aunque el cierre automático esté apagado. --- */
+         Esto pasa siempre. --- */
   [["fut",BD.fut],["back",BD.back]].forEach(function(par){
     (par[1]||[]).forEach(function(f){
       if(f.estado!=="programada"||!f.sym) return;
@@ -9510,8 +9488,8 @@ function vigilarCierres(){
     });
   });
 
-  /* --- futuros y pruebas: cierre automático (esto sí depende del interruptor) --- */
-  if(autoActivo()) [["fut",BD.fut],["back",BD.back]].forEach(function(par){
+  /* --- futuros y pruebas: cierre automático (siempre encendido) --- */
+  [["fut",BD.fut],["back",BD.back]].forEach(function(par){
     (par[1]||[]).forEach(function(f){ try{
       if(f.estado!=="abierta"||!f.sym) return;
       var pr=precioVigente(f.sym); if(pr==null) return;
@@ -9535,27 +9513,55 @@ function vigilarCierres(){
     }catch(e){ try{ console.error("cierre automático", f&&f.id, e); }catch(e2){} } });   /* v51 · una operación rara no frena a las demás */
   });
 
-  /* --- ventas programadas de spot (también con el interruptor puesto) --- */
-  if(autoActivo()) (BD.ordenes||[]).slice().forEach(function(o){
+  /* --- ventas programadas de spot (take profit y stop loss) · siempre encendido ---
+     v53 · «sube» solo se cumple cuando el precio llega A ESE PRECIO O MÁS, y «baja»
+     cuando llega A ESE PRECIO O MENOS. La dirección ya no la elige el usuario: la
+     fija el programa al dejar la orden según el precio de ese momento. */
+  (BD.ordenes||[]).slice().forEach(function(o){
+    if(!(BD.ordenes||[]).some(function(x){ return x.id===o.id; })) return;   /* otra la canceló en esta vuelta */
     var pr=precioVigente(o.sym); if(pr==null) return;
     var toca = o.dir==="baja" ? pr<=o.precio : pr>=o.precio;
     if(!toca) return;
+    var esCompra = o.lado==="compra";
     var e=estadoDe(o.sym);
-    var c=Math.min(+o.cant||0, e.cantidad);
-    anotarBorrado(o.id, o.mod);
-    BD.ordenes=BD.ordenes.filter(function(x){ return x.id!==o.id; });
+    var c=esCompra ? (+o.cant||0) : Math.min(+o.cant||0, e.cantidad);
+    var etq = o.dir==="baja" ? "stop loss" : "take profit";
+    /* la hermana (take profit ↔ stop loss de la misma venta) se cancela sola */
+    var quitar=BD.ordenes.filter(function(x){ return x.id===o.id || x.id===o.par || (x.par&&x.par===o.id); });
+    quitar.forEach(function(x){ anotarBorrado(x.id, x.mod); });
+    BD.ordenes=BD.ordenes.filter(function(x){ return quitar.indexOf(x)<0; });
+    if(esCompra){
+      /* compra programada: se hace al precio puesto, si en spot hay el dinero */
+      var coste=c*o.precio+(+o.com||0), hay=efectivoDet0().total;
+      if(!(c>0) || coste>hay+0.005){
+        hechas.push({tipo:"spot", texto:"La compra programada de "+o.sym+" no se hizo: no había dinero suficiente en spot", bueno:false});
+        return;
+      }
+      BD.ops.push({id:idNuevo(), sym:o.sym, tipo:"compra", cant:c, precio:o.precio, com:+o.com||0,
+        fecha:hoy(), nota:"compra programada · se cumplió a las "+horaYa(),
+        casa:casaGlobal(), auto:true, mod:ahoraReal()});
+      hechas.push({tipo:"spot", texto:tr("Se compraron "+cant(c)+" "+o.sym+" a "+precio(o.precio)+" (compra programada)."), bueno:true});
+      return;
+    }
     if(!(c>0)){
       hechas.push({tipo:"spot", texto:"La venta programada de "+o.sym+" no se hizo: ya no tenía monedas", bueno:false});
       return;
     }
     var prom=e.promedio||0;
     BD.ops.push({id:idNuevo(), sym:o.sym, tipo:"venta", cant:c, precio:o.precio, com:+o.com||0,
-      fecha:hoy(), nota:"venta programada · se cumplió a las "+horaYa(),
+      fecha:hoy(), nota:etq+" · se cumplió a las "+horaYa(),
       casa:casaGlobal(), auto:true, mod:ahoraReal()});
+    /* lo que sobre de otras ventas de esta moneda no puede pasar de lo que queda */
+    var queda=Math.max(0, e.cantidad-c);
+    BD.ordenes.slice().forEach(function(x){
+      if(x.sym!==o.sym || x.lado==="compra") return;
+      if(queda<=1e-9){ anotarBorrado(x.id, x.mod); BD.ordenes=BD.ordenes.filter(function(y){ return y!==x; }); }
+      else if(+x.cant>queda+1e-9){ x.cant=queda; tocar(x); }
+    });
     var g=(o.precio-prom)*c-(+o.com||0);
     hechas.push({tipo:"spot", texto:tr(g>=0
-        ? "Se vendieron "+cant(c)+" "+o.sym+" a "+precio(o.precio)+" (venta programada): ganó "+usd(Math.abs(g))+"."
-        : "Se vendieron "+cant(c)+" "+o.sym+" a "+precio(o.precio)+" (venta programada): perdió "+usd(Math.abs(g))+"."),
+        ? "Se vendieron "+cant(c)+" "+o.sym+" a "+precio(o.precio)+" ("+etq+"): ganó "+usd(Math.abs(g))+"."
+        : "Se vendieron "+cant(c)+" "+o.sym+" a "+precio(o.precio)+" ("+etq+"): perdió "+usd(Math.abs(g))+"."),
       bueno:g>=0});
   });
 
@@ -9619,39 +9625,39 @@ function programarVenta(symIni){
   if(!vivas.length){ aviso("No tiene monedas para programar una venta.",true); return; }
   var sym=symIni&&vivas.some(function(e){ return e.sym===symIni; })?symIni:vivas[0].sym;
   MIRANDO=sym;
+  /* v53 · YA NO SE ELIGE «SUBA A / BAJE A». Ese selector era una trampa:
+     con «BAJE A» y un precio MÁS ALTO que el de ahora (ahora $1.50, puso $10)
+     la orden se daba por cumplida y vendía al instante a $10.
+     Ahora hay dos casillas con nombre propio y cada una solo puede
+     significar una cosa:
+       · Take profit = vender cuando SUBA a ese precio (tiene que estar POR ENCIMA del de ahora)
+       · Stop loss   = vender cuando BAJE a ese precio (tiene que estar POR DEBAJO del de ahora)
+     Se puede dejar una sola o las dos; si salta una, la otra se cancela sola. */
   abrir('<div class="hoja venta"><div class="hh">'+icono(sym,28)+
     '<h3>Programar una venta</h3><button class="x" data-cerrar>×</button></div><div class="hb">'+
     '<div class="campos">'+
       '<div class="campo ancho"><label>Moneda</label><select id="ovS">'+vivas.map(function(e){
         return '<option value="'+esc(e.sym)+'"'+(e.sym===sym?" selected":"")+'>'+esc(e.sym)+
           ' · tiene '+cant(e.cantidad)+'</option>'; }).join("")+'</select></div>'+
-      '<div class="campo ancho"><label>Vender cuando el precio</label>'+
-        '<div class="pill" id="ovD"><button data-d="sube" class="on v">SUBA A</button>'+
-        '<button data-d="baja">BAJE A</button></div></div>'+
-      '<div class="campo"><label>Ese precio</label><input id="ovP" inputmode="decimal" placeholder="'+
-        esc(ejemploPrecio(sym,1.05))+'"></div>'+
-      '<div class="campo"><label>Cuántas monedas</label><input id="ovC" inputmode="decimal">'+
+      '<div class="campo ancho"><label>Cuántas monedas</label><input id="ovC" inputmode="decimal">'+
         '<div class="rapidos">'+[25,50,75,100].map(function(p){
           return '<button type="button" data-rp="'+p+'">'+(p===100?"TODO":p+"%")+'</button>'; }).join("")+
         '</div></div>'+
-      '<div class="campo"><label>Comisión (USD, opcional)</label><input id="ovK" inputmode="decimal" placeholder="sin comisión"></div>'+
+      '<div class="campo"><label class="up">Take profit: vender si SUBE a</label><input id="ovT" inputmode="decimal"></div>'+
+      '<div class="campo"><label class="dn">Stop loss: vender si BAJA a</label><input id="ovL" inputmode="decimal"></div>'+
+      '<div class="campo ancho"><label>Comisión (USD, opcional)</label><input id="ovK" inputmode="decimal" placeholder="sin comisión"></div>'+
     '</div>'+
-    '<div class="nota" id="ovR">Cuando el precio en vivo llegue ahí, la venta queda registrada sola '+
-    'en este programa, le suena y le avisa. La orden de verdad la pone usted en su casa de cambio.</div>'+
+    '<div class="nota" id="ovR"></div>'+
+    '<div class="mut" style="font-size:12px;margin-top:8px">¿Ya la vendió? Anótela con «Vender» o «Registrar operación»: ahí vale cualquier precio, porque ya pasó.</div>'+
     '</div><div class="hf"><button class="b" data-cerrar>Cancelar</button>'+
     '<button class="b rj" id="ovOk">Dejar programada</button></div></div>',
   function(M){
-    var dir="sube";
     function e(){ return estadoDe(M.querySelector("#ovS").value); }
-    M.querySelectorAll("#ovD button").forEach(function(b){
-      b.onclick=function(){
-        dir=b.getAttribute("data-d");
-        M.querySelectorAll("#ovD button").forEach(function(x){
-          var d=x.getAttribute("data-d"); x.className = d===dir?("on "+(d==="baja"?"r":"v")):"";
-        });
-        rec();
-      };
-    });
+    function ponerEjemplos(){
+      var s=M.querySelector("#ovS").value;
+      M.querySelector("#ovT").setAttribute("placeholder", ejemploPrecio(s,1.1));
+      M.querySelector("#ovL").setAttribute("placeholder", ejemploPrecio(s,0.9));
+    }
     M.querySelectorAll("[data-rp]").forEach(function(b){
       b.onclick=function(){
         var p=+b.getAttribute("data-rp"), ee=e();
@@ -9660,46 +9666,200 @@ function programarVenta(symIni){
         rec();
       };
     });
-    function rec(){
-      var ee=e(), p=num(M.querySelector("#ovP").value), c=num(M.querySelector("#ovC").value);
-      var r=M.querySelector("#ovR"), ac=precioDe(ee.sym);
-      if(p==null||c==null){ r.className="nota"; r.innerHTML="Escriba el precio y cuántas monedas."+
-        (ac!=null?" "+esc(ee.sym)+" está ahora en <b>"+precio(ac)+"</b>.":""); return; }
-      var avisos=[];
-      if(c>ee.cantidad+1e-9) avisos.push("solo tiene "+cant(ee.cantidad)+" "+ee.sym);
-      if(ac!=null && ((dir==="sube"&&p<=ac)||(dir==="baja"&&p>=ac)))
-        avisos.push("ese precio ya se cumple ahora mismo: se vendería de inmediato");
-      var g=ee.promedio!=null?(p-ee.promedio)*c:null;
-      r.className=avisos.length?"nota ojo":"nota";
-      r.innerHTML=(avisos.length?"<b>OJO:</b> "+avisos.join(" · ")+"<br>":"")+
-        "Recibiría <b>"+usd(c*p)+"</b>"+(g!=null?" · "+(g>=0?"ganaría <b class='up'>":"perdería <b class='dn'>")+
-        usd(Math.abs(g))+"</b> contra su promedio de "+precio(ee.promedio):"")+
-        (ac!=null?" · está a <b>"+pct((p-ac)/ac*100,1)+"</b> del precio de ahora":"");
+    /* los errores de precio se calculan en UN solo sitio: los usan el aviso en
+       vivo de la hoja y el botón de dejar programada */
+    function problemas(ee, t, l, c){
+      var av=[], ac=precioVigente(ee.sym);
+      if(c!=null && c>ee.cantidad+1e-9) av.push("Solo tiene "+cant(ee.cantidad)+" "+ee.sym);
+      if(ac!=null){
+        if(t!=null && t>0 && t<=ac) av.push("El take profit tiene que estar por encima del precio de ahora ("+precio(ac)+")");
+        if(l!=null && l>0 && l>=ac) av.push("El stop loss tiene que estar por debajo del precio de ahora ("+precio(ac)+")");
+      }
+      return av;
     }
-    ["#ovP","#ovC","#ovK"].forEach(function(id){ M.querySelector(id).addEventListener("input",rec); });
+    function rec(){
+      var ee=e(), t=num(M.querySelector("#ovT").value), l=num(M.querySelector("#ovL").value),
+          c=num(M.querySelector("#ovC").value);
+      var r=M.querySelector("#ovR"), ac=precioDe(ee.sym), av=problemas(ee,t,l,c), h="";
+      if(ac!=null) h+="<div>"+esc(ee.sym+" está ahora en "+precio(ac))+"</div>";
+      av.forEach(function(x){ h+="<div class=\"ojoL\"><b>OJO:</b> "+esc(x)+"</div>"; });
+      if(c!=null && c>0){
+        [[t,"Take profit"],[l,"Stop loss"]].forEach(function(z){
+          var p=z[0]; if(p==null||p<=0) return;
+          var g=ee.promedio!=null?(p-ee.promedio)*c:null;
+          var frase = g==null
+            ? z[1]+": recibiría "+usd(c*p)
+            : z[1]+": recibiría "+usd(c*p)+(g>=0?" y ganaría ":" y perdería ")+usd(Math.abs(g));
+          h+="<div class=\""+(z[1]==="Take profit"?"up":"dn")+"\">"+esc(frase)+"</div>";
+        });
+      }
+      if(t==null&&l==null) h+="<div>Ponga el precio de su take profit, de su stop loss o de los dos. Si salta uno, el otro se cancela solo.</div>";
+      else if(c==null||c<=0) h+="<div>Escriba cuántas monedas.</div>";
+      else if(!av.length) h+="<div>Cuando el precio en vivo llegue ahí, la venta queda registrada sola en este programa, le suena y le avisa. La orden de verdad la pone usted en su casa de cambio.</div>";
+      r.className=av.length?"nota ojo":"nota";
+      r.innerHTML=h;
+    }
+    ["#ovT","#ovL","#ovC","#ovK"].forEach(function(id){ M.querySelector(id).addEventListener("input",rec); });
     M.querySelector("#ovS").addEventListener("change", function(){
-      M.querySelector("#ovC").value=""; rec();
+      M.querySelector("#ovC").value=""; ponerEjemplos(); rec();
     });
-    rec();
+    ponerEjemplos(); rec();
     M.querySelector("#ovOk").onclick=function(){
-      var ee=e(), p=num(M.querySelector("#ovP").value), c=num(M.querySelector("#ovC").value);
-      if(p==null||p<=0){ aviso("Escriba el precio.",true); return; }
+      var ee=e(), t=num(M.querySelector("#ovT").value), l=num(M.querySelector("#ovL").value),
+          c=num(M.querySelector("#ovC").value);
+      var tVacio=!String(M.querySelector("#ovT").value).trim(), lVacio=!String(M.querySelector("#ovL").value).trim();
+      if(tVacio&&lVacio){ aviso("Ponga el precio de su take profit, de su stop loss o de los dos.",true); return; }
+      if((!tVacio&&(t==null||t<=0))||(!lVacio&&(l==null||l<=0))){ aviso("Escriba el precio.",true); return; }
       if(c==null||c<=0){ aviso("Escriba cuántas monedas.",true); return; }
       if(c>ee.cantidad+1e-9){ aviso("No tiene tantas "+ee.sym+".",true); return; }
+      /* sin precio en vivo no se puede saber si el precio puesto está arriba o abajo */
+      if(precioVigente(ee.sym)==null){ aviso("Todavía no hay precio en vivo de "+ee.sym+". Espere unos segundos y vuelva a intentarlo.",true); return; }
+      var av=problemas(ee,tVacio?null:t,lVacio?null:l,c);
+      if(av.length){ aviso(av[0],true); return; }
+      var com=num(M.querySelector("#ovK").value)||0, ref=precioVigente(ee.sym), hechas=[];
       BD.ordenes=BD.ordenes||[];
-      BD.ordenes.push({id:idNuevo(), sym:ee.sym, dir:dir, precio:p, cant:c,
-        com:num(M.querySelector("#ovK").value)||0, creada:ahora(), mod:ahoraReal()});
+      if(!tVacio) hechas.push({id:idNuevo(), sym:ee.sym, dir:"sube", precio:t, cant:c, com:com, ref:ref, creada:ahora(), mod:ahoraReal()});
+      if(!lVacio) hechas.push({id:idNuevo(), sym:ee.sym, dir:"baja", precio:l, cant:c, com:com, ref:ref, creada:ahora(), mod:ahoraReal()});
+      if(hechas.length===2){ hechas[0].par=hechas[1].id; hechas[1].par=hechas[0].id; }
+      hechas.forEach(function(o){ BD.ordenes.push(o); });
       guardar(); cerrar(); repintar(); conectarVivo();
       pedirPermisoAvisos();
-      aviso("Venta programada: "+cant(c)+" "+ee.sym+" cuando "+(dir==="sube"?"suba a ":"baje a ")+precio(p)+".");
+      /* una orden puesta con la app abierta se comprueba YA con el precio de ahora */
+      try{ alEntrarPrecios(); }catch(x){}
+      aviso(hechas.length===2
+        ? "Programados: take profit a "+precio(t)+" y stop loss a "+precio(l)+" para "+cant(c)+" "+ee.sym+"."
+        : (hechas[0].dir==="sube"
+            ? "Take profit programado: venta de "+cant(c)+" "+ee.sym+" cuando suba a "+precio(t)+"."
+            : "Stop loss programado: venta de "+cant(c)+" "+ee.sym+" cuando baje a "+precio(l)+"."));
+    };
+  });
+}
+/* =====================================================================
+   COMPRAS PROGRAMADAS DE SPOT (v53)
+   «Compra X dólares de esta moneda cuando baje a tal precio» (o cuando suba a).
+   Mismas reglas que la venta: dos casillas con nombre propio, cada una solo
+   puede significar una cosa, y la orden espera a que el precio de verdad llegue.
+   ===================================================================== */
+function dineroLibreParaCompras(){
+  /* lo que hay en spot menos lo ya comprometido en otras compras programadas
+     (una pareja «baja / sube» solo compromete el dinero una vez) */
+  var libre=efectivoDet0().total, vistas={};
+  (BD.ordenes||[]).forEach(function(o){
+    if(o.lado!=="compra" || vistas[o.id]) return;
+    if(o.par) vistas[o.par]=1;
+    libre-=(+o.cant||0)*(+o.precio||0)+(+o.com||0);
+  });
+  return libre;
+}
+function programarCompra(symIni){
+  var mias=carteraSpot().lista.filter(function(e){ return e.cantidad>0 && !esEstable(e.sym); }).map(function(e){ return e.sym; }).sort();
+  var otras=Object.keys(MONEDAS).filter(function(x){ return !MONEDAS[x].estable && mias.indexOf(x)<0; }).sort();
+  var syms=mias.concat(otras);
+  if(!syms.length){ aviso("No hay monedas para comprar.",true); return; }
+  var sym=symIni&&syms.indexOf(String(symIni).toUpperCase())>=0?String(symIni).toUpperCase():syms[0];
+  MIRANDO=sym;
+  abrir('<div class="hoja venta"><div class="hh">'+icono(sym,28)+
+    '<h3>Programar una compra</h3><button class="x" data-cerrar>×</button></div><div class="hb">'+
+    '<div class="campos">'+
+      '<div class="campo ancho"><label>Moneda</label><select id="ocS">'+
+        (mias.length?'<optgroup label="Las que tiene">'+mias.map(function(x){
+          return '<option value="'+esc(x)+'"'+(x===sym?" selected":"")+'>'+esc(x)+' · '+esc(nombreDe(x))+'</option>'; }).join("")+'</optgroup>':'')+
+        (otras.length?'<optgroup label="Las demás">'+otras.map(function(x){
+          return '<option value="'+esc(x)+'"'+(x===sym?" selected":"")+'>'+esc(x)+' · '+esc(nombreDe(x))+'</option>'; }).join("")+'</optgroup>':'')+
+      '</select></div>'+
+      '<div class="campo ancho"><label>Cuánto gastar (USD)</label><input id="ocG" inputmode="decimal">'+
+        '<div class="rapidos">'+[25,50,75,100].map(function(p){
+          return '<button type="button" data-rp="'+p+'">'+(p===100?"TODO":p+"%")+'</button>'; }).join("")+
+        '</div></div>'+
+      '<div class="campo"><label>Comprar si BAJA a</label><input id="ocL" inputmode="decimal"></div>'+
+      '<div class="campo"><label>Comprar si SUBE a</label><input id="ocT" inputmode="decimal"></div>'+
+      '<div class="campo ancho"><label>Comisión (USD, opcional)</label><input id="ocK" inputmode="decimal" placeholder="sin comisión"></div>'+
+    '</div>'+
+    '<div class="nota" id="ocR"></div>'+
+    '<div class="mut" style="font-size:12px;margin-top:8px">¿Ya la compró? Anótela en «Registrar operación»: ahí vale cualquier precio, porque ya pasó.</div>'+
+    '</div><div class="hf"><button class="b" data-cerrar>Cancelar</button>'+
+    '<button class="b rj" id="ocOk">Dejar programada</button></div></div>',
+  function(M){
+    function s(){ return M.querySelector("#ocS").value; }
+    function ponerEjemplos(){
+      M.querySelector("#ocL").setAttribute("placeholder", ejemploPrecio(s(),0.9));
+      M.querySelector("#ocT").setAttribute("placeholder", ejemploPrecio(s(),1.1));
+    }
+    function problemas(l,t,g,k){
+      var av=[], ac=precioVigente(s()), libre=dineroLibreParaCompras();
+      if(ac!=null){
+        if(l!=null && l>0 && l>=ac) av.push("Comprar si BAJA a: el precio tiene que estar por debajo del de ahora ("+precio(ac)+")");
+        if(t!=null && t>0 && t<=ac) av.push("Comprar si SUBE a: el precio tiene que estar por encima del de ahora ("+precio(ac)+")");
+      }
+      if(g!=null && g>0 && g+(k||0)>libre+0.005) av.push("No le alcanza: tiene "+usd(Math.max(0,libre))+" libres en spot");
+      return av;
+    }
+    M.querySelectorAll("[data-rp]").forEach(function(b){
+      b.onclick=function(){
+        var p=+b.getAttribute("data-rp"), libre=Math.max(0,dineroLibreParaCompras());
+        M.querySelector("#ocG").value=paraCasilla(Math.floor(libre*p)/100);
+        M.querySelectorAll("[data-rp]").forEach(function(x){ x.className=x===b?"on":""; });
+        rec();
+      };
+    });
+    function rec(){
+      var l=num(M.querySelector("#ocL").value), t=num(M.querySelector("#ocT").value),
+          g=num(M.querySelector("#ocG").value), k=num(M.querySelector("#ocK").value)||0;
+      var ac=precioDe(s()), av=problemas(l,t,g,k), r=M.querySelector("#ocR"), h="";
+      if(ac!=null) h+="<div>"+esc(s()+" está ahora en "+precio(ac))+"</div>";
+      h+="<div>"+esc("Disponible en spot: "+usd(Math.max(0,dineroLibreParaCompras())))+"</div>";
+      av.forEach(function(x){ h+="<div class=\"ojoL\"><b>OJO:</b> "+esc(x)+"</div>"; });
+      if(g!=null && g>0) [l,t].forEach(function(p){
+        if(p==null||p<=0) return;
+        h+="<div>"+esc("Al llegar a "+precio(p)+" comprará "+cant(g/p)+" "+s()+" con "+usd(g))+"</div>";
+      });
+      if(l==null&&t==null) h+="<div>Ponga a qué precio comprar: más abajo (si BAJA a) o más arriba (si SUBE a). Si salta una, la otra se cancela sola.</div>";
+      else if(g==null||g<=0) h+="<div>Escriba cuánto quiere gastar.</div>";
+      else if(!av.length) h+="<div>Cuando el precio en vivo llegue ahí, la compra queda registrada sola en este programa, le suena y le avisa. La orden de verdad la pone usted en su casa de cambio.</div>";
+      r.className=av.length?"nota ojo":"nota";
+      r.innerHTML=h;
+    }
+    ["#ocL","#ocT","#ocG","#ocK"].forEach(function(id){ M.querySelector(id).addEventListener("input",rec); });
+    M.querySelector("#ocS").addEventListener("change", function(){
+      MIRANDO=s(); ponerEjemplos(); rec();
+      try{ conectarVivo(); traerPrecios(true,true); }catch(x){}
+      setTimeout(function(){ if(M.isConnected) rec(); }, 1800);
+    });
+    ponerEjemplos(); rec();
+    M.querySelector("#ocOk").onclick=function(){
+      var sy=s(), l=num(M.querySelector("#ocL").value), t=num(M.querySelector("#ocT").value),
+          g=num(M.querySelector("#ocG").value), k=num(M.querySelector("#ocK").value)||0;
+      var lVacio=!String(M.querySelector("#ocL").value).trim(), tVacio=!String(M.querySelector("#ocT").value).trim();
+      if(lVacio&&tVacio){ aviso("Ponga a qué precio comprar.",true); return; }
+      if((!lVacio&&(l==null||l<=0))||(!tVacio&&(t==null||t<=0))){ aviso("Escriba el precio.",true); return; }
+      if(g==null||g<=0){ aviso("Escriba cuánto quiere gastar.",true); return; }
+      if(precioVigente(sy)==null){ aviso("Todavía no hay precio en vivo de "+sy+". Espere unos segundos y vuelva a intentarlo.",true); return; }
+      var av=problemas(lVacio?null:l,tVacio?null:t,g,k);
+      if(av.length){ aviso(av[0],true); return; }
+      var ref=precioVigente(sy), nuevas=[];
+      BD.ordenes=BD.ordenes||[];
+      if(!lVacio) nuevas.push({id:idNuevo(), sym:sy, lado:"compra", dir:"baja", precio:l, cant:g/l, usd:g, com:k, ref:ref, creada:ahora(), mod:ahoraReal()});
+      if(!tVacio) nuevas.push({id:idNuevo(), sym:sy, lado:"compra", dir:"sube", precio:t, cant:g/t, usd:g, com:k, ref:ref, creada:ahora(), mod:ahoraReal()});
+      if(nuevas.length===2){ nuevas[0].par=nuevas[1].id; nuevas[1].par=nuevas[0].id; }
+      nuevas.forEach(function(o){ BD.ordenes.push(o); });
+      guardar(); cerrar(); repintar(); conectarVivo();
+      pedirPermisoAvisos();
+      try{ alEntrarPrecios(); }catch(x){}
+      aviso(nuevas.length===2
+        ? "Compra programada de "+usd(g)+" en "+sy+": si baja a "+precio(l)+" o si sube a "+precio(t)+"."
+        : (nuevas[0].dir==="baja"
+            ? "Compra programada de "+usd(g)+" en "+sy+" cuando baje a "+precio(l)+"."
+            : "Compra programada de "+usd(g)+" en "+sy+" cuando suba a "+precio(t)+"."));
     };
   });
 }
 function quitarOrden(id){
   var o=(BD.ordenes||[]).filter(function(x){ return x.id===id; })[0];
   if(!o) return;
-  confirmar("Quitar la venta programada","Se quita la venta programada de "+cant(o.cant)+" "+
-    esc(o.sym)+" a "+precio(o.precio)+".","Quitarla", function(){
+  var eraC = o.lado==="compra";
+  confirmar(eraC?"Quitar la compra programada":"Quitar la venta programada",
+    (eraC?"Se quita la compra programada de ":"Se quita la venta programada de ")+cant(o.cant)+" "+
+    esc(o.sym)+" a "+precio(o.precio)+".",eraC?"Quitarla":"Quitarla", function(){
       anotarBorrado(o.id, o.mod);
       BD.ordenes=BD.ordenes.filter(function(x){ return x.id!==id; });
       guardar(); repintar(); aviso("Quitada.");
@@ -9707,32 +9867,26 @@ function quitarOrden(id){
 }
 function cajaOrdenes(){
   var l=BD.ordenes||[];
-  /* v42 · ESTAS VENTAS DEPENDÍAN DE UN INTERRUPTOR QUE NO LAS NOMBRA.
-     El que manda aquí es el de Futuros, «Hacer sola la operación cuando el
-     precio llegue». Si está apagado, las ventas programadas se quedan en
-     la lista como si estuvieran vivas y NO se hacen: ni se registran ni
-     avisan. Eso es perder una venta sin enterarse. Ahora se ve. */
-  var dormidas=!autoActivo() && l.length;
-  return '<div class="caja"><h2><span class="ic">'+IC.alr+'</span>Ventas programadas'+
-    (l.length?'<span class="chip '+(dormidas?"s":"a")+'">'+l.length+'</span>':'')+'<span class="sp"></span>'+
-    '<button class="b sm ac" onclick="programarVenta()">+ Programar venta</button></h2><div class="cp">'+
-    (dormidas
-      ? '<div class="nota mal" style="margin:0 0 12px">Ahora mismo <b>no se van a hacer solas</b>. '+
-        'Está apagado «Hacer sola la operación cuando el precio llegue», en Futuros, y ese '+
-        'interruptor manda también sobre estas ventas. '+
-        '<button type="button" class="b sm" onclick="encenderAutomatico()">Encenderlo</button></div>'
-      : '')+
+  return '<div class="caja"><h2><span class="ic">'+IC.alr+'</span>Órdenes programadas'+
+    (l.length?'<span class="chip a">'+l.length+'</span>':'')+
+    '</h2><div class="cp">'+
+    '<div class="ordBtns"><button class="b ac" onclick="programarVenta()">+ Vender</button>'+
+    '<button class="b ac" onclick="programarCompra()">+ Comprar</button></div>'+
     (l.length ? l.map(function(o){
       var pr=precioDe(o.sym), falta=pr!=null?(o.precio-pr)/pr*100:null;
-      return '<div class="mv venta" style="--fc:'+colDe(o.sym)+'">'+
-        '<div class="lg">'+icono(o.sym,28)+'</div>'+
-        '<div class="q"><div class="l1">Vender <em>'+cant(o.cant)+'</em> '+esc(o.sym)+' cuando '+
-        (o.dir==="baja"?"baje a":"suba a")+' <em>'+precio(o.precio)+'</em></div>'+
+      var esC = o.lado==="compra", esSl = o.dir==="baja";
+      var etq = esC ? "Compra" : (esSl?"Stop loss":"Take profit");
+      var cls = esC ? "ac" : (esSl?"dn":"up");
+      return '<div class="mv venta '+(esC?"cp2":(esSl?"sl":"tp"))+'" style="--fc:'+colDe(o.sym)+'">'+
+        '<div class="fh">'+icono(o.sym,30)+'</div>'+
+        '<div class="q"><div class="l0 '+cls+'">'+etq+'</div>'+
+        '<div class="l1">'+(esC?'Comprar':'Vender')+' '+cant(o.cant)+' '+esc(o.sym)+' cuando '+
+        (esSl?"baje a":"suba a")+' '+precio(o.precio)+'</div>'+
         '<div class="l2">ahora <b data-v="pr" data-s="'+esc(o.sym)+'">'+precio(pr)+'</b>'+
-        (falta!=null?' · falta '+pct(falta,1):'')+' · programada el '+esc(o.creada||"")+'</div></div>'+
+        (falta!=null?' · <span>falta '+pct(falta,1)+'</span>':'')+' · <span>programada el</span> <span translate="no">'+esc(o.creada||"")+'</span></div></div>'+
         '<div class="acc"><button class="b sm" onclick="quitarOrden(\''+esc(o.id)+'\')">Quitar</button></div></div>';
     }).join("")
-    : '<div class="mut">Deje dicho «vende tanto de tal moneda cuando llegue a tal precio» y el '+
+    : '<div class="mut">Deje dicho «vende o compra tanto de tal moneda cuando llegue a tal precio» y el '+
       'programa lo registra solo cuando el precio en vivo llegue, con sonido y aviso.</div>')+
     '</div></div>';
 }
@@ -11239,7 +11393,6 @@ function pintarRes(){
       '<span class="chip v">'+F.abiertas.length+'</span><span class="sp"></span>'+
       '<span class="envivo"><i></i>EN VIVO</span>'+
       '<button class="b sm" onclick="irA(\'fut\')">Ver futuros</button></h2>'+
-      avisoCierreApagado(F.abiertas)+
       tablaAbiertas(F.abiertas,"fut")+
       '<div class="soloTel cp" style="padding-top:0">'+
       F.abiertas.map(function(e){ return filaAbierta(e,"fut"); }).join("")+'</div></div>';
@@ -16523,7 +16676,7 @@ function traducirTexto(n){
   var b=tr(a);
   if(b!==a){ recordarTexto(n, a); n.nodeValue=b; }
 }
-var IDI_ATRIBS=["placeholder","title","aria-label","alt"];
+var IDI_ATRIBS=["placeholder","title","aria-label","alt","label"];   /* v53 · «label» = rótulo de grupo en listas (optgroup) */
 function traducirElemento(el){
   IDI_ATRIBS.forEach(function(a){
     if(!el.hasAttribute||!el.hasAttribute(a)) return;
@@ -16635,7 +16788,66 @@ function engancharIdioma(box){
    Se respeta el orden de los huecos tal como salen en español.
    ===================================================================== */
 DIC.en={
-"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"Automatic closing is off: no trade closes by itself even if the price touches its stop or its target.",
+"Vender # @ cuando suba a $#":"Sell # @ when it rises to $#",
+"Vender # @ cuando baje a $#":"Sell # @ when it drops to $#",
+"Comprar # @ cuando suba a $#":"Buy # @ when it rises to $#",
+"Comprar # @ cuando baje a $#":"Buy # @ when it drops to $#",
+"falta #%":"#% to go",
+"programada el":"scheduled on",
+"Take profit: vender si SUBE a":"Take profit: sell if it RISES to",
+"Stop loss: vender si BAJA a":"Stop loss: sell if it DROPS to",
+"Solo tiene # @":"You only have # @",
+"El take profit tiene que estar por encima del precio de ahora ($#)":"The take profit must be above the current price ($#)",
+"El stop loss tiene que estar por debajo del precio de ahora ($#)":"The stop loss must be below the current price ($#)",
+"Take profit: recibiría $# y ganaría $#":"Take profit: you would get $# and gain $#",
+"Take profit: recibiría $# y perdería $#":"Take profit: you would get $# and lose $#",
+"Take profit: recibiría $#":"Take profit: you would get $#",
+"Stop loss: recibiría $# y ganaría $#":"Stop loss: you would get $# and gain $#",
+"Stop loss: recibiría $# y perdería $#":"Stop loss: you would get $# and lose $#",
+"Stop loss: recibiría $#":"Stop loss: you would get $#",
+"Ponga el precio de su take profit, de su stop loss o de los dos. Si salta uno, el otro se cancela solo.":"Enter the price of your take profit, your stop loss, or both. If one triggers, the other is cancelled automatically.",
+"Ponga el precio de su take profit, de su stop loss o de los dos.":"Enter the price of your take profit, your stop loss, or both.",
+"Todavía no hay precio en vivo de @. Espere unos segundos y vuelva a intentarlo.":"There is no live price for @ yet. Wait a few seconds and try again.",
+"Programados: take profit a $# y stop loss a $# para # @.":"Scheduled: take profit at $# and stop loss at $# for # @.",
+"Take profit programado: venta de # @ cuando suba a $#":"Take profit scheduled: sell # @ when it rises to $#",
+"Stop loss programado: venta de # @ cuando baje a $#":"Stop loss scheduled: sell # @ when it drops to $#",
+"¿Ya la vendió? Anótela con «Vender» o «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Already sold it? Record it with “Sell” or “Record trade”: any price is allowed there, because it already happened.",
+"Se vendieron # @ a $# (take profit): ganó $#":"Sold # @ at $# (take profit): you gained $#",
+"Se vendieron # @ a $# (take profit): perdió $#":"Sold # @ at $# (take profit): you lost $#",
+"Se vendieron # @ a $# (stop loss): ganó $#":"Sold # @ at $# (stop loss): you gained $#",
+"Se vendieron # @ a $# (stop loss): perdió $#":"Sold # @ at $# (stop loss): you lost $#",
+"Comprar":"Buy",
+"Órdenes programadas":"Scheduled orders",
+"+ Vender":"+ Sell",
+"+ Comprar":"+ Buy",
+"Deje dicho «vende o compra tanto de tal moneda cuando llegue a tal precio» y el programa lo registra solo cuando el precio en vivo llegue, con sonido y aviso.":"Say “sell or buy this much of this coin when it reaches this price” and the app records it by itself when the live price gets there, with a sound and an alert.",
+"Quitar la compra programada":"Remove the scheduled purchase",
+"Se quita la compra programada de # @ a $#":"The scheduled purchase of # @ at $# will be removed",
+"No hay monedas para comprar.":"There are no coins to buy.",
+"Programar una compra":"Schedule a purchase",
+"Cuánto gastar (@)":"How much to spend (@)",
+"Comprar si BAJA a":"Buy if it DROPS to",
+"Comprar si SUBE a":"Buy if it RISES to",
+"Comprar si BAJA a: el precio tiene que estar por debajo del de ahora ($#)":"Buy if it DROPS to: the price must be below the current one ($#)",
+"Comprar si SUBE a: el precio tiene que estar por encima del de ahora ($#)":"Buy if it RISES to: the price must be above the current one ($#)",
+"No le alcanza: tiene $# libres en spot":"You can't afford it: you have $# free in spot",
+"Disponible en spot: $#":"Available in spot: $#",
+"Al llegar a $# comprará # @ con $#":"When it reaches $# it will buy # @ for $#",
+"Ponga a qué precio comprar: más abajo (si BAJA a) o más arriba (si SUBE a). Si salta una, la otra se cancela sola.":"Enter the price you want to buy at: lower (if it DROPS to) or higher (if it RISES to). If one triggers, the other is cancelled automatically.",
+"Escriba cuánto quiere gastar.":"Enter how much you want to spend.",
+"Cuando el precio en vivo llegue ahí, la compra queda registrada sola en este programa, le suena y le avisa. La orden de verdad la pone usted en su casa de cambio.":"When the live price gets there, the purchase is recorded by itself in this app, with a sound and an alert. You place the real order at your exchange.",
+"¿Ya la compró? Anótela en «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Already bought it? Record it in “Record trade”: any price is allowed there, because it already happened.",
+"Ponga a qué precio comprar.":"Enter the price you want to buy at.",
+"Compra programada de $# en @ cuando baje a $#":"Purchase scheduled: $# of @ when it drops to $#",
+"Compra programada de $# en @ cuando suba a $#":"Purchase scheduled: $# of @ when it rises to $#",
+"Compra programada de $# en @: si baja a $# o si sube a $#":"Purchase scheduled: $# of @ if it drops to $# or rises to $#",
+"La compra programada de @ no se hizo: no había dinero suficiente en spot":"The scheduled purchase of @ was not made: there was not enough money in spot",
+"Se compraron # @ a $# (compra programada).":"Bought # @ at $# (scheduled purchase).",
+"La venta programada de @ no se hizo: ya no tenía monedas":"The scheduled sale of @ was not made: you no longer had the coins",
+"Las que tiene":"The ones you hold",
+"Las demás":"The rest",
+"No tiene tantas @":"You don't have that many @",
+"ej. $#":"e.g. $#",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Profit goal $# · #% there · $# to go",
 "Meta de ganancia $# · #% · va en −$#":"Profit goal $# · #% · you are at −$#",
 "Meta de ganancia (@)":"Profit goal (@)",
@@ -18489,7 +18701,66 @@ DIC.en={
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
-"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"O fechamento automático está desligado: nenhuma operação fecha sozinha, mesmo que o preço toque o stop ou o alvo.",
+"Vender # @ cuando suba a $#":"Vender # @ quando subir a $#",
+"Vender # @ cuando baje a $#":"Vender # @ quando cair a $#",
+"Comprar # @ cuando suba a $#":"Comprar # @ quando subir a $#",
+"Comprar # @ cuando baje a $#":"Comprar # @ quando cair a $#",
+"falta #%":"faltam #%",
+"programada el":"agendada em",
+"Take profit: vender si SUBE a":"Take profit: vender se SUBIR para",
+"Stop loss: vender si BAJA a":"Stop loss: vender se CAIR para",
+"Solo tiene # @":"Você só tem # @",
+"El take profit tiene que estar por encima del precio de ahora ($#)":"O take profit precisa estar acima do preço atual ($#)",
+"El stop loss tiene que estar por debajo del precio de ahora ($#)":"O stop loss precisa estar abaixo do preço atual ($#)",
+"Take profit: recibiría $# y ganaría $#":"Take profit: você receberia $# e ganharia $#",
+"Take profit: recibiría $# y perdería $#":"Take profit: você receberia $# e perderia $#",
+"Take profit: recibiría $#":"Take profit: você receberia $#",
+"Stop loss: recibiría $# y ganaría $#":"Stop loss: você receberia $# e ganharia $#",
+"Stop loss: recibiría $# y perdería $#":"Stop loss: você receberia $# e perderia $#",
+"Stop loss: recibiría $#":"Stop loss: você receberia $#",
+"Ponga el precio de su take profit, de su stop loss o de los dos. Si salta uno, el otro se cancela solo.":"Coloque o preço do seu take profit, do seu stop loss ou dos dois. Se um disparar, o outro é cancelado sozinho.",
+"Ponga el precio de su take profit, de su stop loss o de los dos.":"Coloque o preço do seu take profit, do seu stop loss ou dos dois.",
+"Todavía no hay precio en vivo de @. Espere unos segundos y vuelva a intentarlo.":"Ainda não há preço ao vivo de @. Espere alguns segundos e tente de novo.",
+"Programados: take profit a $# y stop loss a $# para # @.":"Agendados: take profit a $# e stop loss a $# para # @.",
+"Take profit programado: venta de # @ cuando suba a $#":"Take profit agendado: venda de # @ quando subir a $#",
+"Stop loss programado: venta de # @ cuando baje a $#":"Stop loss agendado: venda de # @ quando cair a $#",
+"¿Ya la vendió? Anótela con «Vender» o «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Já vendeu? Registre em «Vender» ou «Registrar operação»: lá vale qualquer preço, porque já aconteceu.",
+"Se vendieron # @ a $# (take profit): ganó $#":"Vendeu # @ a $# (take profit): ganhou $#",
+"Se vendieron # @ a $# (take profit): perdió $#":"Vendeu # @ a $# (take profit): perdeu $#",
+"Se vendieron # @ a $# (stop loss): ganó $#":"Vendeu # @ a $# (stop loss): ganhou $#",
+"Se vendieron # @ a $# (stop loss): perdió $#":"Vendeu # @ a $# (stop loss): perdeu $#",
+"Comprar":"Comprar",
+"Órdenes programadas":"Ordens agendadas",
+"+ Vender":"+ Vender",
+"+ Comprar":"+ Comprar",
+"Deje dicho «vende o compra tanto de tal moneda cuando llegue a tal precio» y el programa lo registra solo cuando el precio en vivo llegue, con sonido y aviso.":"Deixe dito «venda ou compre tanto desta moeda quando chegar a este preço» e o programa registra sozinho quando o preço ao vivo chegar, com som e aviso.",
+"Quitar la compra programada":"Remover a compra agendada",
+"Se quita la compra programada de # @ a $#":"A compra agendada de # @ a $# será removida",
+"No hay monedas para comprar.":"Não há moedas para comprar.",
+"Programar una compra":"Agendar uma compra",
+"Cuánto gastar (@)":"Quanto gastar (@)",
+"Comprar si BAJA a":"Comprar se CAIR para",
+"Comprar si SUBE a":"Comprar se SUBIR para",
+"Comprar si BAJA a: el precio tiene que estar por debajo del de ahora ($#)":"Comprar se CAIR para: o preço precisa estar abaixo do atual ($#)",
+"Comprar si SUBE a: el precio tiene que estar por encima del de ahora ($#)":"Comprar se SUBIR para: o preço precisa estar acima do atual ($#)",
+"No le alcanza: tiene $# libres en spot":"Não é suficiente: você tem $# livres em spot",
+"Disponible en spot: $#":"Disponível em spot: $#",
+"Al llegar a $# comprará # @ con $#":"Ao chegar a $# comprará # @ com $#",
+"Ponga a qué precio comprar: más abajo (si BAJA a) o más arriba (si SUBE a). Si salta una, la otra se cancela sola.":"Coloque o preço de compra: mais baixo (se CAIR para) ou mais alto (se SUBIR para). Se um disparar, o outro é cancelado sozinho.",
+"Escriba cuánto quiere gastar.":"Escreva quanto quer gastar.",
+"Cuando el precio en vivo llegue ahí, la compra queda registrada sola en este programa, le suena y le avisa. La orden de verdad la pone usted en su casa de cambio.":"Quando o preço ao vivo chegar lá, a compra fica registrada sozinha neste programa, com som e aviso. A ordem de verdade você coloca na sua corretora.",
+"¿Ya la compró? Anótela en «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Já comprou? Registre em «Registrar operação»: lá vale qualquer preço, porque já aconteceu.",
+"Ponga a qué precio comprar.":"Coloque o preço de compra.",
+"Compra programada de $# en @ cuando baje a $#":"Compra agendada de $# em @ quando cair a $#",
+"Compra programada de $# en @ cuando suba a $#":"Compra agendada de $# em @ quando subir a $#",
+"Compra programada de $# en @: si baja a $# o si sube a $#":"Compra agendada de $# em @: se cair a $# ou se subir a $#",
+"La compra programada de @ no se hizo: no había dinero suficiente en spot":"A compra agendada de @ não foi feita: não havia dinheiro suficiente em spot",
+"Se compraron # @ a $# (compra programada).":"Comprou # @ a $# (compra agendada).",
+"La venta programada de @ no se hizo: ya no tenía monedas":"A venda agendada de @ não foi feita: você já não tinha as moedas",
+"Las que tiene":"As que você tem",
+"Las demás":"As demais",
+"No tiene tantas @":"Você não tem tantas @",
+"ej. $#":"ex.: $#",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Meta de lucro $# · já atingiu #% · faltam $#",
 "Meta de ganancia $# · #% · va en −$#":"Meta de lucro $# · #% · está em −$#",
 "Meta de ganancia (@)":"Meta de lucro (@)",
@@ -20336,7 +20607,66 @@ DIC.pt={
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
-"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"La clôture automatique est désactivée : aucune opération ne se ferme toute seule, même si le prix touche son stop ou son objectif.",
+"Vender # @ cuando suba a $#":"Vendre # @ quand le prix monte à $#",
+"Vender # @ cuando baje a $#":"Vendre # @ quand le prix descend à $#",
+"Comprar # @ cuando suba a $#":"Acheter # @ quand le prix monte à $#",
+"Comprar # @ cuando baje a $#":"Acheter # @ quand le prix descend à $#",
+"falta #%":"#% à faire",
+"programada el":"programmée le",
+"Take profit: vender si SUBE a":"Take profit : vendre si le prix MONTE à",
+"Stop loss: vender si BAJA a":"Stop loss : vendre si le prix DESCEND à",
+"Solo tiene # @":"Vous n'avez que # @",
+"El take profit tiene que estar por encima del precio de ahora ($#)":"Le take profit doit être au-dessus du prix actuel ($#)",
+"El stop loss tiene que estar por debajo del precio de ahora ($#)":"Le stop loss doit être en dessous du prix actuel ($#)",
+"Take profit: recibiría $# y ganaría $#":"Take profit : vous recevriez $# et gagneriez $#",
+"Take profit: recibiría $# y perdería $#":"Take profit : vous recevriez $# et perdriez $#",
+"Take profit: recibiría $#":"Take profit : vous recevriez $#",
+"Stop loss: recibiría $# y ganaría $#":"Stop loss : vous recevriez $# et gagneriez $#",
+"Stop loss: recibiría $# y perdería $#":"Stop loss : vous recevriez $# et perdriez $#",
+"Stop loss: recibiría $#":"Stop loss : vous recevriez $#",
+"Ponga el precio de su take profit, de su stop loss o de los dos. Si salta uno, el otro se cancela solo.":"Indiquez le prix de votre take profit, de votre stop loss ou des deux. Si l'un se déclenche, l'autre est annulé tout seul.",
+"Ponga el precio de su take profit, de su stop loss o de los dos.":"Indiquez le prix de votre take profit, de votre stop loss ou des deux.",
+"Todavía no hay precio en vivo de @. Espere unos segundos y vuelva a intentarlo.":"Il n'y a pas encore de prix en direct pour @. Attendez quelques secondes et réessayez.",
+"Programados: take profit a $# y stop loss a $# para # @.":"Programmés : take profit à $# et stop loss à $# pour # @.",
+"Take profit programado: venta de # @ cuando suba a $#":"Take profit programmé : vente de # @ quand le prix monte à $#",
+"Stop loss programado: venta de # @ cuando baje a $#":"Stop loss programmé : vente de # @ quand le prix descend à $#",
+"¿Ya la vendió? Anótela con «Vender» o «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Déjà vendu ? Enregistrez-le avec « Vendre » ou « Enregistrer l'opération » : tout prix est accepté, car c'est déjà fait.",
+"Se vendieron # @ a $# (take profit): ganó $#":"Vente de # @ à $# (take profit) : vous avez gagné $#",
+"Se vendieron # @ a $# (take profit): perdió $#":"Vente de # @ à $# (take profit) : vous avez perdu $#",
+"Se vendieron # @ a $# (stop loss): ganó $#":"Vente de # @ à $# (stop loss) : vous avez gagné $#",
+"Se vendieron # @ a $# (stop loss): perdió $#":"Vente de # @ à $# (stop loss) : vous avez perdu $#",
+"Comprar":"Acheter",
+"Órdenes programadas":"Ordres programmés",
+"+ Vender":"+ Vendre",
+"+ Comprar":"+ Acheter",
+"Deje dicho «vende o compra tanto de tal moneda cuando llegue a tal precio» y el programa lo registra solo cuando el precio en vivo llegue, con sonido y aviso.":"Dites « vends ou achète tant de cette monnaie quand elle atteint ce prix » et le programme l'enregistre tout seul quand le prix en direct y arrive, avec un son et une alerte.",
+"Quitar la compra programada":"Supprimer l'achat programmé",
+"Se quita la compra programada de # @ a $#":"L'achat programmé de # @ à $# sera supprimé",
+"No hay monedas para comprar.":"Aucune monnaie à acheter.",
+"Programar una compra":"Programmer un achat",
+"Cuánto gastar (@)":"Combien dépenser (@)",
+"Comprar si BAJA a":"Acheter si le prix DESCEND à",
+"Comprar si SUBE a":"Acheter si le prix MONTE à",
+"Comprar si BAJA a: el precio tiene que estar por debajo del de ahora ($#)":"Acheter si le prix DESCEND à : le prix doit être sous le prix actuel ($#)",
+"Comprar si SUBE a: el precio tiene que estar por encima del de ahora ($#)":"Acheter si le prix MONTE à : le prix doit être au-dessus du prix actuel ($#)",
+"No le alcanza: tiene $# libres en spot":"Fonds insuffisants : vous avez $# de libre en Spot",
+"Disponible en spot: $#":"Disponible en Spot : $#",
+"Al llegar a $# comprará # @ con $#":"À $#, il achètera # @ pour $#",
+"Ponga a qué precio comprar: más abajo (si BAJA a) o más arriba (si SUBE a). Si salta una, la otra se cancela sola.":"Indiquez le prix d'achat : plus bas (si le prix DESCEND à) ou plus haut (si le prix MONTE à). Si l'un se déclenche, l'autre est annulé tout seul.",
+"Escriba cuánto quiere gastar.":"Indiquez combien vous voulez dépenser.",
+"Cuando el precio en vivo llegue ahí, la compra queda registrada sola en este programa, le suena y le avisa. La orden de verdad la pone usted en su casa de cambio.":"Quand le prix en direct y arrive, l'achat est enregistré tout seul dans ce programme, avec un son et une alerte. L'ordre réel, c'est vous qui le passez sur votre plateforme.",
+"¿Ya la compró? Anótela en «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Déjà acheté ? Enregistrez-le dans « Enregistrer l'opération » : tout prix est accepté, car c'est déjà fait.",
+"Ponga a qué precio comprar.":"Indiquez le prix d'achat.",
+"Compra programada de $# en @ cuando baje a $#":"Achat programmé de $# en @ quand le prix descend à $#",
+"Compra programada de $# en @ cuando suba a $#":"Achat programmé de $# en @ quand le prix monte à $#",
+"Compra programada de $# en @: si baja a $# o si sube a $#":"Achat programmé de $# en @ : si le prix descend à $# ou monte à $#",
+"La compra programada de @ no se hizo: no había dinero suficiente en spot":"L'achat programmé de @ n'a pas été fait : pas assez d'argent en Spot",
+"Se compraron # @ a $# (compra programada).":"Achat de # @ à $# (achat programmé).",
+"La venta programada de @ no se hizo: ya no tenía monedas":"La vente programmée de @ n'a pas été faite : vous n'aviez plus les monnaies",
+"Las que tiene":"Celles que vous avez",
+"Las demás":"Les autres",
+"No tiene tantas @":"Vous n'avez pas autant de @",
+"ej. $#":"ex. $#",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Objectif de gain $# · #% atteint · il vous manque $#",
 "Meta de ganancia $# · #% · va en −$#":"Objectif de gain $# · #% · vous êtes à −$#",
 "Meta de ganancia (@)":"Objectif de gain (@)",
@@ -22183,7 +22513,66 @@ DIC.fr={
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
-"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"Das automatische Schließen ist aus: Kein Trade wird von selbst geschlossen, auch wenn der Preis seinen Stopp oder sein Ziel erreicht.",
+"Vender # @ cuando suba a $#":"# @ verkaufen, wenn der Preis auf $# steigt",
+"Vender # @ cuando baje a $#":"# @ verkaufen, wenn der Preis auf $# fällt",
+"Comprar # @ cuando suba a $#":"# @ kaufen, wenn der Preis auf $# steigt",
+"Comprar # @ cuando baje a $#":"# @ kaufen, wenn der Preis auf $# fällt",
+"falta #%":"noch #%",
+"programada el":"geplant am",
+"Take profit: vender si SUBE a":"Take-Profit: verkaufen, wenn er STEIGT auf",
+"Stop loss: vender si BAJA a":"Stop-Loss: verkaufen, wenn er FÄLLT auf",
+"Solo tiene # @":"Sie haben nur # @",
+"El take profit tiene que estar por encima del precio de ahora ($#)":"Der Take-Profit muss über dem aktuellen Preis liegen ($#)",
+"El stop loss tiene que estar por debajo del precio de ahora ($#)":"Der Stop-Loss muss unter dem aktuellen Preis liegen ($#)",
+"Take profit: recibiría $# y ganaría $#":"Take-Profit: Sie würden $# erhalten und $# gewinnen",
+"Take profit: recibiría $# y perdería $#":"Take-Profit: Sie würden $# erhalten und $# verlieren",
+"Take profit: recibiría $#":"Take-Profit: Sie würden $# erhalten",
+"Stop loss: recibiría $# y ganaría $#":"Stop-Loss: Sie würden $# erhalten und $# gewinnen",
+"Stop loss: recibiría $# y perdería $#":"Stop-Loss: Sie würden $# erhalten und $# verlieren",
+"Stop loss: recibiría $#":"Stop-Loss: Sie würden $# erhalten",
+"Ponga el precio de su take profit, de su stop loss o de los dos. Si salta uno, el otro se cancela solo.":"Geben Sie den Preis für Ihren Take-Profit, Ihren Stop-Loss oder beide ein. Wird einer ausgelöst, wird der andere automatisch gelöscht.",
+"Ponga el precio de su take profit, de su stop loss o de los dos.":"Geben Sie den Preis für Ihren Take-Profit, Ihren Stop-Loss oder beide ein.",
+"Todavía no hay precio en vivo de @. Espere unos segundos y vuelva a intentarlo.":"Für @ gibt es noch keinen Live-Preis. Warten Sie ein paar Sekunden und versuchen Sie es erneut.",
+"Programados: take profit a $# y stop loss a $# para # @.":"Geplant: Take-Profit bei $# und Stop-Loss bei $# für # @.",
+"Take profit programado: venta de # @ cuando suba a $#":"Take-Profit geplant: Verkauf von # @, wenn der Preis auf $# steigt",
+"Stop loss programado: venta de # @ cuando baje a $#":"Stop-Loss geplant: Verkauf von # @, wenn der Preis auf $# fällt",
+"¿Ya la vendió? Anótela con «Vender» o «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Schon verkauft? Tragen Sie es unter „Verkaufen“ oder „Trade erfassen“ ein: Dort ist jeder Preis erlaubt, denn es ist bereits passiert.",
+"Se vendieron # @ a $# (take profit): ganó $#":"# @ zu $# verkauft (Take-Profit): Sie haben $# gewonnen",
+"Se vendieron # @ a $# (take profit): perdió $#":"# @ zu $# verkauft (Take-Profit): Sie haben $# verloren",
+"Se vendieron # @ a $# (stop loss): ganó $#":"# @ zu $# verkauft (Stop-Loss): Sie haben $# gewonnen",
+"Se vendieron # @ a $# (stop loss): perdió $#":"# @ zu $# verkauft (Stop-Loss): Sie haben $# verloren",
+"Comprar":"Kaufen",
+"Órdenes programadas":"Geplante Orders",
+"+ Vender":"+ Verkaufen",
+"+ Comprar":"+ Kaufen",
+"Deje dicho «vende o compra tanto de tal moneda cuando llegue a tal precio» y el programa lo registra solo cuando el precio en vivo llegue, con sonido y aviso.":"Legen Sie fest: „Verkaufe oder kaufe so viel von dieser Münze, wenn sie diesen Preis erreicht“ – die App trägt es von selbst ein, sobald der Live-Preis ankommt, mit Ton und Hinweis.",
+"Quitar la compra programada":"Geplanten Kauf entfernen",
+"Se quita la compra programada de # @ a $#":"Der geplante Kauf von # @ zu $# wird entfernt",
+"No hay monedas para comprar.":"Es gibt keine Münzen zum Kaufen.",
+"Programar una compra":"Einen Kauf planen",
+"Cuánto gastar (@)":"Wie viel ausgeben (@)",
+"Comprar si BAJA a":"Kaufen, wenn er FÄLLT auf",
+"Comprar si SUBE a":"Kaufen, wenn er STEIGT auf",
+"Comprar si BAJA a: el precio tiene que estar por debajo del de ahora ($#)":"Kaufen, wenn er FÄLLT auf: Der Preis muss unter dem aktuellen liegen ($#)",
+"Comprar si SUBE a: el precio tiene que estar por encima del de ahora ($#)":"Kaufen, wenn er STEIGT auf: Der Preis muss über dem aktuellen liegen ($#)",
+"No le alcanza: tiene $# libres en spot":"Das reicht nicht: Sie haben $# frei im Spot",
+"Disponible en spot: $#":"Verfügbar im Spot: $#",
+"Al llegar a $# comprará # @ con $#":"Bei $# kauft er # @ für $#",
+"Ponga a qué precio comprar: más abajo (si BAJA a) o más arriba (si SUBE a). Si salta una, la otra se cancela sola.":"Geben Sie den Kaufpreis ein: niedriger (wenn er FÄLLT auf) oder höher (wenn er STEIGT auf). Wird einer ausgelöst, wird der andere automatisch gelöscht.",
+"Escriba cuánto quiere gastar.":"Geben Sie ein, wie viel Sie ausgeben möchten.",
+"Cuando el precio en vivo llegue ahí, la compra queda registrada sola en este programa, le suena y le avisa. La orden de verdad la pone usted en su casa de cambio.":"Sobald der Live-Preis dort ankommt, wird der Kauf von selbst in dieser App eingetragen, mit Ton und Hinweis. Die echte Order geben Sie bei Ihrer Börse auf.",
+"¿Ya la compró? Anótela en «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Schon gekauft? Tragen Sie es unter „Trade erfassen“ ein: Dort ist jeder Preis erlaubt, denn es ist bereits passiert.",
+"Ponga a qué precio comprar.":"Geben Sie den Kaufpreis ein.",
+"Compra programada de $# en @ cuando baje a $#":"Kauf geplant: $# in @, wenn der Preis auf $# fällt",
+"Compra programada de $# en @ cuando suba a $#":"Kauf geplant: $# in @, wenn der Preis auf $# steigt",
+"Compra programada de $# en @: si baja a $# o si sube a $#":"Kauf geplant: $# in @, wenn der Preis auf $# fällt oder auf $# steigt",
+"La compra programada de @ no se hizo: no había dinero suficiente en spot":"Der geplante Kauf von @ wurde nicht ausgeführt: Im Spot war nicht genug Geld",
+"Se compraron # @ a $# (compra programada).":"# @ zu $# gekauft (geplanter Kauf).",
+"La venta programada de @ no se hizo: ya no tenía monedas":"Der geplante Verkauf von @ wurde nicht ausgeführt: Sie hatten die Münzen nicht mehr",
+"Las que tiene":"Die, die Sie besitzen",
+"Las demás":"Die übrigen",
+"No tiene tantas @":"Sie haben nicht so viele @",
+"ej. $#":"z. B. $#",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Gewinnziel $# · #% erreicht · es fehlen $#",
 "Meta de ganancia $# · #% · va en −$#":"Gewinnziel $# · #% · Sie liegen bei −$#",
 "Meta de ganancia (@)":"Gewinnziel (@)",
@@ -24030,7 +24419,66 @@ DIC.de={
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
-"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"La chiusura automatica è spenta: nessuna operazione si chiude da sola anche se il prezzo tocca lo stop o l'obiettivo.",
+"Vender # @ cuando suba a $#":"Vendere # @ quando sale a $#",
+"Vender # @ cuando baje a $#":"Vendere # @ quando scende a $#",
+"Comprar # @ cuando suba a $#":"Comprare # @ quando sale a $#",
+"Comprar # @ cuando baje a $#":"Comprare # @ quando scende a $#",
+"falta #%":"manca #%",
+"programada el":"programmata il",
+"Take profit: vender si SUBE a":"Take profit: vendere se SALE a",
+"Stop loss: vender si BAJA a":"Stop loss: vendere se SCENDE a",
+"Solo tiene # @":"Ha solo # @",
+"El take profit tiene que estar por encima del precio de ahora ($#)":"Il take profit deve essere sopra il prezzo attuale ($#)",
+"El stop loss tiene que estar por debajo del precio de ahora ($#)":"Lo stop loss deve essere sotto il prezzo attuale ($#)",
+"Take profit: recibiría $# y ganaría $#":"Take profit: riceverebbe $# e guadagnerebbe $#",
+"Take profit: recibiría $# y perdería $#":"Take profit: riceverebbe $# e perderebbe $#",
+"Take profit: recibiría $#":"Take profit: riceverebbe $#",
+"Stop loss: recibiría $# y ganaría $#":"Stop loss: riceverebbe $# e guadagnerebbe $#",
+"Stop loss: recibiría $# y perdería $#":"Stop loss: riceverebbe $# e perderebbe $#",
+"Stop loss: recibiría $#":"Stop loss: riceverebbe $#",
+"Ponga el precio de su take profit, de su stop loss o de los dos. Si salta uno, el otro se cancela solo.":"Inserisca il prezzo del suo take profit, del suo stop loss o di entrambi. Se scatta uno, l'altro si annulla da solo.",
+"Ponga el precio de su take profit, de su stop loss o de los dos.":"Inserisca il prezzo del suo take profit, del suo stop loss o di entrambi.",
+"Todavía no hay precio en vivo de @. Espere unos segundos y vuelva a intentarlo.":"Non c'è ancora un prezzo in tempo reale per @. Aspetti qualche secondo e riprovi.",
+"Programados: take profit a $# y stop loss a $# para # @.":"Programmati: take profit a $# e stop loss a $# per # @.",
+"Take profit programado: venta de # @ cuando suba a $#":"Take profit programmato: vendita di # @ quando sale a $#",
+"Stop loss programado: venta de # @ cuando baje a $#":"Stop loss programmato: vendita di # @ quando scende a $#",
+"¿Ya la vendió? Anótela con «Vender» o «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Ha già venduto? La registri con «Vendere» o «Registrare l'operazione»: lì vale qualsiasi prezzo, perché è già successo.",
+"Se vendieron # @ a $# (take profit): ganó $#":"Venduti # @ a $# (take profit): ha guadagnato $#",
+"Se vendieron # @ a $# (take profit): perdió $#":"Venduti # @ a $# (take profit): ha perso $#",
+"Se vendieron # @ a $# (stop loss): ganó $#":"Venduti # @ a $# (stop loss): ha guadagnato $#",
+"Se vendieron # @ a $# (stop loss): perdió $#":"Venduti # @ a $# (stop loss): ha perso $#",
+"Comprar":"Comprare",
+"Órdenes programadas":"Ordini programmati",
+"+ Vender":"+ Vendere",
+"+ Comprar":"+ Comprare",
+"Deje dicho «vende o compra tanto de tal moneda cuando llegue a tal precio» y el programa lo registra solo cuando el precio en vivo llegue, con sonido y aviso.":"Lasci detto «vendi o compra tanto di questa moneta quando arriva a questo prezzo» e il programma lo registra da solo quando il prezzo in tempo reale ci arriva, con suono e avviso.",
+"Quitar la compra programada":"Togliere l'acquisto programmato",
+"Se quita la compra programada de # @ a $#":"L'acquisto programmato di # @ a $# verrà tolto",
+"No hay monedas para comprar.":"Non ci sono monete da comprare.",
+"Programar una compra":"Programmare un acquisto",
+"Cuánto gastar (@)":"Quanto spendere (@)",
+"Comprar si BAJA a":"Comprare se SCENDE a",
+"Comprar si SUBE a":"Comprare se SALE a",
+"Comprar si BAJA a: el precio tiene que estar por debajo del de ahora ($#)":"Comprare se SCENDE a: il prezzo deve essere sotto quello attuale ($#)",
+"Comprar si SUBE a: el precio tiene que estar por encima del de ahora ($#)":"Comprare se SALE a: il prezzo deve essere sopra quello attuale ($#)",
+"No le alcanza: tiene $# libres en spot":"Non basta: ha $# liberi nello spot",
+"Disponible en spot: $#":"Disponibile nello spot: $#",
+"Al llegar a $# comprará # @ con $#":"Arrivato a $# comprerà # @ con $#",
+"Ponga a qué precio comprar: más abajo (si BAJA a) o más arriba (si SUBE a). Si salta una, la otra se cancela sola.":"Inserisca a che prezzo comprare: più in basso (se SCENDE a) o più in alto (se SALE a). Se scatta uno, l'altro si annulla da solo.",
+"Escriba cuánto quiere gastar.":"Scriva quanto vuole spendere.",
+"Cuando el precio en vivo llegue ahí, la compra queda registrada sola en este programa, le suena y le avisa. La orden de verdad la pone usted en su casa de cambio.":"Quando il prezzo in tempo reale ci arriva, l'acquisto viene registrato da solo in questo programma, con suono e avviso. L'ordine vero lo mette lei sul suo exchange.",
+"¿Ya la compró? Anótela en «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Ha già comprato? Lo registri in «Registrare l'operazione»: lì vale qualsiasi prezzo, perché è già successo.",
+"Ponga a qué precio comprar.":"Inserisca a che prezzo comprare.",
+"Compra programada de $# en @ cuando baje a $#":"Acquisto programmato di $# in @ quando scende a $#",
+"Compra programada de $# en @ cuando suba a $#":"Acquisto programmato di $# in @ quando sale a $#",
+"Compra programada de $# en @: si baja a $# o si sube a $#":"Acquisto programmato di $# in @: se scende a $# o se sale a $#",
+"La compra programada de @ no se hizo: no había dinero suficiente en spot":"L'acquisto programmato di @ non è stato fatto: non c'erano abbastanza soldi nello spot",
+"Se compraron # @ a $# (compra programada).":"Comprati # @ a $# (acquisto programmato).",
+"La venta programada de @ no se hizo: ya no tenía monedas":"La vendita programmata di @ non è stata fatta: non aveva più le monete",
+"Las que tiene":"Quelle che ha",
+"Las demás":"Le altre",
+"No tiene tantas @":"Non ha tante @",
+"ej. $#":"es. $#",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Obiettivo di guadagno $# · è al #% · le mancano $#",
 "Meta de ganancia $# · #% · va en −$#":"Obiettivo di guadagno $# · #% · è a −$#",
 "Meta de ganancia (@)":"Obiettivo di guadagno (@)",
@@ -25877,7 +26325,66 @@ DIC.it={
 };
 /* NEDERLANDS · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.nl={
-"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"Automatisch sluiten staat uit: geen enkele trade sluit vanzelf, ook niet als de prijs de stop of het doel raakt.",
+"Vender # @ cuando suba a $#":"# @ verkopen als de prijs stijgt naar $#",
+"Vender # @ cuando baje a $#":"# @ verkopen als de prijs daalt naar $#",
+"Comprar # @ cuando suba a $#":"# @ kopen als de prijs stijgt naar $#",
+"Comprar # @ cuando baje a $#":"# @ kopen als de prijs daalt naar $#",
+"falta #%":"nog #%",
+"programada el":"gepland op",
+"Take profit: vender si SUBE a":"Take profit: verkopen als de prijs STIJGT naar",
+"Stop loss: vender si BAJA a":"Stop loss: verkopen als de prijs DAALT naar",
+"Solo tiene # @":"U heeft maar # @",
+"El take profit tiene que estar por encima del precio de ahora ($#)":"De take profit moet boven de huidige prijs liggen ($#)",
+"El stop loss tiene que estar por debajo del precio de ahora ($#)":"De stop loss moet onder de huidige prijs liggen ($#)",
+"Take profit: recibiría $# y ganaría $#":"Take profit: u ontvangt $# en wint $#",
+"Take profit: recibiría $# y perdería $#":"Take profit: u ontvangt $# en verliest $#",
+"Take profit: recibiría $#":"Take profit: u ontvangt $#",
+"Stop loss: recibiría $# y ganaría $#":"Stop loss: u ontvangt $# en wint $#",
+"Stop loss: recibiría $# y perdería $#":"Stop loss: u ontvangt $# en verliest $#",
+"Stop loss: recibiría $#":"Stop loss: u ontvangt $#",
+"Ponga el precio de su take profit, de su stop loss o de los dos. Si salta uno, el otro se cancela solo.":"Vul de prijs van uw take profit, uw stop loss of allebei in. Gaat er één af, dan vervalt de andere vanzelf.",
+"Ponga el precio de su take profit, de su stop loss o de los dos.":"Vul de prijs van uw take profit, uw stop loss of allebei in.",
+"Todavía no hay precio en vivo de @. Espere unos segundos y vuelva a intentarlo.":"Er is nog geen live prijs voor @. Wacht even en probeer het opnieuw.",
+"Programados: take profit a $# y stop loss a $# para # @.":"Ingepland: take profit op $# en stop loss op $# voor # @.",
+"Take profit programado: venta de # @ cuando suba a $#":"Take profit ingepland: verkoop van # @ als de prijs stijgt naar $#",
+"Stop loss programado: venta de # @ cuando baje a $#":"Stop loss ingepland: verkoop van # @ als de prijs daalt naar $#",
+"¿Ya la vendió? Anótela con «Vender» o «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Al verkocht? Leg het vast via “Verkopen” of “Trade vastleggen”: daar mag elke prijs, want het is al gebeurd.",
+"Se vendieron # @ a $# (take profit): ganó $#":"# @ verkocht tegen $# (take profit): u won $#",
+"Se vendieron # @ a $# (take profit): perdió $#":"# @ verkocht tegen $# (take profit): u verloor $#",
+"Se vendieron # @ a $# (stop loss): ganó $#":"# @ verkocht tegen $# (stop loss): u won $#",
+"Se vendieron # @ a $# (stop loss): perdió $#":"# @ verkocht tegen $# (stop loss): u verloor $#",
+"Comprar":"Kopen",
+"Órdenes programadas":"Geplande orders",
+"+ Vender":"+ Verkopen",
+"+ Comprar":"+ Kopen",
+"Deje dicho «vende o compra tanto de tal moneda cuando llegue a tal precio» y el programa lo registra solo cuando el precio en vivo llegue, con sonido y aviso.":"Zeg “verkoop of koop zoveel van deze munt als hij deze prijs bereikt” en het programma legt het vanzelf vast zodra de live prijs er is, met geluid en melding.",
+"Quitar la compra programada":"Geplande aankoop verwijderen",
+"Se quita la compra programada de # @ a $#":"De geplande aankoop van # @ tegen $# wordt verwijderd",
+"No hay monedas para comprar.":"Er zijn geen munten om te kopen.",
+"Programar una compra":"Een aankoop inplannen",
+"Cuánto gastar (@)":"Hoeveel uitgeven (@)",
+"Comprar si BAJA a":"Kopen als de prijs DAALT naar",
+"Comprar si SUBE a":"Kopen als de prijs STIJGT naar",
+"Comprar si BAJA a: el precio tiene que estar por debajo del de ahora ($#)":"Kopen als de prijs DAALT naar: de prijs moet onder de huidige liggen ($#)",
+"Comprar si SUBE a: el precio tiene que estar por encima del de ahora ($#)":"Kopen als de prijs STIJGT naar: de prijs moet boven de huidige liggen ($#)",
+"No le alcanza: tiene $# libres en spot":"Dat is niet genoeg: u heeft $# vrij in spot",
+"Disponible en spot: $#":"Beschikbaar in spot: $#",
+"Al llegar a $# comprará # @ con $#":"Bij $# koopt hij # @ voor $#",
+"Ponga a qué precio comprar: más abajo (si BAJA a) o más arriba (si SUBE a). Si salta una, la otra se cancela sola.":"Vul de aankoopprijs in: lager (als de prijs DAALT naar) of hoger (als de prijs STIJGT naar). Gaat er één af, dan vervalt de andere vanzelf.",
+"Escriba cuánto quiere gastar.":"Vul in hoeveel u wilt uitgeven.",
+"Cuando el precio en vivo llegue ahí, la compra queda registrada sola en este programa, le suena y le avisa. La orden de verdad la pone usted en su casa de cambio.":"Zodra de live prijs er is, wordt de aankoop vanzelf in dit programma vastgelegd, met geluid en melding. De echte order plaatst u zelf bij uw beurs.",
+"¿Ya la compró? Anótela en «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Al gekocht? Leg het vast via “Trade vastleggen”: daar mag elke prijs, want het is al gebeurd.",
+"Ponga a qué precio comprar.":"Vul de aankoopprijs in.",
+"Compra programada de $# en @ cuando baje a $#":"Aankoop ingepland: $# in @ als de prijs daalt naar $#",
+"Compra programada de $# en @ cuando suba a $#":"Aankoop ingepland: $# in @ als de prijs stijgt naar $#",
+"Compra programada de $# en @: si baja a $# o si sube a $#":"Aankoop ingepland: $# in @ als de prijs daalt naar $# of stijgt naar $#",
+"La compra programada de @ no se hizo: no había dinero suficiente en spot":"De geplande aankoop van @ is niet uitgevoerd: er was niet genoeg geld in spot",
+"Se compraron # @ a $# (compra programada).":"# @ gekocht tegen $# (geplande aankoop).",
+"La venta programada de @ no se hizo: ya no tenía monedas":"De geplande verkoop van @ is niet uitgevoerd: u had de munten niet meer",
+"Las que tiene":"Die u heeft",
+"Las demás":"De overige",
+"No tiene tantas @":"U heeft niet zoveel @",
+"ej. $#":"bijv. $#",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Winstdoel $# · #% bereikt · nog $# te gaan",
 "Meta de ganancia $# · #% · va en −$#":"Winstdoel $# · #% · u staat op −$#",
 "Meta de ganancia (@)":"Winstdoel (@)",
@@ -28010,7 +28517,66 @@ DIC.nl={
 };
 /* POLSKI · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.pl={
-"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"Automatyczne zamykanie jest wyłączone: żadna pozycja nie zamknie się sama, nawet gdy cena dotknie stopu lub celu.",
+"Vender # @ cuando suba a $#":"Sprzedaj # @, gdy cena wzrośnie do $#",
+"Vender # @ cuando baje a $#":"Sprzedaj # @, gdy cena spadnie do $#",
+"Comprar # @ cuando suba a $#":"Kup # @, gdy cena wzrośnie do $#",
+"Comprar # @ cuando baje a $#":"Kup # @, gdy cena spadnie do $#",
+"falta #%":"brakuje #%",
+"programada el":"zaplanowano",
+"Take profit: vender si SUBE a":"Take profit: sprzedaj, gdy cena WZROŚNIE do",
+"Stop loss: vender si BAJA a":"Stop loss: sprzedaj, gdy cena SPADNIE do",
+"Solo tiene # @":"Masz tylko # @",
+"El take profit tiene que estar por encima del precio de ahora ($#)":"Take profit musi być powyżej obecnej ceny ($#)",
+"El stop loss tiene que estar por debajo del precio de ahora ($#)":"Stop loss musi być poniżej obecnej ceny ($#)",
+"Take profit: recibiría $# y ganaría $#":"Take profit: dostaniesz $# i zarobisz $#",
+"Take profit: recibiría $# y perdería $#":"Take profit: dostaniesz $# i stracisz $#",
+"Take profit: recibiría $#":"Take profit: dostaniesz $#",
+"Stop loss: recibiría $# y ganaría $#":"Stop loss: dostaniesz $# i zarobisz $#",
+"Stop loss: recibiría $# y perdería $#":"Stop loss: dostaniesz $# i stracisz $#",
+"Stop loss: recibiría $#":"Stop loss: dostaniesz $#",
+"Ponga el precio de su take profit, de su stop loss o de los dos. Si salta uno, el otro se cancela solo.":"Wpisz cenę take profit, stop loss albo obu. Gdy jedno się uruchomi, drugie anuluje się samo.",
+"Ponga el precio de su take profit, de su stop loss o de los dos.":"Wpisz cenę take profit, stop loss albo obu.",
+"Todavía no hay precio en vivo de @. Espere unos segundos y vuelva a intentarlo.":"Nie ma jeszcze ceny na żywo dla @. Poczekaj kilka sekund i spróbuj ponownie.",
+"Programados: take profit a $# y stop loss a $# para # @.":"Zaplanowano: take profit przy $# i stop loss przy $# dla # @.",
+"Take profit programado: venta de # @ cuando suba a $#":"Take profit zaplanowany: sprzedaż # @, gdy cena wzrośnie do $#",
+"Stop loss programado: venta de # @ cuando baje a $#":"Stop loss zaplanowany: sprzedaż # @, gdy cena spadnie do $#",
+"¿Ya la vendió? Anótela con «Vender» o «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Już sprzedane? Zapisz to przez „Sprzedaj” lub „Dodaj transakcję”: tam obowiązuje każda cena, bo to już się stało.",
+"Se vendieron # @ a $# (take profit): ganó $#":"Sprzedano # @ po $# (take profit): zysk $#",
+"Se vendieron # @ a $# (take profit): perdió $#":"Sprzedano # @ po $# (take profit): strata $#",
+"Se vendieron # @ a $# (stop loss): ganó $#":"Sprzedano # @ po $# (stop loss): zysk $#",
+"Se vendieron # @ a $# (stop loss): perdió $#":"Sprzedano # @ po $# (stop loss): strata $#",
+"Comprar":"Kup",
+"Órdenes programadas":"Zaplanowane zlecenia",
+"+ Vender":"+ Sprzedaj",
+"+ Comprar":"+ Kup",
+"Deje dicho «vende o compra tanto de tal moneda cuando llegue a tal precio» y el programa lo registra solo cuando el precio en vivo llegue, con sonido y aviso.":"Powiedz „sprzedaj lub kup tyle tej monety, gdy osiągnie tę cenę”, a program sam to zapisze, gdy cena na żywo tam dotrze, z dźwiękiem i powiadomieniem.",
+"Quitar la compra programada":"Usuń zaplanowany zakup",
+"Se quita la compra programada de # @ a $#":"Zaplanowany zakup # @ po $# zostanie usunięty",
+"No hay monedas para comprar.":"Nie ma monet do kupienia.",
+"Programar una compra":"Zaplanuj zakup",
+"Cuánto gastar (@)":"Ile wydać (@)",
+"Comprar si BAJA a":"Kup, gdy cena SPADNIE do",
+"Comprar si SUBE a":"Kup, gdy cena WZROŚNIE do",
+"Comprar si BAJA a: el precio tiene que estar por debajo del de ahora ($#)":"Kup, gdy cena SPADNIE do: cena musi być poniżej obecnej ($#)",
+"Comprar si SUBE a: el precio tiene que estar por encima del de ahora ($#)":"Kup, gdy cena WZROŚNIE do: cena musi być powyżej obecnej ($#)",
+"No le alcanza: tiene $# libres en spot":"Nie wystarczy: masz $# wolnych w Spot",
+"Disponible en spot: $#":"Dostępne w Spot: $#",
+"Al llegar a $# comprará # @ con $#":"Przy $# kupi # @ za $#",
+"Ponga a qué precio comprar: más abajo (si BAJA a) o más arriba (si SUBE a). Si salta una, la otra se cancela sola.":"Wpisz cenę zakupu: niższą (gdy cena SPADNIE do) lub wyższą (gdy cena WZROŚNIE do). Gdy jedno się uruchomi, drugie anuluje się samo.",
+"Escriba cuánto quiere gastar.":"Wpisz, ile chcesz wydać.",
+"Cuando el precio en vivo llegue ahí, la compra queda registrada sola en este programa, le suena y le avisa. La orden de verdad la pone usted en su casa de cambio.":"Gdy cena na żywo tam dotrze, zakup zostanie zapisany sam w tym programie, z dźwiękiem i powiadomieniem. Prawdziwe zlecenie składasz na swojej giełdzie.",
+"¿Ya la compró? Anótela en «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Już kupione? Zapisz to w „Dodaj transakcję”: tam obowiązuje każda cena, bo to już się stało.",
+"Ponga a qué precio comprar.":"Wpisz cenę zakupu.",
+"Compra programada de $# en @ cuando baje a $#":"Zakup zaplanowany: $# w @, gdy cena spadnie do $#",
+"Compra programada de $# en @ cuando suba a $#":"Zakup zaplanowany: $# w @, gdy cena wzrośnie do $#",
+"Compra programada de $# en @: si baja a $# o si sube a $#":"Zakup zaplanowany: $# w @, gdy cena spadnie do $# lub wzrośnie do $#",
+"La compra programada de @ no se hizo: no había dinero suficiente en spot":"Zaplanowany zakup @ nie doszedł do skutku: w Spot nie było dość pieniędzy",
+"Se compraron # @ a $# (compra programada).":"Kupiono # @ po $# (zaplanowany zakup).",
+"La venta programada de @ no se hizo: ya no tenía monedas":"Zaplanowana sprzedaż @ nie doszła do skutku: nie masz już tych monet",
+"Las que tiene":"Te, które masz",
+"Las demás":"Pozostałe",
+"No tiene tantas @":"Nie masz tylu @",
+"ej. $#":"np. $#",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Cel zysku $# · osiągnięto #% · brakuje $#",
 "Meta de ganancia $# · #% · va en −$#":"Cel zysku $# · #% · jest na −$#",
 "Meta de ganancia (@)":"Cel zysku (@)",
@@ -30143,7 +30709,66 @@ DIC.pl={
 };
 /* TÜRKÇE · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.tr={
-"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"Otomatik kapatma kapalı: fiyat stop'a veya hedefe dokunsa bile hiçbir işlem kendiliğinden kapanmaz.",
+"Vender # @ cuando suba a $#":"# @ sat, fiyat $# seviyesine çıkınca",
+"Vender # @ cuando baje a $#":"# @ sat, fiyat $# seviyesine düşünce",
+"Comprar # @ cuando suba a $#":"# @ al, fiyat $# seviyesine çıkınca",
+"Comprar # @ cuando baje a $#":"# @ al, fiyat $# seviyesine düşünce",
+"falta #%":"kalan #%",
+"programada el":"planlanma tarihi:",
+"Take profit: vender si SUBE a":"Take profit: fiyat YÜKSELİRSE sat",
+"Stop loss: vender si BAJA a":"Stop loss: fiyat DÜŞERSE sat",
+"Solo tiene # @":"Sadece # @ var",
+"El take profit tiene que estar por encima del precio de ahora ($#)":"Take profit şu anki fiyatın üstünde olmalı ($#)",
+"El stop loss tiene que estar por debajo del precio de ahora ($#)":"Stop loss şu anki fiyatın altında olmalı ($#)",
+"Take profit: recibiría $# y ganaría $#":"Take profit: $# alırsınız ve $# kazanırsınız",
+"Take profit: recibiría $# y perdería $#":"Take profit: $# alırsınız ve $# kaybedersiniz",
+"Take profit: recibiría $#":"Take profit: $# alırsınız",
+"Stop loss: recibiría $# y ganaría $#":"Stop loss: $# alırsınız ve $# kazanırsınız",
+"Stop loss: recibiría $# y perdería $#":"Stop loss: $# alırsınız ve $# kaybedersiniz",
+"Stop loss: recibiría $#":"Stop loss: $# alırsınız",
+"Ponga el precio de su take profit, de su stop loss o de los dos. Si salta uno, el otro se cancela solo.":"Take profit'in, stop loss'un ya da ikisinin fiyatını yazın. Biri tetiklenirse diğeri kendiliğinden iptal olur.",
+"Ponga el precio de su take profit, de su stop loss o de los dos.":"Take profit'in, stop loss'un ya da ikisinin fiyatını yazın.",
+"Todavía no hay precio en vivo de @. Espere unos segundos y vuelva a intentarlo.":"@ için henüz canlı fiyat yok. Birkaç saniye bekleyip tekrar deneyin.",
+"Programados: take profit a $# y stop loss a $# para # @.":"Planlandı: take profit $# ve stop loss $#, # @ için.",
+"Take profit programado: venta de # @ cuando suba a $#":"Take profit planlandı: # @ satışı, fiyat $# seviyesine yükselirse",
+"Stop loss programado: venta de # @ cuando baje a $#":"Stop loss planlandı: # @ satışı, fiyat $# seviyesine düşerse",
+"¿Ya la vendió? Anótela con «Vender» o «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Zaten sattınız mı? «Sat» veya «İşlemi kaydet» ile kaydedin: orada her fiyat geçerlidir, çünkü iş olup bitti.",
+"Se vendieron # @ a $# (take profit): ganó $#":"# @ $# fiyatından satıldı (take profit): $# kazandınız",
+"Se vendieron # @ a $# (take profit): perdió $#":"# @ $# fiyatından satıldı (take profit): $# kaybettiniz",
+"Se vendieron # @ a $# (stop loss): ganó $#":"# @ $# fiyatından satıldı (stop loss): $# kazandınız",
+"Se vendieron # @ a $# (stop loss): perdió $#":"# @ $# fiyatından satıldı (stop loss): $# kaybettiniz",
+"Comprar":"Al",
+"Órdenes programadas":"Planlı emirler",
+"+ Vender":"+ Sat",
+"+ Comprar":"+ Al",
+"Deje dicho «vende o compra tanto de tal moneda cuando llegue a tal precio» y el programa lo registra solo cuando el precio en vivo llegue, con sonido y aviso.":"«Bu coinden şu kadar sat veya al, şu fiyata gelince» deyin; canlı fiyat oraya ulaşınca program kendisi kaydeder, sesli ve bildirimli.",
+"Quitar la compra programada":"Planlı alımı kaldır",
+"Se quita la compra programada de # @ a $#":"# @ için $# fiyatındaki planlı alım kaldırılacak",
+"No hay monedas para comprar.":"Alınacak coin yok.",
+"Programar una compra":"Alım planla",
+"Cuánto gastar (@)":"Ne kadar harcanacak (@)",
+"Comprar si BAJA a":"Fiyat DÜŞERSE al",
+"Comprar si SUBE a":"Fiyat YÜKSELİRSE al",
+"Comprar si BAJA a: el precio tiene que estar por debajo del de ahora ($#)":"Fiyat DÜŞERSE al: fiyat şu anki fiyatın altında olmalı ($#)",
+"Comprar si SUBE a: el precio tiene que estar por encima del de ahora ($#)":"Fiyat YÜKSELİRSE al: fiyat şu anki fiyatın üstünde olmalı ($#)",
+"No le alcanza: tiene $# libres en spot":"Yetmiyor: Spot'ta $# boş paranız var",
+"Disponible en spot: $#":"Spot'ta kullanılabilir: $#",
+"Al llegar a $# comprará # @ con $#":"$# seviyesine gelince # @ alır, harcanacak: $#",
+"Ponga a qué precio comprar: más abajo (si BAJA a) o más arriba (si SUBE a). Si salta una, la otra se cancela sola.":"Alım fiyatını yazın: daha aşağı (fiyat DÜŞERSE) ya da daha yukarı (fiyat YÜKSELİRSE). Biri tetiklenirse diğeri kendiliğinden iptal olur.",
+"Escriba cuánto quiere gastar.":"Ne kadar harcamak istediğinizi yazın.",
+"Cuando el precio en vivo llegue ahí, la compra queda registrada sola en este programa, le suena y le avisa. La orden de verdad la pone usted en su casa de cambio.":"Canlı fiyat oraya ulaşınca alım bu programda kendiliğinden kaydedilir, sesli ve bildirimli. Gerçek emri kendi borsanızda siz verirsiniz.",
+"¿Ya la compró? Anótela en «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Zaten aldınız mı? «İşlemi kaydet» ile kaydedin: orada her fiyat geçerlidir, çünkü iş olup bitti.",
+"Ponga a qué precio comprar.":"Alım fiyatını yazın.",
+"Compra programada de $# en @ cuando baje a $#":"Planlı alım: @ için $#, fiyat $# seviyesine düşerse",
+"Compra programada de $# en @ cuando suba a $#":"Planlı alım: @ için $#, fiyat $# seviyesine yükselirse",
+"Compra programada de $# en @: si baja a $# o si sube a $#":"Planlı alım: @ için $#, fiyat $# seviyesine düşerse veya $# seviyesine yükselirse",
+"La compra programada de @ no se hizo: no había dinero suficiente en spot":"@ için planlı alım yapılmadı: Spot'ta yeterli para yoktu",
+"Se compraron # @ a $# (compra programada).":"# @ $# fiyatından alındı (planlı alım).",
+"La venta programada de @ no se hizo: ya no tenía monedas":"@ için planlı satış yapılmadı: artık coinleriniz yoktu",
+"Las que tiene":"Sahip olduklarınız",
+"Las demás":"Diğerleri",
+"No tiene tantas @":"O kadar @ yok",
+"ej. $#":"örn. $#",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Kâr hedefi $# · #% tamamlandı · kalan $#",
 "Meta de ganancia $# · #% · va en −$#":"Kâr hedefi $# · #% · şu an −$#",
 "Meta de ganancia (@)":"Kâr hedefi (@)",
@@ -32276,7 +32901,66 @@ DIC.tr={
 };
 /* РУССКИЙ · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ru={
-"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"Автоматическое закрытие выключено: ни одна сделка не закроется сама, даже если цена коснётся стопа или цели.",
+"Vender # @ cuando suba a $#":"Продать # @, когда цена вырастет до $#",
+"Vender # @ cuando baje a $#":"Продать # @, когда цена упадёт до $#",
+"Comprar # @ cuando suba a $#":"Купить # @, когда цена вырастет до $#",
+"Comprar # @ cuando baje a $#":"Купить # @, когда цена упадёт до $#",
+"falta #%":"осталось #%",
+"programada el":"запланировано",
+"Take profit: vender si SUBE a":"Тейк-профит: продать, если цена ВЫРАСТЕТ до",
+"Stop loss: vender si BAJA a":"Стоп-лосс: продать, если цена УПАДЁТ до",
+"Solo tiene # @":"У вас всего # @",
+"El take profit tiene que estar por encima del precio de ahora ($#)":"Тейк-профит должен быть выше текущей цены ($#)",
+"El stop loss tiene que estar por debajo del precio de ahora ($#)":"Стоп-лосс должен быть ниже текущей цены ($#)",
+"Take profit: recibiría $# y ganaría $#":"Тейк-профит: вы получите $# и заработаете $#",
+"Take profit: recibiría $# y perdería $#":"Тейк-профит: вы получите $# и потеряете $#",
+"Take profit: recibiría $#":"Тейк-профит: вы получите $#",
+"Stop loss: recibiría $# y ganaría $#":"Стоп-лосс: вы получите $# и заработаете $#",
+"Stop loss: recibiría $# y perdería $#":"Стоп-лосс: вы получите $# и потеряете $#",
+"Stop loss: recibiría $#":"Стоп-лосс: вы получите $#",
+"Ponga el precio de su take profit, de su stop loss o de los dos. Si salta uno, el otro se cancela solo.":"Укажите цену тейк-профита, стоп-лосса или обоих. Если сработает один, второй отменится сам.",
+"Ponga el precio de su take profit, de su stop loss o de los dos.":"Укажите цену тейк-профита, стоп-лосса или обоих.",
+"Todavía no hay precio en vivo de @. Espere unos segundos y vuelva a intentarlo.":"Для @ пока нет цены в реальном времени. Подождите несколько секунд и повторите.",
+"Programados: take profit a $# y stop loss a $# para # @.":"Запланировано: тейк-профит на $# и стоп-лосс на $# для # @.",
+"Take profit programado: venta de # @ cuando suba a $#":"Тейк-профит запланирован: продажа # @, когда цена вырастет до $#",
+"Stop loss programado: venta de # @ cuando baje a $#":"Стоп-лосс запланирован: продажа # @, когда цена упадёт до $#",
+"¿Ya la vendió? Anótela con «Vender» o «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Уже продали? Запишите это через «Продать» или «Записать сделку»: там подходит любая цена, ведь это уже произошло.",
+"Se vendieron # @ a $# (take profit): ganó $#":"Продано # @ по $# (тейк-профит): прибыль $#",
+"Se vendieron # @ a $# (take profit): perdió $#":"Продано # @ по $# (тейк-профит): убыток $#",
+"Se vendieron # @ a $# (stop loss): ganó $#":"Продано # @ по $# (стоп-лосс): прибыль $#",
+"Se vendieron # @ a $# (stop loss): perdió $#":"Продано # @ по $# (стоп-лосс): убыток $#",
+"Comprar":"Купить",
+"Órdenes programadas":"Запланированные ордера",
+"+ Vender":"+ Продать",
+"+ Comprar":"+ Купить",
+"Deje dicho «vende o compra tanto de tal moneda cuando llegue a tal precio» y el programa lo registra solo cuando el precio en vivo llegue, con sonido y aviso.":"Скажите «продай или купи столько этой монеты, когда цена дойдёт до такой-то» — и программа сама запишет это, когда цена в реальном времени туда дойдёт, со звуком и уведомлением.",
+"Quitar la compra programada":"Убрать запланированную покупку",
+"Se quita la compra programada de # @ a $#":"Запланированная покупка # @ по $# будет убрана",
+"No hay monedas para comprar.":"Нет монет для покупки.",
+"Programar una compra":"Запланировать покупку",
+"Cuánto gastar (@)":"Сколько потратить (@)",
+"Comprar si BAJA a":"Купить, если цена УПАДЁТ до",
+"Comprar si SUBE a":"Купить, если цена ВЫРАСТЕТ до",
+"Comprar si BAJA a: el precio tiene que estar por debajo del de ahora ($#)":"Купить, если цена УПАДЁТ до: цена должна быть ниже текущей ($#)",
+"Comprar si SUBE a: el precio tiene que estar por encima del de ahora ($#)":"Купить, если цена ВЫРАСТЕТ до: цена должна быть выше текущей ($#)",
+"No le alcanza: tiene $# libres en spot":"Не хватает: на споте свободно $#",
+"Disponible en spot: $#":"Доступно на споте: $#",
+"Al llegar a $# comprará # @ con $#":"При $# будет куплено # @ на $#",
+"Ponga a qué precio comprar: más abajo (si BAJA a) o más arriba (si SUBE a). Si salta una, la otra se cancela sola.":"Укажите цену покупки: ниже (если цена УПАДЁТ до) или выше (если цена ВЫРАСТЕТ до). Если сработает одна, вторая отменится сама.",
+"Escriba cuánto quiere gastar.":"Укажите, сколько хотите потратить.",
+"Cuando el precio en vivo llegue ahí, la compra queda registrada sola en este programa, le suena y le avisa. La orden de verdad la pone usted en su casa de cambio.":"Когда цена в реальном времени дойдёт до нужной, покупка запишется в этой программе сама, со звуком и уведомлением. Настоящий ордер вы ставите на своей бирже.",
+"¿Ya la compró? Anótela en «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Уже купили? Запишите это через «Записать сделку»: там подходит любая цена, ведь это уже произошло.",
+"Ponga a qué precio comprar.":"Укажите цену покупки.",
+"Compra programada de $# en @ cuando baje a $#":"Покупка запланирована: $# в @, когда цена упадёт до $#",
+"Compra programada de $# en @ cuando suba a $#":"Покупка запланирована: $# в @, когда цена вырастет до $#",
+"Compra programada de $# en @: si baja a $# o si sube a $#":"Покупка запланирована: $# в @, если цена упадёт до $# или вырастет до $#",
+"La compra programada de @ no se hizo: no había dinero suficiente en spot":"Запланированная покупка @ не выполнена: на споте не хватило денег",
+"Se compraron # @ a $# (compra programada).":"Куплено # @ по $# (запланированная покупка).",
+"La venta programada de @ no se hizo: ya no tenía monedas":"Запланированная продажа @ не выполнена: монет уже не было",
+"Las que tiene":"Те, что у вас есть",
+"Las demás":"Остальные",
+"No tiene tantas @":"У вас нет столько @",
+"ej. $#":"напр. $#",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Цель по прибыли $# · пройдено #% · осталось $#",
 "Meta de ganancia $# · #% · va en −$#":"Цель по прибыли $# · #% · сейчас −$#",
 "Meta de ganancia (@)":"Цель по прибыли (@)",
@@ -34409,7 +35093,66 @@ DIC.ru={
 };
 /* УКРАЇНСЬКА · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.uk={
-"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"Автоматичне закриття вимкнено: жодна угода не закриється сама, навіть якщо ціна торкнеться стопу або цілі.",
+"Vender # @ cuando suba a $#":"Продати # @, коли ціна зросте до $#",
+"Vender # @ cuando baje a $#":"Продати # @, коли ціна впаде до $#",
+"Comprar # @ cuando suba a $#":"Купити # @, коли ціна зросте до $#",
+"Comprar # @ cuando baje a $#":"Купити # @, коли ціна впаде до $#",
+"falta #%":"ще #%",
+"programada el":"заплановано",
+"Take profit: vender si SUBE a":"Тейк-профіт: продати, якщо ціна ЗРОСТЕ до",
+"Stop loss: vender si BAJA a":"Стоп-лос: продати, якщо ціна ВПАДЕ до",
+"Solo tiene # @":"У вас лише # @",
+"El take profit tiene que estar por encima del precio de ahora ($#)":"Тейк-профіт має бути вищим за поточну ціну ($#)",
+"El stop loss tiene que estar por debajo del precio de ahora ($#)":"Стоп-лос має бути нижчим за поточну ціну ($#)",
+"Take profit: recibiría $# y ganaría $#":"Тейк-профіт: ви отримаєте $# і заробите $#",
+"Take profit: recibiría $# y perdería $#":"Тейк-профіт: ви отримаєте $# і втратите $#",
+"Take profit: recibiría $#":"Тейк-профіт: ви отримаєте $#",
+"Stop loss: recibiría $# y ganaría $#":"Стоп-лос: ви отримаєте $# і заробите $#",
+"Stop loss: recibiría $# y perdería $#":"Стоп-лос: ви отримаєте $# і втратите $#",
+"Stop loss: recibiría $#":"Стоп-лос: ви отримаєте $#",
+"Ponga el precio de su take profit, de su stop loss o de los dos. Si salta uno, el otro se cancela solo.":"Вкажіть ціну тейк-профіту, стоп-лосу або обох. Якщо спрацює один, другий скасується сам.",
+"Ponga el precio de su take profit, de su stop loss o de los dos.":"Вкажіть ціну тейк-профіту, стоп-лосу або обох.",
+"Todavía no hay precio en vivo de @. Espere unos segundos y vuelva a intentarlo.":"Для @ поки немає ціни в реальному часі. Зачекайте кілька секунд і спробуйте ще раз.",
+"Programados: take profit a $# y stop loss a $# para # @.":"Заплановано: тейк-профіт на $# і стоп-лос на $# для # @.",
+"Take profit programado: venta de # @ cuando suba a $#":"Тейк-профіт заплановано: продаж # @, коли ціна зросте до $#",
+"Stop loss programado: venta de # @ cuando baje a $#":"Стоп-лос заплановано: продаж # @, коли ціна впаде до $#",
+"¿Ya la vendió? Anótela con «Vender» o «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Уже продали? Запишіть це через «Продати» або «Записати угоду»: там підійде будь-яка ціна, адже це вже сталося.",
+"Se vendieron # @ a $# (take profit): ganó $#":"Продано # @ за $# (тейк-профіт): прибуток $#",
+"Se vendieron # @ a $# (take profit): perdió $#":"Продано # @ за $# (тейк-профіт): збиток $#",
+"Se vendieron # @ a $# (stop loss): ganó $#":"Продано # @ за $# (стоп-лос): прибуток $#",
+"Se vendieron # @ a $# (stop loss): perdió $#":"Продано # @ за $# (стоп-лос): збиток $#",
+"Comprar":"Купити",
+"Órdenes programadas":"Заплановані ордери",
+"+ Vender":"+ Продати",
+"+ Comprar":"+ Купити",
+"Deje dicho «vende o compra tanto de tal moneda cuando llegue a tal precio» y el programa lo registra solo cuando el precio en vivo llegue, con sonido y aviso.":"Скажіть «продай або купи стільки цієї монети, коли ціна дійде до такої-то» — і програма сама запише це, коли ціна в реальному часі туди дійде, зі звуком і сповіщенням.",
+"Quitar la compra programada":"Прибрати заплановану купівлю",
+"Se quita la compra programada de # @ a $#":"Заплановану купівлю # @ за $# буде прибрано",
+"No hay monedas para comprar.":"Немає монет для купівлі.",
+"Programar una compra":"Запланувати купівлю",
+"Cuánto gastar (@)":"Скільки витратити (@)",
+"Comprar si BAJA a":"Купити, якщо ціна ВПАДЕ до",
+"Comprar si SUBE a":"Купити, якщо ціна ЗРОСТЕ до",
+"Comprar si BAJA a: el precio tiene que estar por debajo del de ahora ($#)":"Купити, якщо ціна ВПАДЕ до: ціна має бути нижчою за поточну ($#)",
+"Comprar si SUBE a: el precio tiene que estar por encima del de ahora ($#)":"Купити, якщо ціна ЗРОСТЕ до: ціна має бути вищою за поточну ($#)",
+"No le alcanza: tiene $# libres en spot":"Не вистачає: на споті вільно $#",
+"Disponible en spot: $#":"Доступно в споті: $#",
+"Al llegar a $# comprará # @ con $#":"При $# буде куплено # @ на $#",
+"Ponga a qué precio comprar: más abajo (si BAJA a) o más arriba (si SUBE a). Si salta una, la otra se cancela sola.":"Вкажіть ціну купівлі: нижчу (якщо ціна ВПАДЕ до) або вищу (якщо ціна ЗРОСТЕ до). Якщо спрацює одна, друга скасується сама.",
+"Escriba cuánto quiere gastar.":"Вкажіть, скільки хочете витратити.",
+"Cuando el precio en vivo llegue ahí, la compra queda registrada sola en este programa, le suena y le avisa. La orden de verdad la pone usted en su casa de cambio.":"Коли ціна в реальному часі дійде до потрібної, купівля запишеться в цій програмі сама, зі звуком і сповіщенням. Справжній ордер ви ставите на своїй біржі.",
+"¿Ya la compró? Anótela en «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Уже купили? Запишіть це через «Записати угоду»: там підійде будь-яка ціна, адже це вже сталося.",
+"Ponga a qué precio comprar.":"Вкажіть ціну купівлі.",
+"Compra programada de $# en @ cuando baje a $#":"Купівлю заплановано: $# у @, коли ціна впаде до $#",
+"Compra programada de $# en @ cuando suba a $#":"Купівлю заплановано: $# у @, коли ціна зросте до $#",
+"Compra programada de $# en @: si baja a $# o si sube a $#":"Купівлю заплановано: $# у @, якщо ціна впаде до $# або зросте до $#",
+"La compra programada de @ no se hizo: no había dinero suficiente en spot":"Заплановану купівлю @ не виконано: у споті не вистачило грошей",
+"Se compraron # @ a $# (compra programada).":"Куплено # @ за $# (запланована купівля).",
+"La venta programada de @ no se hizo: ya no tenía monedas":"Запланований продаж @ не виконано: монет уже не було",
+"Las que tiene":"Ті, що у вас є",
+"Las demás":"Решта",
+"No tiene tantas @":"У вас немає стільки @",
+"ej. $#":"напр. $#",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Ціль із прибутку $# · виконано #% · залишилося $#",
 "Meta de ganancia $# · #% · va en −$#":"Ціль із прибутку $# · #% · зараз −$#",
 "Meta de ganancia (@)":"Ціль із прибутку (@)",
@@ -36542,7 +37285,66 @@ DIC.uk={
 };
 /* BAHASA INDONESIA · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.id={
-"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"Penutupan otomatis mati: tidak ada posisi yang tertutup sendiri meskipun harga menyentuh stop atau targetnya.",
+"Vender # @ cuando suba a $#":"Jual # @ saat harga naik ke $#",
+"Vender # @ cuando baje a $#":"Jual # @ saat harga turun ke $#",
+"Comprar # @ cuando suba a $#":"Beli # @ saat harga naik ke $#",
+"Comprar # @ cuando baje a $#":"Beli # @ saat harga turun ke $#",
+"falta #%":"kurang #%",
+"programada el":"dijadwalkan pada",
+"Take profit: vender si SUBE a":"Take profit: jual jika harga NAIK ke",
+"Stop loss: vender si BAJA a":"Stop loss: jual jika harga TURUN ke",
+"Solo tiene # @":"Anda hanya punya # @",
+"El take profit tiene que estar por encima del precio de ahora ($#)":"Take profit harus di atas harga saat ini ($#)",
+"El stop loss tiene que estar por debajo del precio de ahora ($#)":"Stop loss harus di bawah harga saat ini ($#)",
+"Take profit: recibiría $# y ganaría $#":"Take profit: Anda menerima $# dan untung $#",
+"Take profit: recibiría $# y perdería $#":"Take profit: Anda menerima $# dan rugi $#",
+"Take profit: recibiría $#":"Take profit: Anda menerima $#",
+"Stop loss: recibiría $# y ganaría $#":"Stop loss: Anda menerima $# dan untung $#",
+"Stop loss: recibiría $# y perdería $#":"Stop loss: Anda menerima $# dan rugi $#",
+"Stop loss: recibiría $#":"Stop loss: Anda menerima $#",
+"Ponga el precio de su take profit, de su stop loss o de los dos. Si salta uno, el otro se cancela solo.":"Isi harga take profit, stop loss, atau keduanya. Jika salah satu terpicu, yang lain dibatalkan otomatis.",
+"Ponga el precio de su take profit, de su stop loss o de los dos.":"Isi harga take profit, stop loss, atau keduanya.",
+"Todavía no hay precio en vivo de @. Espere unos segundos y vuelva a intentarlo.":"Belum ada harga langsung untuk @. Tunggu beberapa detik lalu coba lagi.",
+"Programados: take profit a $# y stop loss a $# para # @.":"Dijadwalkan: take profit di $# dan stop loss di $# untuk # @.",
+"Take profit programado: venta de # @ cuando suba a $#":"Take profit dijadwalkan: jual # @ saat harga naik ke $#",
+"Stop loss programado: venta de # @ cuando baje a $#":"Stop loss dijadwalkan: jual # @ saat harga turun ke $#",
+"¿Ya la vendió? Anótela con «Vender» o «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Sudah dijual? Catat lewat «Jual» atau «Catat transaksi»: di sana harga apa pun boleh, karena sudah terjadi.",
+"Se vendieron # @ a $# (take profit): ganó $#":"Terjual # @ di $# (take profit): untung $#",
+"Se vendieron # @ a $# (take profit): perdió $#":"Terjual # @ di $# (take profit): rugi $#",
+"Se vendieron # @ a $# (stop loss): ganó $#":"Terjual # @ di $# (stop loss): untung $#",
+"Se vendieron # @ a $# (stop loss): perdió $#":"Terjual # @ di $# (stop loss): rugi $#",
+"Comprar":"Beli",
+"Órdenes programadas":"Order terjadwal",
+"+ Vender":"+ Jual",
+"+ Comprar":"+ Beli",
+"Deje dicho «vende o compra tanto de tal moneda cuando llegue a tal precio» y el programa lo registra solo cuando el precio en vivo llegue, con sonido y aviso.":"Katakan «jual atau beli sekian koin ini saat harganya sampai segini» dan program mencatatnya sendiri saat harga langsung tiba, dengan suara dan pemberitahuan.",
+"Quitar la compra programada":"Hapus pembelian terjadwal",
+"Se quita la compra programada de # @ a $#":"Pembelian terjadwal # @ di $# akan dihapus",
+"No hay monedas para comprar.":"Tidak ada koin untuk dibeli.",
+"Programar una compra":"Jadwalkan pembelian",
+"Cuánto gastar (@)":"Berapa yang dibelanjakan (@)",
+"Comprar si BAJA a":"Beli jika harga TURUN ke",
+"Comprar si SUBE a":"Beli jika harga NAIK ke",
+"Comprar si BAJA a: el precio tiene que estar por debajo del de ahora ($#)":"Beli jika harga TURUN ke: harga harus di bawah harga saat ini ($#)",
+"Comprar si SUBE a: el precio tiene que estar por encima del de ahora ($#)":"Beli jika harga NAIK ke: harga harus di atas harga saat ini ($#)",
+"No le alcanza: tiene $# libres en spot":"Tidak cukup: Anda punya $# bebas di Spot",
+"Disponible en spot: $#":"Tersedia di Spot: $#",
+"Al llegar a $# comprará # @ con $#":"Saat mencapai $# akan membeli # @ seharga $#",
+"Ponga a qué precio comprar: más abajo (si BAJA a) o más arriba (si SUBE a). Si salta una, la otra se cancela sola.":"Isi harga beli: lebih rendah (jika harga TURUN ke) atau lebih tinggi (jika harga NAIK ke). Jika salah satu terpicu, yang lain dibatalkan otomatis.",
+"Escriba cuánto quiere gastar.":"Isi berapa yang ingin dibelanjakan.",
+"Cuando el precio en vivo llegue ahí, la compra queda registrada sola en este programa, le suena y le avisa. La orden de verdad la pone usted en su casa de cambio.":"Saat harga langsung tiba di sana, pembelian dicatat sendiri di program ini, dengan suara dan pemberitahuan. Order sungguhan Anda pasang di bursa Anda.",
+"¿Ya la compró? Anótela en «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Sudah dibeli? Catat lewat «Catat transaksi»: di sana harga apa pun boleh, karena sudah terjadi.",
+"Ponga a qué precio comprar.":"Isi harga beli.",
+"Compra programada de $# en @ cuando baje a $#":"Pembelian terjadwal: $# di @ saat harga turun ke $#",
+"Compra programada de $# en @ cuando suba a $#":"Pembelian terjadwal: $# di @ saat harga naik ke $#",
+"Compra programada de $# en @: si baja a $# o si sube a $#":"Pembelian terjadwal: $# di @ jika harga turun ke $# atau naik ke $#",
+"La compra programada de @ no se hizo: no había dinero suficiente en spot":"Pembelian terjadwal @ tidak dilakukan: uang di Spot tidak cukup",
+"Se compraron # @ a $# (compra programada).":"Terbeli # @ di $# (pembelian terjadwal).",
+"La venta programada de @ no se hizo: ya no tenía monedas":"Penjualan terjadwal @ tidak dilakukan: koinnya sudah tidak ada",
+"Las que tiene":"Yang Anda miliki",
+"Las demás":"Lainnya",
+"No tiene tantas @":"Anda tidak punya sebanyak itu @",
+"ej. $#":"mis. $#",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Target keuntungan $# · tercapai #% · kurang $#",
 "Meta de ganancia $# · #% · va en −$#":"Target keuntungan $# · #% · saat ini −$#",
 "Meta de ganancia (@)":"Target keuntungan (@)",
@@ -38675,7 +39477,66 @@ DIC.id={
 };
 /* TIẾNG VIỆT · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.vi={
-"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"Tính năng tự đóng đang tắt: không lệnh nào tự đóng dù giá chạm mức dừng lỗ hoặc mục tiêu.",
+"Vender # @ cuando suba a $#":"Bán # @ khi giá tăng lên $#",
+"Vender # @ cuando baje a $#":"Bán # @ khi giá giảm xuống $#",
+"Comprar # @ cuando suba a $#":"Mua # @ khi giá tăng lên $#",
+"Comprar # @ cuando baje a $#":"Mua # @ khi giá giảm xuống $#",
+"falta #%":"còn #%",
+"programada el":"đặt ngày",
+"Take profit: vender si SUBE a":"Take profit: bán nếu giá TĂNG LÊN",
+"Stop loss: vender si BAJA a":"Stop loss: bán nếu giá GIẢM XUỐNG",
+"Solo tiene # @":"Bạn chỉ có # @",
+"El take profit tiene que estar por encima del precio de ahora ($#)":"Take profit phải cao hơn giá hiện tại ($#)",
+"El stop loss tiene que estar por debajo del precio de ahora ($#)":"Stop loss phải thấp hơn giá hiện tại ($#)",
+"Take profit: recibiría $# y ganaría $#":"Take profit: bạn nhận $# và lời $#",
+"Take profit: recibiría $# y perdería $#":"Take profit: bạn nhận $# và lỗ $#",
+"Take profit: recibiría $#":"Take profit: bạn nhận $#",
+"Stop loss: recibiría $# y ganaría $#":"Stop loss: bạn nhận $# và lời $#",
+"Stop loss: recibiría $# y perdería $#":"Stop loss: bạn nhận $# và lỗ $#",
+"Stop loss: recibiría $#":"Stop loss: bạn nhận $#",
+"Ponga el precio de su take profit, de su stop loss o de los dos. Si salta uno, el otro se cancela solo.":"Nhập giá take profit, stop loss hoặc cả hai. Nếu một lệnh khớp, lệnh còn lại tự hủy.",
+"Ponga el precio de su take profit, de su stop loss o de los dos.":"Nhập giá take profit, stop loss hoặc cả hai.",
+"Todavía no hay precio en vivo de @. Espere unos segundos y vuelva a intentarlo.":"Chưa có giá trực tiếp của @. Chờ vài giây rồi thử lại.",
+"Programados: take profit a $# y stop loss a $# para # @.":"Đã hẹn: take profit ở $# và stop loss ở $# cho # @.",
+"Take profit programado: venta de # @ cuando suba a $#":"Đã hẹn take profit: bán # @ khi giá tăng lên $#",
+"Stop loss programado: venta de # @ cuando baje a $#":"Đã hẹn stop loss: bán # @ khi giá giảm xuống $#",
+"¿Ya la vendió? Anótela con «Vender» o «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Đã bán rồi? Hãy ghi bằng «Bán» hoặc «Ghi lệnh»: ở đó giá nào cũng được, vì việc đã xảy ra.",
+"Se vendieron # @ a $# (take profit): ganó $#":"Đã bán # @ ở $# (take profit): lời $#",
+"Se vendieron # @ a $# (take profit): perdió $#":"Đã bán # @ ở $# (take profit): lỗ $#",
+"Se vendieron # @ a $# (stop loss): ganó $#":"Đã bán # @ ở $# (stop loss): lời $#",
+"Se vendieron # @ a $# (stop loss): perdió $#":"Đã bán # @ ở $# (stop loss): lỗ $#",
+"Comprar":"Mua",
+"Órdenes programadas":"Lệnh hẹn trước",
+"+ Vender":"+ Bán",
+"+ Comprar":"+ Mua",
+"Deje dicho «vende o compra tanto de tal moneda cuando llegue a tal precio» y el programa lo registra solo cuando el precio en vivo llegue, con sonido y aviso.":"Hãy nói «bán hoặc mua chừng này đồng coin này khi giá đến mức này» và chương trình tự ghi lại khi giá trực tiếp đến nơi, có âm thanh và thông báo.",
+"Quitar la compra programada":"Xóa lệnh mua hẹn trước",
+"Se quita la compra programada de # @ a $#":"Lệnh mua hẹn trước # @ ở $# sẽ bị xóa",
+"No hay monedas para comprar.":"Không có coin để mua.",
+"Programar una compra":"Hẹn trước một lệnh mua",
+"Cuánto gastar (@)":"Chi bao nhiêu (@)",
+"Comprar si BAJA a":"Mua nếu giá GIẢM XUỐNG",
+"Comprar si SUBE a":"Mua nếu giá TĂNG LÊN",
+"Comprar si BAJA a: el precio tiene que estar por debajo del de ahora ($#)":"Mua nếu giá GIẢM XUỐNG: giá phải thấp hơn giá hiện tại ($#)",
+"Comprar si SUBE a: el precio tiene que estar por encima del de ahora ($#)":"Mua nếu giá TĂNG LÊN: giá phải cao hơn giá hiện tại ($#)",
+"No le alcanza: tiene $# libres en spot":"Không đủ: bạn còn $# trống ở Spot",
+"Disponible en spot: $#":"Khả dụng ở Spot: $#",
+"Al llegar a $# comprará # @ con $#":"Khi đến $# sẽ mua # @ với $#",
+"Ponga a qué precio comprar: más abajo (si BAJA a) o más arriba (si SUBE a). Si salta una, la otra se cancela sola.":"Nhập giá muốn mua: thấp hơn (nếu giá GIẢM XUỐNG) hoặc cao hơn (nếu giá TĂNG LÊN). Nếu một lệnh khớp, lệnh còn lại tự hủy.",
+"Escriba cuánto quiere gastar.":"Nhập số tiền bạn muốn chi.",
+"Cuando el precio en vivo llegue ahí, la compra queda registrada sola en este programa, le suena y le avisa. La orden de verdad la pone usted en su casa de cambio.":"Khi giá trực tiếp đến nơi, lệnh mua tự được ghi trong chương trình này, có âm thanh và thông báo. Lệnh thật bạn đặt trên sàn của mình.",
+"¿Ya la compró? Anótela en «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"Đã mua rồi? Hãy ghi trong «Ghi lệnh»: ở đó giá nào cũng được, vì việc đã xảy ra.",
+"Ponga a qué precio comprar.":"Nhập giá muốn mua.",
+"Compra programada de $# en @ cuando baje a $#":"Đã hẹn mua $# ở @ khi giá giảm xuống $#",
+"Compra programada de $# en @ cuando suba a $#":"Đã hẹn mua $# ở @ khi giá tăng lên $#",
+"Compra programada de $# en @: si baja a $# o si sube a $#":"Đã hẹn mua $# ở @ nếu giá giảm xuống $# hoặc tăng lên $#",
+"La compra programada de @ no se hizo: no había dinero suficiente en spot":"Lệnh mua hẹn trước của @ không thực hiện: Spot không đủ tiền",
+"Se compraron # @ a $# (compra programada).":"Đã mua # @ ở $# (mua hẹn trước).",
+"La venta programada de @ no se hizo: ya no tenía monedas":"Lệnh bán hẹn trước của @ không thực hiện: bạn không còn coin",
+"Las que tiene":"Những đồng bạn đang giữ",
+"Las demás":"Còn lại",
+"No tiene tantas @":"Bạn không có nhiều @ như vậy",
+"ej. $#":"vd. $#",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"Mục tiêu lãi $# · đạt #% · còn thiếu $#",
 "Meta de ganancia $# · #% · va en −$#":"Mục tiêu lãi $# · #% · hiện đang −$#",
 "Meta de ganancia (@)":"Mục tiêu lãi (@)",
@@ -40808,7 +41669,66 @@ DIC.vi={
 };
 /* हिन्दी · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.hi={
-"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"ऑटोमैटिक क्लोज़िंग बंद है: कीमत स्टॉप या लक्ष्य को छू ले, तब भी कोई ट्रेड अपने-आप बंद नहीं होगा।",
+"Vender # @ cuando suba a $#":"# @ बेचें, जब भाव बढ़कर $# हो",
+"Vender # @ cuando baje a $#":"# @ बेचें, जब भाव गिरकर $# हो",
+"Comprar # @ cuando suba a $#":"# @ खरीदें, जब भाव बढ़कर $# हो",
+"Comprar # @ cuando baje a $#":"# @ खरीदें, जब भाव गिरकर $# हो",
+"falta #%":"#% बाकी",
+"programada el":"निर्धारित:",
+"Take profit: vender si SUBE a":"टेक प्रॉफ़िट: भाव ऊपर जाए तो बेचें",
+"Stop loss: vender si BAJA a":"स्टॉप लॉस: भाव नीचे आए तो बेचें",
+"Solo tiene # @":"आपके पास केवल # @ हैं",
+"El take profit tiene que estar por encima del precio de ahora ($#)":"टेक प्रॉफ़िट अभी के भाव से ऊपर होना चाहिए ($#)",
+"El stop loss tiene que estar por debajo del precio de ahora ($#)":"स्टॉप लॉस अभी के भाव से नीचे होना चाहिए ($#)",
+"Take profit: recibiría $# y ganaría $#":"टेक प्रॉफ़िट: आपको $# मिलेंगे और $# का फ़ायदा होगा",
+"Take profit: recibiría $# y perdería $#":"टेक प्रॉफ़िट: आपको $# मिलेंगे और $# का नुकसान होगा",
+"Take profit: recibiría $#":"टेक प्रॉफ़िट: आपको $# मिलेंगे",
+"Stop loss: recibiría $# y ganaría $#":"स्टॉप लॉस: आपको $# मिलेंगे और $# का फ़ायदा होगा",
+"Stop loss: recibiría $# y perdería $#":"स्टॉप लॉस: आपको $# मिलेंगे और $# का नुकसान होगा",
+"Stop loss: recibiría $#":"स्टॉप लॉस: आपको $# मिलेंगे",
+"Ponga el precio de su take profit, de su stop loss o de los dos. Si salta uno, el otro se cancela solo.":"टेक प्रॉफ़िट, स्टॉप लॉस या दोनों का भाव लिखें। एक चल गया तो दूसरा अपने-आप रद्द हो जाएगा।",
+"Ponga el precio de su take profit, de su stop loss o de los dos.":"टेक प्रॉफ़िट, स्टॉप लॉस या दोनों का भाव लिखें।",
+"Todavía no hay precio en vivo de @. Espere unos segundos y vuelva a intentarlo.":"@ का लाइव भाव अभी नहीं आया है। कुछ सेकंड रुककर फिर कोशिश करें।",
+"Programados: take profit a $# y stop loss a $# para # @.":"तय किया गया: टेक प्रॉफ़िट $# पर और स्टॉप लॉस $# पर, # @ के लिए।",
+"Take profit programado: venta de # @ cuando suba a $#":"टेक प्रॉफ़िट तय: # @ की बिक्री, जब भाव $# तक ऊपर जाए.",
+"Stop loss programado: venta de # @ cuando baje a $#":"स्टॉप लॉस तय: # @ की बिक्री, जब भाव $# तक नीचे आए.",
+"¿Ya la vendió? Anótela con «Vender» o «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"पहले ही बेच चुके हैं? उसे «बेचें» या «ट्रेड दर्ज करें» से दर्ज करें: वहाँ कोई भी भाव चलता है, क्योंकि वह हो चुका है।",
+"Se vendieron # @ a $# (take profit): ganó $#":"# @ $# पर बिके (टेक प्रॉफ़िट): $# का फ़ायदा.",
+"Se vendieron # @ a $# (take profit): perdió $#":"# @ $# पर बिके (टेक प्रॉफ़िट): $# का नुकसान.",
+"Se vendieron # @ a $# (stop loss): ganó $#":"# @ $# पर बिके (स्टॉप लॉस): $# का फ़ायदा.",
+"Se vendieron # @ a $# (stop loss): perdió $#":"# @ $# पर बिके (स्टॉप लॉस): $# का नुकसान.",
+"Comprar":"खरीदें",
+"Órdenes programadas":"निर्धारित ऑर्डर",
+"+ Vender":"+ बेचें",
+"+ Comprar":"+ खरीदें",
+"Deje dicho «vende o compra tanto de tal moneda cuando llegue a tal precio» y el programa lo registra solo cuando el precio en vivo llegue, con sonido y aviso.":"बस कह दें «इस कॉइन का इतना बेचो या खरीदो जब भाव इतना हो जाए» और जैसे ही लाइव भाव वहाँ पहुँचेगा, प्रोग्राम खुद दर्ज कर देगा, आवाज़ और सूचना के साथ।",
+"Quitar la compra programada":"निर्धारित खरीद हटाएँ",
+"Se quita la compra programada de # @ a $#":"# @ की निर्धारित खरीद ($# पर) हटा दी जाएगी.",
+"No hay monedas para comprar.":"खरीदने के लिए कोई कॉइन नहीं है।",
+"Programar una compra":"खरीद निर्धारित करें",
+"Cuánto gastar (@)":"कितना खर्च करना है (@)",
+"Comprar si BAJA a":"भाव नीचे आए तो खरीदें",
+"Comprar si SUBE a":"भाव ऊपर जाए तो खरीदें",
+"Comprar si BAJA a: el precio tiene que estar por debajo del de ahora ($#)":"भाव नीचे आए तो खरीदें: भाव अभी के भाव से नीचे होना चाहिए ($#)",
+"Comprar si SUBE a: el precio tiene que estar por encima del de ahora ($#)":"भाव ऊपर जाए तो खरीदें: भाव अभी के भाव से ऊपर होना चाहिए ($#)",
+"No le alcanza: tiene $# libres en spot":"पैसे कम हैं: स्पॉट में $# खाली हैं",
+"Disponible en spot: $#":"स्पॉट में उपलब्ध: $#",
+"Al llegar a $# comprará # @ con $#":"$# पर पहुँचते ही # @ खरीदेगा, खर्च: $#",
+"Ponga a qué precio comprar: más abajo (si BAJA a) o más arriba (si SUBE a). Si salta una, la otra se cancela sola.":"खरीद का भाव लिखें: नीचे (भाव नीचे आए तो) या ऊपर (भाव ऊपर जाए तो)। एक चल गया तो दूसरा अपने-आप रद्द हो जाएगा।",
+"Escriba cuánto quiere gastar.":"लिखें कि कितना खर्च करना चाहते हैं।",
+"Cuando el precio en vivo llegue ahí, la compra queda registrada sola en este programa, le suena y le avisa. La orden de verdad la pone usted en su casa de cambio.":"जब लाइव भाव वहाँ पहुँचेगा, खरीद इस प्रोग्राम में अपने-आप दर्ज हो जाएगी, आवाज़ और सूचना के साथ। असली ऑर्डर आप अपने एक्सचेंज पर लगाते हैं।",
+"¿Ya la compró? Anótela en «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"पहले ही खरीद चुके हैं? उसे «ट्रेड दर्ज करें» में दर्ज करें: वहाँ कोई भी भाव चलता है, क्योंकि वह हो चुका है।",
+"Ponga a qué precio comprar.":"खरीद का भाव लिखें।",
+"Compra programada de $# en @ cuando baje a $#":"खरीद तय: @ में $#, जब भाव $# तक नीचे आए.",
+"Compra programada de $# en @ cuando suba a $#":"खरीद तय: @ में $#, जब भाव $# तक ऊपर जाए.",
+"Compra programada de $# en @: si baja a $# o si sube a $#":"खरीद तय: @ में $#, अगर भाव $# तक नीचे आए या $# तक ऊपर जाए.",
+"La compra programada de @ no se hizo: no había dinero suficiente en spot":"@ की निर्धारित खरीद नहीं हुई: स्पॉट में पर्याप्त पैसे नहीं थे",
+"Se compraron # @ a $# (compra programada).":"# @ $# पर खरीदे (निर्धारित खरीद)।",
+"La venta programada de @ no se hizo: ya no tenía monedas":"@ की निर्धारित बिक्री नहीं हुई: अब आपके पास कॉइन नहीं थे",
+"Las que tiene":"जो आपके पास हैं",
+"Las demás":"बाकी",
+"No tiene tantas @":"आपके पास इतने @ नहीं हैं",
+"ej. $#":"जैसे $#",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"मुनाफ़े का लक्ष्य $# · #% पूरा · $# बाकी",
 "Meta de ganancia $# · #% · va en −$#":"मुनाफ़े का लक्ष्य $# · #% · अभी −$# पर",
 "Meta de ganancia (@)":"मुनाफ़े का लक्ष्य (@)",
@@ -42941,7 +43861,66 @@ DIC.hi={
 };
 /* 日本語 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ja={
-"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"自動クローズはオフです。価格がストップや目標に触れても、どのトレードも自動では閉じません。",
+"Vender # @ cuando suba a $#":"# @ を売却（価格が $# に上昇したら）",
+"Vender # @ cuando baje a $#":"# @ を売却（価格が $# に下落したら）",
+"Comprar # @ cuando suba a $#":"# @ を購入（価格が $# に上昇したら）",
+"Comprar # @ cuando baje a $#":"# @ を購入（価格が $# に下落したら）",
+"falta #%":"あと #%",
+"programada el":"予約日",
+"Take profit: vender si SUBE a":"テイクプロフィット：上昇して次の価格に達したら売却",
+"Stop loss: vender si BAJA a":"ストップロス：下落して次の価格に達したら売却",
+"Solo tiene # @":"保有は # @ のみです",
+"El take profit tiene que estar por encima del precio de ahora ($#)":"テイクプロフィットは現在価格より上にしてください（$#）",
+"El stop loss tiene que estar por debajo del precio de ahora ($#)":"ストップロスは現在価格より下にしてください（$#）",
+"Take profit: recibiría $# y ganaría $#":"テイクプロフィット：$# を受け取り、$# の利益になります",
+"Take profit: recibiría $# y perdería $#":"テイクプロフィット：$# を受け取り、$# の損失になります",
+"Take profit: recibiría $#":"テイクプロフィット：$# を受け取ります",
+"Stop loss: recibiría $# y ganaría $#":"ストップロス：$# を受け取り、$# の利益になります",
+"Stop loss: recibiría $# y perdería $#":"ストップロス：$# を受け取り、$# の損失になります",
+"Stop loss: recibiría $#":"ストップロス：$# を受け取ります",
+"Ponga el precio de su take profit, de su stop loss o de los dos. Si salta uno, el otro se cancela solo.":"テイクプロフィット、ストップロス、またはその両方の価格を入力してください。片方が成立すると、もう片方は自動で取り消されます。",
+"Ponga el precio de su take profit, de su stop loss o de los dos.":"テイクプロフィット、ストップロス、またはその両方の価格を入力してください。",
+"Todavía no hay precio en vivo de @. Espere unos segundos y vuelva a intentarlo.":"@ のライブ価格はまだありません。数秒待ってからもう一度お試しください。",
+"Programados: take profit a $# y stop loss a $# para # @.":"予約しました：テイクプロフィット $#、ストップロス $#（# @ 分）。",
+"Take profit programado: venta de # @ cuando suba a $#":"テイクプロフィットを予約：# @ を売却（価格が $# に上昇したとき）。",
+"Stop loss programado: venta de # @ cuando baje a $#":"ストップロスを予約：# @ を売却（価格が $# に下落したとき）。",
+"¿Ya la vendió? Anótela con «Vender» o «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"もう売りましたか？「売却」または「取引を記録」から記録してください。すでに起きたことなので、そこではどんな価格でも入力できます。",
+"Se vendieron # @ a $# (take profit): ganó $#":"# @ を $# で売却（テイクプロフィット）：$# の利益。",
+"Se vendieron # @ a $# (take profit): perdió $#":"# @ を $# で売却（テイクプロフィット）：$# の損失。",
+"Se vendieron # @ a $# (stop loss): ganó $#":"# @ を $# で売却（ストップロス）：$# の利益。",
+"Se vendieron # @ a $# (stop loss): perdió $#":"# @ を $# で売却（ストップロス）：$# の損失。",
+"Comprar":"購入",
+"Órdenes programadas":"予約注文",
+"+ Vender":"+ 売却",
+"+ Comprar":"+ 購入",
+"Deje dicho «vende o compra tanto de tal moneda cuando llegue a tal precio» y el programa lo registra solo cuando el precio en vivo llegue, con sonido y aviso.":"「このコインをこの価格になったらこれだけ売る／買う」と決めておけば、ライブ価格がそこに届いた時点でプログラムが自動で記録し、音と通知でお知らせします。",
+"Quitar la compra programada":"予約購入を取り消す",
+"Se quita la compra programada de # @ a $#":"# @ の予約購入（$#）を取り消します。",
+"No hay monedas para comprar.":"購入できるコインがありません。",
+"Programar una compra":"購入を予約",
+"Cuánto gastar (@)":"使う金額（@）",
+"Comprar si BAJA a":"下落して次の価格に達したら購入",
+"Comprar si SUBE a":"上昇して次の価格に達したら購入",
+"Comprar si BAJA a: el precio tiene que estar por debajo del de ahora ($#)":"下落時に購入：現在価格より下にしてください（$#）",
+"Comprar si SUBE a: el precio tiene que estar por encima del de ahora ($#)":"上昇時に購入：現在価格より上にしてください（$#）",
+"No le alcanza: tiene $# libres en spot":"足りません：現物の空きは $# です",
+"Disponible en spot: $#":"現物で利用可能：$#",
+"Al llegar a $# comprará # @ con $#":"$# に達したら、# @ を購入します（支出 $#）",
+"Ponga a qué precio comprar: más abajo (si BAJA a) o más arriba (si SUBE a). Si salta una, la otra se cancela sola.":"購入価格を入力してください：低い価格（下落時）または高い価格（上昇時）。片方が成立すると、もう片方は自動で取り消されます。",
+"Escriba cuánto quiere gastar.":"使いたい金額を入力してください。",
+"Cuando el precio en vivo llegue ahí, la compra queda registrada sola en este programa, le suena y le avisa. La orden de verdad la pone usted en su casa de cambio.":"ライブ価格がそこに届くと、購入がこのプログラムに自動で記録され、音と通知でお知らせします。実際の注文はご自身の取引所で出してください。",
+"¿Ya la compró? Anótela en «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"もう買いましたか？「取引を記録」から記録してください。すでに起きたことなので、そこではどんな価格でも入力できます。",
+"Ponga a qué precio comprar.":"購入価格を入力してください。",
+"Compra programada de $# en @ cuando baje a $#":"購入を予約：@ に $#（価格が $# に下落したとき）。",
+"Compra programada de $# en @ cuando suba a $#":"購入を予約：@ に $#（価格が $# に上昇したとき）。",
+"Compra programada de $# en @: si baja a $# o si sube a $#":"購入を予約：@ に $#（価格が $# に下落、または $# に上昇したとき）。",
+"La compra programada de @ no se hizo: no había dinero suficiente en spot":"@ の予約購入は実行されませんでした：現物の資金が不足していました",
+"Se compraron # @ a $# (compra programada).":"# @ を $# で購入（予約購入）。",
+"La venta programada de @ no se hizo: ya no tenía monedas":"@ の予約売却は実行されませんでした：コインが残っていませんでした",
+"Las que tiene":"保有中のもの",
+"Las demás":"その他",
+"No tiene tantas @":"@ の保有数が足りません",
+"ej. $#":"例 $#",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"利益目標 $# · #%達成 · あと$#",
 "Meta de ganancia $# · #% · va en −$#":"利益目標 $# · #% · 現在 −$#",
 "Meta de ganancia (@)":"利益目標 (@)",
@@ -45074,7 +46053,66 @@ DIC.ja={
 };
 /* 한국어 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ko={
-"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"자동 청산이 꺼져 있습니다. 가격이 스톱이나 목표에 닿아도 어떤 거래도 저절로 닫히지 않습니다.",
+"Vender # @ cuando suba a $#":"# @ 매도 (가격이 $# 까지 오르면)",
+"Vender # @ cuando baje a $#":"# @ 매도 (가격이 $# 까지 내리면)",
+"Comprar # @ cuando suba a $#":"# @ 매수 (가격이 $# 까지 오르면)",
+"Comprar # @ cuando baje a $#":"# @ 매수 (가격이 $# 까지 내리면)",
+"falta #%":"#% 남음",
+"programada el":"예약일:",
+"Take profit: vender si SUBE a":"익절가: 가격이 상승해 이 가격에 닿으면 매도",
+"Stop loss: vender si BAJA a":"손절가: 가격이 하락해 이 가격에 닿으면 매도",
+"Solo tiene # @":"보유량이 # @ 뿐입니다",
+"El take profit tiene que estar por encima del precio de ahora ($#)":"익절가는 현재 가격보다 높아야 합니다($#)",
+"El stop loss tiene que estar por debajo del precio de ahora ($#)":"손절가는 현재 가격보다 낮아야 합니다($#)",
+"Take profit: recibiría $# y ganaría $#":"익절가: $# 를 받고 $# 이익이 납니다",
+"Take profit: recibiría $# y perdería $#":"익절가: $# 를 받고 $# 손실이 납니다",
+"Take profit: recibiría $#":"익절가: $# 를 받습니다",
+"Stop loss: recibiría $# y ganaría $#":"손절가: $# 를 받고 $# 이익이 납니다",
+"Stop loss: recibiría $# y perdería $#":"손절가: $# 를 받고 $# 손실이 납니다",
+"Stop loss: recibiría $#":"손절가: $# 를 받습니다",
+"Ponga el precio de su take profit, de su stop loss o de los dos. Si salta uno, el otro se cancela solo.":"익절가, 손절가 또는 둘 다의 가격을 입력하세요. 하나가 체결되면 다른 하나는 자동으로 취소됩니다.",
+"Ponga el precio de su take profit, de su stop loss o de los dos.":"익절가, 손절가 또는 둘 다의 가격을 입력하세요.",
+"Todavía no hay precio en vivo de @. Espere unos segundos y vuelva a intentarlo.":"@ 의 실시간 가격이 아직 없습니다. 몇 초 기다렸다가 다시 시도하세요.",
+"Programados: take profit a $# y stop loss a $# para # @.":"예약됨: 익절가 $#, 손절가 $# (# @ 기준).",
+"Take profit programado: venta de # @ cuando suba a $#":"익절 예약: # @ 매도 (가격이 $# 까지 오르면).",
+"Stop loss programado: venta de # @ cuando baje a $#":"손절 예약: # @ 매도 (가격이 $# 까지 내리면).",
+"¿Ya la vendió? Anótela con «Vender» o «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"이미 파셨나요? «매도» 또는 «거래 등록»에서 기록하세요. 이미 일어난 일이라 그곳에서는 어떤 가격이든 입력할 수 있습니다.",
+"Se vendieron # @ a $# (take profit): ganó $#":"# @ 를 $# 에 매도(익절): $# 이익.",
+"Se vendieron # @ a $# (take profit): perdió $#":"# @ 를 $# 에 매도(익절): $# 손실.",
+"Se vendieron # @ a $# (stop loss): ganó $#":"# @ 를 $# 에 매도(손절): $# 이익.",
+"Se vendieron # @ a $# (stop loss): perdió $#":"# @ 를 $# 에 매도(손절): $# 손실.",
+"Comprar":"매수",
+"Órdenes programadas":"예약 주문",
+"+ Vender":"+ 매도",
+"+ Comprar":"+ 매수",
+"Deje dicho «vende o compra tanto de tal moneda cuando llegue a tal precio» y el programa lo registra solo cuando el precio en vivo llegue, con sonido y aviso.":"«이 코인을 이 가격이 되면 이만큼 팔기/사기»라고 정해 두면, 실시간 가격이 그곳에 닿는 순간 프로그램이 알아서 기록하고 소리와 알림으로 알려 줍니다.",
+"Quitar la compra programada":"예약 매수 삭제",
+"Se quita la compra programada de # @ a $#":"# @ 의 예약 매수($#)가 삭제됩니다.",
+"No hay monedas para comprar.":"매수할 코인이 없습니다.",
+"Programar una compra":"매수 예약",
+"Cuánto gastar (@)":"쓸 금액 (@)",
+"Comprar si BAJA a":"가격이 하락해 이 가격에 닿으면 매수",
+"Comprar si SUBE a":"가격이 상승해 이 가격에 닿으면 매수",
+"Comprar si BAJA a: el precio tiene que estar por debajo del de ahora ($#)":"하락 시 매수: 가격은 현재 가격보다 낮아야 합니다($#)",
+"Comprar si SUBE a: el precio tiene que estar por encima del de ahora ($#)":"상승 시 매수: 가격은 현재 가격보다 높아야 합니다($#)",
+"No le alcanza: tiene $# libres en spot":"잔액이 부족합니다: 현물에 $# 만 남아 있습니다",
+"Disponible en spot: $#":"현물 사용 가능: $#",
+"Al llegar a $# comprará # @ con $#":"$# 에 닿으면 # @ 를 매수합니다(사용 금액 $#)",
+"Ponga a qué precio comprar: más abajo (si BAJA a) o más arriba (si SUBE a). Si salta una, la otra se cancela sola.":"매수 가격을 입력하세요: 더 낮은 가격(하락 시) 또는 더 높은 가격(상승 시). 하나가 체결되면 다른 하나는 자동으로 취소됩니다.",
+"Escriba cuánto quiere gastar.":"쓰려는 금액을 입력하세요.",
+"Cuando el precio en vivo llegue ahí, la compra queda registrada sola en este programa, le suena y le avisa. La orden de verdad la pone usted en su casa de cambio.":"실시간 가격이 그곳에 닿으면 매수가 이 프로그램에 자동으로 기록되고 소리와 알림이 옵니다. 실제 주문은 본인의 거래소에서 직접 넣으세요.",
+"¿Ya la compró? Anótela en «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"이미 사셨나요? «거래 등록»에서 기록하세요. 이미 일어난 일이라 그곳에서는 어떤 가격이든 입력할 수 있습니다.",
+"Ponga a qué precio comprar.":"매수 가격을 입력하세요.",
+"Compra programada de $# en @ cuando baje a $#":"매수 예약: @ 에 $# (가격이 $# 까지 내리면).",
+"Compra programada de $# en @ cuando suba a $#":"매수 예약: @ 에 $# (가격이 $# 까지 오르면).",
+"Compra programada de $# en @: si baja a $# o si sube a $#":"매수 예약: @ 에 $# (가격이 $# 까지 내리거나 $# 까지 오르면).",
+"La compra programada de @ no se hizo: no había dinero suficiente en spot":"@ 의 예약 매수가 실행되지 않았습니다: 현물 자금이 부족했습니다",
+"Se compraron # @ a $# (compra programada).":"# @ 를 $# 에 매수(예약 매수).",
+"La venta programada de @ no se hizo: ya no tenía monedas":"@ 의 예약 매도가 실행되지 않았습니다: 더 이상 코인이 없었습니다",
+"Las que tiene":"보유 중인 코인",
+"Las demás":"나머지",
+"No tiene tantas @":"@ 보유량이 그만큼 없습니다",
+"ej. $#":"예: $#",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"수익 목표 $# · #% 달성 · $# 남음",
 "Meta de ganancia $# · #% · va en −$#":"수익 목표 $# · #% · 현재 −$#",
 "Meta de ganancia (@)":"수익 목표 (@)",
@@ -47207,7 +48245,66 @@ DIC.ko={
 };
 /* 中文（简体） · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.zh={
-"El cierre automático está apagado: ninguna operación se cierra sola aunque el precio toque su stop o su objetivo.":"自动平仓已关闭：即使价格触及止损或目标，也不会有任何交易自动平仓。",
+"Vender # @ cuando suba a $#":"卖出 # @，价格涨到 $# 时",
+"Vender # @ cuando baje a $#":"卖出 # @，价格跌到 $# 时",
+"Comprar # @ cuando suba a $#":"买入 # @，价格涨到 $# 时",
+"Comprar # @ cuando baje a $#":"买入 # @，价格跌到 $# 时",
+"falta #%":"还差 #%",
+"programada el":"设定于",
+"Take profit: vender si SUBE a":"止盈：涨到该价格时卖出",
+"Stop loss: vender si BAJA a":"止损：跌到该价格时卖出",
+"Solo tiene # @":"您只有 # @",
+"El take profit tiene que estar por encima del precio de ahora ($#)":"止盈必须高于当前价格（$#）",
+"El stop loss tiene que estar por debajo del precio de ahora ($#)":"止损必须低于当前价格（$#）",
+"Take profit: recibiría $# y ganaría $#":"止盈：您将收到 $#，盈利 $#",
+"Take profit: recibiría $# y perdería $#":"止盈：您将收到 $#，亏损 $#",
+"Take profit: recibiría $#":"止盈：您将收到 $#",
+"Stop loss: recibiría $# y ganaría $#":"止损：您将收到 $#，盈利 $#",
+"Stop loss: recibiría $# y perdería $#":"止损：您将收到 $#，亏损 $#",
+"Stop loss: recibiría $#":"止损：您将收到 $#",
+"Ponga el precio de su take profit, de su stop loss o de los dos. Si salta uno, el otro se cancela solo.":"请输入止盈、止损或两者的价格。其中一个触发后，另一个会自动取消。",
+"Ponga el precio de su take profit, de su stop loss o de los dos.":"请输入止盈、止损或两者的价格。",
+"Todavía no hay precio en vivo de @. Espere unos segundos y vuelva a intentarlo.":"@ 暂时还没有实时价格。请等几秒再试。",
+"Programados: take profit a $# y stop loss a $# para # @.":"已计划：止盈 $#，止损 $#（共 # @）。",
+"Take profit programado: venta de # @ cuando suba a $#":"已计划止盈：# @ 在涨到 $# 时卖出。",
+"Stop loss programado: venta de # @ cuando baje a $#":"已计划止损：# @ 在跌到 $# 时卖出。",
+"¿Ya la vendió? Anótela con «Vender» o «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"已经卖了？请通过“卖出”或“记录交易”来记录：那里任何价格都可以，因为已经发生了。",
+"Se vendieron # @ a $# (take profit): ganó $#":"已卖出 # @，价格 $#（止盈）：盈利 $#。",
+"Se vendieron # @ a $# (take profit): perdió $#":"已卖出 # @，价格 $#（止盈）：亏损 $#。",
+"Se vendieron # @ a $# (stop loss): ganó $#":"已卖出 # @，价格 $#（止损）：盈利 $#。",
+"Se vendieron # @ a $# (stop loss): perdió $#":"已卖出 # @，价格 $#（止损）：亏损 $#。",
+"Comprar":"买入",
+"Órdenes programadas":"计划订单",
+"+ Vender":"+ 卖出",
+"+ Comprar":"+ 买入",
+"Deje dicho «vende o compra tanto de tal moneda cuando llegue a tal precio» y el programa lo registra solo cuando el precio en vivo llegue, con sonido y aviso.":"只要说一句“这个币到这个价格时卖出或买入这么多”，实时价格一到，程序就会自动记录，并用声音和提醒通知您。",
+"Quitar la compra programada":"删除计划买入",
+"Se quita la compra programada de # @ a $#":"将删除 # @ 的计划买入（$#）。",
+"No hay monedas para comprar.":"没有可买入的币。",
+"Programar una compra":"计划一笔买入",
+"Cuánto gastar (@)":"花费多少（@）",
+"Comprar si BAJA a":"跌到该价格时买入",
+"Comprar si SUBE a":"涨到该价格时买入",
+"Comprar si BAJA a: el precio tiene que estar por debajo del de ahora ($#)":"跌到该价格时买入：价格必须低于当前价格（$#）",
+"Comprar si SUBE a: el precio tiene que estar por encima del de ahora ($#)":"涨到该价格时买入：价格必须高于当前价格（$#）",
+"No le alcanza: tiene $# libres en spot":"余额不足：现货中只有 $# 可用",
+"Disponible en spot: $#":"现货可用：$#",
+"Al llegar a $# comprará # @ con $#":"到达 $# 时将买入 # @，花费 $#",
+"Ponga a qué precio comprar: más abajo (si BAJA a) o más arriba (si SUBE a). Si salta una, la otra se cancela sola.":"请输入买入价格：更低（跌到该价格时）或更高（涨到该价格时）。其中一个触发后，另一个会自动取消。",
+"Escriba cuánto quiere gastar.":"请输入您想花费的金额。",
+"Cuando el precio en vivo llegue ahí, la compra queda registrada sola en este programa, le suena y le avisa. La orden de verdad la pone usted en su casa de cambio.":"实时价格到达后，这笔买入会自动记录在本程序中，并有声音和提醒。真正的订单需要您在自己的交易所下单。",
+"¿Ya la compró? Anótela en «Registrar operación»: ahí vale cualquier precio, porque ya pasó.":"已经买了？请在“记录交易”中记录：那里任何价格都可以，因为已经发生了。",
+"Ponga a qué precio comprar.":"请输入买入价格。",
+"Compra programada de $# en @ cuando baje a $#":"已计划买入：@ $#，跌到 $# 时。",
+"Compra programada de $# en @ cuando suba a $#":"已计划买入：@ $#，涨到 $# 时。",
+"Compra programada de $# en @: si baja a $# o si sube a $#":"已计划买入：@ $#，跌到 $# 或涨到 $# 时。",
+"La compra programada de @ no se hizo: no había dinero suficiente en spot":"@ 的计划买入未执行：现货资金不足",
+"Se compraron # @ a $# (compra programada).":"已买入 # @，价格 $#（计划买入）。",
+"La venta programada de @ no se hizo: ya no tenía monedas":"@ 的计划卖出未执行：已经没有这些币了",
+"Las que tiene":"您持有的",
+"Las demás":"其他",
+"No tiene tantas @":"您没有那么多 @",
+"ej. $#":"例如 $#",
 "Meta de ganancia $# · lleva el #% · le faltan $#":"盈利目标 $# · 已完成#% · 还差 $#",
 "Meta de ganancia $# · #% · va en −$#":"盈利目标 $# · #% · 目前 −$#",
 "Meta de ganancia (@)":"盈利目标 (@)",
