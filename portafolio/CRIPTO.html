@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="53">
+<meta name="v" content="54">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -765,6 +765,11 @@ a:hover{color:var(--ac2)}
 .leyGraf .pt{margin-right:5px}
 
 /* ---------- lo opcional, plegado debajo del botón de registrar ---------- */
+.abreGraf{width:100%;justify-content:center;margin-top:10px;font-weight:700}
+.opform>.cp>.abreGraf{order:2}
+#misNumeros>.cuerpoOp{padding:var(--e4) var(--e5) var(--e5)}
+#misNumeros .mets{margin:0}
+#misNumeros .caja{margin-top:var(--e4)}
 .opcional{margin-top:var(--e4);border:1px solid var(--ln);border-radius:var(--rad);
   background:var(--b0);overflow:hidden}
 .opcional>summary{list-style:none;cursor:pointer;padding:var(--e4) var(--e5);
@@ -1835,6 +1840,99 @@ body.conCerrojo #aviso{z-index:10001}
 .met.gana{--c:var(--upG);--cF:var(--upF);--cInk:var(--upInk)}
 .met.pierde{--c:var(--dnG);--cF:var(--dnF);--cInk:var(--dnInk)}
 .met::after{display:none}
+
+/* =====================================================================
+   v54 · LA PANTALLA DEL TELÉFONO (Futuros y Backtesting)
+   Luis (12 oct): «se ve desorganizado; las tarjetas están muy grandes; si tengo
+   10 operaciones, imagínate cuánto hay que deslizar para registrar una nueva».
+   Todo lo de este rediseño vive aquí junto: el botón grande, el resultado
+   compacto, el marcador de cuatro números, las pestañas y las operaciones
+   abiertas en una línea.
+   ===================================================================== */
+/* el botón grande de arriba */
+.btNueva{width:100%;justify-content:center;min-height:48px;font-size:15px;font-weight:800;
+  margin:0 0 12px}
+/* resultado compacto: cifra a la izquierda, los tres datos a la derecha */
+.hero.heroC .hz{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.hero.heroC .hIzq{min-width:0}
+.hero.heroC .hDer{display:flex;flex-direction:column;gap:5px;text-align:right;min-width:112px}
+.hero.heroC .hDer div{display:flex;flex-direction:column;gap:0}
+.hero.heroC .hDer span{font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--t3);font-weight:800}
+.hero.heroC .hDer b{font-size:14px;font-weight:800}
+@media(max-width:340px){
+  .hero.heroC .hz{grid-template-columns:1fr}
+  .hero.heroC .hDer{flex-direction:row;flex-wrap:wrap;gap:10px;text-align:left;
+    border-top:1px solid var(--ln);padding-top:8px}
+}
+/* el marcador: los cuatro números de siempre, con su icono y su color */
+.marcT{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--t3);font-weight:800;margin:2px 2px 5px}
+.marc{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--ln);
+  border:1px solid var(--ln);border-radius:var(--rad);overflow:hidden;margin:0 0 10px}
+.marc .mrc{background:var(--b1);padding:9px 10px;min-width:0;--ic:var(--vac);--icF:var(--vacF);--icInk:var(--vacInk)}
+.marc .mrc.i1{--ic:var(--i1);--icF:var(--i1F);--icInk:var(--i1K)}
+.marc .mrc.i2{--ic:var(--i2);--icF:var(--i2F);--icInk:var(--i2K)}
+.marc .mrc.i3{--ic:var(--i3);--icF:var(--i3F);--icInk:var(--i3K)}
+.marc .mrc.i4{--ic:var(--i4);--icF:var(--i4F);--icInk:var(--i4K)}
+.marc .mrc.i5{--ic:var(--i5);--icF:var(--i5F);--icInk:var(--i5K)}
+.marc .mrc.i6{--ic:var(--i6);--icF:var(--i6F);--icInk:var(--i6K)}
+.marc .mrcC{display:flex;align-items:center;gap:6px;min-width:0}
+.marc .mrcI{width:20px;height:20px;border-radius:7px;flex:none;display:flex;align-items:center;
+  justify-content:center;color:var(--icInk);background:linear-gradient(145deg,var(--ic),var(--icF));
+  box-shadow:0 3px 8px color-mix(in srgb,var(--ic) 40%,transparent)}
+.marc .mrcI svg{width:12px;height:12px}
+.marc .mrcL{font-size:9.5px;line-height:1.2;letter-spacing:.03em;text-transform:uppercase;
+  color:var(--t3);font-weight:800}
+.marc .mrcV{font-size:15px;font-weight:800;margin-top:4px}
+.marc .mrcV small{font-size:10.5px;color:var(--t3);font-weight:700;margin-left:3px}
+.marc .mrc.pulsa{cursor:pointer}
+.marc .mrc.pulsa:active{background:var(--b2)}
+/* las dos pestañas */
+.pest{display:flex;gap:4px;background:var(--b2);border:1px solid var(--ln);
+  border-radius:var(--rad);padding:3px;margin:0 0 10px}
+.pest button{flex:1;border:0;background:transparent;color:var(--t2);font:inherit;font-weight:800;
+  font-size:13px;padding:10px 4px;border-radius:calc(var(--rad) - 1px);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;min-width:0}
+.pest button.on{background:var(--vac);color:var(--vacInk)}
+.pest .pNum{display:inline-block;min-width:19px;padding:1px 5px;border-radius:999px;font-size:11px;
+  background:color-mix(in srgb,var(--tx) 16%,transparent)}
+.pest button.on .pNum{background:color-mix(in srgb,var(--vacInk) 22%,transparent)}
+.pest .pIc{display:flex}
+.pest .pIc svg{width:14px;height:14px}
+.capo{display:flex;justify-content:flex-end;padding:9px 12px 0}
+.filtHist{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.filtHist .pill{flex:1 1 100%}
+.buscaFila{display:flex;gap:8px;align-items:center;margin-bottom:4px}
+.buscaFila .busca{flex:1;min-width:0;margin:0}
+.buscaFila .b{flex:none}
+/* una operación abierta = una línea; el detalle sale al tocarla */
+.opL{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:9px;align-items:center;
+  padding:9px 10px;border:1px solid var(--ln);border-left:3px solid var(--fc,var(--ac));
+  border-radius:11px;background:var(--b1);margin-bottom:7px;cursor:pointer}
+.opL.abierta{border-bottom-left-radius:0;border-bottom-right-radius:0;border-bottom:0;margin-bottom:0}
+.opL .opIc{width:30px;height:30px}
+.opL .opIc img,.opL .opIc svg,.opL .opIc .fich{width:30px;height:30px}
+.opL .n1{display:flex;align-items:center;gap:5px;flex-wrap:wrap;font-size:14px;font-weight:800}
+.opL .n1 .chip{font-size:9.5px;padding:1px 6px}
+.opL .n2{display:flex;gap:7px;flex-wrap:wrap;font-size:11.5px;color:var(--t2);margin-top:2px}
+.opL .opD{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.opL .opD .gpill{font-size:13px;font-weight:800;padding:3px 9px;border-radius:999px}
+.opL .rielMini{width:74px;height:5px;border-radius:3px;position:relative;
+  background:linear-gradient(90deg,var(--dn),var(--t3) 50%,var(--up))}
+.opL .rielMini i{position:absolute;top:-3px;width:5px;height:11px;border-radius:3px;
+  background:var(--tx)}
+.opL .opPct{font-size:10.5px;font-weight:700}
+.opDet{border:1px solid var(--ln);border-left:3px solid var(--fc,var(--ac));border-top:0;
+  border-radius:0 0 11px 11px;background:var(--b2);padding:10px 12px;margin:0 0 7px}
+.opDet .kv{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin:0}
+.opDet .kv div{display:flex;flex-direction:column;min-width:0}
+.opDet .kv span{font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--t3);
+  font-weight:800}
+.opDet .kv b{font-size:13.5px;font-weight:800}
+.opDet .kv b small{display:block;font-size:10.5px;color:var(--t3);font-weight:700}
+.opDet .opBts{display:flex;gap:7px;margin-top:10px}
+.opDet .opBts .b{flex:1;justify-content:center}
+
 /* v50 · COLORES DE LOS ICONOS (aquí y en ningún otro sitio). Cada tarjeta lleva el color de lo que mide, fijo
    (no cambia con la pantalla ni con ganar/perder); el cuadro conserva el color de la pantalla. Sin verde ni rojo:
    esos son solo para ganancia/pérdida. Qué color lleva cada tarjeta: tabla COL_ICO en la función met(). */
@@ -1930,7 +2028,7 @@ body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+8)>h2 .ic{background:linear-grad
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por su cuenta de Google.
    ===================================================================== */
-var VERSION="53";
+var VERSION="54";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -3373,7 +3471,7 @@ function refrescarVivos(){
       var fl=flotDe(el.getAttribute("data-ab")), g0=+el.getAttribute("data-g0")||0,
           bs=+el.getAttribute("data-base")||0, gt=g0+fl;
       if(v==="futRes") ponTexto(el, (gt>=0?"+":"−")+usdF(Math.abs(gt)), cl(gt));
-      else if(v==="futResP"){ if(bs>0) ponTexto(el, tr(pct(gt/bs*100,1)+" sobre lo que puso"), cl(gt)); }
+      else if(v==="futResP"){ if(bs>0) ponTexto(el, tr(pct(gt/bs*100,1)+" sobre su cartera"), cl(gt)); }
       else if(v==="futAhora") ponTexto(el, usd(bs+gt));
       else ponTexto(el, (fl>=0?"+":"−")+usdF(Math.abs(fl)), cl(fl));
     }
@@ -5433,24 +5531,32 @@ function heroResultado(titulo, gan, base, ahora, dicho, serie, nAb, flot, vivo){
   /* v47 · en el teléfono, el resultado se reparte a lo ancho: arriba el título y EN VIVO;
      la cifra grande a la izquierda y el % a la derecha; y debajo tres datos iguales,
      cada uno con su nombre arriba (antes iba todo en renglones sueltos pegados a la izquierda) */
+  /* v54 · EN EL TELÉFONO, COMPACTO. Luis (12 oct): «esa tarjeta está muy grande, se puede
+     compactar; al lado, en ese espacio en blanco, ponga Empezó con, Ahora tiene y Abiertas
+     ahora, y se elimina la franja de abajo». A la izquierda la cifra grande con su
+     porcentaje; a la derecha los tres datos pequeños. En pantallas muy angostas (≤340 px)
+     vuelven abajo, porque dos columnas ahí no caben. */
   if(esTel()){
-    return '<div class="hero heroRes'+(gan>=0?" gana":" pierde")+'">'+fondo+'<div class="hz"><div class="hprin">'+
-      '<div class="hT"><div class="he">'+esc(titulo)+'</div>'+
-        (PRE.vivo&&nAb?'<span class="envivo"><i></i>EN VIVO</span>':'')+'</div>'+
-      '<div class="hM"><div class="hv mono"><span class="'+cl(gan)+'"'+dv("futRes")+' data-cls="">'+(gan>=0?"+":"−")+usdF(gan).replace("-","")+'</span><small>USD</small></div>'+
-        '<div class="hR">'+(pctB!=null?'<span class="gch '+cl(pctB)+'"'+dv("futResP")+' data-cls="gch">'+pct(pctB,1)+' sobre lo que puso</span>':'')+
-          (dicho?'<div class="hD">'+esc(dicho)+'</div>':'')+'</div></div>'+
-      (base>0?'<div class="hC"><div><span>Empezó con</span><b>'+usd(base)+'</b></div>'+
+    return '<div class="hero heroRes heroC'+(gan>=0?" gana":" pierde")+'">'+fondo+'<div class="hz">'+
+      '<div class="hIzq">'+
+        '<div class="hT"><div class="he">'+esc(titulo)+'</div>'+
+          (PRE.vivo&&nAb?'<span class="envivo"><i></i>EN VIVO</span>':'')+'</div>'+
+        '<div class="hv mono"><span class="'+cl(gan)+'"'+dv("futRes")+' data-cls="">'+(gan>=0?"+":"−")+usdF(gan).replace("-","")+'</span><small>USD</small></div>'+
+        (pctB!=null?'<div><span class="gch '+cl(pctB)+'"'+dv("futResP")+' data-cls="gch">'+pct(pctB,1)+' sobre su cartera</span></div>':'')+
+        (dicho?'<div class="hD">'+esc(dicho)+'</div>':'')+
+      '</div>'+
+      (base>0?'<div class="hDer">'+
+        '<div><span>Empezó con</span><b>'+usd(base)+'</b></div>'+
         '<div><span>Ahora tiene</span><b'+dv("futAhora")+'>'+usd(ahora)+'</b></div>'+
         (nAb?'<div><span>Abiertas ahora</span><b class="'+cl(flot)+'"'+(vivo?dv("futResFl"):' data-v="futTot"')+' data-cls="">'+(flot>=0?"+":"−")+usdF(flot).replace("-","")+'</b></div>':'')+
         '</div>':'')+
-      '</div></div></div>';
+      '</div></div>';
   }
   return '<div class="hero'+(gan>=0?" gana":" pierde")+'">'+fondo+'<div class="hz">'+
     '<div class="hprin"><div class="he">'+esc(titulo)+'</div>'+
     '<div class="hv mono"><span class="'+cl(gan)+'"'+dv("futRes")+' data-cls="">'+(gan>=0?"+":"−")+usdF(gan).replace("-","")+'</span><small>USD</small></div>'+
     '<div class="hg">'+
-      (pctB!=null?'<span class="gch '+cl(pctB)+'"'+dv("futResP")+' data-cls="gch">'+pct(pctB,1)+' sobre lo que puso</span>':'')+
+      (pctB!=null?'<span class="gch '+cl(pctB)+'"'+dv("futResP")+' data-cls="gch">'+pct(pctB,1)+' sobre su cartera</span>':'')+
       '<span class="gp2 nt" style="font-weight:600">'+esc(dicho||"")+'</span>'+
       (PRE.vivo&&nAb?'<span class="envivo"><i></i>EN VIVO</span>':'')+
     '</div>'+
@@ -5461,6 +5567,97 @@ function heroResultado(titulo, gan, base, ahora, dicho, serie, nAb, flot, vivo){
     '</div></div></div>';
 }
 /* en el teléfono las tablas de monedas se vuelven una lista: nada se corre para el lado */
+/* =====================================================================
+   v54 · SPOT EN EL TELÉFONO: una moneda = una línea
+   La misma idea que en Futuros: en la línea lo que se mira a cada rato
+   (cuánto subió hoy, a cuánto está, cuánto tiene, cuánto puso y cuánto gana) y,
+   al tocarla, el detalle con el promedio, lo que vale hoy y los botones.
+   ===================================================================== */
+function filaMonedaCorta(e){
+  var chg=cambioDe(e.sym), abierta=!!UI_OPAB["m_"+e.sym];
+  return '<div class="opL'+(abierta?' abierta':'')+'" style="--fc:'+colDe(e.sym)+'" data-opab="m_'+esc(e.sym)+'">'+
+      '<div class="opIc">'+icono(e.sym,30)+'</div>'+
+      '<div class="opQ">'+
+        '<div class="n1"><b translate="no">'+esc(e.sym)+'</b>'+
+          '<span class="chip '+(chg>=0?"l":"s")+'" data-v="ch" data-s="'+esc(e.sym)+'" data-cls="chip '+(chg>=0?"l":"s")+'">'+
+          (chg!=null?pct(chg,1):"—")+'</span></div>'+
+        '<div class="n2"><span>ahora <b data-v="pr" data-s="'+esc(e.sym)+'">'+precio(e.precio)+'</b></span>'+
+          '<span>tiene '+cant(e.cantidad)+' <b translate="no">'+esc(e.sym)+'</b></span>'+
+          '<span>puso '+usd(e.costo)+'</span></div>'+
+      '</div>'+
+      '<div class="opD">'+
+        '<span class="'+(e.abierto>0?"gpill p":e.abierto<0?"gpill n":"gpill z")+'" data-v="spGan" '+
+          'data-s="'+esc(e.sym)+'" data-cls="">'+
+          (e.abierto!=null?((e.abierto>=0?"+":"−")+usd(e.abierto).replace("-","")):"—")+'</span>'+
+        '<span class="opPct '+cl(e.abiertoPct)+'" data-v="spGanP" data-s="'+esc(e.sym)+'" data-cls="opPct">'+
+          pct(e.abiertoPct)+'</span>'+
+      '</div>'+
+    '</div>'+
+    '<div class="opDet"'+(abierta?'':' hidden')+' data-det="m_'+esc(e.sym)+'" style="--fc:'+colDe(e.sym)+'">'+
+      '<div class="kv">'+
+        '<div><span>Precio promedio</span><b>'+precio(e.promedio)+'</b></div>'+
+        '<div><span>Vale hoy</span><b data-v="spVal" data-s="'+esc(e.sym)+'">'+(e.valor!=null?usd(e.valor):"—")+'</b></div>'+
+        '<div><span>Dinero que puso</span><b>'+usd(e.costo)+'</b></div>'+
+        '<div><span>Compras</span><b>'+e.nCompras+'</b></div>'+
+      '</div>'+
+      '<div class="opBts">'+
+        '<button class="b sm ac" data-vender="'+esc(e.sym)+'">Vender</button>'+
+        '<button class="b sm" data-ver="'+esc(e.sym)+'">Ver detalle</button>'+
+      '</div>'+
+    '</div>';
+}
+function listaMonedasCorta(lista){
+  if(!lista.length) return '';
+  return '<div class="cp" style="padding-top:8px">'+lista.map(filaMonedaCorta).join("")+'</div>';
+}
+/* el resumen de spot, compacto, con la misma forma que el de Futuros */
+function heroSpot(S, D){
+  var g=S.tot.abierto, pr=S.tot.abiertoPct;
+  return '<div class="hero heroRes heroC'+(g>=0?" gana":" pierde")+'"><div class="hz">'+
+    '<div class="hIzq">'+
+      '<div class="hT"><div class="he">TODO SU SPOT</div>'+
+        (PRE.vivo?'<span class="envivo"><i></i>EN VIVO</span>':'')+'</div>'+
+      '<div class="hv mono"><span data-v="total">'+usd(S.tot.valor)+'</span><small>USD</small></div>'+
+      '<div><span class="gch '+cl(g)+'" data-v="ganMonCh" data-cls="gch">'+
+        (g>=0?"+":"−")+usd(g).replace("-","")+' · '+pct(pr,1)+'</span></div>'+
+      '<div class="hD">'+plural(S.lista.filter(function(e){ return e.cantidad>0 && !esEstable(e.sym); }).length,
+        "moneda","monedas")+'</div>'+
+    '</div>'+
+    '<div class="hDer">'+
+      '<div><span>Puso</span><b>'+usd(S.tot.costo)+'</b></div>'+
+      '<div><span>Disponible</span><b>'+usd(D.total>0?D.total:0)+'</b></div>'+
+      '<div><span>Ya ganado en ventas</span><b class="'+cl(S.tot.realizado)+'">'+
+        (S.tot.realizado>=0?"+":"−")+usd(S.tot.realizado).replace("-","")+'</b></div>'+
+    '</div></div></div>';
+}
+/* los cuatro números de spot, en una tira (los mismos de la computadora) */
+/* v54 · LA TIRA DE NÚMEROS, UNA SOLA PARA TODAS LAS PANTALLAS.
+   Cada celda: {ico, et (el nombre, que decide su color en COL_ICO), val, clase, ir}.
+   «ir» hace que la celda se pueda pulsar y lleve a donde dice (igual que las
+   tarjetas grandes de la computadora). «tit» pone un rótulo encima (SPOT / FUTUROS). */
+function tiraMarcador(celdas, tit){
+  return (tit?'<div class="marcT">'+esc(tit)+'</div>':'')+'<div class="marc">'+
+    celdas.map(function(c){
+      var col=COL_ICO[c.et]||1;
+      return '<div class="mrc i'+col+(c.ir?' pulsa':'')+'"'+
+        (c.ir?' data-met="'+esc(c.ir)+'" tabindex="0" role="button"':'')+'>'+
+        '<div class="mrcC"><span class="mrcI">'+c.ico+'</span><span class="mrcL">'+esc(c.et)+'</span></div>'+
+        '<div class="mrcV '+(c.clase||"")+'">'+c.val+'</div></div>';
+    }).join("")+'</div>';
+}
+/* los cuatro números de spot (los mismos de la computadora) */
+function marcadorSpot(S){
+  return tiraMarcador([
+    {ico:IC.banco, et:"Dinero que puso", val:usd(S.tot.costo), ir:"#misMonedas"},
+    {ico:IC.torta, et:"Vale hoy", val:'<span data-v="total">'+usd(S.tot.valor)+'</span>', ir:"#misMonedas"},
+    {ico:IC.dolar, et:"Ganancia si vende hoy",
+     val:'<span data-v="ganMon">'+(S.tot.abierto>=0?"+":"−")+usd(S.tot.abierto).replace("-","")+'</span>',
+     clase:cl(S.tot.abierto), ir:"#misMonedas"},
+    {ico:IC.sube, et:"Ya ganado en ventas",
+     val:(S.tot.realizado>=0?"+":"−")+usd(S.tot.realizado).replace("-",""),
+     clase:cl(S.tot.realizado), ir:"#histSpot"}
+  ]);
+}
 function listaMonedasTel(lista, conVender){
   if(!lista.length) return '';
   return '<div class="soloTel cp" style="padding-top:10px">'+lista.map(function(e){
@@ -5829,80 +6026,9 @@ function curvaGanancia(puntos, titulo){
    ===================================================================== */
 var SP={ tipo:"compra", sym:"", casa:"", modo:"hoy", sel:"" };
 
-function pintarSpot(){
-  var c=document.getElementById("cuerpo");
-  var S=carteraSpot();
-  var vivas=S.lista.filter(function(e){ return e.cantidad>0 && !esEstable(e.sym); });
-  var cerr=S.lista.filter(function(e){ return e.cerrada && !esEstable(e.sym); });
-  var ch=cambio24(S), D=efectivoDet();
-  if(!SP.casa) SP.casa=casaGlobal();
-  if(SP.sel && !S.lista.some(function(e){ return e.sym===SP.sel; })) SP.sel="";
-  if(!SP.sel && vivas.length) SP.sel=vivas[0].sym;
-
-  var h=alertaPrecios();
-
-  /* Cliente nuevo, cero movimientos: cinco tarjetas a $0,00 no le dicen nada.
-     Se le dice qué hacer, y las cifras aparecen cuando haya algo que contar. */
-  /* solo depósitos (sin ninguna compra todavía) también es «vacío»: cuatro
-     tarjetas en cero no dicen nada, el dinero ya se ve en su barra */
-  var vacioSpot = !BD.ops.some(function(o){ return !esDinero(o); });
-
-  if(!vacioSpot)
-  h+='<div class="mets">'+
-    met(IC.banco,"Dinero que puso", usd(S.tot.costo),"",
-        plural(vivas.length,"moneda","monedas")+" en el portafolio", 1,
-        null, "#misMonedas")+
-    met(IC.torta,"Vale hoy",'<span data-v="total">'+usd(S.tot.valor)+'</span>',"",
-        "al precio de ahora", 6, serieMonedas(), "#misMonedas")+
-    /* v40 · la ganancia, su % y su color se mueven con el precio (antes solo la cifra) */
-    met(IC.dolar,"Ganancia si vende hoy",
-        '<span data-v="ganMon">'+(S.tot.abierto>=0?"+":"−")+usd(S.tot.abierto).replace("-","")+'</span>',"",
-        '<span data-v="ganMonP2">'+pct(S.tot.abiertoPct)+
-          (S.tot.sinPrecio?" de las que tienen precio":" de lo que puso")+'</span>', S.tot.abierto>=0?"gana":"pierde",
-        null, "#misMonedas").replace('<div class="met','<div data-vmet="spotAb" data-neutro="gana" class="met')+
-    met(IC.sube,"Ya ganado en ventas",
-        (S.tot.realizado>=0?"+":"−")+usd(S.tot.realizado).replace("-",""),"",
-        plural(nVentasSpot(),"venta hecha","ventas hechas"), 4, null, "#histSpot")+
-    /* v38: el USDT disponible ya NO va en una tarjeta aquí: está en la barra
-       de dinero, justo debajo, con sus botones. Dos sitios con la misma cifra
-       era lo que Luis pidió quitar. */
-  '</div>';
-
-  if(vacioSpot)
-    h+='<div class="caja"><div class="vacio" style="padding:26px 20px">'+
-       '<div class="vic">'+IC.spot+'</div>'+
-       '<b>Aquí van sus compras y ventas</b>'+
-       '<p>Registre su primera compra abajo. En cuanto lo haga verá el precio promedio, '+
-       'lo que vale hoy y cuánto lleva ganado — todo calculado solo.</p>'+
-       '<p>El dinero que mandó a la casa de cambio se anota con «Depositar».</p>'+
-       '</div></div>';
-
-  /* ---- panel de registrar ----
-     El resumen de una moneda NO vive aquí: ocupaba media pantalla sin que
-     usted lo pidiera. Ahora se abre al pulsar la moneda en la lista. */
-  /* el dinero de spot, ARRIBA y junto a donde se registra la compra: es
-     justo ahí donde hace falta saber cuánto USDT tiene para comprar.
-     Antes vivía abajo del todo, donde casi nadie lo veía. */
-  h+=barraDineroSpot();
-
-  /* v46 · en el teléfono «Registrar compra» viene plegado: es un solo título y se abre con un toque */
-  if(UI_PLG.spReg===undefined) UI_PLG.spReg=vacioSpot;     /* quien todavía no registró nada lo ve abierto */
-  h+='<div style="margin-bottom:14px" id="spZona">'+
-     '<div class="caja plegable'+(UI_PLG.spReg?' abierto':'')+'" data-plg="spReg" style="margin:0" id="spPanel">'+panelRegistro()+'</div>'+
-  '</div>';
-
-  /* ---- la tabla ---- */
-  var sumaV=vivas.reduce(function(a,e){ return a+(e.valor||0); },0);
-  var mostrar=ordenarLista(filtrarLista(vivas));
-  h+='<div class="caja" id="misMonedas"><h2><span class="ic">'+IC.spot+'</span>Sus criptomonedas'+
-    '<span class="chip g">'+vivas.length+'</span><span class="sp"></span>'+
-    /* sin monedas, el buscador y los botones de imprimir no tienen nada que hacer */
-    (vivas.length
-      ? '<input class="busca" id="buscarM" placeholder="buscar moneda…" value="'+esc(BUSCA)+'">'+
-        '<button class="b sm" id="bImpP">Imprimir</button>'+
-        '<button class="b sm" id="bXlsP">Excel</button>'
-      : '')+'</h2>'+
-    '<div class="env soloPC"><table><thead><tr>'+
+/* la tabla de monedas de la computadora: la misma de siempre */
+function tablaMonedasPC(mostrar, vivas, S, sumaV){
+  var h='<div class="env soloPC"><table><thead><tr>'+
       thOrd("Cripto","sym")+thOrd("Precio ahora","precio")+thOrd("Cantidad","cant")+
       '<th class="opt"><span class="cap">1ª compra</span></th>'+
       thOrd("Precio promedio","prom")+thOrd("Invertido","inv")+
@@ -5943,18 +6069,110 @@ function pintarSpot(){
       'data-v="totGan" data-cls="">'+(S.tot.abierto>=0?"+":"−")+
       usd(S.tot.abierto).replace("-","")+'</span>'+
       '<span class="gsub '+cl(S.tot.abiertoPct)+'" data-v="totGanP2" data-cls="gsub">'+pct(S.tot.abiertoPct)+'</span></td>'+
-    '<td></td></tr></tfoot></table></div>'+
-    listaMonedasTel(mostrar, true)+
-    (mostrar.length?'<div class="soloTel totTel"><div class="ttt">TOTAL · '+plural(vivas.length,"moneda","monedas")+'</div>'+
+    '<td></td></tr></tfoot></table></div>';
+  return h;
+}
+function pintarSpot(){
+  var c=document.getElementById("cuerpo");
+  var S=carteraSpot();
+  var vivas=S.lista.filter(function(e){ return e.cantidad>0 && !esEstable(e.sym); });
+  var cerr=S.lista.filter(function(e){ return e.cerrada && !esEstable(e.sym); });
+  var ch=cambio24(S), D=efectivoDet();
+  if(!SP.casa) SP.casa=casaGlobal();
+  if(SP.sel && !S.lista.some(function(e){ return e.sym===SP.sel; })) SP.sel="";
+  if(!SP.sel && vivas.length) SP.sel=vivas[0].sym;
+
+  var h=alertaPrecios();
+
+  /* Cliente nuevo, cero movimientos: cinco tarjetas a $0,00 no le dicen nada.
+     Se le dice qué hacer, y las cifras aparecen cuando haya algo que contar. */
+  /* solo depósitos (sin ninguna compra todavía) también es «vacío»: cuatro
+     tarjetas en cero no dicen nada, el dinero ya se ve en su barra */
+  var vacioSpot = !BD.ops.some(function(o){ return !esDinero(o); });
+
+  var TEL=esTel();
+  /* v54 · en el teléfono: el botón grande arriba, el resumen compacto y el marcador;
+     en la computadora, las mismas cuatro tarjetas de siempre. */
+  if(TEL) h+='<button class="b ac btNueva" id="btRegSpot">+ Registrar compra</button>';
+  if(!vacioSpot && TEL) h+=heroSpot(S,D)+marcadorSpot(S);
+  if(!vacioSpot && !TEL)
+  h+='<div class="mets">'+
+    met(IC.banco,"Dinero que puso", usd(S.tot.costo),"",
+        plural(vivas.length,"moneda","monedas")+" en el portafolio", 1,
+        null, "#misMonedas")+
+    met(IC.torta,"Vale hoy",'<span data-v="total">'+usd(S.tot.valor)+'</span>',"",
+        "al precio de ahora", 6, serieMonedas(), "#misMonedas")+
+    /* v40 · la ganancia, su % y su color se mueven con el precio (antes solo la cifra) */
+    met(IC.dolar,"Ganancia si vende hoy",
+        '<span data-v="ganMon">'+(S.tot.abierto>=0?"+":"−")+usd(S.tot.abierto).replace("-","")+'</span>',"",
+        '<span data-v="ganMonP2">'+pct(S.tot.abiertoPct)+
+          (S.tot.sinPrecio?" de las que tienen precio":" de lo que puso")+'</span>', S.tot.abierto>=0?"gana":"pierde",
+        null, "#misMonedas").replace('<div class="met','<div data-vmet="spotAb" data-neutro="gana" class="met')+
+    met(IC.sube,"Ya ganado en ventas",
+        (S.tot.realizado>=0?"+":"−")+usd(S.tot.realizado).replace("-",""),"",
+        plural(nVentasSpot(),"venta hecha","ventas hechas"), 4, null, "#histSpot")+
+    /* v38: el USDT disponible ya NO va en una tarjeta aquí: está en la barra
+       de dinero, justo debajo, con sus botones. Dos sitios con la misma cifra
+       era lo que Luis pidió quitar. */
+  '</div>';
+
+  if(vacioSpot)
+    h+='<div class="caja"><div class="vacio" style="padding:26px 20px">'+
+       '<div class="vic">'+IC.spot+'</div>'+
+       '<b>Aquí van sus compras y ventas</b>'+
+       '<p>Registre su primera compra abajo. En cuanto lo haga verá el precio promedio, '+
+       'lo que vale hoy y cuánto lleva ganado — todo calculado solo.</p>'+
+       '<p>El dinero que mandó a la casa de cambio se anota con «Depositar».</p>'+
+       '</div></div>';
+
+  /* ---- panel de registrar ----
+     El resumen de una moneda NO vive aquí: ocupaba media pantalla sin que
+     usted lo pidiera. Ahora se abre al pulsar la moneda en la lista. */
+  /* el dinero de spot, ARRIBA y junto a donde se registra la compra: es
+     justo ahí donde hace falta saber cuánto USDT tiene para comprar.
+     Antes vivía abajo del todo, donde casi nadie lo veía. */
+  h+=barraDineroSpot();
+
+  /* v46 · en la computadora el panel vive en la página; en el teléfono (v54) se abre
+     con el botón grande de arriba, para no tener que deslizar toda la pantalla */
+  if(!TEL){
+    if(UI_PLG.spReg===undefined) UI_PLG.spReg=vacioSpot;
+    h+='<div style="margin-bottom:14px" id="spZona">'+
+       '<div class="caja plegable'+(UI_PLG.spReg?' abierto':'')+'" data-plg="spReg" style="margin:0" id="spPanel">'+panelRegistro()+'</div>'+
+    '</div>';
+  }
+
+  /* ---- la lista de monedas, las órdenes, los movimientos y lo demás ---- */
+  var sumaV=vivas.reduce(function(a,e){ return a+(e.valor||0); },0);
+  var mostrar=ordenarLista(filtrarLista(vivas));
+  var MON='<div class="caja" id="misMonedas">'+
+    (TEL
+      ? (vivas.length?'<div class="cp" style="padding-bottom:0"><div class="buscaFila">'+
+          '<input class="busca" id="buscarM" placeholder="buscar moneda…" value="'+esc(BUSCA)+'">'+
+          '<button class="b sm" id="bXlsP">Excel</button></div></div>':'')
+      : '<h2><span class="ic">'+IC.spot+'</span>Sus criptomonedas'+
+        '<span class="chip g">'+vivas.length+'</span><span class="sp"></span>'+
+        (vivas.length
+          ? '<input class="busca" id="buscarM" placeholder="buscar moneda…" value="'+esc(BUSCA)+'">'+
+            '<button class="b sm" id="bImpP">Imprimir</button>'+
+            '<button class="b sm" id="bXlsP">Excel</button>'
+          : '')+'</h2>'+tablaMonedasPC(mostrar, vivas, S, sumaV))+
+    (TEL
+      ? (mostrar.length ? listaMonedasCorta(mostrar)
+         : '<div class="cp"><div class="mut" style="text-align:center;padding:20px 12px">'+
+           (BUSCA?"Ninguna moneda se llama así.":"Todavía no tiene monedas. Pulse «+ Registrar compra».")+'</div></div>')
+      : '')+
+    (mostrar.length?'<div class="'+(TEL?'':'soloTel ')+'totTel"><div class="ttt">TOTAL · '+plural(vivas.length,"moneda","monedas")+'</div>'+
       '<div class="kv3"><div><span>Puso</span><b>'+usd(S.tot.costo)+'</b></div>'+
       '<div><span>Vale hoy</span><b data-v="total">'+usd(S.tot.valor)+'</b></div>'+
       '<div><span>Ganancia</span><b class="'+cl(S.tot.abierto)+'" data-v="totGanB" data-cls="">'+(S.tot.abierto>=0?"+":"−")+usd(S.tot.abierto).replace("-","")+'</b></div></div></div>':'')+
     '</div>';
 
   /* ---- las que ya vendió del todo ---- */
+  var VENDIDAS="";
   if(cerr.length){
     var totC=cerr.reduce(function(a,e){ return a+e.realizado; },0);
-    h+='<div class="caja"><h2><span class="ic">'+IC.baja+'</span>Ya vendidas del todo'+
+    VENDIDAS='<div class="caja"><h2><span class="ic">'+IC.baja+'</span>Ya vendidas del todo'+
       '<span class="sp"></span><span class="mono '+cl(totC)+'" style="font-weight:700">'+
       (totC>=0?"+":"−")+usd(totC).replace("-","")+'</span></h2>'+
       '<div class="cp" style="display:flex;gap:9px;flex-wrap:wrap">'+
@@ -5965,18 +6183,33 @@ function pintarSpot(){
       }).join("")+'</div></div>';
   }
 
-  /* ---- ventas programadas, historial, USDT y reparto ---- */
-  h+=cajaOrdenes();   /* v53 · siempre: también sirve para programar una compra sin tener nada */
-  h+=historialSpot();
-  h+='<div class="inf">';
+  /* ---- mejor y peor, dónde compró y el reparto ---- */
+  var ABAJO='<div class="inf">';
   var conP=vivas.filter(function(e){ return e.abiertoPct!=null; })
                 .sort(function(a,b){ return b.abiertoPct-a.abiertoPct; });
-  if(conP.length>1) h+=tarjetaMejorPeor(conP);
-  h+=tarjetaCasas();
-  if(vivas.length) h+='<div class="caja ancha2"><h2><span class="ic">'+IC.torta+
+  if(conP.length>1) ABAJO+=tarjetaMejorPeor(conP);
+  ABAJO+=tarjetaCasas();
+  if(vivas.length) ABAJO+='<div class="caja ancha2"><h2><span class="ic">'+IC.torta+
     '</span>Cómo está repartido</h2><div class="cp">'+
     '<div data-v="roscaM">'+roscaMonedas()+'</div></div></div>';
-  h+='</div>';
+  ABAJO+='</div>';
+
+  if(TEL){
+    /* v54 · tres pestañas: sus monedas, las órdenes programadas y los movimientos */
+    var nOrd=(BD.ordenes||[]).length;
+    h+='<div class="pest" id="pestSpot">'+
+      '<button data-pest="mon" class="'+(SPOT_PEST==="mon"?"on":"")+'">Monedas'+
+        (vivas.length?'<span class="pNum">'+vivas.length+'</span>':'')+'</button>'+
+      '<button data-pest="ord" class="'+(SPOT_PEST==="ord"?"on":"")+'"><span class="pIc">'+IC.alr+'</span>Órdenes'+
+        (nOrd?'<span class="pNum">'+nOrd+'</span>':'')+'</button>'+
+      '<button data-pest="mov" class="'+(SPOT_PEST==="mov"?"on":"")+'"><span class="pIc">'+IC.mov+'</span>Movimientos</button>'+
+    '</div>';
+    if(SPOT_PEST==="ord")      h+=cajaOrdenes();
+    else if(SPOT_PEST==="mov") h+=historialSpot();
+    else                       h+=MON+VENDIDAS+ABAJO;
+  } else {
+    h+=MON+VENDIDAS+cajaOrdenes()+historialSpot()+ABAJO;
+  }
 
   c.innerHTML=h;
   engancharSpot(c);
@@ -5985,15 +6218,17 @@ function pintarSpot(){
 /* ---------------------------------------------------------------------
    El panel de registrar: siempre a la vista, no en una ventana
    --------------------------------------------------------------------- */
-function panelRegistro(){
+function panelRegistro(enHoja){
   var esV=SP.tipo==="venta";
   var e = SP.sym ? estadoDe(SP.sym) : null;
-  return '<h2><span class="ic">'+IC.mas+'</span>'+(esV?"Registrar venta":"Registrar compra")+
-    '<span class="sp"></span>'+
-    '<div class="pill" id="spT" style="width:168px">'+
+  var TIPOS='<div class="pill" id="spT" style="width:'+(enHoja?"100%":"168px")+'">'+
       '<button data-t="compra" class="'+(!esV?"on v":"")+'">COMPRA</button>'+
       '<button data-t="venta" class="'+(esV?"on r":"")+'">VENTA</button>'+
-    '</div><span class="plgFl"></span></h2><div class="cp">'+
+    '</div>';
+  return (enHoja
+    ? '<div class="cp" style="padding-top:0">'+TIPOS
+    : '<h2><span class="ic">'+IC.mas+'</span>'+(esV?"Registrar venta":"Registrar compra")+
+      '<span class="sp"></span>'+TIPOS+'<span class="plgFl"></span></h2><div class="cp">')+
     '<div class="campos">'+
       '<div class="campo ancho"><label>Criptomoneda</label>'+
         '<button class="selector" id="spS" type="button"></button></div>'+
@@ -6170,6 +6405,8 @@ function historialSpot(){
     '</div></div>';
 }
 var SPOT_cuantos=25;
+var SPOT_PEST="mon";
+var RES_PEST="ab";     /* v54 · pestaña elegida en el Resumen (teléfono): abiertas · monedas */   /* v54 · pestaña elegida en el teléfono: monedas · órdenes · movimientos */
 
 function pesoHtml(peso){
   return '<i style="width:'+Math.max(3,peso*0.4)+'px"></i><span>'+pctS(peso)+'</span>';
@@ -6305,13 +6542,23 @@ function alertaPrecios(amb){
    Enganchar todo lo de Spot
    --------------------------------------------------------------------- */
 function repintarPanelSpot(){
+  /* v54 · el panel puede estar en la página (computadora) o en su hoja (teléfono) */
   var p=document.getElementById("spPanel");
   if(!p) return;
   var guardado=leerPanel();
-  p.innerHTML=panelRegistro();
-  engancharPanel(document.getElementById("cuerpo"));
+  p.innerHTML=panelRegistro(p.classList.contains("enHoja"));
+  engancharPanel(p.closest("#veloIn") || document.getElementById("cuerpo"));
   ponerPanel(guardado);
   recPanel();
+}
+/* v54 · LA HOJA DE «REGISTRAR COMPRA» (teléfono): el formulario sale de la página
+   y se abre con el botón grande de arriba, igual que en Futuros. */
+function hojaRegistrarSpot(){
+  abrir('<div class="hoja grande"><div class="hh"><span class="ic">'+IC.mas+'</span>'+
+    '<h3>Registrar un movimiento</h3><button class="x" data-cerrar>×</button></div>'+
+    '<div class="hb"><div class="caja enHoja" id="spPanel" style="margin:0;border:0;background:transparent">'+
+    panelRegistro(true)+'</div></div></div>',
+  function(M){ engancharPanel(M); recPanel(); });
 }
 function leerPanel(){
   function v(id){ var e=document.getElementById(id); return e?e.value:""; }
@@ -6324,6 +6571,23 @@ function ponerPanel(d){
 }
 function engancharSpot(c){
   engancharPanel(c);
+  /* --- v54 · teléfono: botón grande, pestañas y monedas que se abren --- */
+  var br=c.querySelector("#btRegSpot");
+  if(br) br.onclick=hojaRegistrarSpot;
+  c.querySelectorAll("#pestSpot button").forEach(function(b){
+    b.onclick=function(){ SPOT_PEST=b.getAttribute("data-pest"); pintarSpot(); };
+  });
+  c.querySelectorAll("[data-opab]").forEach(function(fila){
+    fila.onclick=function(ev){
+      if(ev.target.closest("button")) return;
+      var id=fila.getAttribute("data-opab");
+      var det=c.querySelector('[data-det="'+id+'"]');
+      var abrirla=!UI_OPAB[id];
+      UI_OPAB[id]=abrirla;
+      fila.className=abrirla?"opL abierta":"opL";
+      if(det) det.hidden=!abrirla;
+    };
+  });
   engancharOrden(c, pintarSpot);
   engancharListaTel(c);
   engancharFichas(c);        /* el icono de la moneda abre su gráfica */
@@ -6595,6 +6859,8 @@ function registrarCompraVenta(nuevo, pago){
     if(R&&R.gan!=null) gan=R.gan;
   }
   SP.sel=String(SP.sym).toUpperCase();
+  /* v54 · si se registró desde la hoja del teléfono, la hoja se cierra sola */
+  try{ if(document.querySelector("#veloIn #spPanel")) cerrar(); }catch(e){}
   pintarSpot(); repintarCabecera();
   conectarVivo(); traerPrecios(true); traerLogo(SP.sym);
   try{ vibrarOk(); }catch(e){}          /* el toquecito de "quedó registrada" */
@@ -7982,15 +8248,20 @@ function hojaComision(A){
 /* ---------------------------------------------------------------------
    EL PANEL DE REGISTRAR, CON LA CALCULADORA Y LA GRÁFICA
    --------------------------------------------------------------------- */
-function panelOperacion(A){
+/* v54 · el formulario se dibuja igual en los dos sitios: en la página (computadora)
+   o dentro de su hoja (teléfono, botón «+ Nueva operación»). Lo único que cambia es
+   el marco: la hoja ya trae su propio título, así que aquí no se repite. */
+function panelOperacion(A, enHoja){
   var c=A.cfg;
-  return '<div class="caja opform"><h2><span class="ic">'+IC.regla+'</span>'+
-    (A.k==="back"?"Nueva operación de prueba":"Nueva operación")+
-    '<span class="sp"></span>'+
-    '<div class="pill grande" id="fuL" style="max-width:280px">'+
+  var LADOS='<div class="pill grande" id="fuL" style="max-width:'+(enHoja?"none":"280px")+'">'+
       '<button data-l="LONG" class="'+(FU.lado==="LONG"?"on v":"")+'">▲ LARGO<span>gano si sube</span></button>'+
       '<button data-l="SHORT" class="'+(FU.lado==="SHORT"?"on r":"")+'">▼ CORTO<span>gano si baja</span></button>'+
-    '</div></h2><div class="cp">'+
+    '</div>';
+  return (enHoja
+    ? '<div class="opform enHoja"><div class="cp">'+LADOS
+    : '<div class="caja opform"><h2><span class="ic">'+IC.regla+'</span>'+
+      (A.k==="back"?"Nueva operación de prueba":"Nueva operación")+
+      '<span class="sp"></span>'+LADOS+'</h2><div class="cp">')+
     '<div class="campos">'+
       '<div class="campo ancho"><label>Moneda</label>'+
         '<button class="selector" id="fuS" type="button"></button></div>'+
@@ -8035,7 +8306,12 @@ function panelOperacion(A){
       '<div id="fuLote"></div>'+
     '</div>'+
     '<div class="nota" id="fuAviso" style="display:none"></div>'+
-    '<div id="fuGraf"></div>'+
+    /* v54 · LA GRÁFICA YA NO ESTÁ SIEMPRE ABIERTA. Luis (12 oct): «la gráfica debería
+       ocultarse, a menos que uno pulse para colocar el stop loss o el take profit».
+       El botón se acuerda de lo que usted elija (BD.ajustes.verGraf). */
+    (FU.sym ? '<button type="button" class="b abreGraf" id="fuVerG">'+
+      (verGraf()?"Ocultar la gráfica":"Ver gráfica · mover el stop y el objetivo con el dedo")+'</button>' : '')+
+    '<div id="fuGraf"'+(verGraf()?"":' hidden')+'></div>'+
     /* ¿ya entró o está esperando que el precio llegue? */
     '<div id="fuYa"></div>'+
     '<div class="nota" id="fuRes" style="display:none"></div>'+
@@ -8367,6 +8643,10 @@ function pintarAmbito(k){
   /* v46 · en el teléfono: ajustes en una línea, operaciones abiertas arriba del todo */
   var TEL=esTel();
   h+=(TEL && A.cfg.cartera>0) ? franjaPlegada(A) : franjaRiesgo(A);
+  /* v54 · el botón grande de arriba: registrar una operación nueva es siempre un toque,
+     tenga una o veinte abiertas (antes había que deslizar toda la pantalla) */
+  if(TEL) h+='<button class="b ac btNueva" id="btNuevaOp">+ '+
+    (k==="back"?"Nueva operación de prueba":"Nueva operación")+'</button>';
   if(k==="back") h+='<div class="filaPrueba" style="display:flex;gap:8px;flex-wrap:wrap;margin:-6px 0 14px">'+
     '<button class="b sm ac" onclick="nuevaPrueba()">+ Nueva prueba</button>'+
     (BD.pruebas.length>1?'<button class="b sm" onclick="compararPruebas()">Comparar las '+
@@ -8403,24 +8683,15 @@ function pintarAmbito(k){
   var dicho = T.n ? (plural(T.n,"operación cerrada","operaciones cerradas")+
                      (T.nAb?" · "+plural(T.nAb,"abierta","abiertas"):""))
                   : (T.nAb?plural(T.nAb,"operación abierta","operaciones abiertas"):"todavía sin operaciones");
-  /* Sin una sola operación, el resultado y las cinco tarjetas salen todas a
-     cero o con guiones. Eso no informa: confunde. Se le dice qué hacer. */
-  if(vacioFut)
-    h+='<div class="caja"><div class="vacio" style="padding:26px 20px">'+
-       '<div class="vic">'+IC.fut+'</div>'+
-       '<b>'+(k==="back"?"Esta prueba todavía no tiene operaciones"
-                        :"Aquí van sus operaciones de futuros")+'</b>'+
-       '<p>Registre la primera abajo: elija la moneda, diga por dónde entra y dónde pone '+
-       'el stop, y el programa le dice <b>cuánto dinero poner</b> para no arriesgar más de '+
-       'lo que usted quiere.</p>'+
-       '</div></div>';
-  else
-  h+='<div class="cima">'+
-    heroResultado(k==="back"?"RESULTADO DE LA PRUEBA":"RESULTADO EN FUTUROS", T.gan+T.flotante,
-      base, ahoraC, dicho, curva, T.nAb, T.flotante,
-      {g0:T.gan, ab:F.abiertas.map(function(e){ return e.f.id; }).join(",")})+
-    (TEL ? cajaAbiertas(F,k)+(F.programadas.length?cajaProgramadas(F.programadas,k):"") : "")+
-    '<div class="mets">'+
+  /* v54 · EN EL TELÉFONO LAS TARJETAS YA NO VAN EN LA MITAD. Luis (12 oct): «me sale
+     vuelta operaciones acertadas, promedio por operación... está desorganizado».
+     En la computadora caben en fila al lado del resultado y se ven de un vistazo; en el
+     teléfono se vuelven una columna de cinco cuadros que corta el camino entre lo que
+     tiene abierto y lo que va a registrar, y además son números que solo cambian cuando
+     cierra una operación. En el teléfono bajan al final, juntas en una sola caja
+     plegable, y arriba queda lo que se mira a cada rato. En la computadora, igual que
+     antes, que así le gusta. */
+  var METS='<div class="mets">'+
       met(IC.diana,"Operaciones acertadas",
           T.decididas?(T.ganadas+" de "+T.decididas):"—","",
           T.aciertos!=null?(T.aciertos.toFixed(0)+"% de acierto"):"todavía no ha cerrado ninguna", 1,
@@ -8450,63 +8721,174 @@ function pintarAmbito(k){
                        : "lo que le cobró la casa de cambio en las "+T.n+" operaciones cerradas"))+
           (T.comisionAb>0 ? "<br>+ "+usdF(T.comisionAb)+" en las que tiene abiertas" : ""),
           5, null, "f:comisiones")+
-      (T.nAb?met(IC.mov,"Abiertas: si cierra ahora", '<span data-v="futTot" data-ab="'+esc(F.abiertas.map(function(e){ return e.f.id; }).join(","))+'" class="'+cl(T.flotante)+'">'+
+      (T.nAb&&!TEL?met(IC.mov,"Abiertas: si cierra ahora", '<span data-v="futTot" data-ab="'+esc(F.abiertas.map(function(e){ return e.f.id; }).join(","))+'" class="'+cl(T.flotante)+'">'+
           (T.flotante>=0?"+":"−")+usdF(T.flotante).replace("-","")+'</span>',"",
           plural(T.nAb,"operación abierta","operaciones abiertas")+" · con el precio de este momento"+
                  (T.enRiesgo?" · "+T.enRiesgo+" a punto de liquidar":""),
           T.flotante>=0?"gana":"pierde", null, "#abiertasFut").replace('<div class="met','<div data-vmet="futFlot" data-ab="'+
             esc(F.abiertas.map(function(e){ return e.f.id; }).join(","))+'" data-neutro="gana" class="met'):"")+
-    '</div></div>';
+    '</div>';
+  /* Sin una sola operación, el resultado y las cinco tarjetas salen todas a
+     cero o con guiones. Eso no informa: confunde. Se le dice qué hacer. */
+  if(vacioFut)
+    h+='<div class="caja"><div class="vacio" style="padding:26px 20px">'+
+       '<div class="vic">'+IC.fut+'</div>'+
+       '<b>'+(k==="back"?"Esta prueba todavía no tiene operaciones"
+                        :"Aquí van sus operaciones de futuros")+'</b>'+
+       '<p>Registre la primera abajo: elija la moneda, diga por dónde entra y dónde pone '+
+       'el stop, y el programa le dice <b>cuánto dinero poner</b> para no arriesgar más de '+
+       'lo que usted quiere.</p>'+
+       '</div></div>';
+  else
+  h+='<div class="cima">'+
+    heroResultado(k==="back"?"RESULTADO DE LA PRUEBA":"RESULTADO EN FUTUROS", T.gan+T.flotante,
+      base, ahoraC, dicho, curva, T.nAb, T.flotante,
+      {g0:T.gan, ab:F.abiertas.map(function(e){ return e.f.id; }).join(",")})+
+    (TEL ? marcador(T) : METS)+
+    '</div>';
 
-  /* ---- programadas: esperando el precio, sin contar nada todavía ---- */
-  /* ---- panel de registrar ---- */
-  h+=panelOperacion(A);
-
-  /* (en el teléfono las programadas ya salieron arriba, después de las abiertas) */
-  if((!TEL||vacioFut) && F.programadas.length) h+=cajaProgramadas(F.programadas,k);
-
-  /* ---- abiertas (en el teléfono ya salieron arriba, junto al resultado) ---- */
-  if(!TEL || vacioFut) h+=cajaAbiertas(F,k);
-
-  /* ---- disciplina ---- */
-  if(T.conPlan||T.sinPlan) h+=cajaDisciplina(T);
-
-  /* ---- largos contra cortos y curva ---- */
-  if(T.n>=3){
-    h+='<div class="inf">'+
-      '<div class="caja"><h2><span class="ic">'+IC.diana+'</span>Largos contra cortos</h2>'+
-      '<div class="cp mpg">'+["LONG","SHORT"].map(function(l){
-        var d=T.lados[l];
-        return '<div class="mp" style="--fc:'+(l==="LONG"?"var(--up)":"var(--dn)")+'">'+
-          '<div class="mpt">'+(l==="LONG"?"▲ LARGOS":"▼ CORTOS")+'</div>'+
-          '<div class="mpv '+cl(d.gan)+'">'+usdF(d.gan)+'</div>'+
-          '<div class="mps">'+d.n+' ops · '+d.ganadas+' acertadas'+
-          (d.aciertos!=null?" ("+d.aciertos.toFixed(0)+"%)":"")+'</div></div>';
-      }).join("")+'</div>'+consejoFut(T)+'</div>'+
-      '<div class="caja"><h2><span class="ic">'+IC.torta+'</span>Reparto</h2><div class="cp">'+
-      rosca([{v:T.ganadas,color:"var(--up)",et:"Acertadas"},
-             {v:T.perdidas,color:"var(--dn)",et:"Fallidas"},
-             {v:T.neutras,color:"var(--t3)",et:"En tablas"}].filter(function(x){ return x.v>0; }),
-            String(T.n), "cerradas")+'</div></div></div>';
-    var acum=0;
-    h+=curvaGanancia(F.cerradas.map(function(e){ acum+=e.gan; return {v:acum}; }),
-      "Cómo fue creciendo");
+  if(TEL){
+    /* v54 · TELÉFONO: dos pestañas. Arriba lo que se mira a cada rato (cartera,
+       resultado y el marcador) y abajo, o las operaciones abiertas, o el historial.
+       El formulario ya no está en la página: se abre con el botón de arriba. */
+    h+='<div class="pest" id="pestFut">'+
+      '<button data-pest="ab" class="'+(FUT_PEST==="ab"?"on":"")+'">Operaciones abiertas'+
+        (F.abiertas.length?'<span class="pNum">'+F.abiertas.length+'</span>':'')+'</button>'+
+      '<button data-pest="hi" class="'+(FUT_PEST==="hi"?"on":"")+'"><span class="pIc">'+IC.mov+'</span>Historial</button>'+
+    '</div>';
+    if(FUT_PEST==="hi") h+=tablaHistorial(F,k,T,true);
+    else {
+      h+=cajaAbiertas(F,k);
+      if(F.programadas.length) h+=cajaProgramadas(F.programadas,k);
+      if(!F.abiertas.length && !F.programadas.length)
+        h+='<div class="caja"><div class="cp"><div class="mut" style="text-align:center;padding:20px 12px">'+
+           'No tiene ninguna operación abierta. Pulse «+ Nueva operación» para registrar una.'+
+           '</div></div></div>';
+    }
+  } else {
+    /* ---- computadora: igual que siempre ---- */
+    h+=panelOperacion(A);
+    if(F.programadas.length) h+=cajaProgramadas(F.programadas,k);
+    h+=cajaAbiertas(F,k);
+    if(T.conPlan||T.sinPlan) h+=cajaDisciplina(T);
+    if(T.n>=3){
+      h+='<div class="inf">'+
+        '<div class="caja"><h2><span class="ic">'+IC.diana+'</span>Largos contra cortos</h2>'+
+        '<div class="cp mpg">'+["LONG","SHORT"].map(function(l){
+          var d=T.lados[l];
+          return '<div class="mp" style="--fc:'+(l==="LONG"?"var(--up)":"var(--dn)")+'">'+
+            '<div class="mpt">'+(l==="LONG"?"\u25b2 LARGOS":"\u25bc CORTOS")+'</div>'+
+            '<div class="mpv '+cl(d.gan)+'">'+usdF(d.gan)+'</div>'+
+            '<div class="mps">'+d.n+' ops · '+d.ganadas+' acertadas'+
+            (d.aciertos!=null?" ("+d.aciertos.toFixed(0)+"%)":"")+'</div></div>';
+        }).join("")+'</div>'+consejoFut(T)+'</div>'+
+        '<div class="caja"><h2><span class="ic">'+IC.torta+'</span>Reparto</h2><div class="cp">'+
+        rosca([{v:T.ganadas,color:"var(--up)",et:"Acertadas"},
+               {v:T.perdidas,color:"var(--dn)",et:"Fallidas"},
+               {v:T.neutras,color:"var(--t3)",et:"En tablas"}].filter(function(x){ return x.v>0; }),
+              String(T.n), "cerradas")+'</div></div></div>';
+      var acum=0;
+      h+=curvaGanancia(F.cerradas.map(function(e){ acum+=e.gan; return {v:acum}; }),
+        "Cómo fue creciendo");
+    }
+    h+=tablaHistorial(F,k,T);
   }
-
-  /* ---- historial ---- */
-  h+=tablaHistorial(F,k,T);
 
   c.innerHTML=h;
   engancharAmbito(c,A);
 }
+/* =====================================================================
+   v54 · EL MARCADOR (teléfono)
+   Luis (12 oct): «esas tarjetas están muy grandes, se puede compactar más» y
+   «lo primero que tiene que ver el usuario es su cuadro estadístico de cómo está».
+   Son los MISMOS cuatro datos de las tarjetas grandes de la computadora, con su
+   mismo icono y su mismo color (tabla COL_ICO), pero en dos columnas y sin la
+   frase de abajo. Los dos que llevaban a algún sitio lo siguen haciendo:
+   «Operaciones acertadas» filtra el historial y «Comisiones pagadas» abre su hoja.
+   ===================================================================== */
+function marcador(T){
+  return tiraMarcador([
+    {ico:IC.diana, et:"Operaciones acertadas",
+     val:T.decididas?(T.ganadas+" de "+T.decididas+
+        (T.aciertos!=null?' <small>'+T.aciertos.toFixed(0)+'%</small>':'')):"—",
+     ir:T.ganadas?"res:GANA":""},
+    {ico:IC.dolar, et:"Promedio por operación",
+     val:T.porOperacion==null?"—":((T.porOperacion>=0?"+":"−")+usdF(T.porOperacion).replace("-","")),
+     clase:T.porOperacion==null?"":cl(T.porOperacion), ir:T.n?"res:TODO":""},
+    {ico:IC.sube, et:"Ganancia promedio al acertar",
+     val:T.ganaUsd==null?"—":("+"+usdF(T.ganaUsd)), clase:T.ganaUsd==null?"":"up"},
+    {ico:IC.banco, et:"Comisiones pagadas", val:usdF(T.comision+(T.comisionAb||0)), ir:"f:comisiones"}
+  ]);
+}
+
+/* =====================================================================
+   v54 · UNA OPERACIÓN ABIERTA = UNA LÍNEA (teléfono)
+   Luis (12 oct): «se toca y se abre el detalle; se toca otra vez y se minimiza y
+   queda la información básica: si es largo o short, el apalancamiento, cuándo
+   entró, el precio de entrada, el de hoy, con cuánto entró y cuánto va ganando».
+   Lo de abajo (tamaño, stop, objetivo y los botones) solo sale al abrirla.
+   ===================================================================== */
+function filaAbiertaCorta(e,k){
+  var f=e.f, pr=precioDe(f.sym), riel=posicionRiel(e);
+  var abierta=!!UI_OPAB[f.id];
+  return '<div class="opL'+(abierta?' abierta':'')+'" style="--fc:'+colDe(f.sym)+'" data-opab="'+esc(f.id)+'">'+
+      '<div class="opIc">'+icono(f.sym,30)+'</div>'+
+      '<div class="opQ">'+
+        '<div class="n1"><b translate="no">'+esc(f.sym)+'</b>'+
+          '<span class="chip '+(f.lado==="SHORT"?"s":"l")+'">'+(f.lado==="SHORT"?"▼ CORTO":"▲ LARGO")+'</span>'+
+          '<span class="chip a">'+e.apal+'x</span></div>'+
+        '<div class="n2"><span>N° '+esc(String(f.n||"—"))+(f.fecha?' · '+fechaCorta(f.fecha):'')+'</span>'+
+          '<span>entró '+precio(e.entrada)+'</span>'+
+          '<span>hoy <b data-v="pr" data-s="'+esc(f.sym)+'">'+precio(pr)+'</b></span>'+
+          '<span>puso '+usdF(e.margen)+'</span></div>'+
+      '</div>'+
+      '<div class="opD">'+
+        '<span class="'+(e.flot>0?"gpill p":e.flot<0?"gpill n":"gpill z")+'" data-v="futFlot" '+
+          'data-f="'+esc(f.id)+'" data-cls="">'+
+          (e.flot!=null?((e.flot>=0?"+":"−")+usdF(e.flot).replace("-","")):"sin precio")+'</span>'+
+        (riel!=null
+          ? '<div class="rielMini"><i style="left:'+riel.toFixed(1)+'%" data-v="riel" data-f="'+esc(f.id)+'"></i></div>'
+          : '')+
+        '<span class="opPct '+cl(e.pctFlotNeto)+'" data-v="futFlotP" data-f="'+esc(f.id)+'" data-cls="opPct">'+
+          (e.pctFlotNeto!=null?pct(e.pctFlotNeto,1):"")+'</span>'+
+      '</div>'+
+    '</div>'+
+    '<div class="opDet"'+(abierta?'':' hidden')+' data-det="'+esc(f.id)+'" style="--fc:'+colDe(f.sym)+'">'+
+      '<div class="kv">'+
+        '<div><span>Dinero que puso</span><b>'+usdF(e.margen)+'</b></div>'+
+        '<div><span>Tamaño de la operación</span><b>'+usdF(e.valor)+'<small translate="no">'+cant(e.monedas)+' '+esc(f.sym)+'</small></b></div>'+
+        '<div><span>Si llega al objetivo</span><b class="up">'+
+          (e.ganTp!=null?("+"+usdF(e.ganTp-e.com)):"—")+
+          '<small>'+(e.tp!=null?("en "+precio(e.tp)):"escriba el objetivo")+'</small></b></div>'+
+        '<div><span>Si llega al stop</span><b class="dn">'+
+          (e.perSl!=null?("−"+usdF(Math.abs(e.perSl-e.com))):"—")+
+          '<small>'+(e.sl!=null?("en "+precio(e.sl)):"sin stop")+'</small></b></div>'+
+      '</div>'+
+      (e.liquidado?'<div class="nota mal" style="margin-top:8px">El precio ya pasó el punto de '+
+        'liquidación ('+precio(e.liq)+'). Con margen aislado no se pierde más que el margen que puso.</div>':'')+
+      '<div class="opBts">'+
+        '<button class="b sm ac" data-cerrarop="'+esc(f.id)+'" data-amb="'+k+'">Cerrar</button>'+
+        '<button class="b sm" data-edop="'+esc(f.id)+'" data-amb="'+k+'">Editar</button>'+
+        '<button class="b sm" data-verg="'+esc(f.id)+'" data-amb="'+k+'">Ver gráfica</button>'+
+      '</div>'+
+    '</div>';
+}
+/* qué operaciones están desplegadas (solo mientras la pantalla está abierta) */
+var UI_OPAB={};
+
 /* las operaciones abiertas: la misma caja en el teléfono (arriba) y en la computadora (abajo) */
 function cajaAbiertas(F,k){
   if(!F.abiertas.length) return "";
+  /* v54 · en el teléfono el título ya lo pone la pestaña: aquí solo va el EN VIVO
+     y la lista, cada operación en una línea que se abre al tocarla. */
+  if(esTel())
+    return '<div class="caja" id="abiertasFut"><div class="capo">'+
+      '<span class="envivo"><i></i>EN VIVO</span></div><div class="cp" style="padding-top:0">'+
+      F.abiertas.map(function(e){ return filaAbiertaCorta(e,k); }).join("")+'</div></div>';
   return '<div class="caja" id="abiertasFut"><h2><span class="ic">'+IC.fut+'</span>Operaciones abiertas'+
     '<span class="chip v">'+F.abiertas.length+'</span><span class="sp"></span>'+
     '<span class="envivo"><i></i>EN VIVO</span></h2>'+
-    tablaAbiertas(F.abiertas,k)+'<div class="soloTel cp" style="padding-top:0">'+
-    F.abiertas.map(function(e){ return filaAbierta(e,k); }).join("")+'</div></div>';
+    tablaAbiertas(F.abiertas,k)+'</div>';
 }
 function pintarFut(){ pintarAmbito("fut"); }
 function pintarBack(){ pintarAmbito("back"); }
@@ -8710,7 +9092,8 @@ function consejoFut(T){
     '</div></div>':"";
 }
 var FUT_lado="TODO", FUT_cuantos=30, FUT_res="TODO";
-function tablaHistorial(F,k,T){
+var FUT_PEST="ab";   /* v54 · qué pestaña está elegida en el teléfono: "ab" abiertas · "hi" historial */
+function tablaHistorial(F,k,T,sinTitulo){
   var lista=F.cerradas.filter(function(e){
       if(FUT_lado!=="TODO"&&e.f.lado!==FUT_lado) return false;
       /* v42 · acertó = ganó DINERO, igual que el contador de arriba. Con el
@@ -8725,17 +9108,23 @@ function tablaHistorial(F,k,T){
   var titulo = FUT_res==="GANA" ? "Las que acertó"
              : FUT_res==="PIERDE" ? "Las que falló"
              : FUT_res==="COM" ? "Las que pagaron comisión" : "Historial";
-  var h='<div class="caja" id="histFut"><h2><span class="ic">'+IC.mov+'</span>'+esc(titulo)+
-    '<span class="chip g">'+lista.length+'</span><span class="sp"></span>'+
-    '<div class="pill" style="padding:2px">'+["TODO","GANA","PIERDE"].map(function(x){
-      return '<button class="'+(FUT_res===x?"on":"")+'" data-fres="'+x+'" style="padding:6px 10px;font-size:12px">'+
-        (x==="TODO"?"Todas":x==="GANA"?"Acertadas":"Fallidas")+'</button>';
-    }).join("")+'</div>'+
-    '<div class="pill" style="padding:2px">'+["TODO","LONG","SHORT"].map(function(x){
+  /* v54 · primero LARGOS/CORTOS y debajo TODAS/ACERTADAS/FALLIDAS (Luis, 12 oct:
+     «está invertido, primero arriba debería ser largos o short»). En el teléfono el
+     título lo pone la pestaña, así que aquí no se repite. */
+  var FILTROS='<div class="pill" style="padding:2px">'+["TODO","LONG","SHORT"].map(function(x){
       return '<button class="'+(FUT_lado===x?"on":"")+'" data-fl="'+x+'" style="padding:6px 10px;font-size:12px">'+
         (x==="TODO"?"Todas":x==="LONG"?"Largos":"Cortos")+'</button>';
     }).join("")+'</div>'+
-    '<button class="b sm" data-xls="'+k+'">Excel</button></h2><div class="cp">';
+    '<div class="pill" style="padding:2px">'+["TODO","GANA","PIERDE"].map(function(x){
+      return '<button class="'+(FUT_res===x?"on":"")+'" data-fres="'+x+'" style="padding:6px 10px;font-size:12px">'+
+        (x==="TODO"?"Todas":x==="GANA"?"Acertadas":"Fallidas")+'</button>';
+    }).join("")+'</div>';
+  var h = sinTitulo
+    ? '<div class="caja" id="histFut"><div class="cp"><div class="filtHist">'+FILTROS+
+      '<button class="b sm" data-xls="'+k+'">Excel</button></div>'
+    : '<div class="caja" id="histFut"><h2><span class="ic">'+IC.mov+'</span>'+esc(titulo)+
+      '<span class="chip g">'+lista.length+'</span><span class="sp"></span>'+FILTROS+
+      '<button class="b sm" data-xls="'+k+'">Excel</button></h2><div class="cp">';
   if(!ver.length) h+='<div class="mut" style="text-align:center;padding:18px">No hay operaciones cerradas aquí.</div>';
   ver.forEach(function(e){
     var f=e.f, n=planCuantos(f);
@@ -8778,9 +9167,24 @@ function tablaHistorial(F,k,T){
 /* ---------------------------------------------------------------------
    Enganchar la pantalla
    --------------------------------------------------------------------- */
-function engancharAmbito(c, A){
-  olvidarLote();                 /* la pantalla es nueva: nada que recordar */
-  engancharFranja(c,A);
+/* v54 · TODO LO DEL FORMULARIO DE «NUEVA OPERACIÓN», EN UN SOLO SITIO.
+   En la computadora el formulario está en la página; en el teléfono vive en su
+   propia hoja (botón «+ Nueva operación»). Las dos usan esto mismo. */
+/* v54 · LA HOJA DE «NUEVA OPERACIÓN» (teléfono).
+   Luis (12 oct): «qué tal que sean 10 operaciones abiertas, imagínate cuánto tiene que
+   deslizar para colocar una nueva». Por eso el formulario sale de la página y se abre
+   desde el botón grande de arriba: con una o con veinte abiertas, registrar es un toque. */
+function hojaNuevaOperacion(k){
+  var A=ambito(k||FU.amb||"fut");
+  FU.amb=A.k;
+  abrir('<div class="hoja grande"><div class="hh"><span class="ic">'+IC.regla+'</span>'+
+    '<h3>'+(A.k==="back"?"Nueva operación de prueba":"Nueva operación")+'</h3>'+
+    '<button class="x" data-cerrar>×</button></div>'+
+    '<div class="hb">'+panelOperacion(A,true)+'</div></div>',
+  function(M){ engancharFormulario(M,A); },
+  function(){ GRAF=null; });   /* al cerrar la hoja, la gráfica deja de existir */
+}
+function engancharFormulario(c, A){
   var S=c.querySelector("#fuS");
   function pintaMon(){
     if(!S) return;
@@ -8886,6 +9290,15 @@ function engancharAmbito(c, A){
   if(lp) lp.onclick=function(){ limpiarFU(A.k); A.pinta(); };
   var ok=c.querySelector("#fuOk");
   if(ok) ok.onclick=function(){ guardarOperacion(A); };
+  var bg=c.querySelector("#fuVerG");
+  if(bg) bg.onclick=function(){ ponerVerGraf(!verGraf()); };
+  montarGraf(A);
+  recLote(A);
+}
+function engancharAmbito(c, A){
+  olvidarLote();                 /* la pantalla es nueva: nada que recordar */
+  engancharFranja(c,A);
+  engancharFormulario(c,A);      /* v54 · el formulario puede vivir aquí o en su propia hoja */
   c.querySelectorAll("[data-fres]").forEach(function(b){
     b.onclick=function(){ FUT_res=b.getAttribute("data-fres"); FUT_cuantos=30; A.pinta(); };
   });
@@ -8904,13 +9317,44 @@ function engancharAmbito(c, A){
     b.onclick=function(){ editarOperacion(b.getAttribute("data-edop"), b.getAttribute("data-amb")); };
   });
   c.querySelectorAll("[data-xls]").forEach(function(b){ b.onclick=exportarExcel; });
+  /* --- v54 · teléfono: el botón grande, las pestañas y las operaciones que se abren --- */
+  var bn=c.querySelector("#btNuevaOp");
+  if(bn) bn.onclick=function(){ hojaNuevaOperacion(A.k); };
+  c.querySelectorAll("#pestFut button").forEach(function(b){
+    b.onclick=function(){ FUT_PEST=b.getAttribute("data-pest"); A.pinta(); };
+  });
+  c.querySelectorAll("[data-opab]").forEach(function(fila){
+    fila.onclick=function(ev){
+      if(ev.target.closest("button")) return;      /* los botones hacen lo suyo */
+      var id=fila.getAttribute("data-opab");
+      var det=c.querySelector('[data-det="'+id+'"]');
+      var abrirla=!UI_OPAB[id];
+      UI_OPAB[id]=abrirla;
+      fila.className=abrirla?"opL abierta":"opL";
+      if(det) det.hidden=!abrirla;
+    };
+  });
+  c.querySelectorAll("[data-verg]").forEach(function(b){
+    b.onclick=function(ev){
+      ev.stopPropagation();
+      verOperacion(b.getAttribute("data-verg"), b.getAttribute("data-amb"));
+    };
+  });
   engancharFichas(c);          /* el icono de cada operación abre su gráfica */
-  montarGraf(A);
-  recLote(A);
+}
+/* ¿la gráfica está abierta? una sola fuente para todo el programa */
+function verGraf(){ return !!(BD.ajustes&&BD.ajustes.verGraf); }
+function ponerVerGraf(v){
+  BD.ajustes.verGraf=!!v; tocar(BD.ajustes); guardar();
+  var g=document.getElementById("fuGraf"), b=document.getElementById("fuVerG");
+  if(g) g.hidden=!v;
+  if(b) ponTexto(b, tr(v?"Ocultar la gráfica":"Ver gráfica · mover el stop y el objetivo con el dedo"));
+  if(v){ try{ montarGraf(ambito(FU.amb||"fut")); }catch(e){} }
+  else { GRAF=null; if(g) g.innerHTML=""; }
 }
 function montarGraf(A){
   var g=document.getElementById("fuGraf");
-  if(!g||!FU.sym) { if(g) g.innerHTML=""; return; }
+  if(!g||!FU.sym||!verGraf()) { if(g) g.innerHTML=""; return; }
   MIRANDO=FU.sym;
   montarGrafica(g, {
     sym:FU.sym,
@@ -9021,6 +9465,8 @@ function guardarOperacion(A){
     dicho="Operación registrada · "+(st.gan>=0?"ganó ":"perdió ")+usdF(Math.abs(st.gan))+".";
   }
   limpiarFU(A.k);
+  /* v54 · si se registró desde la hoja del teléfono, la hoja se cierra sola */
+  try{ if(document.getElementById("veloIn") && document.querySelector("#veloIn .opform.enHoja")) cerrar(); }catch(e){}
   A.pinta(); repintarCabecera(); conectarVivo();
   try{ vibrarOk(); }catch(e){}          /* el toquecito de "quedó registrada" */
   aviso(dicho);
@@ -11335,6 +11781,42 @@ function pedirPinNuevo(){
 /* =====================================================================
    19 · RESUMEN — todo junto, moviéndose solo
    ===================================================================== */
+/* la tabla de monedas del Resumen en la computadora: la misma de siempre */
+function tablaMonedasRes(vivas, S){
+  var h='<div class="env soloPC"><table><thead><tr>'+
+      '<th>Moneda</th><th>Cantidad</th>'+
+      '<th>Precio promedio</th><th>Precio ahora</th>'+
+      '<th class="opt">7 días</th>'+
+      '<th>Vale hoy</th><th>Ganancia</th>'+
+      '<th></th></tr></thead><tbody>';
+    vivas.slice(0,8).forEach(function(e){
+      h+='<tr class="cl" tabindex="0" role="button" data-sym="'+esc(e.sym)+'" '+
+        'style="--fc:'+colDe(e.sym)+'">'+
+        '<td><div class="cri">'+iconoMoneda(e.sym,38)+'<div><b>'+esc(e.sym)+'</b><span>'+
+        esc(nombreDe(e.sym))+'</span></div></div></td>'+
+        '<td>'+cant(e.cantidad)+'<span class="sub">'+esc(e.sym)+'</span></td>'+
+        '<td>'+precio(e.promedio)+'<span class="sub">en '+plural(e.nCompras,"compra","compras")+'</span></td>'+
+        '<td><span data-v="pr" data-s="'+esc(e.sym)+'">'+precio(e.precio)+'</span>'+
+        '<span class="sub '+cl(cambioDe(e.sym))+'" data-v="ch" data-s="'+esc(e.sym)+'" data-cls="sub">'+
+        (cambioDe(e.sym)!=null?pct(cambioDe(e.sym),1):"—")+'</span></td>'+
+        '<td class="opt"><span data-v="spark" data-s="'+esc(e.sym)+'"></span></td>'+
+        '<td><span data-v="spVal" data-s="'+esc(e.sym)+'">'+
+        (e.valor!=null?usd(e.valor):"—")+'</span><span class="sub">puso '+usd(e.costo)+'</span></td>'+
+        '<td><span class="'+(e.abierto>0?"gpill p":e.abierto<0?"gpill n":"gpill z")+'" '+
+        'data-v="spGan" data-s="'+esc(e.sym)+'" data-cls="">'+
+        (e.abierto!=null?(e.abierto>=0?"+":"−")+usd(e.abierto).replace("-",""):"—")+'</span>'+
+        '<span class="sub '+cl(e.abiertoPct)+'" data-v="spGanP" data-s="'+esc(e.sym)+'" '+
+        'data-cls="sub">'+pct(e.abiertoPct)+'</span></td>'+
+        '<td><button class="b sm" data-vender="'+esc(e.sym)+'">Vender</button></td></tr>';
+    });
+    h+='</tbody><tfoot><tr><td colspan="2">'+plural(vivas.length,"moneda","monedas")+'</td>'+
+      '<td></td><td></td><td class="opt"></td>'+
+      '<td><span data-v="total">'+usd(S.tot.valor)+'</span></td>'+
+      '<td><span class="'+(S.tot.abierto>0?"gpill p":S.tot.abierto<0?"gpill n":"gpill z")+'" data-v="totGan">'+
+      (S.tot.abierto>=0?"+":"−")+usd(S.tot.abierto).replace("-","")+'</span></td><td></td></tr></tfoot>'+
+      '</table></div>';
+  return h;
+}
 function pintarRes(){
   var c=document.getElementById("cuerpo");
   var S=carteraSpot(), F=carteraFut(BD.fut), T=F.tot;
@@ -11397,99 +11879,143 @@ function pintarRes(){
       '<div class="soloTel cp" style="padding-top:0">'+
       F.abiertas.map(function(e){ return filaAbierta(e,"fut"); }).join("")+'</div></div>';
   }
+  if(TEL){
+    /* v54 · TELÉFONO: el resumen arriba y, debajo, los números de spot y de futuros
+       en dos tiras rotuladas (antes eran seis tarjetas grandes, una encima de otra).
+       Lo que está en marcha va en pestañas: sus operaciones abiertas y sus monedas. */
+    h+='<div class="cima">'+
+      heroGrande("TODO SU DINERO", totalTodo, ganTodo, "ganancia en total", null, serieTodo(),
+                 repartoDinero())+'</div>';
+    h+=tiraMarcador([
+      {ico:IC.dolar, et:"Ganancia si vende hoy",
+       val:'<span data-v="ganMon">'+conSignoUsd(S.tot.abierto)+'</span>',
+       clase:cl(S.tot.abierto), ir:"v:spot#misMonedas"},
+      {ico:IC.sube, et:"Ya ganado en ventas", val:conSignoUsd(S.tot.realizado),
+       clase:cl(S.tot.realizado), ir:"v:spot#histSpot"},
+      {ico:IC.torta, et:"Vale hoy", val:'<span data-v="total">'+usd(S.tot.valor)+'</span>', ir:"v:spot#misMonedas"},
+      {ico:IC.banco, et:"Comisiones", val:usdF(K.spot), ir:"f:comisiones"}
+    ], "Spot");
+    h+=tiraMarcador([
+      {ico:IC.mov, et:"Ganancia si cierra hoy",
+       val:T.nAb ? '<span data-v="futTot">'+(T.flotante>=0?"+":"−")+usdF(T.flotante).replace("-","")+'</span>' : "—",
+       clase:T.nAb?cl(T.flotante):"", ir:T.nAb?"v:fut#abiertasFut":"v:fut"},
+      {ico:IC.fut, et:"Ya ganado al cerrar", val:(T.gan>=0?"+":"−")+usdF(T.gan).replace("-",""),
+       clase:cl(T.gan), ir:"v:fut#histFut"},
+      {ico:IC.torta, et:"Disponible", val:usd(D.fut!=null?D.fut:futurosDet().disponible)},
+      {ico:IC.banco, et:"Comisiones", val:usdF(K.fut), ir:"f:comisiones"}
+    ], "Futuros");
+  } else {
   h+='<div class="cima">'+/* v45 · sin «24 h» al lado de «ganancia en total» (Luis: «no tiene nada que ver con mi ganancia»).
-     Ese porcentaje era lo que se movió el PRECIO de sus monedas en Binance, no lo que ganó o perdió él. */
-    heroGrande("TODO SU DINERO", totalTodo, ganTodo, "ganancia en total", null, serieTodo(),
-                                    repartoDinero())+
-    (TEL ? hOpsRes+(F.programadas.length?cajaProgramadas(F.programadas,"fut"):"") : "")+
-    '<div class="grupos">'+
-    grupoRes("Spot", IC.spot, "ganSpot", G.spot,
-      (vivas.length
-        ? viva(met(IC.dolar,"Ganancia si vende hoy",
-            '<span data-v="ganMon">'+conSignoUsd(S.tot.abierto)+'</span>',"",
-            '<span data-v="ganMonP">'+pct(S.tot.abiertoPct,1)+
-              (S.tot.sinPrecio?" sobre las que tienen precio":" sobre lo que puso")+'</span>',
-            colorSigno(S.tot.abierto, 2), null, "v:spot#misMonedas"), "spotAb", "p2")
-        : met(IC.dolar,"Ganancia si vende hoy","—","","Todavía no tiene monedas", 2, null, "v:spot#misMonedas"))+
-      met(IC.sube,"Ya ganado en ventas", conSignoUsd(S.tot.realizado),"",
-          plural(nVentasSpot(),"venta","ventas"), colorSigno(S.tot.realizado, 4), null, "v:spot#histSpot")+
-      met(IC.banco,"Comisiones", usdF(K.spot),"", "de sus compras y ventas", 5, null, "f:comisiones"))+
-    grupoRes("Futuros", IC.fut, "ganFut", G.fut,
-      viva(met(IC.mov,"Ganancia si cierra hoy",
-          T.nAb ? '<span data-v="futTot">'+(T.flotante>=0?"+":"−")+usdF(T.flotante).replace("-","")+'</span>' : "—","",
-          T.nAb ? plural(T.nAb,"operación abierta","operaciones abiertas") : "nada abierto",
-          T.nAb ? colorSigno(T.flotante, 3) : 3, null, T.nAb?"v:fut#abiertasFut":"v:fut"), T.nAb?"futFlot":"", "p3")+
-      met(IC.fut,"Ya ganado al cerrar", (T.gan>=0?"+":"−")+usdF(T.gan).replace("-",""),"",
-          plural(T.n,"operación cerrada","operaciones cerradas")+(T.aciertos!=null?" · acierta el "+T.aciertos.toFixed(0)+"%":""),
-          colorSigno(T.gan, 4), null, "v:fut#histFut")+
-      met(IC.banco,"Comisiones", usdF(K.fut),"",
-          K.futAbiertas>0 ? "+ "+usdF(K.futAbiertas)+" en las que tiene abiertas" : "de sus operaciones",
-          5, null, "f:comisiones"))+
-    '</div></div>';
+       Ese porcentaje era lo que se movió el PRECIO de sus monedas en Binance, no lo que ganó o perdió él. */
+      heroGrande("TODO SU DINERO", totalTodo, ganTodo, "ganancia en total", null, serieTodo(),
+                                      repartoDinero())+
+      (TEL ? hOpsRes+(F.programadas.length?cajaProgramadas(F.programadas,"fut"):"") : "")+
+      '<div class="grupos">'+
+      grupoRes("Spot", IC.spot, "ganSpot", G.spot,
+        (vivas.length
+          ? viva(met(IC.dolar,"Ganancia si vende hoy",
+              '<span data-v="ganMon">'+conSignoUsd(S.tot.abierto)+'</span>',"",
+              '<span data-v="ganMonP">'+pct(S.tot.abiertoPct,1)+
+                (S.tot.sinPrecio?" sobre las que tienen precio":" sobre lo que puso")+'</span>',
+              colorSigno(S.tot.abierto, 2), null, "v:spot#misMonedas"), "spotAb", "p2")
+          : met(IC.dolar,"Ganancia si vende hoy","—","","Todavía no tiene monedas", 2, null, "v:spot#misMonedas"))+
+        met(IC.sube,"Ya ganado en ventas", conSignoUsd(S.tot.realizado),"",
+            plural(nVentasSpot(),"venta","ventas"), colorSigno(S.tot.realizado, 4), null, "v:spot#histSpot")+
+        met(IC.banco,"Comisiones", usdF(K.spot),"", "de sus compras y ventas", 5, null, "f:comisiones"))+
+      grupoRes("Futuros", IC.fut, "ganFut", G.fut,
+        viva(met(IC.mov,"Ganancia si cierra hoy",
+            T.nAb ? '<span data-v="futTot">'+(T.flotante>=0?"+":"−")+usdF(T.flotante).replace("-","")+'</span>' : "—","",
+            T.nAb ? plural(T.nAb,"operación abierta","operaciones abiertas") : "nada abierto",
+            T.nAb ? colorSigno(T.flotante, 3) : 3, null, T.nAb?"v:fut#abiertasFut":"v:fut"), T.nAb?"futFlot":"", "p3")+
+        met(IC.fut,"Ya ganado al cerrar", (T.gan>=0?"+":"−")+usdF(T.gan).replace("-",""),"",
+            plural(T.n,"operación cerrada","operaciones cerradas")+(T.aciertos!=null?" · acierta el "+T.aciertos.toFixed(0)+"%":""),
+            colorSigno(T.gan, 4), null, "v:fut#histFut")+
+        met(IC.banco,"Comisiones", usdF(K.fut),"",
+            K.futAbiertas>0 ? "+ "+usdF(K.futAbiertas)+" en las que tiene abiertas" : "de sus operaciones",
+            5, null, "f:comisiones"))+
+      '</div></div>';
+
+  }
 
   /* ---- sus monedas ---- */
+  var MONRES="";
   if(vivas.length){
-    h+='<div class="caja"><h2><span class="ic">'+IC.spot+'</span>Sus criptomonedas'+
-      '<span class="chip v">'+vivas.length+'</span>'+
-      '<span class="sp"></span><button class="b sm" onclick="irA(\'spot\')">Ver todo</button></h2>'+
-      '<div class="env soloPC"><table><thead><tr>'+
-      '<th>Moneda</th><th>Cantidad</th>'+
-      '<th>Precio promedio</th><th>Precio ahora</th>'+
-      '<th class="opt">7 días</th>'+
-      '<th>Vale hoy</th><th>Ganancia</th>'+
-      '<th></th></tr></thead><tbody>';
-    vivas.slice(0,8).forEach(function(e){
-      h+='<tr class="cl" tabindex="0" role="button" data-sym="'+esc(e.sym)+'" '+
-        'style="--fc:'+colDe(e.sym)+'">'+
-        '<td><div class="cri">'+iconoMoneda(e.sym,38)+'<div><b>'+esc(e.sym)+'</b><span>'+
-        esc(nombreDe(e.sym))+'</span></div></div></td>'+
-        '<td>'+cant(e.cantidad)+'<span class="sub">'+esc(e.sym)+'</span></td>'+
-        '<td>'+precio(e.promedio)+'<span class="sub">en '+plural(e.nCompras,"compra","compras")+'</span></td>'+
-        '<td><span data-v="pr" data-s="'+esc(e.sym)+'">'+precio(e.precio)+'</span>'+
-        '<span class="sub '+cl(cambioDe(e.sym))+'" data-v="ch" data-s="'+esc(e.sym)+'" data-cls="sub">'+
-        (cambioDe(e.sym)!=null?pct(cambioDe(e.sym),1):"—")+'</span></td>'+
-        '<td class="opt"><span data-v="spark" data-s="'+esc(e.sym)+'"></span></td>'+
-        '<td><span data-v="spVal" data-s="'+esc(e.sym)+'">'+
-        (e.valor!=null?usd(e.valor):"—")+'</span><span class="sub">puso '+usd(e.costo)+'</span></td>'+
-        '<td><span class="'+(e.abierto>0?"gpill p":e.abierto<0?"gpill n":"gpill z")+'" '+
-        'data-v="spGan" data-s="'+esc(e.sym)+'" data-cls="">'+
-        (e.abierto!=null?(e.abierto>=0?"+":"−")+usd(e.abierto).replace("-",""):"—")+'</span>'+
-        '<span class="sub '+cl(e.abiertoPct)+'" data-v="spGanP" data-s="'+esc(e.sym)+'" '+
-        'data-cls="sub">'+pct(e.abiertoPct)+'</span></td>'+
-        '<td><button class="b sm" data-vender="'+esc(e.sym)+'">Vender</button></td></tr>';
-    });
-    h+='</tbody><tfoot><tr><td colspan="2">'+plural(vivas.length,"moneda","monedas")+'</td>'+
-      '<td></td><td></td><td class="opt"></td>'+
-      '<td><span data-v="total">'+usd(S.tot.valor)+'</span></td>'+
-      '<td><span class="'+(S.tot.abierto>0?"gpill p":S.tot.abierto<0?"gpill n":"gpill z")+'" data-v="totGan">'+
-      (S.tot.abierto>=0?"+":"−")+usd(S.tot.abierto).replace("-","")+'</span></td><td></td></tr></tfoot>'+
-      '</table></div>'+listaMonedasTel(vivas.slice(0,8), true)+
+    MONRES='<div class="caja">'+
+      (TEL ? '' : '<h2><span class="ic">'+IC.spot+'</span>Sus criptomonedas'+
+        '<span class="chip v">'+vivas.length+'</span>'+
+        '<span class="sp"></span><button class="b sm" onclick="irA(\'spot\')">Ver todo</button></h2>')+
+      (TEL ? listaMonedasCorta(vivas.slice(0,8)) : tablaMonedasRes(vivas, S))+
       (vivas.length>8?'<div class="cp" style="padding-top:0"><span class="mut">y '+
         plural(vivas.length-8,"moneda","monedas")+' más.</span></div>':'')+'</div>';
   }
 
-  /* ---- futuros programados: esperando el precio, sin contar nada ---- */
-  if(!TEL && F.programadas.length) h+=cajaProgramadas(F.programadas,"fut");
-
-  /* ---- futuros abiertos, como tabla (en el teléfono ya salieron arriba) ---- */
-  if(!TEL) h+=hOpsRes;
-
   /* ---- abajo: reparto grande y, al lado, dónde compró y alertas ---- */
-  h+='<div class="inf">';
-  if(vivas.length) h+='<div class="caja ancha2"><h2><span class="ic">'+IC.torta+
+  var ABAJO='<div class="inf">';
+  if(vivas.length) ABAJO+='<div class="caja ancha2"><h2><span class="ic">'+IC.torta+
     '</span>Cómo está repartido su dinero</h2><div class="cp">'+
     '<div data-v="roscaM">'+roscaMonedas()+'</div>'+
     '<p class="mut" style="margin:var(--e4) 0 0">'+textoResumen(S,vivas,ch)+'</p></div></div>';
   var conP=vivas.filter(function(e){ return e.abiertoPct!=null; })
                 .sort(function(a,b){ return b.abiertoPct-a.abiertoPct; });
-  if(conP.length>1) h+=tarjetaMejorPeor(conP);
-  h+=tarjetaCasas();
-  h+=tarjetaAlertas();
-  h+='</div>';
+  if(conP.length>1) ABAJO+=tarjetaMejorPeor(conP);
+  ABAJO+=tarjetaCasas();
+  ABAJO+=tarjetaAlertas();
+  ABAJO+='</div>';
+
+  if(TEL){
+    /* v54 · dos pestañas: lo que tiene abierto y sus monedas */
+    h+='<div class="pest" id="pestRes">'+
+      '<button data-pest="ab" class="'+(RES_PEST==="ab"?"on":"")+'">Abiertas'+
+        (F.abiertas.length?'<span class="pNum">'+F.abiertas.length+'</span>':'')+'</button>'+
+      '<button data-pest="mon" class="'+(RES_PEST==="mon"?"on":"")+'"><span class="pIc">'+IC.spot+'</span>Mis monedas'+
+        (vivas.length?'<span class="pNum">'+vivas.length+'</span>':'')+'</button>'+
+    '</div>';
+    if(RES_PEST==="mon") h+=(MONRES||'<div class="caja"><div class="cp"><div class="mut" style="text-align:center;padding:20px 12px">Todavía no tiene monedas.</div></div></div>');
+    else {
+      h+=(F.abiertas.length
+        ? '<div class="caja" id="abiertasFut"><div class="capo"><span class="envivo"><i></i>EN VIVO</span></div>'+
+          '<div class="cp" style="padding-top:0">'+F.abiertas.map(function(e){ return filaAbiertaCorta(e,"fut"); }).join("")+'</div></div>'
+        : '<div class="caja"><div class="cp"><div class="mut" style="text-align:center;padding:20px 12px">No tiene ninguna operación abierta.</div></div></div>');
+      if(F.programadas.length) h+=cajaProgramadas(F.programadas,"fut");
+    }
+    h+=ABAJO;
+  } else {
+    h+=MONRES;
+    if(F.programadas.length) h+=cajaProgramadas(F.programadas,"fut");
+    h+=hOpsRes;
+    h+=ABAJO;
+  }
 
   c.innerHTML=h;
   engancharListaTel(c);
   engancharFichas(c);        /* el icono de la moneda abre su gráfica */
+  /* --- v54 · teléfono: pestañas y filas que se abren --- */
+  c.querySelectorAll("#pestRes button").forEach(function(b){
+    b.onclick=function(){ RES_PEST=b.getAttribute("data-pest"); pintarRes(); };
+  });
+  c.querySelectorAll("[data-opab]").forEach(function(fila){
+    fila.onclick=function(ev){
+      if(ev.target.closest("button")) return;
+      var id=fila.getAttribute("data-opab");
+      var det=c.querySelector('[data-det="'+id+'"]');
+      var abrirla=!UI_OPAB[id];
+      UI_OPAB[id]=abrirla;
+      fila.className=abrirla?"opL abierta":"opL";
+      if(det) det.hidden=!abrirla;
+    };
+  });
+  c.querySelectorAll("[data-cerrarop]").forEach(function(b){
+    b.onclick=function(){ cerrarOperacion(b.getAttribute("data-cerrarop"), b.getAttribute("data-amb")); };
+  });
+  c.querySelectorAll("[data-edop]").forEach(function(b){
+    b.onclick=function(){ editarOperacion(b.getAttribute("data-edop"), b.getAttribute("data-amb")); };
+  });
+  c.querySelectorAll("[data-verg]").forEach(function(b){
+    b.onclick=function(ev){ ev.stopPropagation(); verOperacion(b.getAttribute("data-verg"), b.getAttribute("data-amb")); };
+  });
+  c.querySelectorAll("[data-ver]").forEach(function(b){
+    if(b.tagName==="BUTTON") b.onclick=function(ev){ ev.stopPropagation(); verMoneda(b.getAttribute("data-ver")); };
+  });
   c.querySelectorAll("tr[data-sym]").forEach(function(tr){
     tr.onclick=function(ev){
       if(ev.target.closest("button")) return;
@@ -16788,6 +17314,31 @@ function engancharIdioma(box){
    Se respeta el orden de los huecos tal como salen en español.
    ===================================================================== */
 DIC.en={
+"+ Registrar compra":"+ Record a buy",
+"Registrar un movimiento":"Record a movement",
+"Órdenes":"Orders",
+"Movimientos":"Movements",
+"Mis monedas":"My coins",
+"Abiertas":"Open",
+"tiene # @":"holds # @",
+"Compras":"Buys",
+"Ver detalle":"See detail",
+"Todavía no tiene monedas. Pulse «+ Registrar compra».":"You have no coins yet. Tap «+ Record a buy».",
+"No tiene ninguna operación abierta.":"You have no open trades.",
+"TODO SU SPOT":"ALL YOUR SPOT",
+"Ninguna moneda se llama así.":"No coin is called that.",
+"+#% sobre su cartera":"+#% on your account",
+"−#% sobre su cartera":"−#% on your account",
+"+ Nueva operación":"+ New trade",
+"+ Nueva operación de prueba":"+ New practice trade",
+"No tiene ninguna operación abierta. Pulse «+ Nueva operación» para registrar una.":"You have no open trades. Tap «+ New trade» to record one.",
+"entró $#":"entered at $#",
+"Ver gráfica":"See chart",
+"sobre su cartera":"on your account",
+"#% sobre su cartera":"#% on your account",
+"Ocultar la gráfica":"Hide the chart",
+"Ver gráfica · mover el stop y el objetivo con el dedo":"See chart · drag the stop and the target with your finger",
+"El precio ya pasó el punto de liquidación ($#). Con margen aislado no se pierde más que el margen que puso.":"The price has already passed the liquidation point ($#). With isolated margin you can't lose more than the margin you put in.",
 "Vender # @ cuando suba a $#":"Sell # @ when it rises to $#",
 "Vender # @ cuando baje a $#":"Sell # @ when it drops to $#",
 "Comprar # @ cuando suba a $#":"Buy # @ when it rises to $#",
@@ -18701,6 +19252,31 @@ DIC.en={
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
+"+ Registrar compra":"+ Registrar compra",
+"Registrar un movimiento":"Registrar um movimento",
+"Órdenes":"Ordens",
+"Movimientos":"Movimentos",
+"Mis monedas":"Minhas moedas",
+"Abiertas":"Abertas",
+"tiene # @":"tem # @",
+"Compras":"Compras",
+"Ver detalle":"Ver detalhe",
+"Todavía no tiene monedas. Pulse «+ Registrar compra».":"Você ainda não tem moedas. Toque em «+ Registrar compra».",
+"No tiene ninguna operación abierta.":"Você não tem nenhuma operação aberta.",
+"TODO SU SPOT":"TODO O SEU SPOT",
+"Ninguna moneda se llama así.":"Nenhuma moeda se chama assim.",
+"+#% sobre su cartera":"+#% sobre a sua banca",
+"−#% sobre su cartera":"−#% sobre a sua banca",
+"+ Nueva operación":"+ Nova operação",
+"+ Nueva operación de prueba":"+ Nova operação de teste",
+"No tiene ninguna operación abierta. Pulse «+ Nueva operación» para registrar una.":"Você não tem nenhuma operação aberta. Toque em «+ Nova operação» para registrar uma.",
+"entró $#":"entrou a $#",
+"Ver gráfica":"Ver gráfico",
+"sobre su cartera":"sobre a sua banca",
+"#% sobre su cartera":"#% sobre a sua banca",
+"Ocultar la gráfica":"Ocultar o gráfico",
+"Ver gráfica · mover el stop y el objetivo con el dedo":"Ver gráfico · arraste o stop e o alvo com o dedo",
+"El precio ya pasó el punto de liquidación ($#). Con margen aislado no se pierde más que el margen que puso.":"O preço já passou o ponto de liquidação ($#). Com margem isolada não se perde mais do que a margem que colocou.",
 "Vender # @ cuando suba a $#":"Vender # @ quando subir a $#",
 "Vender # @ cuando baje a $#":"Vender # @ quando cair a $#",
 "Comprar # @ cuando suba a $#":"Comprar # @ quando subir a $#",
@@ -20607,6 +21183,31 @@ DIC.pt={
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
+"+ Registrar compra":"+ Enregistrer un achat",
+"Registrar un movimiento":"Enregistrer un mouvement",
+"Órdenes":"Ordres",
+"Movimientos":"Mouvements",
+"Mis monedas":"Mes monnaies",
+"Abiertas":"Ouvertes",
+"tiene # @":"a # @",
+"Compras":"Achats",
+"Ver detalle":"Voir le détail",
+"Todavía no tiene monedas. Pulse «+ Registrar compra».":"Vous n'avez encore aucune monnaie. Appuyez sur « + Enregistrer un achat ».",
+"No tiene ninguna operación abierta.":"Vous n'avez aucune opération ouverte.",
+"TODO SU SPOT":"TOUT VOTRE SPOT",
+"Ninguna moneda se llama así.":"Aucune monnaie ne porte ce nom.",
+"+#% sobre su cartera":"+#% sur votre capital",
+"−#% sobre su cartera":"−#% sur votre capital",
+"+ Nueva operación":"+ Nouvelle opération",
+"+ Nueva operación de prueba":"+ Nouvelle opération d'essai",
+"No tiene ninguna operación abierta. Pulse «+ Nueva operación» para registrar una.":"Vous n'avez aucune opération ouverte. Appuyez sur « + Nouvelle opération » pour en enregistrer une.",
+"entró $#":"entré à $#",
+"Ver gráfica":"Voir le graphique",
+"sobre su cartera":"sur votre capital",
+"#% sobre su cartera":"#% sur votre capital",
+"Ocultar la gráfica":"Masquer le graphique",
+"Ver gráfica · mover el stop y el objetivo con el dedo":"Voir le graphique · déplacez le stop et l'objectif avec le doigt",
+"El precio ya pasó el punto de liquidación ($#). Con margen aislado no se pierde más que el margen que puso.":"Le prix a déjà dépassé le point de liquidation ($#). Avec la marge isolée, vous ne perdez pas plus que la marge que vous avez mise.",
 "Vender # @ cuando suba a $#":"Vendre # @ quand le prix monte à $#",
 "Vender # @ cuando baje a $#":"Vendre # @ quand le prix descend à $#",
 "Comprar # @ cuando suba a $#":"Acheter # @ quand le prix monte à $#",
@@ -22513,6 +23114,31 @@ DIC.fr={
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
+"+ Registrar compra":"+ Kauf erfassen",
+"Registrar un movimiento":"Bewegung erfassen",
+"Órdenes":"Orders",
+"Movimientos":"Bewegungen",
+"Mis monedas":"Meine Münzen",
+"Abiertas":"Offen",
+"tiene # @":"hat # @",
+"Compras":"Käufe",
+"Ver detalle":"Details ansehen",
+"Todavía no tiene monedas. Pulse «+ Registrar compra».":"Sie haben noch keine Münzen. Tippen Sie auf „+ Kauf erfassen“.",
+"No tiene ninguna operación abierta.":"Sie haben keinen offenen Trade.",
+"TODO SU SPOT":"IHR GESAMTER SPOT",
+"Ninguna moneda se llama así.":"Keine Münze heißt so.",
+"+#% sobre su cartera":"+#% auf Ihr Kapital",
+"−#% sobre su cartera":"−#% auf Ihr Kapital",
+"+ Nueva operación":"+ Neuer Trade",
+"+ Nueva operación de prueba":"+ Neuer Übungstrade",
+"No tiene ninguna operación abierta. Pulse «+ Nueva operación» para registrar una.":"Sie haben keinen offenen Trade. Tippen Sie auf „+ Neuer Trade“, um einen zu erfassen.",
+"entró $#":"eingestiegen bei $#",
+"Ver gráfica":"Chart ansehen",
+"sobre su cartera":"auf Ihr Kapital",
+"#% sobre su cartera":"#% auf Ihr Kapital",
+"Ocultar la gráfica":"Chart ausblenden",
+"Ver gráfica · mover el stop y el objetivo con el dedo":"Chart ansehen · Stop und Ziel mit dem Finger verschieben",
+"El precio ya pasó el punto de liquidación ($#). Con margen aislado no se pierde más que el margen que puso.":"Der Preis hat den Liquidationspunkt ($#) bereits überschritten. Mit isolierter Margin verlieren Sie nicht mehr als die eingesetzte Margin.",
 "Vender # @ cuando suba a $#":"# @ verkaufen, wenn der Preis auf $# steigt",
 "Vender # @ cuando baje a $#":"# @ verkaufen, wenn der Preis auf $# fällt",
 "Comprar # @ cuando suba a $#":"# @ kaufen, wenn der Preis auf $# steigt",
@@ -24419,6 +25045,31 @@ DIC.de={
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
+"+ Registrar compra":"+ Registrare un acquisto",
+"Registrar un movimiento":"Registrare un movimento",
+"Órdenes":"Ordini",
+"Movimientos":"Movimenti",
+"Mis monedas":"Le mie monete",
+"Abiertas":"Aperte",
+"tiene # @":"ha # @",
+"Compras":"Acquisti",
+"Ver detalle":"Vedi dettaglio",
+"Todavía no tiene monedas. Pulse «+ Registrar compra».":"Non ha ancora monete. Tocchi «+ Registrare un acquisto».",
+"No tiene ninguna operación abierta.":"Non ha nessuna operazione aperta.",
+"TODO SU SPOT":"TUTTO IL SUO SPOT",
+"Ninguna moneda se llama así.":"Nessuna moneta si chiama così.",
+"+#% sobre su cartera":"+#% sul suo capitale",
+"−#% sobre su cartera":"−#% sul suo capitale",
+"+ Nueva operación":"+ Nuova operazione",
+"+ Nueva operación de prueba":"+ Nuova operazione di prova",
+"No tiene ninguna operación abierta. Pulse «+ Nueva operación» para registrar una.":"Non ha nessuna operazione aperta. Tocchi «+ Nuova operazione» per registrarne una.",
+"entró $#":"entrato a $#",
+"Ver gráfica":"Vedi grafico",
+"sobre su cartera":"sul suo capitale",
+"#% sobre su cartera":"#% sul suo capitale",
+"Ocultar la gráfica":"Nascondere il grafico",
+"Ver gráfica · mover el stop y el objetivo con el dedo":"Vedi grafico · sposti lo stop e l'obiettivo con il dito",
+"El precio ya pasó el punto de liquidación ($#). Con margen aislado no se pierde más que el margen que puso.":"Il prezzo ha già superato il punto di liquidazione ($#). Con il margine isolato non si perde più del margine che ha messo.",
 "Vender # @ cuando suba a $#":"Vendere # @ quando sale a $#",
 "Vender # @ cuando baje a $#":"Vendere # @ quando scende a $#",
 "Comprar # @ cuando suba a $#":"Comprare # @ quando sale a $#",
@@ -26325,6 +26976,31 @@ DIC.it={
 };
 /* NEDERLANDS · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.nl={
+"+ Registrar compra":"+ Aankoop vastleggen",
+"Registrar un movimiento":"Mutatie vastleggen",
+"Órdenes":"Orders",
+"Movimientos":"Mutaties",
+"Mis monedas":"Mijn munten",
+"Abiertas":"Open",
+"tiene # @":"heeft # @",
+"Compras":"Aankopen",
+"Ver detalle":"Details bekijken",
+"Todavía no tiene monedas. Pulse «+ Registrar compra».":"U hebt nog geen munten. Tik op «+ Aankoop vastleggen».",
+"No tiene ninguna operación abierta.":"U hebt geen openstaande trade.",
+"TODO SU SPOT":"AL UW SPOT",
+"Ninguna moneda se llama así.":"Geen enkele munt heet zo.",
+"+#% sobre su cartera":"+#% op uw saldo",
+"−#% sobre su cartera":"−#% op uw saldo",
+"+ Nueva operación":"+ Nieuwe trade",
+"+ Nueva operación de prueba":"+ Nieuwe oefentrade",
+"No tiene ninguna operación abierta. Pulse «+ Nueva operación» para registrar una.":"U hebt geen openstaande trade. Tik op «+ Nieuwe trade» om er een vast te leggen.",
+"entró $#":"ingestapt op $#",
+"Ver gráfica":"Grafiek bekijken",
+"sobre su cartera":"op uw saldo",
+"#% sobre su cartera":"#% op uw saldo",
+"Ocultar la gráfica":"Grafiek verbergen",
+"Ver gráfica · mover el stop y el objetivo con el dedo":"Grafiek bekijken · sleep de stop en het doel met uw vinger",
+"El precio ya pasó el punto de liquidación ($#). Con margen aislado no se pierde más que el margen que puso.":"De prijs is al voorbij het liquidatiepunt ($#). Met geïsoleerde margin verliest u niet meer dan de margin die u hebt ingelegd.",
 "Vender # @ cuando suba a $#":"# @ verkopen als de prijs stijgt naar $#",
 "Vender # @ cuando baje a $#":"# @ verkopen als de prijs daalt naar $#",
 "Comprar # @ cuando suba a $#":"# @ kopen als de prijs stijgt naar $#",
@@ -28517,6 +29193,31 @@ DIC.nl={
 };
 /* POLSKI · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.pl={
+"+ Registrar compra":"+ Dodaj zakup",
+"Registrar un movimiento":"Dodaj ruch",
+"Órdenes":"Zlecenia",
+"Movimientos":"Ruchy",
+"Mis monedas":"Moje monety",
+"Abiertas":"Otwarte",
+"tiene # @":"ma # @",
+"Compras":"Zakupy",
+"Ver detalle":"Zobacz szczegóły",
+"Todavía no tiene monedas. Pulse «+ Registrar compra».":"Nie masz jeszcze monet. Dotknij «+ Dodaj zakup».",
+"No tiene ninguna operación abierta.":"Nie masz żadnej otwartej transakcji.",
+"TODO SU SPOT":"CAŁY TWÓJ SPOT",
+"Ninguna moneda se llama así.":"Żadna moneta tak się nie nazywa.",
+"+#% sobre su cartera":"+#% względem salda",
+"−#% sobre su cartera":"−#% względem salda",
+"+ Nueva operación":"+ Nowa transakcja",
+"+ Nueva operación de prueba":"+ Nowa transakcja testowa",
+"No tiene ninguna operación abierta. Pulse «+ Nueva operación» para registrar una.":"Nie masz żadnej otwartej transakcji. Dotknij «+ Nowa transakcja», aby ją dodać.",
+"entró $#":"wejście po $#",
+"Ver gráfica":"Pokaż wykres",
+"sobre su cartera":"względem salda",
+"#% sobre su cartera":"#% względem salda",
+"Ocultar la gráfica":"Ukryj wykres",
+"Ver gráfica · mover el stop y el objetivo con el dedo":"Pokaż wykres · przeciągnij stop i cel palcem",
+"El precio ya pasó el punto de liquidación ($#). Con margen aislado no se pierde más que el margen que puso.":"Cena minęła już punkt likwidacji ($#). Przy marginesie izolowanym nie stracisz więcej niż wniesiony depozyt.",
 "Vender # @ cuando suba a $#":"Sprzedaj # @, gdy cena wzrośnie do $#",
 "Vender # @ cuando baje a $#":"Sprzedaj # @, gdy cena spadnie do $#",
 "Comprar # @ cuando suba a $#":"Kup # @, gdy cena wzrośnie do $#",
@@ -30709,6 +31410,31 @@ DIC.pl={
 };
 /* TÜRKÇE · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.tr={
+"+ Registrar compra":"+ Alım kaydet",
+"Registrar un movimiento":"Hareket kaydet",
+"Órdenes":"Emirler",
+"Movimientos":"Hareketler",
+"Mis monedas":"Coinlerim",
+"Abiertas":"Açık",
+"tiene # @":"# @ var",
+"Compras":"Alımlar",
+"Ver detalle":"Ayrıntıya bak",
+"Todavía no tiene monedas. Pulse «+ Registrar compra».":"Henüz coin'iniz yok. «+ Alım kaydet»e dokunun.",
+"No tiene ninguna operación abierta.":"Açık işleminiz yok.",
+"TODO SU SPOT":"TÜM SPOT'UNUZ",
+"Ninguna moneda se llama así.":"Bu adda bir coin yok.",
+"+#% sobre su cartera":"bakiyenize göre +#%",
+"−#% sobre su cartera":"bakiyenize göre −#%",
+"+ Nueva operación":"+ Yeni işlem",
+"+ Nueva operación de prueba":"+ Yeni deneme işlemi",
+"No tiene ninguna operación abierta. Pulse «+ Nueva operación» para registrar una.":"Açık işleminiz yok. Kaydetmek için «+ Yeni işlem»e dokunun.",
+"entró $#":"giriş $#",
+"Ver gráfica":"Grafiği gör",
+"sobre su cartera":"bakiyenize göre",
+"#% sobre su cartera":"bakiyenize göre #%",
+"Ocultar la gráfica":"Grafiği gizle",
+"Ver gráfica · mover el stop y el objetivo con el dedo":"Grafiği gör · stop ve hedefi parmağınızla sürükleyin",
+"El precio ya pasó el punto de liquidación ($#). Con margen aislado no se pierde más que el margen que puso.":"Fiyat likidasyon noktasını ($#) çoktan geçti. İzole marjda koyduğunuz teminattan fazlasını kaybetmezsiniz.",
 "Vender # @ cuando suba a $#":"# @ sat, fiyat $# seviyesine çıkınca",
 "Vender # @ cuando baje a $#":"# @ sat, fiyat $# seviyesine düşünce",
 "Comprar # @ cuando suba a $#":"# @ al, fiyat $# seviyesine çıkınca",
@@ -32901,6 +33627,31 @@ DIC.tr={
 };
 /* РУССКИЙ · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ru={
+"+ Registrar compra":"+ Записать покупку",
+"Registrar un movimiento":"Записать движение",
+"Órdenes":"Ордера",
+"Movimientos":"Движения",
+"Mis monedas":"Мои монеты",
+"Abiertas":"Открытые",
+"tiene # @":"есть # @",
+"Compras":"Покупки",
+"Ver detalle":"Подробнее",
+"Todavía no tiene monedas. Pulse «+ Registrar compra».":"У вас пока нет монет. Нажмите «+ Записать покупку».",
+"No tiene ninguna operación abierta.":"У вас нет открытых сделок.",
+"TODO SU SPOT":"ВЕСЬ ВАШ СПОТ",
+"Ninguna moneda se llama así.":"Такой монеты нет.",
+"+#% sobre su cartera":"+#% к балансу",
+"−#% sobre su cartera":"−#% к балансу",
+"+ Nueva operación":"+ Новая сделка",
+"+ Nueva operación de prueba":"+ Новая тестовая сделка",
+"No tiene ninguna operación abierta. Pulse «+ Nueva operación» para registrar una.":"У вас нет открытых сделок. Нажмите «+ Новая сделка», чтобы записать одну.",
+"entró $#":"вход по $#",
+"Ver gráfica":"Открыть график",
+"sobre su cartera":"к балансу",
+"#% sobre su cartera":"#% к балансу",
+"Ocultar la gráfica":"Скрыть график",
+"Ver gráfica · mover el stop y el objetivo con el dedo":"Открыть график · двигайте стоп и цель пальцем",
+"El precio ya pasó el punto de liquidación ($#). Con margen aislado no se pierde más que el margen que puso.":"Цена уже прошла точку ликвидации ($#). При изолированной марже вы не потеряете больше внесённой маржи.",
 "Vender # @ cuando suba a $#":"Продать # @, когда цена вырастет до $#",
 "Vender # @ cuando baje a $#":"Продать # @, когда цена упадёт до $#",
 "Comprar # @ cuando suba a $#":"Купить # @, когда цена вырастет до $#",
@@ -35093,6 +35844,31 @@ DIC.ru={
 };
 /* УКРАЇНСЬКА · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.uk={
+"+ Registrar compra":"+ Записати купівлю",
+"Registrar un movimiento":"Записати рух",
+"Órdenes":"Ордери",
+"Movimientos":"Рухи",
+"Mis monedas":"Мої монети",
+"Abiertas":"Відкриті",
+"tiene # @":"є # @",
+"Compras":"Купівлі",
+"Ver detalle":"Докладніше",
+"Todavía no tiene monedas. Pulse «+ Registrar compra».":"У вас поки немає монет. Натисніть «+ Записати купівлю».",
+"No tiene ninguna operación abierta.":"У вас немає відкритих угод.",
+"TODO SU SPOT":"ВЕСЬ ВАШ СПОТ",
+"Ninguna moneda se llama así.":"Такої монети немає.",
+"+#% sobre su cartera":"+#% до балансу",
+"−#% sobre su cartera":"−#% до балансу",
+"+ Nueva operación":"+ Нова угода",
+"+ Nueva operación de prueba":"+ Нова тестова угода",
+"No tiene ninguna operación abierta. Pulse «+ Nueva operación» para registrar una.":"У вас немає відкритих угод. Натисніть «+ Нова угода», щоб записати одну.",
+"entró $#":"вхід по $#",
+"Ver gráfica":"Відкрити графік",
+"sobre su cartera":"до балансу",
+"#% sobre su cartera":"#% до балансу",
+"Ocultar la gráfica":"Сховати графік",
+"Ver gráfica · mover el stop y el objetivo con el dedo":"Відкрити графік · пересувайте стоп і ціль пальцем",
+"El precio ya pasó el punto de liquidación ($#). Con margen aislado no se pierde más que el margen que puso.":"Ціна вже пройшла точку ліквідації ($#). За ізольованої маржі ви не втратите більше за внесену маржу.",
 "Vender # @ cuando suba a $#":"Продати # @, коли ціна зросте до $#",
 "Vender # @ cuando baje a $#":"Продати # @, коли ціна впаде до $#",
 "Comprar # @ cuando suba a $#":"Купити # @, коли ціна зросте до $#",
@@ -37285,6 +38061,31 @@ DIC.uk={
 };
 /* BAHASA INDONESIA · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.id={
+"+ Registrar compra":"+ Catat pembelian",
+"Registrar un movimiento":"Catat mutasi",
+"Órdenes":"Order",
+"Movimientos":"Mutasi",
+"Mis monedas":"Koin saya",
+"Abiertas":"Terbuka",
+"tiene # @":"punya # @",
+"Compras":"Pembelian",
+"Ver detalle":"Lihat detail",
+"Todavía no tiene monedas. Pulse «+ Registrar compra».":"Anda belum punya koin. Ketuk «+ Catat pembelian».",
+"No tiene ninguna operación abierta.":"Anda tidak punya transaksi terbuka.",
+"TODO SU SPOT":"SELURUH SPOT ANDA",
+"Ninguna moneda se llama así.":"Tidak ada koin dengan nama itu.",
+"+#% sobre su cartera":"+#% dari saldo Anda",
+"−#% sobre su cartera":"−#% dari saldo Anda",
+"+ Nueva operación":"+ Transaksi baru",
+"+ Nueva operación de prueba":"+ Transaksi uji baru",
+"No tiene ninguna operación abierta. Pulse «+ Nueva operación» para registrar una.":"Anda tidak punya transaksi terbuka. Ketuk «+ Transaksi baru» untuk mencatatnya.",
+"entró $#":"masuk di $#",
+"Ver gráfica":"Lihat grafik",
+"sobre su cartera":"dari saldo Anda",
+"#% sobre su cartera":"#% dari saldo Anda",
+"Ocultar la gráfica":"Sembunyikan grafik",
+"Ver gráfica · mover el stop y el objetivo con el dedo":"Lihat grafik · geser stop dan target dengan jari",
+"El precio ya pasó el punto de liquidación ($#). Con margen aislado no se pierde más que el margen que puso.":"Harga sudah melewati titik likuidasi ($#). Dengan margin terisolasi, kerugian tidak melebihi margin yang Anda setor.",
 "Vender # @ cuando suba a $#":"Jual # @ saat harga naik ke $#",
 "Vender # @ cuando baje a $#":"Jual # @ saat harga turun ke $#",
 "Comprar # @ cuando suba a $#":"Beli # @ saat harga naik ke $#",
@@ -39477,6 +40278,31 @@ DIC.id={
 };
 /* TIẾNG VIỆT · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.vi={
+"+ Registrar compra":"+ Ghi lệnh mua",
+"Registrar un movimiento":"Ghi một giao dịch",
+"Órdenes":"Lệnh",
+"Movimientos":"Giao dịch",
+"Mis monedas":"Coin của tôi",
+"Abiertas":"Đang mở",
+"tiene # @":"có # @",
+"Compras":"Lần mua",
+"Ver detalle":"Xem chi tiết",
+"Todavía no tiene monedas. Pulse «+ Registrar compra».":"Bạn chưa có đồng coin nào. Nhấn «+ Ghi lệnh mua».",
+"No tiene ninguna operación abierta.":"Bạn chưa có lệnh nào đang mở.",
+"TODO SU SPOT":"TOÀN BỘ SPOT CỦA BẠN",
+"Ninguna moneda se llama así.":"Không có đồng coin nào tên vậy.",
+"+#% sobre su cartera":"+#% so với số dư",
+"−#% sobre su cartera":"−#% so với số dư",
+"+ Nueva operación":"+ Lệnh mới",
+"+ Nueva operación de prueba":"+ Lệnh thử mới",
+"No tiene ninguna operación abierta. Pulse «+ Nueva operación» para registrar una.":"Bạn chưa có lệnh nào đang mở. Nhấn «+ Lệnh mới» để ghi một lệnh.",
+"entró $#":"vào ở $#",
+"Ver gráfica":"Xem biểu đồ",
+"sobre su cartera":"so với số dư",
+"#% sobre su cartera":"#% so với số dư",
+"Ocultar la gráfica":"Ẩn biểu đồ",
+"Ver gráfica · mover el stop y el objetivo con el dedo":"Xem biểu đồ · kéo stop và mục tiêu bằng ngón tay",
+"El precio ya pasó el punto de liquidación ($#). Con margen aislado no se pierde más que el margen que puso.":"Giá đã vượt điểm thanh lý ($#). Với ký quỹ cô lập, bạn không mất quá phần ký quỹ đã bỏ ra.",
 "Vender # @ cuando suba a $#":"Bán # @ khi giá tăng lên $#",
 "Vender # @ cuando baje a $#":"Bán # @ khi giá giảm xuống $#",
 "Comprar # @ cuando suba a $#":"Mua # @ khi giá tăng lên $#",
@@ -41669,6 +42495,31 @@ DIC.vi={
 };
 /* हिन्दी · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.hi={
+"+ Registrar compra":"+ खरीद दर्ज करें",
+"Registrar un movimiento":"लेन-देन दर्ज करें",
+"Órdenes":"ऑर्डर",
+"Movimientos":"लेन-देन",
+"Mis monedas":"मेरे कॉइन",
+"Abiertas":"खुले",
+"tiene # @":"# @ हैं",
+"Compras":"खरीदें",
+"Ver detalle":"विवरण देखें",
+"Todavía no tiene monedas. Pulse «+ Registrar compra».":"आपके पास अभी कोई कॉइन नहीं है. «+ खरीद दर्ज करें» दबाएँ.",
+"No tiene ninguna operación abierta.":"आपका कोई ट्रेड खुला नहीं है.",
+"TODO SU SPOT":"आपका पूरा स्पॉट",
+"Ninguna moneda se llama así.":"इस नाम का कोई कॉइन नहीं है.",
+"+#% sobre su cartera":"आपके बैलेंस पर +#%",
+"−#% sobre su cartera":"आपके बैलेंस पर −#%",
+"+ Nueva operación":"+ नया ट्रेड",
+"+ Nueva operación de prueba":"+ नया अभ्यास ट्रेड",
+"No tiene ninguna operación abierta. Pulse «+ Nueva operación» para registrar una.":"आपका कोई ट्रेड खुला नहीं है. दर्ज करने के लिए «+ नया ट्रेड» दबाएँ.",
+"entró $#":"एंट्री $# पर",
+"Ver gráfica":"चार्ट देखें",
+"sobre su cartera":"आपके बैलेंस पर",
+"#% sobre su cartera":"आपके बैलेंस पर #%",
+"Ocultar la gráfica":"चार्ट छिपाएँ",
+"Ver gráfica · mover el stop y el objetivo con el dedo":"चार्ट देखें · स्टॉप और टारगेट उँगली से खिसकाएँ",
+"El precio ya pasó el punto de liquidación ($#). Con margen aislado no se pierde más que el margen que puso.":"कीमत लिक्विडेशन बिंदु ($#) पार कर चुकी है. आइसोलेटेड मार्जिन में आपने जो मार्जिन लगाया उससे ज़्यादा नहीं जाता.",
 "Vender # @ cuando suba a $#":"# @ बेचें, जब भाव बढ़कर $# हो",
 "Vender # @ cuando baje a $#":"# @ बेचें, जब भाव गिरकर $# हो",
 "Comprar # @ cuando suba a $#":"# @ खरीदें, जब भाव बढ़कर $# हो",
@@ -43861,6 +44712,31 @@ DIC.hi={
 };
 /* 日本語 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ja={
+"+ Registrar compra":"＋ 購入を記録",
+"Registrar un movimiento":"取引を記録",
+"Órdenes":"注文",
+"Movimientos":"入出金",
+"Mis monedas":"私のコイン",
+"Abiertas":"保有中",
+"tiene # @":"# @ 保有",
+"Compras":"購入回数",
+"Ver detalle":"詳細を見る",
+"Todavía no tiene monedas. Pulse «+ Registrar compra».":"まだコインがありません。「＋ 購入を記録」を押してください。",
+"No tiene ninguna operación abierta.":"開いている取引はありません。",
+"TODO SU SPOT":"現物のすべて",
+"Ninguna moneda se llama así.":"その名前のコインはありません。",
+"+#% sobre su cartera":"残高に対して +#%",
+"−#% sobre su cartera":"残高に対して −#%",
+"+ Nueva operación":"＋ 新規取引",
+"+ Nueva operación de prueba":"＋ 新規テスト取引",
+"No tiene ninguna operación abierta. Pulse «+ Nueva operación» para registrar una.":"開いている取引はありません。「＋ 新規取引」を押して記録してください。",
+"entró $#":"$# でエントリー",
+"Ver gráfica":"チャートを見る",
+"sobre su cartera":"残高に対して",
+"#% sobre su cartera":"残高に対して #%",
+"Ocultar la gráfica":"チャートを隠す",
+"Ver gráfica · mover el stop y el objetivo con el dedo":"チャートを見る · ストップと目標を指で動かす",
+"El precio ya pasó el punto de liquidación ($#). Con margen aislado no se pierde más que el margen que puso.":"価格はすでに清算価格（$#）を超えています。分離マージンでは、入れた証拠金以上は失いません。",
 "Vender # @ cuando suba a $#":"# @ を売却（価格が $# に上昇したら）",
 "Vender # @ cuando baje a $#":"# @ を売却（価格が $# に下落したら）",
 "Comprar # @ cuando suba a $#":"# @ を購入（価格が $# に上昇したら）",
@@ -46053,6 +46929,31 @@ DIC.ja={
 };
 /* 한국어 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ko={
+"+ Registrar compra":"+ 매수 기록",
+"Registrar un movimiento":"입출금 기록",
+"Órdenes":"주문",
+"Movimientos":"입출금",
+"Mis monedas":"내 코인",
+"Abiertas":"보유 중",
+"tiene # @":"# @ 보유",
+"Compras":"매수 횟수",
+"Ver detalle":"자세히 보기",
+"Todavía no tiene monedas. Pulse «+ Registrar compra».":"아직 코인이 없습니다. 「+ 매수 기록」을 누르세요.",
+"No tiene ninguna operación abierta.":"열려 있는 거래가 없습니다.",
+"TODO SU SPOT":"현물 전체",
+"Ninguna moneda se llama así.":"그런 이름의 코인은 없습니다.",
+"+#% sobre su cartera":"잔고 대비 +#%",
+"−#% sobre su cartera":"잔고 대비 −#%",
+"+ Nueva operación":"+ 새 거래",
+"+ Nueva operación de prueba":"+ 새 연습 거래",
+"No tiene ninguna operación abierta. Pulse «+ Nueva operación» para registrar una.":"열려 있는 거래가 없습니다. 「+ 새 거래」를 눌러 기록하세요.",
+"entró $#":"$# 진입",
+"Ver gráfica":"차트 보기",
+"sobre su cartera":"잔고 대비",
+"#% sobre su cartera":"잔고 대비 #%",
+"Ocultar la gráfica":"차트 숨기기",
+"Ver gráfica · mover el stop y el objetivo con el dedo":"차트 보기 · 손가락으로 손절가와 목표가 옮기기",
+"El precio ya pasó el punto de liquidación ($#). Con margen aislado no se pierde más que el margen que puso.":"가격이 이미 청산가($#)를 지났습니다. 격리 마진에서는 넣은 증거금보다 더 잃지 않습니다.",
 "Vender # @ cuando suba a $#":"# @ 매도 (가격이 $# 까지 오르면)",
 "Vender # @ cuando baje a $#":"# @ 매도 (가격이 $# 까지 내리면)",
 "Comprar # @ cuando suba a $#":"# @ 매수 (가격이 $# 까지 오르면)",
@@ -48245,6 +49146,31 @@ DIC.ko={
 };
 /* 中文（简体） · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.zh={
+"+ Registrar compra":"+ 记录买入",
+"Registrar un movimiento":"记录一笔流水",
+"Órdenes":"订单",
+"Movimientos":"流水",
+"Mis monedas":"我的币种",
+"Abiertas":"持仓中",
+"tiene # @":"持有 # @",
+"Compras":"买入次数",
+"Ver detalle":"查看详情",
+"Todavía no tiene monedas. Pulse «+ Registrar compra».":"您还没有币种。点按“+ 记录买入”。",
+"No tiene ninguna operación abierta.":"您没有未平仓的交易。",
+"TODO SU SPOT":"您的全部现货",
+"Ninguna moneda se llama así.":"没有叫这个名字的币种。",
+"+#% sobre su cartera":"较余额 +#%",
+"−#% sobre su cartera":"较余额 −#%",
+"+ Nueva operación":"+ 新建交易",
+"+ Nueva operación de prueba":"+ 新建测试交易",
+"No tiene ninguna operación abierta. Pulse «+ Nueva operación» para registrar una.":"您没有未平仓的交易。点按“+ 新建交易”来记录一笔。",
+"entró $#":"以 $# 入场",
+"Ver gráfica":"查看图表",
+"sobre su cartera":"较余额",
+"#% sobre su cartera":"较余额 #%",
+"Ocultar la gráfica":"隐藏图表",
+"Ver gráfica · mover el stop y el objetivo con el dedo":"查看图表 · 用手指拖动止损和止盈",
+"El precio ya pasó el punto de liquidación ($#). Con margen aislado no se pierde más que el margen que puso.":"价格已越过强平价（$#）。逐仓模式下，亏损不会超过您投入的保证金。",
 "Vender # @ cuando suba a $#":"卖出 # @，价格涨到 $# 时",
 "Vender # @ cuando baje a $#":"卖出 # @，价格跌到 $# 时",
 "Comprar # @ cuando suba a $#":"买入 # @，价格涨到 $# 时",
