@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="56">
+<meta name="v" content="57">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -2131,7 +2131,7 @@ body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+8)>h2 .ic{background:linear-grad
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por su cuenta de Google.
    ===================================================================== */
-var VERSION="56";
+var VERSION="57";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -3524,6 +3524,7 @@ function refrescarVivos(){
     }
     else if(v==="spGanP"){ e=estadoDe(s); ponTexto(el, pct(e.abiertoPct), "gsub "+cl(e.abiertoPct)); }
     else if(v==="total"){ ponTexto(el, usd(spot().tot.valor)); }
+    else if(v==="spotTodo"){ var dd=efectivo(); ponTexto(el, usd(spot().tot.valor+(dd>0?dd:0))); }
     else if(v==="totGan"){
       var g=spot().tot.abierto;
       ponTexto(el, (g>=0?"+":"−")+usd(g).replace("-",""), g>0?"gpill p":g<0?"gpill n":"gpill z");
@@ -4351,6 +4352,10 @@ function ordenarMovimientos(lista, nuevoPrimero){
   return nuevoPrimero ? L.reverse() : L;
 }
 
+/* v56 · CADA RESULTADO SE CUENTA EN CENTAVOS, como en la casa de cambio. Así las partes que se ven
+   suman exactamente el total que se ve (antes podía faltar o sobrar un centavo: «2.423,49 + 1.921,10»
+   daba 4.344,59 y el total decía 4.344,58). */
+function cent(x){ return x==null||!isFinite(x) ? x : Math.round(x*100+(x>=0?1e-7:-1e-7))/100; }
 function estadoDe(sym){
   var S=String(sym).toUpperCase();
   var ops=ordenarMovimientos(BD.ops.filter(function(o){
@@ -4367,7 +4372,7 @@ function estadoDe(sym){
       var prom = cantidad>0 ? costo/cantidad : 0;
       var salida=c*p-k;
       var base=c*prom;
-      var g=salida-base;
+      var g=cent(salida-base);
       porOp[o.id]={tipo:"venta", gan:g, pct: base>0?g/base*100:null, prom:prom, cant:c,
                    recortada: pedida>c+1e-12, sinCosto: !(base>0), entro:salida};
       realizado+=g; costo-=base; cantidad-=c; vendido+=salida; nVentas++;
@@ -4388,15 +4393,17 @@ function estadoDe(sym){
     var x=porOp[k2];
     if(x.tipo!=="compra"||!(x.pagado>0)) return;
     x.valorHoy=x.cant*pr;
-    x.gan=x.valorHoy*(1-tasa)-x.pagado;
+    x.gan=cent(x.valorHoy*(1-tasa)-x.pagado);
     x.pct=x.gan/x.pagado*100;
   });
-  var valor = pr!=null ? cantidad*pr : null;
-  var feeVenta = valor!=null ? valor*tasa : 0;
-  var abierto = valor!=null ? valor-feeVenta-costo : null;
-  return {sym:S, ops:ops, cantidad:cantidad, costo:costo,
+  var valor = pr!=null ? cent(cantidad*pr) : null;
+  var feeVenta = valor!=null ? cent(valor*tasa) : 0;
+  var costoC = cent(costo);
+  var abierto = valor!=null ? cent(valor-feeVenta-costoC) : null;
+  realizado = cent(realizado);
+  return {sym:S, ops:ops, cantidad:cantidad, costo:costoC,
     promedio: cantidad>0?costo/cantidad:null, precio:pr, valor:valor, abierto:abierto,
-    abiertoPct:(abierto!=null&&costo>0)?abierto/costo*100:null, feeVenta:feeVenta,
+    abiertoPct:(abierto!=null&&costoC>0)?abierto/costoC*100:null, feeVenta:feeVenta,
     realizado:realizado, comprado:comprado, vendido:vendido, comision:com,
     nCompras:nCompras, nVentas:nVentas, cerrada: cantidad<=0&&ops.length>0, porOp:porOp};
 }
@@ -4631,6 +4638,12 @@ function gananciasTodo(){
   return {spot:gs, fut:gf, todo:gs+gf};
 }
 function conSignoUsd(x){ return (x>=0?"+":"−")+usd(Math.abs(x)); }
+/* v56 · lo que deja el stop y el objetivo, YA con la comisión y con su signo de verdad:
+   un stop movido a ganancia (stop que asegura) gana, no pierde; un objetivo mal puesto pierde. */
+function netoSl(e){ return e.perSl!=null ? e.perSl-e.com : null; }
+function netoTp(e){ return e.ganTp!=null ? e.ganTp-e.com : null; }
+function usdS(x){ return (x>=0?"+":"−")+usdF(Math.abs(x)); }
+function pieSl(e){ return e.sl==null ? "sin stop" : (e.slLiq&&e.liq!=null ? "lo liquidan antes, en "+precio(e.liq) : "en "+precio(e.sl)); }
 function textoDeDonde(G){
   return (G.spot||G.fut) ? ("spot "+conSignoUsd(G.spot)+" · futuros "+conSignoUsd(G.fut))
                          : "sumando spot y futuros";
@@ -4705,7 +4718,7 @@ function estadoOp(f){
     pctPrecio= apal>0 ? pctMargen/apal : null;
   }
   var com=+f.com||0;
-  var gan = pctMargen!=null ? margen*pctMargen/100-com : null;
+  var gan = pctMargen!=null ? cent(margen*pctMargen/100-com) : null;
 
   var liq = (ent>0&&apal>1)
     ? (f.lado==="SHORT" ? ent*(1+1/apal) : ent*(1-1/apal)) : null;
@@ -4718,6 +4731,12 @@ function estadoOp(f){
   var sl=(f.sl!=null&&f.sl!=="")?+f.sl:null;
   var ganTp=(tp!=null&&ent>0)?margen*(signo*(tp-ent)/ent*100*apal)/100:null;
   var perSl=(sl!=null&&ent>0)?margen*(signo*(sl-ent)/ent*100*apal)/100:null;
+  /* v56 · Luis (12 oct): «¿cómo me deja poner un stop que pierde $63.000 si empecé con $10.000?».
+     Con margen aislado no se pierde más que lo que puso. Si el stop queda MÁS LEJOS que la
+     liquidación, lo liquidan antes de llegar al stop: pierde el margen y ni un centavo más.
+     perSl se recorta para que «perSl − comisión» nunca baje de −margen, y slLiq lo dice. */
+  var slLiq = (sl!=null&&liq!=null) ? ((f.lado==="SHORT") ? sl>=liq : sl<=liq) : false;
+  if(perSl!=null && margen>0 && (slLiq || perSl-com < -margen)) perSl = -margen+com;
   /* v42 · la RELACIÓN se sacaba con los números ANTES de comisión, pero los
      dos recuadros de al lado («ahí gana» y «ahí pierde») la restan. El
      usuario dividía lo que veía y le salía otro número: 99,50 / 20,50 es
@@ -4747,7 +4766,7 @@ function estadoOp(f){
     var pr=precioDe(f.sym);
     if(pr!=null){
       pctFlot=signo*(pr-ent)/ent*100*apal;
-      flot=margen*pctFlot/100-com;
+      flot=cent(margen*pctFlot/100-com);
       if(liq!=null){
         enPeligro=signo*(pr-liq)/liq*100;
         if((f.lado==="SHORT")?(pr>=liq):(pr<=liq)) liquidado=true;
@@ -4764,7 +4783,7 @@ function estadoOp(f){
     salida:sal, pctPrecio:pctPrecio, pct: pctMargen!=null?pctMargen/100:null,
     pctNeto:pctNeto, pctFlotNeto:pctFlotNeto,
     pctMargen:pctMargen, gan:gan, com:com, liq:liq, liquidado:liquidado, topado:topado,
-    enPeligro:enPeligro, tp:tp, sl:sl, ganTp:ganTp, perSl:perSl, rr:rr,
+    enPeligro:enPeligro, tp:tp, sl:sl, ganTp:ganTp, perSl:perSl, rr:rr, slLiq:slLiq,
     flot:flot, pctFlot:pctFlot, abierta: f.estado==="abierta",
     programada:programada, falta:falta, faltaPct:faltaPct, llego:llego};
 }
@@ -5753,14 +5772,16 @@ function heroSpot(S, D){
     '<div class="hIzq">'+
       '<div class="hT"><div class="he">TODO SU SPOT</div>'+
         (PRE.vivo?'<span class="envivo"><i></i>EN VIVO</span>':'')+'</div>'+
-      '<div class="hv mono"><span data-v="total">'+usd(S.tot.valor)+'</span><small>USD</small></div>'+
+      /* v56 · «TODO SU SPOT» es TODO: lo que valen sus monedas + el USDT disponible (igual que la caja
+         SPOT del Resumen). Antes decía solo lo de las monedas y no coincidía con el Resumen. */
+      '<div class="hv mono"><span data-v="spotTodo">'+usd(S.tot.valor+(D.total>0?D.total:0))+'</span><small>USD</small></div>'+
       '<div><span class="gch '+cl(g)+'" data-v="ganMonCh" data-cls="gch">'+
         (g>=0?"+":"−")+usd(g).replace("-","")+' · '+pct(pr,1)+'</span></div>'+
       '<div class="hD">'+plural(S.lista.filter(function(e){ return e.cantidad>0 && !esEstable(e.sym); }).length,
         "moneda","monedas")+'</div>'+
     '</div>'+
     '<div class="hDer">'+
-      '<div><span>Puso</span><b>'+usd(S.tot.costo)+'</b></div>'+
+      '<div><span>En monedas</span><b data-v="total">'+usd(S.tot.valor)+'</b></div>'+
       '<div><span>Disponible</span><b>'+usd(D.total>0?D.total:0)+'</b></div>'+
       '<div><span>Ya ganado en ventas</span><b class="'+cl(S.tot.realizado)+'">'+
         (S.tot.realizado>=0?"+":"−")+usd(S.tot.realizado).replace("-","")+'</b></div>'+
@@ -8690,7 +8711,7 @@ function recLote(A){
           : '<span style="display:inline">la suya</span>')+
         '</i></div>'+
       '<div><span>Si llega al stop</span><b class="dn">−'+usdF(R.perdidaSL)+'</b>'+
-        '<i>en '+precio(v.sl)+(pctCart!=null?' · el '+pctS(pctCart,2)+' de su cartera':'')+'</i></div>'+
+        '<i>'+(R.liqAntes?'lo liquidan antes, en '+precio(R.liq):'en '+precio(v.sl))+(pctCart!=null?' · el '+pctS(pctCart,2)+' de su cartera':'')+'</i></div>'+
       (R.ganTp!=null&&R.tpBien
         ? '<div><span>Si llega al objetivo</span><b class="up">+'+usdF(R.ganTp)+'</b>'+
           '<i>en '+precio(v.tp)+' · subiría a '+usd(R.cartera+R.ganTp)+'</i></div>'
@@ -8708,7 +8729,7 @@ function recLote(A){
         '<div><span>Tamaño de la operación</span><b>'+usdF(R.posicion)+'</b><i>'+cant(R.monedas)+' '+esc(sym)+'</i></div>'+
         '<div><span>Comisión</span><b>'+usdF(R.com)+'</b><i>'+pctCorto(c.com)+' × 2 sobre el tamaño</i></div>'+
         '<div><span>Si llega al stop</span><b class="dn">−'+usdF(R.perdidaSL)+'</b>'+
-          '<i>en '+precio(v.sl)+(pctCart!=null?' · el '+pctS(pctCart,2)+' de su cartera':'')+'</i></div>'+
+          '<i>'+(R.liqAntes?'lo liquidan antes, en '+precio(R.liq):'en '+precio(v.sl))+(pctCart!=null?' · el '+pctS(pctCart,2)+' de su cartera':'')+'</i></div>'+
         (R.ganTp!=null&&R.tpBien
           ? '<div><span>Si llega al objetivo</span><b class="up">+'+usdF(R.ganTp)+'</b>'+
             '<i><span>en '+precio(v.tp)+'</span>'+(R.rr!=null?' · <span>'+R.rr.toFixed(1).replace(".",sepDecimal())+' veces lo que arriesga</span>':'')+'</i></div>'
@@ -9036,7 +9057,7 @@ function marcador(T){
      clase:T.porOperacion==null?"":cl(T.porOperacion), ir:T.n?"res:TODO":""},
     {ico:IC.sube, et:"Ganancia promedio al acertar",
      val:T.ganaUsd==null?"—":("+"+usdF(T.ganaUsd)), clase:T.ganaUsd==null?"":"up"},
-    {ico:IC.banco, et:"Comisiones pagadas", val:usdF(T.comision+(T.comisionAb||0)), ir:"f:comisiones"}
+    {ico:IC.banco, et:"Comisiones pagadas", val:usdF(T.comision), ir:"f:comisiones"}
   ]);
 }
 
@@ -9076,12 +9097,12 @@ function filaAbiertaCorta(e,k){
       '<div class="kv">'+
         '<div><span>Dinero que puso</span><b>'+usdF(e.margen)+'</b></div>'+
         '<div><span>Tamaño de la operación</span><b>'+usdF(e.valor)+'<small translate="no">'+cant(e.monedas)+' '+esc(f.sym)+'</small></b></div>'+
-        '<div><span>Si llega al objetivo</span><b class="up">'+
-          (e.ganTp!=null?("+"+usdF(e.ganTp-e.com)):"—")+
+        '<div><span>Si llega al objetivo</span><b class="'+(netoTp(e)!=null&&netoTp(e)<0?"dn":"up")+'">'+
+          (e.ganTp!=null?usdS(netoTp(e)):"—")+
           '<small>'+(e.tp!=null?("en "+precio(e.tp)):"escriba el objetivo")+'</small></b></div>'+
-        '<div><span>Si llega al stop</span><b class="dn">'+
-          (e.perSl!=null?("−"+usdF(Math.abs(e.perSl-e.com))):"—")+
-          '<small>'+(e.sl!=null?("en "+precio(e.sl)):"sin stop")+'</small></b></div>'+
+        '<div><span>Si llega al stop</span><b class="'+(netoSl(e)!=null&&netoSl(e)>=0?"up":"dn")+'">'+
+          (e.perSl!=null?usdS(netoSl(e)):"—")+
+          '<small>'+pieSl(e)+'</small></b></div>'+
       '</div>'+
       (e.liquidado?'<div class="nota mal" style="margin-top:8px">El precio ya pasó el punto de '+
         'liquidación ('+precio(e.liq)+'). Con margen aislado no se pierde más que el margen que puso.</div>':'')+
@@ -9127,9 +9148,9 @@ function tablaAbiertas(abiertas,k){
           (f.lado==="SHORT"?"▼ CORTO":"▲ LARGO")+'</span><span class="sub">'+e.apal+'x</span></td>'+
         '<td>'+precio(e.entrada)+'</td>'+
         '<td><span data-v="pr" data-s="'+esc(f.sym)+'">'+precio(pr)+'</span></td>'+
-        '<td class="opt dn">'+(e.perSl!=null?("−"+usdF(Math.abs(e.perSl-e.com))):"—")+
-          '<span class="sub">'+(e.sl!=null?("en "+precio(e.sl)):"sin stop")+'</span></td>'+
-        '<td class="opt up">'+(e.ganTp!=null?("+"+usdF(e.ganTp-e.com)):"—")+
+        '<td class="opt '+(netoSl(e)!=null&&netoSl(e)>=0?"up":"dn")+'">'+(e.perSl!=null?usdS(netoSl(e)):"—")+
+          '<span class="sub">'+pieSl(e)+'</span></td>'+
+        '<td class="opt '+(netoTp(e)!=null&&netoTp(e)<0?"dn":"up")+'">'+(e.ganTp!=null?usdS(netoTp(e)):"—")+
           '<span class="sub">'+(e.tp!=null?("en "+precio(e.tp)):"sin objetivo")+'</span></td>'+
         '<td>'+usdF(e.margen)+'<span class="sub">opera '+usdF(e.valor)+'</span></td>'+
         '<td><span class="'+(e.flot>0?"gpill p":e.flot<0?"gpill n":"gpill z")+'" data-v="futFlot" '+
@@ -9157,12 +9178,12 @@ function filaAbierta(e,k){
         '<div><span>Precio ahora</span><b data-v="pr" data-s="'+esc(f.sym)+'">'+precio(pr)+'</b></div>'+
         '<div><span>Dinero que puso</span><b>'+usdF(e.margen)+'</b></div>'+
         '<div><span>Tamaño de la operación</span><b>'+usdF(e.valor)+'<small>'+cant(e.monedas)+' '+esc(f.sym)+'</small></b></div>'+
-        '<div><span>Si llega al objetivo</span><b class="up">'+
-          (e.ganTp!=null?("+"+usdF(e.ganTp-e.com)):"—")+
+        '<div><span>Si llega al objetivo</span><b class="'+(netoTp(e)!=null&&netoTp(e)<0?"dn":"up")+'">'+
+          (e.ganTp!=null?usdS(netoTp(e)):"—")+
           '<small>'+(e.tp!=null?("en "+precio(e.tp)):"escriba el objetivo")+'</small></b></div>'+
-        '<div><span>Si llega al stop</span><b class="dn">'+
-          (e.perSl!=null?("−"+usdF(Math.abs(e.perSl-e.com))):"—")+
-          '<small>'+(e.sl!=null?("en "+precio(e.sl)):"sin stop")+'</small></b></div>'+
+        '<div><span>Si llega al stop</span><b class="'+(netoSl(e)!=null&&netoSl(e)>=0?"up":"dn")+'">'+
+          (e.perSl!=null?usdS(netoSl(e)):"—")+
+          '<small>'+pieSl(e)+'</small></b></div>'+
       '</div>'+
       (riel!=null
         ? '<div class="riel" style="height:30px;margin:10px 0 0"><div class="via"></div>'+
@@ -9383,7 +9404,7 @@ function tablaHistorial(F,k,T,sinTitulo){
         ' · margen '+usdF(e.margen)+
         (e.pctPrecio!=null?' · el precio se movió '+pct(e.pctPrecio,2):'')+
         (e.liquidado?' · <span class="chip s">LIQUIDADA</span>':'')+
-        (f.auto?' · <span class="chip a" title="Se cerró sola al tocar el '+esc(f.auto)+'">SOLA · '+esc(f.auto.toUpperCase())+'</span>':'')+
+        (f.auto&&f.auto!=="liq"?' · <span class="chip a" title="Se cerró sola al tocar el '+esc(f.auto)+'">SOLA · '+esc(f.auto.toUpperCase())+'</span>':'')+
         (f.estr?' · '+esc(f.estr):'')+'</div></div>'+
       '<div class="r"><span>Resultado</span><b class="'+cl(e.gan)+'">'+(e.gan>=0?"+":"−")+usdF(e.gan).replace("-","")+'</b>'+
         '<span class="'+cl(e.gan)+'">'+(e.pctNeto!=null?pct(e.pctNeto,1)+" del margen":"")+'</span></div>'+
@@ -10215,16 +10236,27 @@ function vigilarCierres(){
       var pr=precioVigente(f.sym); if(pr==null) return;
       var sl=(f.sl!=null&&f.sl!=="")?+f.sl:null, tp=(f.tp!=null&&f.tp!=="")?+f.tp:null;
       var toco=null;
+      /* v56 · LA LIQUIDACIÓN también cierra sola. Antes, con el stop más lejos que la
+         liquidación, la operación seguía «abierta» aunque el precio ya la hubiera liquidado.
+         Si el stop está antes que la liquidación, manda el stop; si no, la liquidación. */
+      var ap=+f.apal||1, en=+f.entrada||0;
+      var lq=(en>0&&ap>1) ? (f.lado==="SHORT" ? en*(1+1/ap) : en*(1-1/ap)) : null;
       if(f.lado==="SHORT"){
-        if(sl&&pr>=sl) toco={p:sl,q:"stop"}; else if(tp&&pr<=tp) toco={p:tp,q:"objetivo"};
+        if(sl&&pr>=sl&&(lq==null||sl<lq)) toco={p:sl,q:"stop"};
+        else if(lq!=null&&pr>=lq) toco={p:lq,q:"liq"};
+        else if(tp&&pr<=tp) toco={p:tp,q:"objetivo"};
       } else {
-        if(sl&&pr<=sl) toco={p:sl,q:"stop"}; else if(tp&&pr>=tp) toco={p:tp,q:"objetivo"};
+        if(sl&&pr<=sl&&(lq==null||sl>lq)) toco={p:sl,q:"stop"};
+        else if(lq!=null&&pr<=lq) toco={p:lq,q:"liq"};
+        else if(tp&&pr>=tp) toco={p:tp,q:"objetivo"};
       }
       if(!toco) return;
       f.salida=toco.p; f.estado="cerrada"; f.cierre=hoy(); f.pct=null;
       f.auto=toco.q; f.horaCierre=horaYa(); tocar(f);
       var st=estadoOp(f);
-      var fr = toco.q==="stop"
+      var fr = toco.q==="liq"
+        ? "La operación N° "+(f.n||"")+" de "+f.sym+" se liquidó en "+precio(toco.p)+": perdió todo lo que puso ("+usdF(Math.abs(st.gan))+")."
+        : toco.q==="stop"
         ? (st.gan>=0 ? "La operación N° "+(f.n||"")+" de "+f.sym+" se cerró sola en el stop ("+precio(toco.p)+"): ganó "+usdF(Math.abs(st.gan))+"."
                      : "La operación N° "+(f.n||"")+" de "+f.sym+" se cerró sola en el stop ("+precio(toco.p)+"): perdió "+usdF(Math.abs(st.gan))+".")
         : (st.gan>=0 ? "La operación N° "+(f.n||"")+" de "+f.sym+" se cerró sola en el objetivo ("+precio(toco.p)+"): ganó "+usdF(Math.abs(st.gan))+"."
@@ -11236,12 +11268,13 @@ function dichoOperacion(e){
     if(pr!=null&&e.tp!=null&&e.entrada>0){
       var fTp=(corto?(pr-e.tp):(e.tp-pr))/pr*100;
       p.push('<span>Al objetivo le falta '+(corto?"bajar":"subir")+' <b>'+pctS(Math.abs(fTp),2)+
-             '</b>'+(e.ganTp!=null?' · ahí gana <b class="up">'+usdF(e.ganTp-e.com)+'</b>':'')+'.</span>');
+             '</b>'+(e.ganTp!=null?(netoTp(e)>=0?' · ahí gana <b class="up">'+usdF(netoTp(e))+'</b>':' · ahí pierde <b class="dn">'+usdF(-netoTp(e))+'</b>'):'')+'.</span>');
     }
     if(pr!=null&&e.sl!=null&&e.entrada>0){
       var fSl=(corto?(e.sl-pr):(pr-e.sl))/pr*100;
       p.push('<span>Al stop le falta '+(corto?"subir":"bajar")+' <b>'+pctS(Math.abs(fSl),2)+
-             '</b>'+(e.perSl!=null?' · ahí pierde <b class="dn">'+usdF(Math.abs(e.perSl-e.com))+'</b>':'')+'.</span>');
+             '</b>'+(e.perSl!=null?(netoSl(e)>=0?' · ahí gana <b class="up">'+usdF(netoSl(e))+'</b>':' · ahí pierde <b class="dn">'+usdF(-netoSl(e))+'</b>'):'')+'.</span>'+
+             (e.slLiq&&e.liq!=null?'<span class="dn">Ojo: antes de llegar al stop lo liquidan en '+precio(e.liq)+' y pierde todo lo que puso ('+usdF(e.margen)+'), no más.</span>':''));
     }
     if(e.liquidado)
       p.push('<span class="dn"><b>El precio ya pasó la liquidación.</b> Con margen aislado no '+
@@ -11306,9 +11339,10 @@ function verOperacion(id, amb){
           pr!=null&&e.entrada>0 ? '<span data-v="desdeEnt" data-f="'+esc(f.id)+'">'+pct((pr-e.entrada)/e.entrada*100,2)+" desde su entrada"+'</span>' : "")+
         cuadroFicha("DINERO QUE PUSO", usdF(e.margen), "tamaño "+usdF(e.valor))+
         (e.sl!=null?cuadroFicha("STOP", precio(e.sl),
-          e.perSl!=null?"ahí pierde "+usdF(Math.abs(e.perSl-e.com)):"", "dn"):"")+
+          e.perSl!=null?(e.slLiq?"lo liquidan antes, en "+precio(e.liq):(netoSl(e)>=0?"ahí gana ":"ahí pierde ")+usdF(Math.abs(netoSl(e)))):"",
+          netoSl(e)!=null&&netoSl(e)>=0?"up":"dn"):"")+
         (e.tp!=null?cuadroFicha("OBJETIVO", precio(e.tp),
-          e.ganTp!=null?"ahí gana "+usdF(e.ganTp-e.com):"", "up"):"")+
+          e.ganTp!=null?(netoTp(e)>=0?"ahí gana ":"ahí pierde ")+usdF(Math.abs(netoTp(e))):"", netoTp(e)!=null&&netoTp(e)<0?"dn":"up"):"")+
         (e.liq!=null?cuadroFicha("LIQUIDACIÓN", precio(e.liq),
           "se queda sin el margen"):"")+
         (e.rr!=null?cuadroFicha("RELACIÓN", e.rr.toFixed(2).replace(".",sepDecimal())+" a 1",
@@ -17601,6 +17635,9 @@ function engancharIdioma(box){
    Se respeta el orden de los huecos tal como salen en español.
    ===================================================================== */
 DIC.en={
+"lo liquidan antes, en $#":"liquidated first, at $#",
+"Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Careful: before reaching the stop you get liquidated at $# and lose everything you put in ($#), no more.",
+"La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"Trade No. # on @ was liquidated at $#: you lost everything you put in ($#).",
 "Después de esta operación le quedarían $# disponibles.":"After this trade you would have $# available.",
 "Disponible para operar":"Available to trade",
 "En operaciones $# · de $#":"In trades $# · of $#",
@@ -19560,6 +19597,9 @@ DIC.en={
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
+"lo liquidan antes, en $#":"liquidam antes, em $#",
+"Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Atenção: antes de chegar ao stop liquidam em $# e perde tudo o que colocou ($#), nada mais.",
+"La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"A operação N° # de @ foi liquidada em $#: perdeu tudo o que colocou ($#).",
 "Después de esta operación le quedarían $# disponibles.":"Depois desta operação ficariam $# disponíveis.",
 "Disponible para operar":"Disponível para operar",
 "En operaciones $# · de $#":"Em operações $# · de $#",
@@ -21512,6 +21552,9 @@ DIC.pt={
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
+"lo liquidan antes, en $#":"liquidé avant, à $#",
+"Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Attention : avant d'atteindre le stop, vous êtes liquidé à $# et perdez tout ce que vous avez mis ($#), pas plus.",
+"La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"L'opération n° # sur @ a été liquidée à $# : vous avez perdu tout ce que vous aviez mis ($#).",
 "Después de esta operación le quedarían $# disponibles.":"Après cette opération, il vous resterait $# de disponible.",
 "Disponible para operar":"Disponible pour trader",
 "En operaciones $# · de $#":"En positions $# · sur $#",
@@ -23464,6 +23507,9 @@ DIC.fr={
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
+"lo liquidan antes, en $#":"vorher liquidiert, bei $#",
+"Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Achtung: Vor dem Stop werden Sie bei $# liquidiert und verlieren alles, was Sie eingesetzt haben ($#), nicht mehr.",
+"La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"Trade Nr. # auf @ wurde bei $# liquidiert: Sie haben alles verloren, was Sie eingesetzt hatten ($#).",
 "Después de esta operación le quedarían $# disponibles.":"Nach diesem Trade wären noch $# verfügbar.",
 "Disponible para operar":"Verfügbar zum Handeln",
 "En operaciones $# · de $#":"In Trades $# · von $#",
@@ -25416,6 +25462,9 @@ DIC.de={
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
+"lo liquidan antes, en $#":"liquidato prima, a $#",
+"Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Attenzione: prima di arrivare allo stop la liquidano a $# e perde tutto quello che ha messo ($#), non di più.",
+"La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"L'operazione N° # di @ è stata liquidata a $#: ha perso tutto quello che aveva messo ($#).",
 "Después de esta operación le quedarían $# disponibles.":"Dopo questa operazione le resterebbero $# disponibili.",
 "Disponible para operar":"Disponibile per operare",
 "En operaciones $# · de $#":"In operazioni $# · su $#",
@@ -27368,6 +27417,9 @@ DIC.it={
 };
 /* NEDERLANDS · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.nl={
+"lo liquidan antes, en $#":"eerder geliquideerd, op $#",
+"Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Let op: vóór de stop wordt u geliquideerd op $# en verliest u alles wat u inlegde ($#), niet meer.",
+"La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"Trade nr. # op @ is geliquideerd op $#: u verloor alles wat u inlegde ($#).",
 "Después de esta operación le quedarían $# disponibles.":"Na deze trade zou u nog $# beschikbaar hebben.",
 "Disponible para operar":"Beschikbaar om te handelen",
 "En operaciones $# · de $#":"In trades $# · van $#",
@@ -29606,6 +29658,9 @@ DIC.nl={
 };
 /* POLSKI · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.pl={
+"lo liquidan antes, en $#":"likwidacja wcześniej, przy $#",
+"Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Uwaga: przed stopem nastąpi likwidacja przy $# i traci Pan(i) wszystko, co wpłacono ($#), nie więcej.",
+"La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"Transakcja nr # na @ została zlikwidowana przy $#: strata wszystkiego, co wpłacono ($#).",
 "Después de esta operación le quedarían $# disponibles.":"Po tej transakcji zostałoby $# dostępnych środków.",
 "Disponible para operar":"Dostępne do handlu",
 "En operaciones $# · de $#":"W transakcjach $# · z $#",
@@ -31844,6 +31899,9 @@ DIC.pl={
 };
 /* TÜRKÇE · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.tr={
+"lo liquidan antes, en $#":"daha önce tasfiye, $# seviyesinde",
+"Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Dikkat: stop'a ulaşmadan $# seviyesinde tasfiye edilir ve yatırdığınızın tamamını ($#) kaybedersiniz, fazlasını değil.",
+"La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"No. # @ işlemi $# seviyesinde tasfiye edildi: yatırdığınızın tamamı kaybedildi ($#).",
 "Después de esta operación le quedarían $# disponibles.":"Bu işlemden sonra $# kullanılabilir paranız kalır.",
 "Disponible para operar":"İşlem için kullanılabilir",
 "En operaciones $# · de $#":"İşlemlerde $# · toplam $#",
@@ -34082,6 +34140,9 @@ DIC.tr={
 };
 /* РУССКИЙ · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ru={
+"lo liquidan antes, en $#":"ликвидируют раньше, по $#",
+"Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Внимание: до стопа вас ликвидируют по $# и вы потеряете всё, что вложили ($#), не больше.",
+"La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"Сделку № # по @ ликвидировали по $#: потеряно всё, что вы вложили ($#).",
 "Después de esta operación le quedarían $# disponibles.":"После этой сделки останется $# доступных средств.",
 "Disponible para operar":"Доступно для сделок",
 "En operaciones $# · de $#":"В сделках $# · из $#",
@@ -36320,6 +36381,9 @@ DIC.ru={
 };
 /* УКРАЇНСЬКА · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.uk={
+"lo liquidan antes, en $#":"ліквідують раніше, за $#",
+"Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Увага: до стопу вас ліквідують за $# і ви втратите все, що вклали ($#), не більше.",
+"La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"Угоду № # по @ ліквідовано за $#: втрачено все, що ви вклали ($#).",
 "Después de esta operación le quedarían $# disponibles.":"Після цієї угоди залишиться $# доступних коштів.",
 "Disponible para operar":"Доступно для угод",
 "En operaciones $# · de $#":"В угодах $# · із $#",
@@ -38558,6 +38622,9 @@ DIC.uk={
 };
 /* BAHASA INDONESIA · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.id={
+"lo liquidan antes, en $#":"dilikuidasi lebih dulu, di $#",
+"Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Awas: sebelum sampai stop Anda dilikuidasi di $# dan kehilangan semua yang Anda masukkan ($#), tidak lebih.",
+"La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"Transaksi No. # pada @ dilikuidasi di $#: Anda kehilangan semua yang Anda masukkan ($#).",
 "Después de esta operación le quedarían $# disponibles.":"Setelah operasi ini, tersisa $# yang tersedia.",
 "Disponible para operar":"Tersedia untuk trading",
 "En operaciones $# · de $#":"Dalam posisi $# · dari $#",
@@ -40796,6 +40863,9 @@ DIC.id={
 };
 /* TIẾNG VIỆT · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.vi={
+"lo liquidan antes, en $#":"bị thanh lý trước, tại $#",
+"Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Lưu ý: trước khi tới stop bạn bị thanh lý tại $# và mất toàn bộ số đã bỏ vào ($#), không hơn.",
+"La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"Giao dịch số # của @ đã bị thanh lý tại $#: mất toàn bộ số đã bỏ vào ($#).",
 "Después de esta operación le quedarían $# disponibles.":"Sau lệnh này, bạn còn $# khả dụng.",
 "Disponible para operar":"Khả dụng để giao dịch",
 "En operaciones $# · de $#":"Đang trong lệnh $# · trên tổng $#",
@@ -43034,6 +43104,9 @@ DIC.vi={
 };
 /* हिन्दी · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.hi={
+"lo liquidan antes, en $#":"पहले लिक्विडेट, $# पर",
+"Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"ध्यान दें: स्टॉप से पहले $# पर लिक्विडेशन होगा और आप जितना लगाया ($#) सब खोएँगे, उससे ज़्यादा नहीं।",
+"La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"@ का ट्रेड नं. # $# पर लिक्विडेट हुआ: जितना लगाया था सब गया ($#)।",
 "Después de esta operación le quedarían $# disponibles.":"इस ट्रेड के बाद $# उपलब्ध रहेंगे।",
 "Disponible para operar":"ट्रेड के लिए उपलब्ध",
 "En operaciones $# · de $#":"ट्रेडों में $# · कुल $# में से",
@@ -45272,6 +45345,9 @@ DIC.hi={
 };
 /* 日本語 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ja={
+"lo liquidan antes, en $#":"先に強制ロスカット、$#",
+"Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"注意：ストップに届く前に$#で強制ロスカットされ、入れた金額すべて（$#）を失います。それ以上ではありません。",
+"La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"@の取引No.#は$#で強制ロスカットされました：入れた金額すべて（$#）を失いました。",
 "Después de esta operación le quedarían $# disponibles.":"この取引のあと、使える資金は$#になります。",
 "Disponible para operar":"取引に使える額",
 "En operaciones $# · de $#":"取引中 $# · 全体 $#",
@@ -47510,6 +47586,9 @@ DIC.ja={
 };
 /* 한국어 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ko={
+"lo liquidan antes, en $#":"먼저 청산, $#에서",
+"Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"주의: 스톱에 닿기 전에 $#에서 청산되어 넣은 돈 전부($#)를 잃습니다. 그 이상은 아닙니다.",
+"La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"@ 거래 No. #이(가) $#에서 청산되었습니다: 넣은 돈 전부($#)를 잃었습니다.",
 "Después de esta operación le quedarían $# disponibles.":"이 거래 후 사용 가능한 금액은 $#가 됩니다.",
 "Disponible para operar":"거래 가능 금액",
 "En operaciones $# · de $#":"거래 중 $# · 전체 $#",
@@ -49748,6 +49827,9 @@ DIC.ko={
 };
 /* 中文（简体） · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.zh={
+"lo liquidan antes, en $#":"会先被强平，在 $#",
+"Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"注意：在触及止损前会在 $# 被强平，损失投入的全部（$#），不会更多。",
+"La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"@ 的第 # 号交易在 $# 被强平：损失了投入的全部（$#）。",
 "Después de esta operación le quedarían $# disponibles.":"此笔交易后，可用资金还剩$#。",
 "Disponible para operar":"可用于交易",
 "En operaciones $# · de $#":"交易中 $# · 共 $#",
