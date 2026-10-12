@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="54">
+<meta name="v" content="55">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -1695,13 +1695,17 @@ body.conCerrojo #aviso{z-index:10001}
   .frResumen{display:block;padding:8px 12px 7px;border:1px solid var(--ln);border-radius:12px;
     background:var(--b1);font-size:13px;line-height:1.25;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent}
   .frResumen .frNom{font-weight:700;margin-bottom:5px}
-  .frResumen .frDatos{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.5fr) auto;gap:0 10px}
+  /* v55 · con una cartera larga ($12.469,10) la cifra se salía de su columna y quedaba
+     pegada al 30% de al lado. Ahora la cifra se achica un poco si hace falta y el
+     «= $3.000,00» puede bajar a un segundo renglón. */
+  .frResumen .frDatos{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr) auto;gap:0 10px}
   .frResumen .frI{display:flex;flex-direction:column;min-width:0}
   .frResumen .frL{font-size:11px;color:var(--t2);font-weight:600;line-height:1.2;margin-bottom:2px}
-  .frResumen .frI b{font-size:16px;line-height:1.2;white-space:nowrap}
+  .frResumen .frI b{font-size:clamp(13px,4.1vw,16px);line-height:1.2;white-space:nowrap}
   .frResumen b{font-weight:700;color:var(--tx)}
   .frResumen small{font-size:13px;color:var(--t2);margin-left:5px;font-weight:600}
-  .frResumen .frV{white-space:nowrap}
+  .frResumen .frV{white-space:normal}
+  .frResumen .frV small{white-space:nowrap}
   .frResumen .frI:last-child .frL{white-space:nowrap}
   .frResumen .frPie{display:flex;align-items:center;gap:8px;margin-top:5px;padding-top:5px;border-top:1px solid var(--ln)}
   .frResumen .frCasa{display:flex;flex-wrap:wrap;gap:0 5px;min-width:0;flex:1;font-size:12px;color:var(--t2)}
@@ -1816,6 +1820,7 @@ body.conCerrojo #aviso{z-index:10001}
   .encab .der .b{font-size:11.5px;padding:6px 6px;white-space:nowrap}
   .frResumen .frL{font-size:10.5px}
   .frResumen .frDatos{gap:0 6px}
+  .frResumen .frV small{display:block;margin-left:0}
   .frResumen .frI b{font-size:15px}
 }
 @media(max-width:340px){
@@ -1824,7 +1829,9 @@ body.conCerrojo #aviso{z-index:10001}
   .kv3 b small{font-size:10px}
   .heroRes .hC{gap:0 5px}
   .heroRes .hC b{font-size:13px}
-  .frResumen .frDatos{grid-template-columns:minmax(0,1fr) minmax(0,1.35fr) auto}
+  /* v55 · en los teléfonos más angostos, tres columnas ya no caben con una cartera
+     larga: el apalancamiento baja a un segundo renglón en vez de apretarse */
+  .frResumen .frDatos{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:7px 10px}
   .frResumen .frI b{font-size:14px}
 }
 @media(max-width:330px){
@@ -1933,6 +1940,38 @@ body.conCerrojo #aviso{z-index:10001}
 .opDet .opBts{display:flex;gap:7px;margin-top:10px}
 .opDet .opBts .b{flex:1;justify-content:center}
 
+
+
+/* v55 · el título del resultado puede ocupar dos renglones: «RESULTADO DE LA PRUEBA»
+   salía cortado («RESULTADO DE LA PRUE…») en el teléfono */
+.hero.heroC .he{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.25}
+.hero.heroC .hT{align-items:flex-start}
+/* v55 · RELIEVE SUAVE (y en ningún otro sitio). Luis (12 oct): «me gusta cómo se ve,
+   no se ve abomboso… un degradado imperceptible, sin ensuciar». Tres cosas pequeñas:
+   una luz de 1 px en el borde de arriba, un degradado de dos o tres por ciento, y un
+   tinte muy leve del color del logo en su propia celda. Nada de sombras grandes. */
+.marc .mrc{background:linear-gradient(180deg,
+    color-mix(in srgb,var(--ic) 7%,var(--b2)) 0%, var(--b1) 72%);
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 7%,transparent)}
+.marc .mrc.pulsa:active{background:linear-gradient(180deg,
+    color-mix(in srgb,var(--ic) 12%,var(--b2)) 0%, var(--b1) 72%);transform:translateY(1px)}
+.opL{background:linear-gradient(180deg,var(--b2) 0%, var(--b1) 68%);
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 6%,transparent), 0 1px 2px rgba(0,0,0,.22)}
+.opL:active{transform:translateY(1px)}
+.opDet{background:linear-gradient(180deg,var(--b2) 0%, color-mix(in srgb,var(--b2) 55%,var(--b1)) 100%)}
+.pest{box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 5%,transparent)}
+.pest button.on{box-shadow:0 2px 8px color-mix(in srgb,var(--vac) 30%,transparent),
+  inset 0 1px 0 color-mix(in srgb,#fff 22%,transparent)}
+.hero.heroC{box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 7%,transparent)}
+/* la línea de «Ver todo» al pie de cada lista del Resumen */
+.verTodo{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:0!important}
+.verTodo .mut{font-size:12px}
+.verTodo .b{margin-left:auto}
+/* la casilla del apalancamiento y su botón, en la misma línea */
+#fuApalZona .conBtn{display:flex;gap:8px;align-items:stretch}
+#fuApalZona .conBtn input{flex:1;min-width:0}
+#fuApalZona .conBtn .b{flex:none;white-space:nowrap}
+
 /* v50 · COLORES DE LOS ICONOS (aquí y en ningún otro sitio). Cada tarjeta lleva el color de lo que mide, fijo
    (no cambia con la pantalla ni con ganar/perder); el cuadro conserva el color de la pantalla. Sin verde ni rojo:
    esos son solo para ganancia/pérdida. Qué color lleva cada tarjeta: tabla COL_ICO en la función met(). */
@@ -2028,7 +2067,7 @@ body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+8)>h2 .ic{background:linear-grad
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por su cuenta de Google.
    ===================================================================== */
-var VERSION="54";
+var VERSION="55";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -6406,7 +6445,6 @@ function historialSpot(){
 }
 var SPOT_cuantos=25;
 var SPOT_PEST="mon";
-var RES_PEST="ab";     /* v54 · pestaña elegida en el Resumen (teléfono): abiertas · monedas */   /* v54 · pestaña elegida en el teléfono: monedas · órdenes · movimientos */
 
 function pesoHtml(peso){
   return '<i style="width:'+Math.max(3,peso*0.4)+'px"></i><span>'+pctS(peso)+'</span>';
@@ -6645,18 +6683,42 @@ function engancharPanel(c){
       '</b><i>casa de cambio</i></span><em>cambiar</em>';
   }
   pinta();
+  /* v55 · lo mismo que en Futuros: si el panel está en su hoja, la hoja vuelve sola
+     con lo que ya había escrito (aquí los valores están en las casillas, así que se
+     guardan antes de abrir la lista y se devuelven al volver). */
+  /* v55 · aquí hay que mirar DÓNDE está de verdad la casilla, no qué contenedor nos
+     pasaron: cuando llega un precio nuevo, la pantalla se repinta y vuelve a enganchar
+     el panel desde la página; como q() cae en document.getElementById, acababa
+     enganchando las casillas de la hoja creyendo que estaban en la página, y entonces
+     la hoja ya no volvía al elegir la casa de cambio. */
+  var enHojaSP = !!((S && S.closest && S.closest("#veloIn")) ||
+                    (E && E.closest && E.closest("#veloIn")));
+  function volverPanel(guardado){
+    if(!enHojaSP) return false;
+    hojaRegistrarSpot();
+    if(guardado){ ponerPanel(guardado); recPanel(); }
+    return true;
+  }
   if(S) S.onclick=function(){
+    var g=leerPanel();
     elegirMoneda(SP.sym, function(s){
       SP.sym=s; MIRANDO=s;
-      repintarPanelSpot();
       traerPrecios(true); conectarVivo();
+      if(precioDe(s)!=null && !g.p) g.p=String(precioDe(s)).replace(".",sepDecimal());
+      if(volverPanel(g)) return;
+      repintarPanelSpot();
       var pp=document.getElementById("spP");
       if(pp && !pp.value && precioDe(s)!=null) pp.value=String(precioDe(s)).replace(".",sepDecimal());
       recPanel();
-    });
+    }, function(){ volverPanel(g); });
   };
   if(E) E.onclick=function(){
-    elegirCasa(SP.casa, function(k){ SP.casa=k; pinta(); });   /* v48 · solo esta operación; la casa única no cambia */
+    var g2=leerPanel();
+    elegirCasa(SP.casa, function(k){   /* v48 · solo esta operación; la casa única no cambia */
+      SP.casa=k;
+      if(volverPanel(g2)) return;
+      pinta();
+    }, function(){ volverPanel(g2); });
   };
   c.querySelectorAll("#spT button").forEach(function(b){
     b.onclick=function(){ SP.tipo=b.getAttribute("data-t"); repintarPanelSpot(); };
@@ -8037,13 +8099,13 @@ function ambito(k){
    "si" = ya está dentro, "no" = la deja programada esperando el precio */
 /* FU.modo: "riesgo" = yo digo cuánto arriesgo y sale cuánto poner (el de fábrica,
    el de su hoja de Excel). "monto" = yo digo cuánto pongo y sale cuánto arriesgo. */
-var FU={ amb:"fut", sym:"", lado:"LONG", slModo:"precio", modo:"riesgo",
+var FU={ amb:"fut", sym:"", lado:"LONG", slModo:"precio", modo:"riesgo", apal:"",
          entrada:"", sl:"", tp:"", salida:"",
          margenMano:"", plan:{}, animo:"", estr:"", nota:"", fecha:"", abierto:true,
          ya:null, detAbierto:false };
 
 function limpiarFU(amb){
-  FU={ amb:amb, sym:FU.sym, lado:"LONG", slModo:FU.slModo||"precio", modo:FU.modo||"riesgo",
+  FU={ amb:amb, sym:FU.sym, lado:"LONG", slModo:FU.slModo||"precio", modo:FU.modo||"riesgo", apal:"",
        entrada:"", sl:"", tp:"",
        salida:"", margenMano:"", plan:{}, animo:"", estr:FU.estr, nota:"", fecha:hoy(),
        abierto:true, ya:null, detAbierto:false };
@@ -8213,7 +8275,7 @@ function comiTexto(x){
   return "$"+fmtNum(a, 2, a>=1 ? 2 : 5);
 }
 function hojaComision(A){
-  var c=A.cfg, v=valoresFU(A);
+  var c=cfgOp(A), v=valoresFU(A);
   var R = (v.entrada>0&&v.sl>0) ? (porMonto() ? calcLotePorMonto(c, v.entrada, v.sl, FU.lado, v.tp, num(FU.margenMano))
                                                : calcLote(c, v.entrada, v.sl, FU.lado, v.tp)) : null;
   var ej = (R&&R.ok&&R.margen>0) ? {m:R.margen, t:R.posicion} : {m:10, t:10*(+c.apal||10)};
@@ -8295,6 +8357,13 @@ function panelOperacion(A, enHoja){
           '<button type="button" data-modo="monto" class="'+(porMonto()?"on v":"")+'">'+
             'Por monto<span>yo digo cuánto pongo</span></button>'+
         '</div>'+
+        /* v55 · el apalancamiento de ESTA operación (arriba queda su regla de siempre) */
+        '<div class="campo" id="fuApalZona"><label>Apalancamiento '+
+          '<small>· solo para esta operación</small></label>'+
+          '<div class="conBtn"><input id="fuApal" inputmode="numeric" value="'+esc(FU.apal||"")+'" placeholder="'+
+          esc(String(+c.apal||1))+'">'+
+          '<button type="button" class="b" id="fuApalX" title="Volver al apalancamiento de arriba">'+
+          esc(String(+c.apal||1))+'x</button></div></div>'+
         '<div class="campo" id="fuMontoZona"'+(porMonto()?"":' style="display:none"')+'>'+
           '<label>Cuánto dinero pone de su bolsillo</label>'+
           '<div class="conBtn">'+
@@ -8368,6 +8437,24 @@ function estrategiasUsadas(){
 /* convierte lo escrito en el stop a un precio de verdad */
 /* el stop se escribe siempre como precio, igual que en su hoja de Excel */
 function slAPrecio(A){ return num(FU.sl); }
+/* =====================================================================
+   v55 · EL APALANCAMIENTO DE ESTA OPERACIÓN
+   Arriba, en la franja, está su regla de siempre (lo que usa por defecto).
+   En el formulario puede cambiarlo SOLO para la operación que está registrando,
+   y la de arriba no se mueve. Si la casilla está vacía, manda la de arriba.
+   Luis (12 oct): «algunos se basarán a raja tabla a su estrategia de arriba, pero
+   otros querrán modificarlo ahí mismo: ya no quiero por 10, ahora por 15 o por 20».
+   ===================================================================== */
+function apalOp(A){
+  var n=num(FU.apal);
+  if(n!=null && n>=1) return Math.min(125, n);
+  return +A.cfg.apal||1;
+}
+function cfgOp(A){
+  var c={}; for(var k in A.cfg) c[k]=A.cfg[k];
+  c.apal=apalOp(A);
+  return c;
+}
 function valoresFU(A){
   return {entrada:num(FU.entrada), sl:slAPrecio(A), tp:num(FU.tp)};
 }
@@ -8396,7 +8483,7 @@ function botonRegistrar(puede, porque){
 function recLote(A){
   var box=document.getElementById("fuLote");
   if(!box) return;
-  var v=valoresFU(A), c=A.cfg, mon=porMonto();
+  var v=valoresFU(A), c=cfgOp(A), mon=porMonto();
   var R = mon ? calcLotePorMonto(c, v.entrada, v.sl, FU.lado, v.tp, num(FU.margenMano))
               : calcLote(c, v.entrada, v.sl, FU.lado, v.tp);
   var av=document.getElementById("fuAviso");
@@ -9194,15 +9281,25 @@ function engancharFormulario(c, A){
       : '<span><b>Elegir moneda…</b><i>toque para buscar entre todas</i></span><em>elegir</em>';
   }
   pintaMon();
+  /* v55 · SI EL FORMULARIO ESTÁ EN SU HOJA, LA HOJA VUELVE SOLA.
+     El programa solo sabe tener una ventana abierta a la vez: al abrir la lista de
+     monedas encima de la hoja, la hoja se perdía y había que empezar de nuevo
+     (Luis, 12 oct: «selecciono la criptomoneda y se me cierra»). Ahora, al elegir
+     —o al cancelar—, se vuelve a abrir la hoja con todo lo que ya había escrito,
+     que vive en FU y no se pierde. */
+  var enHoja = !!(c && c.closest && c.closest("#veloIn"));
+  function volverAHoja(){ if(enHoja) hojaNuevaOperacion(A.k); }
   if(S) S.onclick=function(){
     elegirMoneda(FU.sym, function(s){
       FU.sym=s; MIRANDO=s;
-      pintaMon();
       conectarVivo(); traerPrecios(true); traerLogo(s);
+      if(!FU.entrada && precioDe(s)!=null) FU.entrada=String(precioDe(s)).replace(".",sepDecimal());
+      if(enHoja){ volverAHoja(); return; }
+      pintaMon();
       var E=document.getElementById("fuE");
-      if(E&&!E.value&&precioDe(s)!=null){ E.value=String(precioDe(s)).replace(".",sepDecimal()); FU.entrada=E.value; }
+      if(E&&!E.value&&FU.entrada) E.value=FU.entrada;
       montarGraf(A); recLote(A);
-    });
+    }, volverAHoja);
   };
   c.querySelectorAll("#fuL button").forEach(function(b){
     b.onclick=function(){
@@ -9227,7 +9324,7 @@ function engancharFormulario(c, A){
       if(z) z.style.display = porMonto() ? "" : "none";
       /* al pasar a «por monto» se propone lo que saldría por riesgo, para no empezar en blanco */
       if(porMonto() && !num(FU.margenMano)){
-        var vv=valoresFU(A), Rr=calcLote(A.cfg, vv.entrada, vv.sl, FU.lado, vv.tp);
+        var vv=valoresFU(A), Rr=calcLote(cfgOp(A), vv.entrada, vv.sl, FU.lado, vv.tp);
         if(Rr.ok && Rr.margen>0 && Rr.ladoBien){
           FU.margenMano=paraCasilla(+Rr.margen.toFixed(2));
           var M=c.querySelector("#fuM"); if(M) M.value=FU.margenMano;
@@ -9237,6 +9334,12 @@ function engancharFormulario(c, A){
       if(porMonto()){ var M2=c.querySelector("#fuM"); if(M2&&window.innerWidth>900) M2.focus(); }
     };
   });
+  var elA=c.querySelector("#fuApal");
+  if(elA) elA.addEventListener("input", function(){
+    FU.apal=elA.value; recLote(A); pintarLineas(A);
+  });
+  var elAX=c.querySelector("#fuApalX");
+  if(elAX) elAX.onclick=function(){ FU.apal=""; if(elA) elA.value=""; recLote(A); };
   var elM=c.querySelector("#fuM");
   if(elM) elM.addEventListener("input", function(){ FU.margenMano=elM.value; recLote(A); });
   var elT=c.querySelector("#fuTodo");
@@ -9384,8 +9487,8 @@ function montarGraf(A){
     dineroStop:function(){
       var v=valoresFU(A), mon=porMonto();
       if(!(v.entrada>0)||!(v.sl>0)) return "";
-      var R = mon ? calcLotePorMonto(A.cfg, v.entrada, v.sl, FU.lado, v.tp, num(FU.margenMano))
-                  : calcLote(A.cfg, v.entrada, v.sl, FU.lado, v.tp);
+      var R = mon ? calcLotePorMonto(cfgOp(A), v.entrada, v.sl, FU.lado, v.tp, num(FU.margenMano))
+                  : calcLote(cfgOp(A), v.entrada, v.sl, FU.lado, v.tp);
       if(!R.ok||!R.ladoBien) return "";
       var pc = R.cartera>0 ? R.perdidaSL/R.cartera*100 : null;
       return '<span class="piePone">'+"Pone "+usdF(R.margen)+"."+'</span> '+(pc!=null
@@ -9419,7 +9522,7 @@ function pintarLineas(A){
 }
 
 function guardarOperacion(A){
-  var c=A.cfg;
+  var c=cfgOp(A);   /* v55 · con el apalancamiento de esta operación */
   var v=valoresFU(A);
   var sal=num(FU.salida);
   var mon=porMonto();
@@ -11869,7 +11972,7 @@ function pintarRes(){
   /* v46 · en el teléfono, lo que ya está en marcha (abiertas, programadas) va justo
      debajo del total, antes de las tarjetas de ganancias */
   var TEL=esTel();
-  var hOpsRes="";
+  var hOpsRes="", MARC_SPOT="", MARC_FUT="";
   if(F.abiertas.length){
     hOpsRes='<div class="caja"><h2><span class="ic">'+IC.fut+'</span>Operaciones abiertas'+
       '<span class="chip v">'+F.abiertas.length+'</span><span class="sp"></span>'+
@@ -11886,7 +11989,11 @@ function pintarRes(){
     h+='<div class="cima">'+
       heroGrande("TODO SU DINERO", totalTodo, ganTodo, "ganancia en total", null, serieTodo(),
                  repartoDinero())+'</div>';
-    h+=tiraMarcador([
+    /* v55 · cada mundo con su contenido debajo. Luis (12 oct): «si está en spot, debajo
+       deben estar sus criptomonedas; y debajo de futuros, las operaciones abiertas; si no,
+       está en desorden». Así que en el Resumen no hay pestañas: hay dos bloques, y cada
+       bloque lleva primero sus números y después su lista. */
+    MARC_SPOT=tiraMarcador([
       {ico:IC.dolar, et:"Ganancia si vende hoy",
        val:'<span data-v="ganMon">'+conSignoUsd(S.tot.abierto)+'</span>',
        clase:cl(S.tot.abierto), ir:"v:spot#misMonedas"},
@@ -11895,13 +12002,13 @@ function pintarRes(){
       {ico:IC.torta, et:"Vale hoy", val:'<span data-v="total">'+usd(S.tot.valor)+'</span>', ir:"v:spot#misMonedas"},
       {ico:IC.banco, et:"Comisiones", val:usdF(K.spot), ir:"f:comisiones"}
     ], "Spot");
-    h+=tiraMarcador([
+    MARC_FUT=tiraMarcador([
       {ico:IC.mov, et:"Ganancia si cierra hoy",
        val:T.nAb ? '<span data-v="futTot">'+(T.flotante>=0?"+":"−")+usdF(T.flotante).replace("-","")+'</span>' : "—",
        clase:T.nAb?cl(T.flotante):"", ir:T.nAb?"v:fut#abiertasFut":"v:fut"},
       {ico:IC.fut, et:"Ya ganado al cerrar", val:(T.gan>=0?"+":"−")+usdF(T.gan).replace("-",""),
        clase:cl(T.gan), ir:"v:fut#histFut"},
-      {ico:IC.torta, et:"Disponible", val:usd(D.fut!=null?D.fut:futurosDet().disponible)},
+      {ico:IC.torta, et:"Disponible", val:usd(futurosDet().disponible)},
       {ico:IC.banco, et:"Comisiones", val:usdF(K.fut), ir:"f:comisiones"}
     ], "Futuros");
   } else {
@@ -11963,21 +12070,33 @@ function pintarRes(){
   ABAJO+='</div>';
 
   if(TEL){
-    /* v54 · dos pestañas: lo que tiene abierto y sus monedas */
-    h+='<div class="pest" id="pestRes">'+
-      '<button data-pest="ab" class="'+(RES_PEST==="ab"?"on":"")+'">Abiertas'+
-        (F.abiertas.length?'<span class="pNum">'+F.abiertas.length+'</span>':'')+'</button>'+
-      '<button data-pest="mon" class="'+(RES_PEST==="mon"?"on":"")+'"><span class="pIc">'+IC.spot+'</span>Mis monedas'+
-        (vivas.length?'<span class="pNum">'+vivas.length+'</span>':'')+'</button>'+
-    '</div>';
-    if(RES_PEST==="mon") h+=(MONRES||'<div class="caja"><div class="cp"><div class="mut" style="text-align:center;padding:20px 12px">Todavía no tiene monedas.</div></div></div>');
-    else {
-      h+=(F.abiertas.length
-        ? '<div class="caja" id="abiertasFut"><div class="capo"><span class="envivo"><i></i>EN VIVO</span></div>'+
-          '<div class="cp" style="padding-top:0">'+F.abiertas.map(function(e){ return filaAbiertaCorta(e,"fut"); }).join("")+'</div></div>'
-        : '<div class="caja"><div class="cp"><div class="mut" style="text-align:center;padding:20px 12px">No tiene ninguna operación abierta.</div></div></div>');
-      if(F.programadas.length) h+=cajaProgramadas(F.programadas,"fut");
-    }
+    /* v55 · SPOT con sus monedas debajo, y FUTUROS con sus operaciones debajo.
+       Cada lista enseña las cinco primeras; el resto, con «Ver todo», en su pantalla. */
+    var monTel=vivas.slice(0,5), opTel=F.abiertas.slice(0,5);
+    h+=MARC_SPOT+
+      '<div class="caja">'+
+      (monTel.length
+        ? listaMonedasCorta(monTel)+
+          (vivas.length>5?'<div class="cp verTodo"><span class="mut">y '+
+            plural(vivas.length-5,"moneda","monedas")+' más</span>'+
+            '<button class="b sm" onclick="irA(\'spot\')">Ver todo</button></div>'
+           :'<div class="cp verTodo"><button class="b sm" onclick="irA(\'spot\')">Ver todo</button></div>')
+        : '<div class="cp"><div class="mut" style="text-align:center;padding:18px 12px">'+
+          'Todavía no tiene criptomonedas.</div></div>')+
+      '</div>';
+    h+=MARC_FUT+
+      '<div class="caja" id="abiertasFut">'+
+      (opTel.length
+        ? '<div class="capo"><span class="envivo"><i></i>EN VIVO</span></div>'+
+          '<div class="cp" style="padding-top:0">'+opTel.map(function(e){ return filaAbiertaCorta(e,"fut"); }).join("")+'</div>'+
+          (F.abiertas.length>5?'<div class="cp verTodo"><span class="mut">y '+
+            plural(F.abiertas.length-5,"operación","operaciones")+' más</span>'+
+            '<button class="b sm" onclick="irA(\'fut\')">Ver todo</button></div>'
+           :'<div class="cp verTodo"><button class="b sm" onclick="irA(\'fut\')">Ver todo</button></div>')
+        : '<div class="cp"><div class="mut" style="text-align:center;padding:18px 12px">'+
+          'No tiene ninguna operación abierta.</div></div>')+
+      '</div>';
+    if(F.programadas.length) h+=cajaProgramadas(F.programadas,"fut");
     h+=ABAJO;
   } else {
     h+=MONRES;
@@ -11990,9 +12109,6 @@ function pintarRes(){
   engancharListaTel(c);
   engancharFichas(c);        /* el icono de la moneda abre su gráfica */
   /* --- v54 · teléfono: pestañas y filas que se abren --- */
-  c.querySelectorAll("#pestRes button").forEach(function(b){
-    b.onclick=function(){ RES_PEST=b.getAttribute("data-pest"); pintarRes(); };
-  });
   c.querySelectorAll("[data-opab]").forEach(function(fila){
     fila.onclick=function(ev){
       if(ev.target.closest("button")) return;
@@ -17314,6 +17430,12 @@ function engancharIdioma(box){
    Se respeta el orden de los huecos tal como salen en español.
    ===================================================================== */
 DIC.en={
+"· solo para esta operación":"· only for this trade",
+"y # monedas más":"and # more coins",
+"y # moneda más":"and # more coin",
+"y # operaciones más":"and # more trades",
+"y # operación más":"and # more trade",
+"Todavía no tiene criptomonedas.":"You have no coins yet.",
 "+ Registrar compra":"+ Record a buy",
 "Registrar un movimiento":"Record a movement",
 "Órdenes":"Orders",
@@ -19252,6 +19374,12 @@ DIC.en={
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
+"· solo para esta operación":"· só para esta operação",
+"y # monedas más":"e mais # moedas",
+"y # moneda más":"e mais # moeda",
+"y # operaciones más":"e mais # operações",
+"y # operación más":"e mais # operação",
+"Todavía no tiene criptomonedas.":"Você ainda não tem criptomoedas.",
 "+ Registrar compra":"+ Registrar compra",
 "Registrar un movimiento":"Registrar um movimento",
 "Órdenes":"Ordens",
@@ -21183,6 +21311,12 @@ DIC.pt={
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
+"· solo para esta operación":"· seulement pour cette opération",
+"y # monedas más":"et # monnaies de plus",
+"y # moneda más":"et # monnaie de plus",
+"y # operaciones más":"et # opérations de plus",
+"y # operación más":"et # opération de plus",
+"Todavía no tiene criptomonedas.":"Vous n'avez pas encore de cryptos.",
 "+ Registrar compra":"+ Enregistrer un achat",
 "Registrar un movimiento":"Enregistrer un mouvement",
 "Órdenes":"Ordres",
@@ -23114,6 +23248,12 @@ DIC.fr={
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
+"· solo para esta operación":"· nur für diesen Trade",
+"y # monedas más":"und # weitere Münzen",
+"y # moneda más":"und # weitere Münze",
+"y # operaciones más":"und # weitere Trades",
+"y # operación más":"und # weiterer Trade",
+"Todavía no tiene criptomonedas.":"Sie haben noch keine Kryptos.",
 "+ Registrar compra":"+ Kauf erfassen",
 "Registrar un movimiento":"Bewegung erfassen",
 "Órdenes":"Orders",
@@ -25045,6 +25185,12 @@ DIC.de={
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
+"· solo para esta operación":"· solo per questa operazione",
+"y # monedas más":"e altre # monete",
+"y # moneda más":"e altra # moneta",
+"y # operaciones más":"e altre # operazioni",
+"y # operación más":"e altra # operazione",
+"Todavía no tiene criptomonedas.":"Non ha ancora criptomonete.",
 "+ Registrar compra":"+ Registrare un acquisto",
 "Registrar un movimiento":"Registrare un movimento",
 "Órdenes":"Ordini",
@@ -26976,6 +27122,12 @@ DIC.it={
 };
 /* NEDERLANDS · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.nl={
+"· solo para esta operación":"· alleen voor deze trade",
+"y # monedas más":"en nog # munten",
+"y # moneda más":"en nog # munt",
+"y # operaciones más":"en nog # trades",
+"y # operación más":"en nog # trade",
+"Todavía no tiene criptomonedas.":"U hebt nog geen crypto's.",
 "+ Registrar compra":"+ Aankoop vastleggen",
 "Registrar un movimiento":"Mutatie vastleggen",
 "Órdenes":"Orders",
@@ -29193,6 +29345,12 @@ DIC.nl={
 };
 /* POLSKI · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.pl={
+"· solo para esta operación":"· tylko dla tej transakcji",
+"y # monedas más":"i jeszcze # monet",
+"y # moneda más":"i jeszcze # moneta",
+"y # operaciones más":"i jeszcze # transakcji",
+"y # operación más":"i jeszcze # transakcja",
+"Todavía no tiene criptomonedas.":"Nie masz jeszcze kryptowalut.",
 "+ Registrar compra":"+ Dodaj zakup",
 "Registrar un movimiento":"Dodaj ruch",
 "Órdenes":"Zlecenia",
@@ -31410,6 +31568,12 @@ DIC.pl={
 };
 /* TÜRKÇE · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.tr={
+"· solo para esta operación":"· sadece bu işlem için",
+"y # monedas más":"ve # coin daha",
+"y # moneda más":"ve # coin daha",
+"y # operaciones más":"ve # işlem daha",
+"y # operación más":"ve # işlem daha",
+"Todavía no tiene criptomonedas.":"Henüz kripto paranız yok.",
 "+ Registrar compra":"+ Alım kaydet",
 "Registrar un movimiento":"Hareket kaydet",
 "Órdenes":"Emirler",
@@ -33627,6 +33791,12 @@ DIC.tr={
 };
 /* РУССКИЙ · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ru={
+"· solo para esta operación":"· только для этой сделки",
+"y # monedas más":"и ещё # монет",
+"y # moneda más":"и ещё # монета",
+"y # operaciones más":"и ещё # сделок",
+"y # operación más":"и ещё # сделка",
+"Todavía no tiene criptomonedas.":"У вас пока нет криптовалют.",
 "+ Registrar compra":"+ Записать покупку",
 "Registrar un movimiento":"Записать движение",
 "Órdenes":"Ордера",
@@ -35844,6 +36014,12 @@ DIC.ru={
 };
 /* УКРАЇНСЬКА · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.uk={
+"· solo para esta operación":"· лише для цієї угоди",
+"y # monedas más":"і ще # монет",
+"y # moneda más":"і ще # монета",
+"y # operaciones más":"і ще # угод",
+"y # operación más":"і ще # угода",
+"Todavía no tiene criptomonedas.":"У вас поки немає криптовалют.",
 "+ Registrar compra":"+ Записати купівлю",
 "Registrar un movimiento":"Записати рух",
 "Órdenes":"Ордери",
@@ -38061,6 +38237,12 @@ DIC.uk={
 };
 /* BAHASA INDONESIA · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.id={
+"· solo para esta operación":"· hanya untuk transaksi ini",
+"y # monedas más":"dan # koin lagi",
+"y # moneda más":"dan # koin lagi",
+"y # operaciones más":"dan # transaksi lagi",
+"y # operación más":"dan # transaksi lagi",
+"Todavía no tiene criptomonedas.":"Anda belum punya kripto.",
 "+ Registrar compra":"+ Catat pembelian",
 "Registrar un movimiento":"Catat mutasi",
 "Órdenes":"Order",
@@ -40278,6 +40460,12 @@ DIC.id={
 };
 /* TIẾNG VIỆT · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.vi={
+"· solo para esta operación":"· chỉ cho lệnh này",
+"y # monedas más":"và # coin nữa",
+"y # moneda más":"và # coin nữa",
+"y # operaciones más":"và # lệnh nữa",
+"y # operación más":"và # lệnh nữa",
+"Todavía no tiene criptomonedas.":"Bạn chưa có đồng coin nào.",
 "+ Registrar compra":"+ Ghi lệnh mua",
 "Registrar un movimiento":"Ghi một giao dịch",
 "Órdenes":"Lệnh",
@@ -42495,6 +42683,12 @@ DIC.vi={
 };
 /* हिन्दी · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.hi={
+"· solo para esta operación":"· सिर्फ़ इस ट्रेड के लिए",
+"y # monedas más":"और # कॉइन",
+"y # moneda más":"और # कॉइन",
+"y # operaciones más":"और # ट्रेड",
+"y # operación más":"और # ट्रेड",
+"Todavía no tiene criptomonedas.":"आपके पास अभी कोई क्रिप्टो नहीं है.",
 "+ Registrar compra":"+ खरीद दर्ज करें",
 "Registrar un movimiento":"लेन-देन दर्ज करें",
 "Órdenes":"ऑर्डर",
@@ -44712,6 +44906,12 @@ DIC.hi={
 };
 /* 日本語 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ja={
+"· solo para esta operación":"· この取引だけ",
+"y # monedas más":"ほかに # 銘柄",
+"y # moneda más":"ほかに # 銘柄",
+"y # operaciones más":"ほかに # 件の取引",
+"y # operación más":"ほかに # 件の取引",
+"Todavía no tiene criptomonedas.":"まだ暗号資産がありません。",
 "+ Registrar compra":"＋ 購入を記録",
 "Registrar un movimiento":"取引を記録",
 "Órdenes":"注文",
@@ -46929,6 +47129,12 @@ DIC.ja={
 };
 /* 한국어 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ko={
+"· solo para esta operación":"· 이 거래에만 적용",
+"y # monedas más":"외 # 개 코인",
+"y # moneda más":"외 # 개 코인",
+"y # operaciones más":"외 # 건의 거래",
+"y # operación más":"외 # 건의 거래",
+"Todavía no tiene criptomonedas.":"아직 보유한 코인이 없습니다.",
 "+ Registrar compra":"+ 매수 기록",
 "Registrar un movimiento":"입출금 기록",
 "Órdenes":"주문",
@@ -49146,6 +49352,12 @@ DIC.ko={
 };
 /* 中文（简体） · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.zh={
+"· solo para esta operación":"· 仅用于这笔交易",
+"y # monedas más":"还有 # 个币种",
+"y # moneda más":"还有 # 个币种",
+"y # operaciones más":"还有 # 笔交易",
+"y # operación más":"还有 # 笔交易",
+"Todavía no tiene criptomonedas.":"您还没有加密货币。",
 "+ Registrar compra":"+ 记录买入",
 "Registrar un movimiento":"记录一笔流水",
 "Órdenes":"订单",
