@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="55">
+<meta name="v" content="56">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -299,6 +299,21 @@ main>*{max-width:var(--anchoMax);margin-left:auto;margin-right:auto}
 .meta .mb i{display:block;height:100%;background:linear-gradient(90deg,var(--ac),var(--up));
   transition:width .6s ease}
 .meta .mt{font-size:12px;color:var(--t2);margin-top:5px}
+/* v56 · la meta, legible: fila de título, % grande, barra más gruesa y el pie con letra de lectura */
+.meta .mHd{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:7px}
+.meta .mTx{display:flex;align-items:center;gap:7px;min-width:0;font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--t2);font-weight:800}
+.meta .mTx>span{white-space:nowrap}
+.meta .mIc{display:inline-grid;place-items:center;flex:none;color:var(--up)}
+.meta .mIc svg{width:16px;height:16px}
+.meta .mTx b{font-size:16px;letter-spacing:0;text-transform:none;color:var(--tx);font-weight:800;margin-left:2px;white-space:nowrap}
+.meta .mPc{font-size:22px;font-weight:800;line-height:1;color:var(--up);flex:none}
+.meta .mPc.mal{color:var(--dnTx,var(--dn))}
+.meta .mb{height:10px}
+.meta .mFt{font-size:14px;font-weight:700;color:var(--t2);margin-top:7px}
+.meta .mFt.ok{color:var(--up)}
+.meta .mFt.mal{color:var(--dnTx,var(--dn))}
+@media(max-width:340px){ .meta .mTx{letter-spacing:.06em;font-size:10px} .meta .mTx b{font-size:14px} .meta .mPc{font-size:19px} }
 
 /* ---------- cápsulas de ganancia y chips ---------- */
 .gpill{display:inline-block;padding:5px 11px;border-radius:9px;font-weight:700;
@@ -862,6 +877,40 @@ a:hover{color:var(--ac2)}
   padding-bottom:7px;margin-bottom:6px;border-bottom:1px solid var(--ln)}
 .rpT span{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--t2)}
 .rpT b{font-size:18px;font-weight:800;color:var(--tx);font-variant-numeric:tabular-nums}
+/* v56 · DISPONIBLE PARA OPERAR (Futuros y Backtesting) */
+.frDisp{margin-top:6px;padding-top:7px;border-top:1px solid var(--ln)}
+.frDisp .fdR{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.frDisp .fdT{font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:var(--t2)}
+.frDisp .fdV{font-size:14px;font-weight:700;color:var(--tx);font-variant-numeric:tabular-nums}
+.frDisp .fdV.cero{color:var(--ojoTx)}
+.frDisp .fdS{font-size:12px;color:var(--t3);margin-top:1px}
+.frDispPC{margin:-4px 0 12px}
+.frDispPC .frDisp{margin:0;padding:9px 14px;border:1px solid var(--ln);border-radius:12px;background:var(--b1);
+  display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+.frDispPC .frDisp .fdR{justify-content:flex-start;gap:12px}
+.btAjusta{margin-top:8px;width:100%;justify-content:center}
+.avLibre{margin-top:6px;font-weight:700}
+/* operaciones programadas del teléfono: una línea que se abre; aviso y botones siempre a la vista */
+.opProg{margin-bottom:9px}
+.opProg .opL{margin-bottom:0}
+.opProg .opL .espera{font-size:10px;padding:2px 8px}
+.opProg .opL .opPct{font-size:11px;font-weight:700;color:var(--t2)}
+.opProg .opAv{margin:6px 0 0;padding:7px 10px;border-radius:9px;font-size:12.5px;line-height:1.35;
+  background:color-mix(in srgb,var(--dn) 12%,transparent);border:1px solid color-mix(in srgb,var(--dn) 45%,transparent)}
+.opProg .opBtsFijo{display:flex;gap:7px;margin-top:7px}
+.opProg .opBtsFijo .b{flex:1;justify-content:center}
+.sub.dn{color:var(--dnTx,var(--dn))}
+/* v56 · en el teléfono la cifra de cada caja (Spot / Futuros) se achica un poco para no tocar el borde */
+/* y si aun así no cabe (cajas angostas, también en la computadora), la cifra baja a su propio renglón,
+   a la derecha, en vez de salirse de la caja */
+.rpT{flex-wrap:wrap;row-gap:1px}
+.rpT b{margin-left:auto;white-space:nowrap}
+@media(max-width:900px){
+  .rpT{gap:6px}
+  .rpT span{letter-spacing:.05em;font-size:11.5px}
+  .rpT b{font-size:clamp(14px,4.3vw,17px);min-width:0}
+}
+@media(max-width:340px){ .rpT span{letter-spacing:.02em;font-size:10.5px} }
 .rpL{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--t2);
   padding:2px 0;line-height:1.45}
 .rpL b{font-weight:700;color:var(--tx);font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -1666,6 +1715,10 @@ body.conCerrojo #aviso{z-index:10001}
   .hero .reparto{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-top:8px!important}
   .hero .rpC{padding:8px 10px!important}
   .hero .rpL,.hero .rpT{font-size:12px!important;padding:1px 0!important;white-space:nowrap}
+  /* v56 · «En operaciones $1.230,89» se salía de su caja con cifras largas: el nombre puede pasar a dos renglones, la cifra no */
+  .hero .rpL{white-space:normal!important;gap:4px;font-size:11.5px!important;letter-spacing:-.01em}
+  .hero .rpL>span{min-width:0}
+  .hero .rpL b{font-size:12px}
   .hero .rpBot{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;margin-top:8px!important}
   .hero .rpBot .b{font-size:11.5px!important;padding:6px 8px!important;min-height:34px!important;min-width:0!important;width:100%!important;
     white-space:normal!important;line-height:1.15!important}
@@ -1867,13 +1920,24 @@ body.conCerrojo #aviso{z-index:10001}
 .hero.heroC .hDer span{font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;
   color:var(--t3);font-weight:800}
 .hero.heroC .hDer b{font-size:14px;font-weight:800}
+/* v56 · la cápsula del % ocupaba su lugar como letra suelta (inline) y se montaba sobre la
+   cifra de arriba y sobre «1 operación abierta» de abajo: ahora es una caja con su propio sitio */
+.hero.heroC .hIzq .gch{display:inline-block!important;margin-top:6px;line-height:1.25}
+.hero.heroC .hIzq .hD{margin-top:6px;text-align:left}
 @media(max-width:340px){
   .hero.heroC .hz{grid-template-columns:1fr}
   .hero.heroC .hDer{flex-direction:row;flex-wrap:wrap;gap:10px;text-align:left;
     border-top:1px solid var(--ln);padding-top:8px}
 }
 /* el marcador: los cuatro números de siempre, con su icono y su color */
-.marcT{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--t3);font-weight:800;margin:2px 2px 5px}
+/* v56 · el rótulo de Spot / Futuros: más grande, con su icono de color y una línea fina de su mundo;
+   la palabra va en el color del texto (con el color del mundo se perdía) */
+.marcT{--mc:var(--vac);display:flex;align-items:center;gap:9px;font-size:16px;letter-spacing:.01em;
+  color:var(--tx);font-weight:800;margin:14px 2px 8px;padding-bottom:7px;
+  border-bottom:2px solid color-mix(in srgb,var(--mc) 55%,transparent)}
+.marcT .mtI{width:26px;height:26px;flex:none;border-radius:var(--rad,6px);display:grid;place-items:center;color:var(--mc);
+  background:color-mix(in srgb,var(--mc) 16%,transparent);border:1px solid color-mix(in srgb,var(--mc) 40%,transparent)}
+.marcT .mtI svg{width:16px;height:16px}
 .marc{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--ln);
   border:1px solid var(--ln);border-radius:var(--rad);overflow:hidden;margin:0 0 10px}
 .marc .mrc{background:var(--b1);padding:9px 10px;min-width:0;--ic:var(--vac);--icF:var(--vacF);--icInk:var(--vacInk)}
@@ -2067,7 +2131,7 @@ body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+8)>h2 .ic{background:linear-grad
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por su cuenta de Google.
    ===================================================================== */
-var VERSION="55";
+var VERSION="56";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -3511,7 +3575,7 @@ function refrescarVivos(){
           bs=+el.getAttribute("data-base")||0, gt=g0+fl;
       if(v==="futRes") ponTexto(el, (gt>=0?"+":"−")+usdF(Math.abs(gt)), cl(gt));
       else if(v==="futResP"){ if(bs>0) ponTexto(el, tr(pct(gt/bs*100,1)+" sobre su cartera"), cl(gt)); }
-      else if(v==="futAhora") ponTexto(el, usd(bs+gt));
+      else if(v==="futAhora") ponTexto(el, usd(bs+g0));
       else ponTexto(el, (fl>=0?"+":"−")+usdF(Math.abs(fl)), cl(fl));
     }
     else if(v==="desdeEnt"||v==="flotV"||v==="flotP"){
@@ -4292,11 +4356,11 @@ function estadoDe(sym){
   var ops=ordenarMovimientos(BD.ops.filter(function(o){
     return String(o.sym).toUpperCase()===S;
   }));
-  var cantidad=0, costo=0, realizado=0, comprado=0, vendido=0, nCompras=0, nVentas=0, com=0;
+  var cantidad=0, costo=0, realizado=0, comprado=0, vendido=0, nCompras=0, nVentas=0, com=0, volumen=0;
   var porOp={};
   ops.forEach(function(o){
     var c=+o.cant||0, p=+o.precio||0, k=+o.com||0;
-    com+=k;
+    com+=k; volumen+=c*p;
     if(o.tipo==="venta"){
       var pedida=c;
       if(c>cantidad+1e-12) c=cantidad;
@@ -4314,19 +4378,25 @@ function estadoDe(sym){
       cantidad+=c; costo+=pagado; comprado+=pagado; nCompras++;
     }
   });
+  /* v56 · LAS GANANCIAS SE ENSEÑAN SIEMPRE NETAS DE COMISIÓN (Luis, 12 oct). «Ganancia si vende hoy»
+     no contaba lo que costaría vender. La comisión de vender todavía no existe, así que se calcula
+     con el mismo porcentaje que usted ya pagó en esta moneda (lo que anotó de comisión ÷ lo
+     operado), con tope de 1 %. Si nunca anotó una comisión, es 0 y no se inventa nada. */
+  var tasa = volumen>0 ? Math.min(0.01, com/volumen) : 0;
   var pr=precioDe(S);
   if(pr!=null) Object.keys(porOp).forEach(function(k2){
     var x=porOp[k2];
     if(x.tipo!=="compra"||!(x.pagado>0)) return;
     x.valorHoy=x.cant*pr;
-    x.gan=x.valorHoy-x.pagado;
+    x.gan=x.valorHoy*(1-tasa)-x.pagado;
     x.pct=x.gan/x.pagado*100;
   });
   var valor = pr!=null ? cantidad*pr : null;
-  var abierto = valor!=null ? valor-costo : null;
+  var feeVenta = valor!=null ? valor*tasa : 0;
+  var abierto = valor!=null ? valor-feeVenta-costo : null;
   return {sym:S, ops:ops, cantidad:cantidad, costo:costo,
     promedio: cantidad>0?costo/cantidad:null, precio:pr, valor:valor, abierto:abierto,
-    abiertoPct:(abierto!=null&&costo>0)?abierto/costo*100:null,
+    abiertoPct:(abierto!=null&&costo>0)?abierto/costo*100:null, feeVenta:feeVenta,
     realizado:realizado, comprado:comprado, vendido:vendido, comision:com,
     nCompras:nCompras, nVentas:nVentas, cerrada: cantidad<=0&&ops.length>0, porOp:porOp};
 }
@@ -4499,6 +4569,25 @@ function futurosDet(){
           /* lo que de verdad hay: lo puesto en operaciones existe aunque falte
              anotar de dónde salió; así las tres líneas siempre suman el total */
           total: T.margenAbierto + (disp>0?disp:0) + T.flotante};
+}
+
+/* v56 · LO QUE LE QUEDA LIBRE PARA OPERAR (Futuros y Backtesting).
+   Luis (12 oct): «si mi cartera es 2.500 y ya puse 872 y 358, solo me quedan 1.269; las ganancias
+   que van abiertas no se pueden gastar hasta cerrar; y una operación que pone 2.500 no tiene sentido».
+   libre = lo que hay (lo puesto + lo ya ganado al CERRAR) menos el margen de lo que está abierto.
+   Las ganancias que aún van flotando NO cuentan. En una prueba, el dinero de la prueba es su capital. */
+function libreOperar(k, pruebaId){
+  var saldo=0, uso=0;
+  if(k==="back"){
+    var p = pruebaId ? BD.pruebas.filter(function(x){ return x.id===pruebaId; })[0] : pruebaActiva();
+    if(!p) return null;
+    var T=carteraFut0(opsDePrueba(p.id)).tot;
+    saldo=(+p.capital||0)+T.gan; uso=T.margenAbierto;
+  } else {
+    var F=futurosDet(); saldo=F.saldo; uso=F.enUso;
+  }
+  var d=saldo-uso;
+  return {saldo:saldo, enUso:uso, libre:d>0?d:0, falta:d<0?-d:0};
 }
 
 /* Lo disponible de los dos bolsillos juntos. Nunca sale negativo: por algo
@@ -5547,13 +5636,21 @@ function heroGrande(titulo, total, gan, dicho, ch, serie, extraHtml, sinMeta){
     '</div>'+
     /* v48 · la meta es de GANANCIA pura (neta de comisiones, sin depósitos ni retiros) */
     (BD.ajustes.meta>0&&!sinMeta
-      ? '<div class="meta"><div class="mb"><i style="width:'+
-        Math.max(0,Math.min(100,gan/BD.ajustes.meta*100)).toFixed(1)+'%"></i></div>'+
-        (gan<0
-          ? '<div class="mt">Meta de ganancia '+usd(BD.ajustes.meta)+' · 0% · va en −'+usd(-gan).replace("-","")+'</div></div>'
-          : '<div class="mt">Meta de ganancia '+usd(BD.ajustes.meta)+' · lleva el '+
-            (gan/BD.ajustes.meta*100).toFixed(0)+'% · le faltan '+
-            usd(Math.max(0,BD.ajustes.meta-gan))+'</div></div>')
+      ? (function(){
+          /* v56 · Luis (12 oct): «la meta casi no se lee, con letra pequeña pasa desapercibida».
+             Ahora es una fila propia: diana + «Meta de ganancia» + el monto, el % grande a la
+             derecha, la barra y debajo «Le faltan $X» / «¡Meta cumplida!». Cada frase es un
+             solo texto, para que se traduzca completa. */
+          var M=BD.ajustes.meta, pc=gan<0?0:gan/M*100, falta=Math.max(0,M-gan);
+          var pie = gan<0 ? '<div class="mFt mal">Va en −'+usd(-gan).replace("-","")+'</div>'
+                  : falta>0 ? '<div class="mFt">Le faltan '+usd(falta)+'</div>'
+                  : '<div class="mFt ok">¡Meta cumplida!</div>';
+          return '<div class="meta"><div class="mHd"><span class="mTx"><i class="mIc">'+IC.diana+'</i>'+
+              '<span>Meta de ganancia</span><b class="mono">'+usd(M)+'</b></span>'+
+              '<span class="mPc mono'+(gan<0?' mal':'')+'">'+pc.toFixed(0)+'%</span></div>'+
+            '<div class="mb"><i style="width:'+Math.max(0,Math.min(100,pc)).toFixed(1)+'%"></i></div>'+
+            pie+'</div>';
+        })()
       : '')+
     (extraHtml||'')+
     '</div></div></div>';
@@ -5675,7 +5772,11 @@ function heroSpot(S, D){
    «ir» hace que la celda se pueda pulsar y lleve a donde dice (igual que las
    tarjetas grandes de la computadora). «tit» pone un rótulo encima (SPOT / FUTUROS). */
 function tiraMarcador(celdas, tit){
-  return (tit?'<div class="marcT">'+esc(tit)+'</div>':'')+'<div class="marc">'+
+  /* v56 · el título de cada mundo: icono con SU color (Spot cian, Futuros morado) y la palabra
+     en el color normal del texto, para que se lea (Luis: «se pierden con ese color») */
+  var MU={Spot:["spot","c2"], Futuros:["fut","c3"]}[tit];
+  return (tit?'<div class="marcT"'+(MU?' style="--mc:var(--'+MU[1]+')"':'')+'>'+
+    (MU?'<span class="mtI">'+IC[MU[0]]+'</span>':'')+'<span class="mtN">'+esc(tit)+'</span></div>':'')+'<div class="marc">'+
     celdas.map(function(c){
       var col=COL_ICO[c.et]||1;
       return '<div class="mrc i'+col+(c.ir?' pulsa':'')+'"'+
@@ -8192,6 +8293,14 @@ function franjaRiesgo(A){
       '<span>Si la deja abierta varias horas, se suma la financiación (funding).</span></div>'+
   '</div>';
 }
+/* v56 · «DISPONIBLE PARA OPERAR»: cuánto le queda libre y cuánto está ya metido en operaciones */
+function filaLibre(A){
+  var L=libreOperar(A.k, A.prueba&&A.prueba.id);
+  if(!L || (L.saldo<=0.005 && L.enUso<=0.005)) return "";
+  return '<div class="frDisp"><div class="fdR"><span class="fdT">Disponible para operar</span>'+
+      '<span class="fdV'+(L.libre<=0.005?' cero':'')+'" data-libre="1">'+usd(L.libre)+'</span></div>'+
+    (L.enUso>0.005?'<div class="fdS">En operaciones '+usd(L.enUso)+' · de '+usd(L.saldo)+'</div>':'')+'</div>';
+}
 /* v46 · en el teléfono, los ajustes de riesgo caben en UNA línea que se abre con un toque */
 function franjaPlegada(A){
   var c=A.cfg, k="fr"+A.k;
@@ -8208,6 +8317,7 @@ function franjaPlegada(A){
       '<div class="frI"><span class="frL">Riesgo por operación</span> <span class="frV"><b>'+pctCorto(c.riesgo)+'</b><small>= '+usdF(riesgoUSD)+'</small></span></div>'+
       '<div class="frI"><span class="frL">Apalancamiento</span> <b>'+(+c.apal||1)+'x</b></div>'+
     '</div>'+
+    filaLibre(A)+
     '<div class="frPie"><span class="frCasa">'+
       (K?'<span translate="no">'+esc(K[1])+'</span>':'<span>Otra</span>')+
       (ordenT?'<span>'+ordenT+'</span>':'')+
@@ -8369,8 +8479,8 @@ function panelOperacion(A, enHoja){
           '<div class="conBtn">'+
             '<input id="fuM" inputmode="decimal" value="'+esc(FU.margenMano)+'" placeholder="'+
               esc(c.cartera?String(Math.round(c.cartera/10)):"100")+'">'+
-            '<button type="button" class="b" id="fuTodo" title="Pone toda su cartera como margen">'+
-              'todo mi capital</button></div></div>'+
+            '<button type="button" class="b" id="fuTodo">'+
+              'todo lo disponible</button></div></div>'+
       '</div>'+
       '<div id="fuLote"></div>'+
     '</div>'+
@@ -8480,6 +8590,14 @@ function botonRegistrar(puede, porque){
   b.classList.toggle("gh", !puede);
 }
 
+/* v56 · «Poner solo lo que me queda»: pasa a «por monto» con todo lo libre */
+function ajustarALoLibre(A, libre){
+  var bm=document.querySelector('#fuModo button[data-modo="monto"]');
+  if(!porMonto() && bm) bm.click();
+  FU.margenMano=paraCasilla(Math.floor(libre*100)/100);
+  var M=document.getElementById("fuM"); if(M) M.value=FU.margenMano;
+  recLote(A);
+}
 function recLote(A){
   var box=document.getElementById("fuLote");
   if(!box) return;
@@ -8605,7 +8723,15 @@ function recLote(A){
   if(R.liqAntes) p.push("Con "+R.apal+"x lo liquidan a "+pctS(100/R.apal,1)+
     " y su stop está a "+pctS(R.distPct,1)+": <b>lo liquidarían antes</b> de que el stop alcance "+
     "a cerrarle. Con <b>"+Math.max(1,R.apalMax)+"x</b> o menos, el stop sí trabaja.");
-  if(R.pasaCartera) p.push(mon
+  /* v56 · se compara contra lo que le QUEDA LIBRE, no contra toda la cartera */
+  var LB=libreOperar(A.k, A.prueba&&A.prueba.id), noAlc=false;
+  if(LB && R.margen>LB.libre+0.005){
+    noAlc=true;
+    p.push(LB.enUso>0.005
+      ? "No le alcanza el dinero: pondría "+usdF(R.margen)+" y solo le quedan "+usd(LB.libre)+
+        " disponibles ("+usd(LB.enUso)+" ya están en operaciones abiertas)."
+      : "No le alcanza el dinero: pondría "+usdF(R.margen)+" y solo le quedan "+usd(LB.libre)+" disponibles.");
+  } else if(R.pasaCartera) p.push(mon
     ? ("Está poniendo "+usdF(R.margen)+" y su cartera es "+usd(R.cartera)+
        ": está poniendo más de lo que dijo que tiene.")
     : ("El margen ("+usdF(R.margen)+") es más que toda su cartera ("+
@@ -8625,12 +8751,17 @@ function recLote(A){
       av.style.display=""; av.className="nota ojo";
       av.innerHTML='<div class="avTit">Antes de entrar, mire esto</div>'+
         p.map(function(x){ return '<div class="avLin">'+x+'</div>'; }).join("")+
+        (!noAlc && LB ? '<div class="avLibre">Después de esta operación le quedarían '+usd(Math.max(0,LB.libre-R.margen))+' disponibles.</div>' : '')+
+        (noAlc && LB.libre>=1 ? '<button type="button" class="b sm ac btAjusta" id="fuAjusta">Poner solo lo que me queda ('+usd(LB.libre)+')</button>' : '')+
         '<div class="avPie">Usted decide. Puede registrarla igual.</div>';
+      var bj=av.querySelector("#fuAjusta");
+      if(bj) bj.onclick=function(){ ajustarALoLibre(A, LB.libre); };
     } else {
       av.style.display=""; av.className="nota";
       av.innerHTML="Pase lo que pase, si se respeta el stop usted pierde <b>"+usdF(R.perdidaSL)+
         "</b>"+(pctCart!=null?" — el "+pctS(pctCart,2)+" de su cartera":"")+". "+
-        "El apalancamiento no cambia eso: solo cambia cuánta plata deja amarrada.";
+        "El apalancamiento no cambia eso: solo cambia cuánta plata deja amarrada."+
+        (LB ? '<div class="avLibre">Después de esta operación le quedarían '+usd(Math.max(0,LB.libre-R.margen))+' disponibles.</div>' : "");
     }
   }
 
@@ -8730,6 +8861,7 @@ function pintarAmbito(k){
   /* v46 · en el teléfono: ajustes en una línea, operaciones abiertas arriba del todo */
   var TEL=esTel();
   h+=(TEL && A.cfg.cartera>0) ? franjaPlegada(A) : franjaRiesgo(A);
+  if(!TEL){ var fl=filaLibre(A); if(fl) h+='<div class="frDispPC">'+fl+'</div>'; }   /* v56 · en la computadora, una línea aparte */
   /* v54 · el botón grande de arriba: registrar una operación nueva es siempre un toque,
      tenga una o veinte abiertas (antes había que deslizar toda la pantalla) */
   if(TEL) h+='<button class="b ac btNueva" id="btNuevaOp">+ '+
@@ -8756,7 +8888,7 @@ function pintarAmbito(k){
   var base;
   if(A.k==="back" && A.prueba){ base=(+A.prueba.capital||cartera); }
   else { var DF=futurosDet(); base=Math.max(0, DF.entro-DF.salio); }
-  var ahoraC = base + T.gan + T.flotante;
+  var ahoraC = base + T.gan;   /* v56 · «Ahora tiene» = solo lo ya CERRADO; lo abierto va en «Abiertas ahora» */
   /* v39 · la línea de cómo va: empieza en 0, suma cada operación cerrada en
      el orden en que se cerró, y termina con lo que ganaría si cerrara ahora */
   var curva=[0]; (function(){
@@ -9059,6 +9191,7 @@ function filaAbierta(e,k){
    Aquí NO se muestra ninguna ganancia: todavía no ha entrado.
    --------------------------------------------------------------------- */
 function cajaProgramadas(progs, k){
+  var LB=libreOperar(k, k==="back"?(pruebaActiva()||{}).id:null);
   return '<div class="caja"><h2><span class="ic">'+IC.alr+'</span>Operaciones programadas'+
     '<span class="chip a">'+progs.length+'</span><span class="sp"></span>'+
     '<span class="mut">esperando a que el precio llegue</span></h2>'+
@@ -9077,7 +9210,8 @@ function cajaProgramadas(progs, k){
         '<td><span data-v="pr" data-s="'+esc(f.sym)+'">'+precio(pr)+'</span></td>'+
         '<td class="opt dn">'+(e.sl!=null?precio(e.sl):"—")+'</td>'+
         '<td class="opt up">'+(e.tp!=null?precio(e.tp):"—")+'</td>'+
-        '<td>'+usdF(e.margen)+'<span class="sub">cuando entre</span></td>'+
+        '<td>'+usdF(e.margen)+'<span class="sub">cuando entre</span>'+
+          (LB&&e.margen>LB.libre+0.005?'<span class="sub dn">Solo hay '+usd(LB.libre)+' libres</span>':'')+'</td>'+
         '<td><span class="espera"><i></i>ESPERANDO</span>'+
           '<span class="sub">'+(e.faltaPct!=null
             ? ("falta "+(e.faltaPct>0?"que suba ":"que baje ")+pctS(Math.abs(e.faltaPct),2))
@@ -9087,29 +9221,40 @@ function cajaProgramadas(progs, k){
           '<button class="b sm" data-edop="'+esc(f.id)+'" data-amb="'+k+'">Editar</button></div></td></tr>';
     }).join("")+'</tbody></table></div>'+
     '<div class="soloTel cp" style="padding-top:0">'+
-    progs.map(function(e){ return filaProgramada(e,k); }).join("")+'</div>'+
+    progs.map(function(e){ return filaProgramada(e,k,LB); }).join("")+'</div>'+
     '<div class="cp" style="padding-top:0"><div class="mut" style="font-size:12px;line-height:1.5">'+
     'Mientras esperan, estas operaciones <b>no suman ni restan nada</b> a su resultado ni a su '+
     'cartera. En cuanto el precio toque la entrada se activan solas, le suena y le aviso.</div></div>'+
     '</div>';
 }
-function filaProgramada(e,k){
-  var f=e.f, pr=precioDe(f.sym);
-  return '<div class="mv prog" style="--fc:'+colDe(f.sym)+'">'+
-    iconoFicha(f,k,34)+
-    '<div class="cab2"><b>'+esc(f.sym)+'</b>'+
-      '<span class="chip '+(f.lado==="SHORT"?"s":"l")+'">'+(f.lado==="SHORT"?"▼ CORTO":"▲ LARGO")+'</span>'+
-      '<span class="chip a">'+e.apal+'x</span>'+
-      '<span class="espera"><i></i>ESPERANDO</span></div>'+
-    '<div class="q" style="flex:1 1 100%">'+
-      '<div class="kv3"><div><span>Entra en</span><b>'+precio(e.entrada)+'</b></div>'+
-        '<div><span>Precio ahora</span><b data-v="pr" data-s="'+esc(f.sym)+'">'+precio(pr)+'</b></div>'+
-        '<div><span>Falta</span><b>'+(e.faltaPct!=null?((e.faltaPct>0?"▲ ":"▼ ")+pctS(Math.abs(e.faltaPct),2)):"—")+'</b></div></div>'+
-      '<div class="kv3 sinBorde"><div><span>Stop</span><b class="dn">'+(e.sl!=null?precio(e.sl):"—")+'</b></div>'+
-        '<div><span>Objetivo</span><b class="up">'+(e.tp!=null?precio(e.tp):"—")+'</b></div>'+
-        '<div><span>Pondrá</span><b>'+usdF(e.margen)+'</b></div></div>'+
+function filaProgramada(e,k,LB){
+  var f=e.f, pr=precioDe(f.sym), abierta=!!UI_OPAB[f.id];
+  var noAlc = LB && e.margen>LB.libre+0.005;
+  /* v56 · una línea que se abre al tocarla, como las operaciones abiertas. Lo que NO se esconde
+     nunca: el aviso de que no alcanza el dinero y los botones «Ya entré» y «Editar». */
+  return '<div class="opProg'+(noAlc?' sinFondos':'')+'">'+
+    '<div class="opL'+(abierta?' abierta':'')+'" style="--fc:'+colDe(f.sym)+'" data-opab="'+esc(f.id)+'">'+
+      '<div class="opIc">'+icono(f.sym,30)+'</div>'+
+      '<div class="opQ">'+
+        '<div class="n1"><b translate="no">'+esc(f.sym)+'</b>'+
+          '<span class="chip '+(f.lado==="SHORT"?"s":"l")+'">'+(f.lado==="SHORT"?"▼ CORTO":"▲ LARGO")+'</span>'+
+          '<span class="chip a">'+e.apal+'x</span></div>'+
+        '<div class="n2"><span>N° '+esc(String(f.n||"—"))+(f.fecha?' · '+fechaCorta(f.fecha):'')+'</span>'+
+          '<span>entra en '+precio(e.entrada)+'</span>'+
+          '<span>hoy <b data-v="pr" data-s="'+esc(f.sym)+'">'+precio(pr)+'</b></span></div>'+
+      '</div>'+
+      '<div class="opD"><span class="espera"><i></i>ESPERANDO</span>'+
+        '<span class="opPct">'+(e.faltaPct!=null?((e.faltaPct>0?"▲ ":"▼ ")+pctS(Math.abs(e.faltaPct),2)):"")+'</span></div>'+
     '</div>'+
-    '<div class="acc">'+
+    '<div class="opDet"'+(abierta?'':' hidden')+' data-det="'+esc(f.id)+'" style="--fc:'+colDe(f.sym)+'">'+
+      '<div class="kv">'+
+        '<div><span>Pondrá</span><b'+(noAlc?' class="dn"':'')+'>'+usdF(e.margen)+'</b></div>'+
+        '<div><span>Tamaño de la operación</span><b>'+(e.valor!=null?usdF(e.valor):"—")+'<small translate="no">'+(e.monedas!=null?cant(e.monedas)+' '+esc(f.sym):'')+'</small></b></div>'+
+        '<div><span>Stop</span><b class="dn">'+(e.sl!=null?precio(e.sl):"—")+'</b></div>'+
+        '<div><span>Objetivo</span><b class="up">'+(e.tp!=null?precio(e.tp):"—")+'</b></div>'+
+      '</div></div>'+
+    (noAlc?'<div class="opAv">No le alcanza el dinero: pondría '+usdF(e.margen)+' y solo le quedan '+usd(LB.libre)+' disponibles.</div>':'')+
+    '<div class="opBtsFijo">'+
       '<button class="b sm vd" data-entrar="'+esc(f.id)+'" data-amb="'+k+'">Ya entré</button>'+
       '<button class="b sm" data-edop="'+esc(f.id)+'" data-amb="'+k+'">Editar</button></div>'+
   '</div>';
@@ -9119,9 +9264,21 @@ function activarOperacion(id,k){
   var A=ambito(k);
   var f=A.lista.filter(function(x){ return x.id===id; })[0];
   if(!f){ aviso("Esa operación ya no existe.",true); return; }
-  f.estado="abierta"; f.horaEntrada=horaYa(); tocar(f);
-  guardar(); repintar();
-  aviso("Listo: la operación de "+esc(f.sym)+" ya cuenta como abierta.");
+  /* v56 · si no alcanza el dinero libre, en Futuros se pregunta de dónde sale (como al registrar una
+     operación abierta); en una prueba no hay de dónde, así que se dice y no se abre */
+  var LB=libreOperar(k, f.prueba), nec=+f.monto||0;
+  var abrirla=function(pago){
+    f.estado="abierta"; f.horaEntrada=horaYa(); delete f.sinFondos; tocar(f);
+    if(pago){ pago.id=idNuevo(); pago.para=f.id; pago.mod=ahoraReal(); BD.ops.push(pago); }
+    guardar(); repintar();
+    aviso("Listo: la operación de "+esc(f.sym)+" ya cuenta como abierta.");
+  };
+  if(LB && nec>LB.libre+0.005){
+    if(k==="fut"){ conQuePagoFut(f, LB.libre, nec-LB.libre, abrirla); return; }
+    aviso("No le alcanza el dinero: pondría "+usdF(nec)+" y solo le quedan "+usd(LB.libre)+" disponibles.",true);
+    return;
+  }
+  abrirla(null);
 }
 
 function cajaDisciplina(T){
@@ -9344,9 +9501,10 @@ function engancharFormulario(c, A){
   if(elM) elM.addEventListener("input", function(){ FU.margenMano=elM.value; recLote(A); });
   var elT=c.querySelector("#fuTodo");
   if(elT) elT.onclick=function(){
-    var cart=+A.cfg.cartera||0;
-    if(!(cart>0)){ aviso("Escriba arriba cuánto es su cartera.",true); return; }
-    FU.margenMano=paraCasilla(cart);
+    /* v56 · antes ponía TODA la cartera aunque ya hubiera operaciones abiertas */
+    var LT=libreOperar(A.k, A.prueba&&A.prueba.id), cart=LT?LT.libre:(+A.cfg.cartera||0);
+    if(!(cart>0)){ aviso("No le queda dinero disponible.",true); return; }
+    FU.margenMano=paraCasilla(Math.floor(cart*100)/100);
     if(elM) elM.value=FU.margenMano;
     recLote(A);
   };
@@ -10027,7 +10185,20 @@ function vigilarCierres(){
       var pr=precioVigente(f.sym); if(pr==null) return;
       /* en un corto se espera que el precio SUBA a la entrada; en un largo, que BAJE */
       var llego = (f.lado==="SHORT") ? (pr>=ent) : (pr<=ent);
-      if(!llego) return;
+      if(!llego){ if(f.sinFondos) delete f.sinFondos; return; }
+      /* v56 · como en la casa de cambio: si el dinero libre no alcanza para el margen, NO se abre.
+         Se avisa una vez; cuando haya dinero (o la edite) se abre sola, o con «Ya entré». */
+      var LB=libreOperar(par[0], f.prueba), nec=+f.monto||0;
+      if(LB && nec>LB.libre+0.005){
+        if(!f.sinFondos){
+          f.sinFondos=1; tocar(f);
+          hechas.push({tipo:par[0], bueno:false,
+            texto:(par[0]==="back"?tr("Backtesting")+" · ":"")+
+              tr("La operación N° "+(f.n||"")+" de "+f.sym+" llegó a su entrada, pero no se activó: pondría "+usd(nec)+" y solo hay "+usd(LB.libre)+" disponibles.")});
+        }
+        return;
+      }
+      delete f.sinFondos;
       f.estado="abierta"; f.horaEntrada=horaYa(); f.fecha=f.fecha||hoy(); tocar(f);
       /* v38 · frases enteras, traducidas una por una ANTES de juntarlas (el
          aviso del teléfono no pasa por la pantalla, así que nadie lo traducía) */
@@ -17430,6 +17601,21 @@ function engancharIdioma(box){
    Se respeta el orden de los huecos tal como salen en español.
    ===================================================================== */
 DIC.en={
+"Después de esta operación le quedarían $# disponibles.":"After this trade you would have $# available.",
+"Disponible para operar":"Available to trade",
+"En operaciones $# · de $#":"In trades $# · of $#",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles ($# ya están en operaciones abiertas).":"Not enough money: it would put in $# and you only have $# available ($# is already in open trades).",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles.":"Not enough money: it would put in $# and you only have $# available.",
+"Poner solo lo que me queda ($#)":"Use only what I have left ($#)",
+"todo lo disponible":"all available",
+"No le queda dinero disponible.":"You have no money available.",
+"Solo hay $# libres":"Only $# free",
+"La operación N° # de @ llegó a su entrada, pero no se activó: pondría $# y solo hay $# disponibles.":"Trade No. # on @ reached its entry but did not open: it would put in $# and only $# is available.",
+"entra en $#":"enters at $#",
+"Meta de ganancia":"Profit goal",
+"Le faltan $#":"$# to go",
+"Va en −$#":"You are at −$#",
+"¡Meta cumplida!":"Goal reached!",
 "· solo para esta operación":"· only for this trade",
 "y # monedas más":"and # more coins",
 "y # moneda más":"and # more coin",
@@ -19374,6 +19560,21 @@ DIC.en={
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
+"Después de esta operación le quedarían $# disponibles.":"Depois desta operação ficariam $# disponíveis.",
+"Disponible para operar":"Disponível para operar",
+"En operaciones $# · de $#":"Em operações $# · de $#",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles ($# ya están en operaciones abiertas).":"O dinheiro não chega: colocaria $# e só lhe restam $# disponíveis ($# já estão em operações abertas).",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles.":"O dinheiro não chega: colocaria $# e só lhe restam $# disponíveis.",
+"Poner solo lo que me queda ($#)":"Pôr só o que me resta ($#)",
+"todo lo disponible":"tudo o disponível",
+"No le queda dinero disponible.":"Não lhe resta dinheiro disponível.",
+"Solo hay $# libres":"Só há $# livres",
+"La operación N° # de @ llegó a su entrada, pero no se activó: pondría $# y solo hay $# disponibles.":"A operação N° # de @ chegou à entrada, mas não foi aberta: colocaria $# e só há $# disponíveis.",
+"entra en $#":"entra em $#",
+"Meta de ganancia":"Meta de lucro",
+"Le faltan $#":"Faltam $#",
+"Va en −$#":"Está em −$#",
+"¡Meta cumplida!":"Meta atingida!",
 "· solo para esta operación":"· só para esta operação",
 "y # monedas más":"e mais # moedas",
 "y # moneda más":"e mais # moeda",
@@ -21311,6 +21512,21 @@ DIC.pt={
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
+"Después de esta operación le quedarían $# disponibles.":"Après cette opération, il vous resterait $# de disponible.",
+"Disponible para operar":"Disponible pour trader",
+"En operaciones $# · de $#":"En positions $# · sur $#",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles ($# ya están en operaciones abiertas).":"L'argent ne suffit pas : cela mettrait $# et il ne vous reste que $# de disponible ($# sont déjà dans des positions ouvertes).",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles.":"L'argent ne suffit pas : cela mettrait $# et il ne vous reste que $# de disponible.",
+"Poner solo lo que me queda ($#)":"Ne mettre que ce qu'il me reste ($#)",
+"todo lo disponible":"tout le disponible",
+"No le queda dinero disponible.":"Il ne vous reste aucun argent disponible.",
+"Solo hay $# libres":"Seulement $# de libre",
+"La operación N° # de @ llegó a su entrada, pero no se activó: pondría $# y solo hay $# disponibles.":"L'opération n° # sur @ a atteint son entrée mais ne s'est pas déclenchée : elle mettrait $# et il n'y a que $# de disponible.",
+"entra en $#":"entre à $#",
+"Meta de ganancia":"Objectif de gain",
+"Le faltan $#":"Il vous manque $#",
+"Va en −$#":"Vous êtes à −$#",
+"¡Meta cumplida!":"Objectif atteint !",
 "· solo para esta operación":"· seulement pour cette opération",
 "y # monedas más":"et # monnaies de plus",
 "y # moneda más":"et # monnaie de plus",
@@ -23248,6 +23464,21 @@ DIC.fr={
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
+"Después de esta operación le quedarían $# disponibles.":"Nach diesem Trade wären noch $# verfügbar.",
+"Disponible para operar":"Verfügbar zum Handeln",
+"En operaciones $# · de $#":"In Trades $# · von $#",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles ($# ya están en operaciones abiertas).":"Das Geld reicht nicht: Es würden $# eingesetzt, aber nur $# sind verfügbar ($# stecken bereits in offenen Trades).",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles.":"Das Geld reicht nicht: Es würden $# eingesetzt, aber nur $# sind verfügbar.",
+"Poner solo lo que me queda ($#)":"Nur einsetzen, was mir bleibt ($#)",
+"todo lo disponible":"alles Verfügbare",
+"No le queda dinero disponible.":"Es ist kein Geld mehr verfügbar.",
+"Solo hay $# libres":"Nur $# frei",
+"La operación N° # de @ llegó a su entrada, pero no se activó: pondría $# y solo hay $# disponibles.":"Trade Nr. # auf @ hat den Einstieg erreicht, wurde aber nicht geöffnet: Es würden $# eingesetzt, aber nur $# sind verfügbar.",
+"entra en $#":"Einstieg $#",
+"Meta de ganancia":"Gewinnziel",
+"Le faltan $#":"Es fehlen $#",
+"Va en −$#":"Sie liegen bei −$#",
+"¡Meta cumplida!":"Ziel erreicht!",
 "· solo para esta operación":"· nur für diesen Trade",
 "y # monedas más":"und # weitere Münzen",
 "y # moneda más":"und # weitere Münze",
@@ -25185,6 +25416,21 @@ DIC.de={
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
+"Después de esta operación le quedarían $# disponibles.":"Dopo questa operazione le resterebbero $# disponibili.",
+"Disponible para operar":"Disponibile per operare",
+"En operaciones $# · de $#":"In operazioni $# · su $#",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles ($# ya están en operaciones abiertas).":"Il denaro non basta: metterebbe $# e le restano solo $# disponibili ($# sono già in operazioni aperte).",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles.":"Il denaro non basta: metterebbe $# e le restano solo $# disponibili.",
+"Poner solo lo que me queda ($#)":"Metti solo quello che mi resta ($#)",
+"todo lo disponible":"tutto il disponibile",
+"No le queda dinero disponible.":"Non le resta denaro disponibile.",
+"Solo hay $# libres":"Solo $# liberi",
+"La operación N° # de @ llegó a su entrada, pero no se activó: pondría $# y solo hay $# disponibles.":"L'operazione n° # su @ ha raggiunto l'ingresso ma non si è aperta: metterebbe $# e ci sono solo $# disponibili.",
+"entra en $#":"entra a $#",
+"Meta de ganancia":"Obiettivo di guadagno",
+"Le faltan $#":"Le mancano $#",
+"Va en −$#":"È a −$#",
+"¡Meta cumplida!":"Obiettivo raggiunto!",
 "· solo para esta operación":"· solo per questa operazione",
 "y # monedas más":"e altre # monete",
 "y # moneda más":"e altra # moneta",
@@ -27122,6 +27368,21 @@ DIC.it={
 };
 /* NEDERLANDS · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.nl={
+"Después de esta operación le quedarían $# disponibles.":"Na deze trade zou u nog $# beschikbaar hebben.",
+"Disponible para operar":"Beschikbaar om te handelen",
+"En operaciones $# · de $#":"In trades $# · van $#",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles ($# ya están en operaciones abiertas).":"Het geld is niet genoeg: dit zou $# inzetten en u hebt maar $# beschikbaar ($# zit al in open trades).",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles.":"Het geld is niet genoeg: dit zou $# inzetten en u hebt maar $# beschikbaar.",
+"Poner solo lo que me queda ($#)":"Alleen inzetten wat ik over heb ($#)",
+"todo lo disponible":"alles wat beschikbaar is",
+"No le queda dinero disponible.":"Er is geen geld meer beschikbaar.",
+"Solo hay $# libres":"Slechts $# vrij",
+"La operación N° # de @ llegó a su entrada, pero no se activó: pondría $# y solo hay $# disponibles.":"Trade nr. # op @ bereikte de instap maar werd niet geopend: er zou $# worden ingezet en er is maar $# beschikbaar.",
+"entra en $#":"stapt in op $#",
+"Meta de ganancia":"Winstdoel",
+"Le faltan $#":"Nog $# te gaan",
+"Va en −$#":"U staat op −$#",
+"¡Meta cumplida!":"Doel bereikt!",
 "· solo para esta operación":"· alleen voor deze trade",
 "y # monedas más":"en nog # munten",
 "y # moneda más":"en nog # munt",
@@ -29345,6 +29606,21 @@ DIC.nl={
 };
 /* POLSKI · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.pl={
+"Después de esta operación le quedarían $# disponibles.":"Po tej transakcji zostałoby $# dostępnych środków.",
+"Disponible para operar":"Dostępne do handlu",
+"En operaciones $# · de $#":"W transakcjach $# · z $#",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles ($# ya están en operaciones abiertas).":"Brakuje pieniędzy: zaangażowałoby $#, a dostępne jest tylko $# ($# jest już w otwartych transakcjach).",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles.":"Brakuje pieniędzy: zaangażowałoby $#, a dostępne jest tylko $#.",
+"Poner solo lo que me queda ($#)":"Zaangażuj tylko to, co mi zostało ($#)",
+"todo lo disponible":"całość dostępnych środków",
+"No le queda dinero disponible.":"Nie zostały żadne dostępne środki.",
+"Solo hay $# libres":"Tylko $# wolne",
+"La operación N° # de @ llegó a su entrada, pero no se activó: pondría $# y solo hay $# disponibles.":"Transakcja nr # na @ osiągnęła wejście, ale się nie otworzyła: zaangażowałaby $#, a dostępne jest tylko $#.",
+"entra en $#":"wejście $#",
+"Meta de ganancia":"Cel zysku",
+"Le faltan $#":"Brakuje $#",
+"Va en −$#":"Jest na −$#",
+"¡Meta cumplida!":"Cel osiągnięty!",
 "· solo para esta operación":"· tylko dla tej transakcji",
 "y # monedas más":"i jeszcze # monet",
 "y # moneda más":"i jeszcze # moneta",
@@ -31568,6 +31844,21 @@ DIC.pl={
 };
 /* TÜRKÇE · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.tr={
+"Después de esta operación le quedarían $# disponibles.":"Bu işlemden sonra $# kullanılabilir paranız kalır.",
+"Disponible para operar":"İşlem için kullanılabilir",
+"En operaciones $# · de $#":"İşlemlerde $# · toplam $#",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles ($# ya están en operaciones abiertas).":"Para yetmiyor: $# koyacak, ama yalnızca $# kullanılabilir durumda ($# zaten açık işlemlerde).",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles.":"Para yetmiyor: $# koyacak, ama yalnızca $# kullanılabilir durumda.",
+"Poner solo lo que me queda ($#)":"Yalnızca kalanı kullan ($#)",
+"todo lo disponible":"tüm kullanılabilir",
+"No le queda dinero disponible.":"Kullanılabilir paranız kalmadı.",
+"Solo hay $# libres":"Yalnızca $# boş",
+"La operación N° # de @ llegó a su entrada, pero no se activó: pondría $# y solo hay $# disponibles.":"@ üzerindeki işlem no. # girişe ulaştı ama açılmadı: $# koyacaktı, ancak yalnızca $# kullanılabilir.",
+"entra en $#":"giriş $#",
+"Meta de ganancia":"Kâr hedefi",
+"Le faltan $#":"Kalan $#",
+"Va en −$#":"Şu an −$#",
+"¡Meta cumplida!":"Hedefe ulaşıldı!",
 "· solo para esta operación":"· sadece bu işlem için",
 "y # monedas más":"ve # coin daha",
 "y # moneda más":"ve # coin daha",
@@ -33791,6 +34082,21 @@ DIC.tr={
 };
 /* РУССКИЙ · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ru={
+"Después de esta operación le quedarían $# disponibles.":"После этой сделки останется $# доступных средств.",
+"Disponible para operar":"Доступно для сделок",
+"En operaciones $# · de $#":"В сделках $# · из $#",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles ($# ya están en operaciones abiertas).":"Денег не хватает: потребуется $#, а доступно только $# ($# уже в открытых сделках).",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles.":"Денег не хватает: потребуется $#, а доступно только $#.",
+"Poner solo lo que me queda ($#)":"Взять только остаток ($#)",
+"todo lo disponible":"всё доступное",
+"No le queda dinero disponible.":"Свободных денег не осталось.",
+"Solo hay $# libres":"Свободно только $#",
+"La operación N° # de @ llegó a su entrada, pero no se activó: pondría $# y solo hay $# disponibles.":"Сделка № # по @ достигла входа, но не открылась: нужно $#, а доступно только $#.",
+"entra en $#":"вход $#",
+"Meta de ganancia":"Цель по прибыли",
+"Le faltan $#":"Осталось $#",
+"Va en −$#":"Сейчас −$#",
+"¡Meta cumplida!":"Цель достигнута!",
 "· solo para esta operación":"· только для этой сделки",
 "y # monedas más":"и ещё # монет",
 "y # moneda más":"и ещё # монета",
@@ -36014,6 +36320,21 @@ DIC.ru={
 };
 /* УКРАЇНСЬКА · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.uk={
+"Después de esta operación le quedarían $# disponibles.":"Після цієї угоди залишиться $# доступних коштів.",
+"Disponible para operar":"Доступно для угод",
+"En operaciones $# · de $#":"В угодах $# · із $#",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles ($# ya están en operaciones abiertas).":"Грошей не вистачає: знадобиться $#, а доступно лише $# ($# уже у відкритих угодах).",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles.":"Грошей не вистачає: знадобиться $#, а доступно лише $#.",
+"Poner solo lo que me queda ($#)":"Взяти лише залишок ($#)",
+"todo lo disponible":"усе доступне",
+"No le queda dinero disponible.":"Вільних грошей не залишилося.",
+"Solo hay $# libres":"Вільно лише $#",
+"La operación N° # de @ llegó a su entrada, pero no se activó: pondría $# y solo hay $# disponibles.":"Угода № # за @ досягла входу, але не відкрилася: потрібно $#, а доступно лише $#.",
+"entra en $#":"вхід $#",
+"Meta de ganancia":"Ціль із прибутку",
+"Le faltan $#":"Залишилося $#",
+"Va en −$#":"Зараз −$#",
+"¡Meta cumplida!":"Ціль досягнуто!",
 "· solo para esta operación":"· лише для цієї угоди",
 "y # monedas más":"і ще # монет",
 "y # moneda más":"і ще # монета",
@@ -38237,6 +38558,21 @@ DIC.uk={
 };
 /* BAHASA INDONESIA · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.id={
+"Después de esta operación le quedarían $# disponibles.":"Setelah operasi ini, tersisa $# yang tersedia.",
+"Disponible para operar":"Tersedia untuk trading",
+"En operaciones $# · de $#":"Dalam posisi $# · dari $#",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles ($# ya están en operaciones abiertas).":"Uang tidak cukup: akan menaruh $#, sedangkan yang tersedia hanya $# ($# sudah ada di posisi terbuka).",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles.":"Uang tidak cukup: akan menaruh $#, sedangkan yang tersedia hanya $#.",
+"Poner solo lo que me queda ($#)":"Pakai hanya sisa saya ($#)",
+"todo lo disponible":"semua yang tersedia",
+"No le queda dinero disponible.":"Tidak ada uang tersedia.",
+"Solo hay $# libres":"Hanya $# bebas",
+"La operación N° # de @ llegó a su entrada, pero no se activó: pondría $# y solo hay $# disponibles.":"Posisi No. # di @ mencapai harga masuk tetapi tidak dibuka: butuh $#, sedangkan yang tersedia hanya $#.",
+"entra en $#":"masuk di $#",
+"Meta de ganancia":"Target keuntungan",
+"Le faltan $#":"Kurang $#",
+"Va en −$#":"Saat ini −$#",
+"¡Meta cumplida!":"Target tercapai!",
 "· solo para esta operación":"· hanya untuk transaksi ini",
 "y # monedas más":"dan # koin lagi",
 "y # moneda más":"dan # koin lagi",
@@ -40460,6 +40796,21 @@ DIC.id={
 };
 /* TIẾNG VIỆT · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.vi={
+"Después de esta operación le quedarían $# disponibles.":"Sau lệnh này, bạn còn $# khả dụng.",
+"Disponible para operar":"Khả dụng để giao dịch",
+"En operaciones $# · de $#":"Đang trong lệnh $# · trên tổng $#",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles ($# ya están en operaciones abiertas).":"Không đủ tiền: sẽ đặt $#, mà bạn chỉ còn $# khả dụng ($# đã nằm trong các lệnh đang mở).",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles.":"Không đủ tiền: sẽ đặt $#, mà bạn chỉ còn $# khả dụng.",
+"Poner solo lo que me queda ($#)":"Chỉ đặt phần còn lại ($#)",
+"todo lo disponible":"toàn bộ khả dụng",
+"No le queda dinero disponible.":"Bạn không còn tiền khả dụng.",
+"Solo hay $# libres":"Chỉ còn $# trống",
+"La operación N° # de @ llegó a su entrada, pero no se activó: pondría $# y solo hay $# disponibles.":"Lệnh số # của @ đã chạm giá vào nhưng chưa mở: cần $#, mà chỉ còn $# khả dụng.",
+"entra en $#":"vào tại $#",
+"Meta de ganancia":"Mục tiêu lãi",
+"Le faltan $#":"Còn thiếu $#",
+"Va en −$#":"Hiện đang −$#",
+"¡Meta cumplida!":"Đã đạt mục tiêu!",
 "· solo para esta operación":"· chỉ cho lệnh này",
 "y # monedas más":"và # coin nữa",
 "y # moneda más":"và # coin nữa",
@@ -42683,6 +43034,21 @@ DIC.vi={
 };
 /* हिन्दी · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.hi={
+"Después de esta operación le quedarían $# disponibles.":"इस ट्रेड के बाद $# उपलब्ध रहेंगे।",
+"Disponible para operar":"ट्रेड के लिए उपलब्ध",
+"En operaciones $# · de $#":"ट्रेडों में $# · कुल $# में से",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles ($# ya están en operaciones abiertas).":"पैसे कम पड़ रहे हैं: इसमें $# लगेंगे, पर सिर्फ़ $# उपलब्ध हैं ($# पहले से खुले ट्रेडों में हैं)।",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles.":"पैसे कम पड़ रहे हैं: इसमें $# लगेंगे, पर सिर्फ़ $# उपलब्ध हैं।",
+"Poner solo lo que me queda ($#)":"सिर्फ़ जो बचा है वही लगाएँ ($#)",
+"todo lo disponible":"सारा उपलब्ध",
+"No le queda dinero disponible.":"कोई पैसा उपलब्ध नहीं बचा है।",
+"Solo hay $# libres":"सिर्फ़ $# खाली हैं",
+"La operación N° # de @ llegó a su entrada, pero no se activó: pondría $# y solo hay $# disponibles.":"@ का ट्रेड नं. # एंट्री पर पहुँचा, पर खुला नहीं: $# चाहिए थे, जबकि सिर्फ़ $# उपलब्ध हैं।",
+"entra en $#":"एंट्री $#",
+"Meta de ganancia":"मुनाफ़े का लक्ष्य",
+"Le faltan $#":"$# बाकी",
+"Va en −$#":"अभी −$# पर",
+"¡Meta cumplida!":"लक्ष्य पूरा हुआ!",
 "· solo para esta operación":"· सिर्फ़ इस ट्रेड के लिए",
 "y # monedas más":"और # कॉइन",
 "y # moneda más":"और # कॉइन",
@@ -44906,6 +45272,21 @@ DIC.hi={
 };
 /* 日本語 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ja={
+"Después de esta operación le quedarían $# disponibles.":"この取引のあと、使える資金は$#になります。",
+"Disponible para operar":"取引に使える額",
+"En operaciones $# · de $#":"取引中 $# · 全体 $#",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles ($# ya están en operaciones abiertas).":"資金が足りません：$#を使いますが、使えるのは$#だけです（$#はすでに建玉中です）。",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles.":"資金が足りません：$#を使いますが、使えるのは$#だけです。",
+"Poner solo lo que me queda ($#)":"残りの金額だけ使う（$#）",
+"todo lo disponible":"使える分すべて",
+"No le queda dinero disponible.":"使える資金が残っていません。",
+"Solo hay $# libres":"空きは$#のみ",
+"La operación N° # de @ llegó a su entrada, pero no se activó: pondría $# y solo hay $# disponibles.":"@の取引No.#がエントリー価格に達しましたが、開始されませんでした：$#が必要ですが、使えるのは$#だけです。",
+"entra en $#":"エントリー$#",
+"Meta de ganancia":"利益目標",
+"Le faltan $#":"あと$#",
+"Va en −$#":"現在 −$#",
+"¡Meta cumplida!":"目標達成！",
 "· solo para esta operación":"· この取引だけ",
 "y # monedas más":"ほかに # 銘柄",
 "y # moneda más":"ほかに # 銘柄",
@@ -47129,6 +47510,21 @@ DIC.ja={
 };
 /* 한국어 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ko={
+"Después de esta operación le quedarían $# disponibles.":"이 거래 후 사용 가능한 금액은 $#가 됩니다.",
+"Disponible para operar":"거래 가능 금액",
+"En operaciones $# · de $#":"거래 중 $# · 전체 $#",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles ($# ya están en operaciones abiertas).":"돈이 부족합니다: $#가 필요하지만 사용 가능한 금액은 $#뿐입니다($#는 이미 열린 거래에 들어 있습니다).",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles.":"돈이 부족합니다: $#가 필요하지만 사용 가능한 금액은 $#뿐입니다.",
+"Poner solo lo que me queda ($#)":"남은 금액만 사용 ($#)",
+"todo lo disponible":"가능한 금액 전부",
+"No le queda dinero disponible.":"사용 가능한 돈이 남아 있지 않습니다.",
+"Solo hay $# libres":"여유 금액 $#뿐",
+"La operación N° # de @ llegó a su entrada, pero no se activó: pondría $# y solo hay $# disponibles.":"@의 거래 No. #가 진입 가격에 도달했지만 열리지 않았습니다: $#가 필요하지만 사용 가능한 금액은 $#뿐입니다.",
+"entra en $#":"진입 $#",
+"Meta de ganancia":"수익 목표",
+"Le faltan $#":"$# 남음",
+"Va en −$#":"현재 −$#",
+"¡Meta cumplida!":"목표 달성!",
 "· solo para esta operación":"· 이 거래에만 적용",
 "y # monedas más":"외 # 개 코인",
 "y # moneda más":"외 # 개 코인",
@@ -49352,6 +49748,21 @@ DIC.ko={
 };
 /* 中文（简体） · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.zh={
+"Después de esta operación le quedarían $# disponibles.":"此笔交易后，可用资金还剩$#。",
+"Disponible para operar":"可用于交易",
+"En operaciones $# · de $#":"交易中 $# · 共 $#",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles ($# ya están en operaciones abiertas).":"资金不足：将投入$#，但可用的只有$#（$#已在未平仓交易中）。",
+"No le alcanza el dinero: pondría $# y solo le quedan $# disponibles.":"资金不足：将投入$#，但可用的只有$#。",
+"Poner solo lo que me queda ($#)":"只用剩余的资金（$#）",
+"todo lo disponible":"全部可用",
+"No le queda dinero disponible.":"没有可用的资金了。",
+"Solo hay $# libres":"仅有$#空闲",
+"La operación N° # de @ llegó a su entrada, pero no se activó: pondría $# y solo hay $# disponibles.":"@的第#号交易已到达入场价，但未开仓：需要$#，可用的只有$#。",
+"entra en $#":"入场 $#",
+"Meta de ganancia":"盈利目标",
+"Le faltan $#":"还差 $#",
+"Va en −$#":"目前 −$#",
+"¡Meta cumplida!":"目标已达成！",
 "· solo para esta operación":"· 仅用于这笔交易",
 "y # monedas más":"还有 # 个币种",
 "y # moneda más":"还有 # 个币种",
