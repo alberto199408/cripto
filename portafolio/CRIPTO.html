@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="57">
+<meta name="v" content="58">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -890,6 +890,9 @@ a:hover{color:var(--ac2)}
 .frDispPC .frDisp .fdR{justify-content:flex-start;gap:12px}
 .btAjusta{margin-top:8px;width:100%;justify-content:center}
 .avLibre{margin-top:6px;font-weight:700}
+/* v57 · la comisión de cada operación del historial, en su propia línea */
+.mv .q .l2.lCom{margin-top:3px;font-size:12px;color:var(--t2)}
+.mv .q .l2.lCom .mut{color:var(--t3)}
 /* operaciones programadas del teléfono: una línea que se abre; aviso y botones siempre a la vista */
 .opProg{margin-bottom:9px}
 .opProg .opL{margin-bottom:0}
@@ -2131,7 +2134,7 @@ body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+8)>h2 .ic{background:linear-grad
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por su cuenta de Google.
    ===================================================================== */
-var VERSION="57";
+var VERSION="58";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -4387,7 +4390,9 @@ function estadoDe(sym){
      no contaba lo que costaría vender. La comisión de vender todavía no existe, así que se calcula
      con el mismo porcentaje que usted ya pagó en esta moneda (lo que anotó de comisión ÷ lo
      operado), con tope de 1 %. Si nunca anotó una comisión, es 0 y no se inventa nada. */
-  var tasa = volumen>0 ? Math.min(0.01, com/volumen) : 0;
+  /* v57 · si en esta moneda nunca se anotó comisión, se usa la tarifa de spot de la casa donde la tiene */
+  var casaS=(ops.filter(function(o){ return o.casa; }).slice(-1)[0]||{}).casa;
+  var tasa = volumen>0 && com>0 ? Math.min(0.01, com/volumen) : (ops.length&&!esEstable(S) ? tasaSpot(casaS)/100 : 0);
   var pr=precioDe(S);
   if(pr!=null) Object.keys(porOp).forEach(function(k2){
     var x=porOp[k2];
@@ -4569,13 +4574,16 @@ function futurosDet(){
   });
   var T=carteraFut(BD.fut).tot;
   var saldo = entro - salio + T.gan;
-  var disp  = saldo - T.margenAbierto;
-  return {entro:entro, salio:salio, realizado:T.gan, enUso:T.margenAbierto,
+  /* v57 · al abrir, la casa ya le cobró la comisión de entrar (y la financiación de cada 8 h):
+     ese dinero ya no está disponible, aunque en el saldo se descuente recién al cerrar */
+  var cobrado = T.costoAb||0;
+  var disp  = saldo - T.margenAbierto - cobrado;
+  return {entro:entro, salio:salio, realizado:T.gan, enUso:T.margenAbierto, cobradoAb:cobrado,
           flotante:T.flotante, saldo:saldo,
           disponible: disp>0?disp:0, descubierto: disp<-0.005?-disp:0,
           /* lo que de verdad hay: lo puesto en operaciones existe aunque falte
              anotar de dónde salió; así las tres líneas siempre suman el total */
-          total: T.margenAbierto + (disp>0?disp:0) + T.flotante};
+          total: T.margenAbierto + cobrado + (disp>0?disp:0) + T.flotante};
 }
 
 /* v56 · LO QUE LE QUEDA LIBRE PARA OPERAR (Futuros y Backtesting).
@@ -4584,17 +4592,17 @@ function futurosDet(){
    libre = lo que hay (lo puesto + lo ya ganado al CERRAR) menos el margen de lo que está abierto.
    Las ganancias que aún van flotando NO cuentan. En una prueba, el dinero de la prueba es su capital. */
 function libreOperar(k, pruebaId){
-  var saldo=0, uso=0;
+  var saldo=0, uso=0, cob=0;
   if(k==="back"){
     var p = pruebaId ? BD.pruebas.filter(function(x){ return x.id===pruebaId; })[0] : pruebaActiva();
     if(!p) return null;
     var T=carteraFut0(opsDePrueba(p.id)).tot;
-    saldo=(+p.capital||0)+T.gan; uso=T.margenAbierto;
+    saldo=(+p.capital||0)+T.gan; uso=T.margenAbierto; cob=T.costoAb||0;
   } else {
-    var F=futurosDet(); saldo=F.saldo; uso=F.enUso;
+    var F=futurosDet(); saldo=F.saldo; uso=F.enUso; cob=F.cobradoAb||0;
   }
-  var d=saldo-uso;
-  return {saldo:saldo, enUso:uso, libre:d>0?d:0, falta:d<0?-d:0};
+  var d=saldo-uso-cob;
+  return {saldo:saldo, enUso:uso, cobrado:cob, libre:d>0?d:0, falta:d<0?-d:0};
 }
 
 /* Lo disponible de los dos bolsillos juntos. Nunca sale negativo: por algo
@@ -4640,9 +4648,25 @@ function gananciasTodo(){
 function conSignoUsd(x){ return (x>=0?"+":"−")+usd(Math.abs(x)); }
 /* v56 · lo que deja el stop y el objetivo, YA con la comisión y con su signo de verdad:
    un stop movido a ganancia (stop que asegura) gana, no pierde; un objetivo mal puesto pierde. */
-function netoSl(e){ return e.perSl!=null ? e.perSl-e.com : null; }
-function netoTp(e){ return e.ganTp!=null ? e.ganTp-e.com : null; }
+function netoSl(e){ return e.perSl!=null ? e.perSl-e.comSl : null; }
+function netoTp(e){ return e.ganTp!=null ? e.ganTp-e.comTp : null; }
 function usdS(x){ return (x>=0?"+":"−")+usdF(Math.abs(x)); }
+/* v57 · la comisión de una operación, en palabras: «comisión $35,44 (abrir $17,94 + cerrar $17,50)» */
+function parteCom(e){ return '<span>(abrir '+usdF(e.comA)+' + cerrar '+usdF(e.comC)+')</span>'; }
+function textoFund(e){
+  if(Math.abs(e.fund||0)<0.005) return "";
+  return e.fund>0 ? 'financiación '+usdF(e.fund) : 'le pagaron '+usdF(-e.fund)+' de financiación';
+}
+function pieFund(e){
+  if(e.fundFija) return "la que usted anotó";
+  if(!e.nFund) return "todavía ningún cobro (cada 8 h)";
+  return plural(e.nFund,"cobro","cobros")+" de "+pctCorto(FUND_8H)+" cada 8 h";
+}
+function lineaComOp(e){
+  var t=textoFund(e);
+  return '<span>comisión '+usdF(e.comTr)+'</span> '+parteCom(e).replace('<span>','<span class="mut">')+
+    (t?' · <span>'+t+'</span>':'');
+}
 function pieSl(e){ return e.sl==null ? "sin stop" : (e.slLiq&&e.liq!=null ? "lo liquidan antes, en "+precio(e.liq) : "en "+precio(e.sl)); }
 function textoDeDonde(G){
   return (G.spot||G.fut) ? ("spot "+conSignoUsd(G.spot)+" · futuros "+conSignoUsd(G.fut))
@@ -4702,6 +4726,56 @@ function comisionesTotales(){ return comisionesDet().total; }
      % de ganancia = ese movimiento × apalancamiento, sobre el margen
      ganancia      = margen × % de ganancia − comisión
    ===================================================================== */
+/* =====================================================================
+   v57 · LA COMISIÓN DE CADA OPERACIÓN DE FUTUROS, CALCULADA SOLA
+   Luis (12 oct): «debería permitir ver la comisión de cada operación; cobra al abrir y al
+   cerrar; tiene que ver el apalancamiento, la cantidad, el tiempo… si uno cierra una
+   operación debería calcularse automáticamente, para cada criptomoneda».
+   Así se calcula, para CADA operación, con la tarifa de la casa y del tipo de orden:
+     abrir   = monedas × precio de ENTRADA × tarifa      (monedas = margen × apalancamiento ÷ entrada)
+     cerrar  = monedas × precio de SALIDA  × tarifa      (abierta: al precio de ahora; antes se usaba
+                                                          el de entrada para las dos)
+     tiempo  = financiación (funding): cada 8 horas (00:00, 08:00 y 16:00 UTC) se paga o se cobra
+               un % del tamaño. Se estima con la tasa normal de las casas (0,01 % cada 8 h): el
+               LARGO paga y el CORTO cobra. La real cambia cada 8 horas; si la sabe, la escribe.
+   Si usted escribe la comisión real que le cobró su casa (f.comFija) o la financiación real
+   (f.fund), manda lo suyo. Las operaciones viejas que solo guardaban un total: si ese total era
+   el cálculo automático, se vuelve a calcular bien; si era un número que usted escribió, se respeta.
+   ===================================================================== */
+var FUND_8H=0.01;
+function comModelo(f, valor){
+  if(f.comFija!=null && f.comFija!=="" && isFinite(+f.comFija)) return {pct:null, fija:+f.comFija};
+  if(f.comPct!=null && f.comPct!=="" && isFinite(+f.comPct)) return {pct:+f.comPct, fija:null};
+  var c=+f.com||0;
+  if(!(c>0)) return {pct:0, fija:null};
+  if(valor>0){
+    var ts=[0.02,0.04,0.05,0.055,0.06];
+    CASAS_FUT.forEach(function(x){ ts.push(x[2],x[3]); });
+    for(var i=0;i<ts.length;i++) if(ts[i]>0 && Math.abs(c-2*valor*ts[i]/100)<=1e-6+valor*1e-12) return {pct:ts[i], fija:null};
+  }
+  return {pct:null, fija:c};
+}
+function msDe(fecha, hora){
+  if(!fecha) return null;
+  var a=String(fecha).split("-"), h=String(hora||"12:00").split(":");
+  var d=new Date(+a[0], (+a[1]||1)-1, +a[2]||1, +h[0]||0, +h[1]||0);
+  return isNaN(d.getTime()) ? null : d.getTime();
+}
+/* cuántas veces cobró la financiación entre que entró y que salió (o ahora) */
+function vecesFunding(f){
+  var fe=f.fechaEntrada||f.fecha, t0=msDe(fe, f.horaEntrada||f.hora);
+  if(t0==null) return 0;
+  var t1;
+  if(f.estado==="abierta") t1=Date.now();
+  else if(f.estado==="cerrada"){
+    var fc=f.cierre||fe;
+    if(!f.horaCierre && fc===fe) return 0;          /* cerrada el mismo día sin hora: no se sabe, 0 */
+    t1=msDe(fc, f.horaCierre||"12:00");
+  } else return 0;
+  if(t1==null||!(t1>t0)) return 0;
+  var H8=8*3600e3;
+  return Math.max(0, Math.floor(t1/H8)-Math.floor(t0/H8));
+}
 function estadoOp(f){
   var margen=+f.monto||0, apal=+f.apal||1, ent=+f.entrada||0;
   var valor=margen*apal;
@@ -4717,7 +4791,21 @@ function estadoOp(f){
     pctMargen=(+f.pct)*100;
     pctPrecio= apal>0 ? pctMargen/apal : null;
   }
-  var com=+f.com||0;
+  /* v57 · la comisión de ESTA operación: abrir + cerrar (al precio de salida) + el tiempo */
+  var CM=comModelo(f, valor), prAhora=(sal==null&&f.sym&&f.estado==="abierta")?precioDe(f.sym):null;
+  var pxCierre = sal!=null ? sal : (prAhora!=null ? prAhora : ent);
+  var comA, comC;
+  if(CM.fija!=null){
+    var tot0=ent+pxCierre; comA=tot0>0?CM.fija*ent/tot0:CM.fija/2; comC=CM.fija-comA;
+  } else { comA=monedas*ent*CM.pct/100; comC=monedas*pxCierre*CM.pct/100; }
+  var nFund=vecesFunding(f);
+  var fundEst=cent((signo>0?1:-1)*valor*FUND_8H/100*nFund);
+  var fund = (f.fund!=null&&f.fund!==""&&isFinite(+f.fund)) ? +f.fund : (f.estado==="programada"?0:fundEst);
+  comA=cent(comA); comC=cent(comC);
+  var comTr=cent(comA+comC);
+  var com=cent(comTr+fund);
+  /* lo que costaría cerrar en el objetivo o en el stop (la de cerrar cambia con el precio) */
+  var comEn=function(px){ return CM.fija!=null ? com : cent(comA+monedas*px*CM.pct/100+fund); };
   var gan = pctMargen!=null ? cent(margen*pctMargen/100-com) : null;
 
   var liq = (ent>0&&apal>1)
@@ -4731,19 +4819,20 @@ function estadoOp(f){
   var sl=(f.sl!=null&&f.sl!=="")?+f.sl:null;
   var ganTp=(tp!=null&&ent>0)?margen*(signo*(tp-ent)/ent*100*apal)/100:null;
   var perSl=(sl!=null&&ent>0)?margen*(signo*(sl-ent)/ent*100*apal)/100:null;
+  var comTp = tp!=null ? comEn(tp) : com, comSl = sl!=null ? comEn(sl) : com;
   /* v56 · Luis (12 oct): «¿cómo me deja poner un stop que pierde $63.000 si empecé con $10.000?».
      Con margen aislado no se pierde más que lo que puso. Si el stop queda MÁS LEJOS que la
      liquidación, lo liquidan antes de llegar al stop: pierde el margen y ni un centavo más.
      perSl se recorta para que «perSl − comisión» nunca baje de −margen, y slLiq lo dice. */
   var slLiq = (sl!=null&&liq!=null) ? ((f.lado==="SHORT") ? sl>=liq : sl<=liq) : false;
-  if(perSl!=null && margen>0 && (slLiq || perSl-com < -margen)) perSl = -margen+com;
+  if(perSl!=null && margen>0 && (slLiq || perSl-comSl < -margen)) perSl = -margen+comSl;
   /* v42 · la RELACIÓN se sacaba con los números ANTES de comisión, pero los
      dos recuadros de al lado («ahí gana» y «ahí pierde») la restan. El
      usuario dividía lo que veía y le salía otro número: 99,50 / 20,50 es
      4,85 y la ficha decía 5,00. Se mide con lo mismo que se enseña. */
   var rr=null;
   if(ganTp!=null&&perSl!=null&&perSl<0){
-    var ganN=ganTp-com, perN=Math.abs(perSl)+com;
+    var ganN=ganTp-comTp, perN=Math.abs(perSl)+comSl;
     rr = perN>0 ? ganN/perN : null;
   }
 
@@ -4782,7 +4871,9 @@ function estadoOp(f){
   return {f:f, margen:margen, apal:apal, entrada:ent, valor:valor, monedas:monedas,
     salida:sal, pctPrecio:pctPrecio, pct: pctMargen!=null?pctMargen/100:null,
     pctNeto:pctNeto, pctFlotNeto:pctFlotNeto,
-    pctMargen:pctMargen, gan:gan, com:com, liq:liq, liquidado:liquidado, topado:topado,
+    pctMargen:pctMargen, gan:gan, com:com, comA:comA, comC:comC, comTr:comTr, fund:fund, fundEst:fundEst,
+    nFund:nFund, comPct:CM.pct, comFija:CM.fija, fundFija:(f.fund!=null&&f.fund!==""), comTp:comTp, comSl:comSl,
+    liq:liq, liquidado:liquidado, topado:topado,
     enPeligro:enPeligro, tp:tp, sl:sl, ganTp:ganTp, perSl:perSl, rr:rr, slLiq:slLiq,
     flot:flot, pctFlot:pctFlot, abierta: f.estado==="abierta",
     programada:programada, falta:falta, faltaPct:faltaPct, llego:llego};
@@ -4796,7 +4887,7 @@ function carteraFut0(fuente){
   var abiertas=lista.filter(function(e){ return e.abierta; });
   var t={n:cerradas.length, gan:0, pctAcum:0, ganadas:0, perdidas:0, neutras:0, nLiq:0,
          margenAbierto:0, nAb:abiertas.length, nProg:programadas.length,
-         margenProg:0, flotante:0, comision:0, comisionAb:0, enRiesgo:0,
+         margenProg:0, flotante:0, comision:0, comisionAb:0, costoAb:0, fund:0, fundAb:0, enRiesgo:0,
          sinPrecioAb:0, bruto:0};
   programadas.forEach(function(e){ t.margenProg+=e.margen; });
   var sg=0,ng=0,sp=0,np=0;
@@ -4810,7 +4901,9 @@ function carteraFut0(fuente){
   cerradas.forEach(function(e){
     if(e.liquidado) t.nLiq++;
     var pn = (e.pctNeto!=null) ? e.pctNeto/100 : e.pct;   /* en tanto por uno, como e.pct */
-    t.gan+=e.gan; t.bruto+=e.gan+e.com; t.pctAcum+=pn; t.comision+=e.com;
+    /* v57 · comisión (abrir + cerrar) y financiación van separadas, para que cada número cuadre
+       con lo que se ve en cada operación */
+    t.gan+=e.gan; t.bruto+=e.gan+e.com; t.pctAcum+=pn; t.comision+=(e.comTr!=null?e.comTr:e.com); t.fund+=(e.fund||0);
     if(e.gan>0){ t.ganadas++; sg+=pn; ng++; }
     else if(e.gan<0){ t.perdidas++; sp+=pn; np++; }
     else t.neutras++;
@@ -4821,7 +4914,8 @@ function carteraFut0(fuente){
   abiertas.forEach(function(e){
     t.margenAbierto+=e.margen;
     t.flotante+=(e.flot||0);
-    t.comisionAb+=e.com;
+    t.comisionAb+=(e.comTr!=null?e.comTr:e.com); t.fundAb+=(e.fund||0);
+    t.costoAb+=(e.comA||0)+(e.fund||0);   /* v57 · lo que la casa ya le cobró de las abiertas */
     if(e.liquidado) t.enRiesgo++;
     if(e.flot==null) t.sinPrecioAb++;
   });
@@ -4996,11 +5090,15 @@ function calcLote(cfg, entrada, sl, lado, tp){
      distancia al stop y la comisión se sumaba encima: decía «el 1,04 % de su
      cartera» con el riesgo puesto en 1 %. Ahora, si salta el stop, pierde
      exactamente lo que dijo (la distancia más la comisión de abrir y cerrar). */
-  r.posicion = r.riesgo/(r.dist + comPct/100*2);
+  /* v57 · la de cerrar se cobra sobre lo que vale al SALIR (en el stop), no al entrar */
+  var kSl = comPct/100*(1+sl/entrada);
+  r.posicion = r.riesgo/(r.dist + kSl);
   r.margen = r.posicion/apal;
   r.monedas = r.posicion/entrada;
-  r.com = r.posicion*comPct/100*2;              /* entrar y salir */
-  r.perdidaSL = r.posicion*r.dist + r.com;      /* = r.riesgo */
+  r.comA = r.posicion*comPct/100;
+  r.com = r.posicion*comPct/100*2;              /* entrar y salir, de referencia */
+  r.comSl = r.posicion*kSl;
+  r.perdidaSL = r.posicion*r.dist + r.comSl;    /* = r.riesgo */
   r.liq = lado==="SHORT" ? entrada*(1+1/apal) : entrada*(1-1/apal);
   r.liqAntes = r.dist >= (1/apal);              /* lo liquidan antes del stop */
   /* v42 · con el stop MÁS LEJOS que la liquidación, lo liquidan antes de
@@ -5015,7 +5113,8 @@ function calcLote(cfg, entrada, sl, lado, tp){
   if(tp>0){
     r.distTp=Math.abs(tp-entrada)/entrada;
     r.tpBien = ladoCorrecto("tp", tp, entrada, lado);
-    r.ganTp = r.posicion*r.distTp - r.com;
+    r.comTp = r.posicion*comPct/100*(1+tp/entrada);
+    r.ganTp = r.posicion*r.distTp - r.comTp;
     r.rr = r.perdidaSL>0 ? r.ganTp/r.perdidaSL : null;
     r.ganTpPctMargen = r.margen>0 ? r.ganTp/r.margen*100 : null;
   }
@@ -5053,20 +5152,23 @@ function calcLotePorMonto(cfg, entrada, sl, lado, tp, margen){
   r.posicion = r.margen*apal;
   r.monedas  = r.posicion/entrada;
   r.com      = r.posicion*comPct/100*2;
+  r.comA     = r.posicion*comPct/100;
+  r.comSl    = r.posicion*comPct/100*(1+sl/entrada);
   r.liq      = lado==="SHORT" ? entrada*(1+1/apal) : entrada*(1-1/apal);
   r.liqAntes = r.dist >= (1/apal);
   r.apalMax  = Math.floor(1/r.dist);
   /* lo que pierde si llega al stop. Pero si lo liquidan ANTES de llegar,
      lo que pierde es todo el margen: no hay más que perder. */
   r.riesgo    = r.posicion*r.dist;
-  r.perdidaSL = r.riesgo + r.com;
+  r.perdidaSL = r.riesgo + r.comSl;
   if(r.liqAntes || r.perdidaSL>r.margen) r.perdidaSL = r.margen;
   r.riesgoPct = cartera>0 ? r.perdidaSL/cartera*100 : null;
   r.perdidaPctMargen = r.margen>0 ? r.perdidaSL/r.margen*100 : null;
   if(tp>0){
     r.distTp = Math.abs(tp-entrada)/entrada;
     r.tpBien = ladoCorrecto("tp", tp, entrada, lado);
-    r.ganTp  = r.posicion*r.distTp - r.com;
+    r.comTp  = r.posicion*comPct/100*(1+tp/entrada);
+    r.ganTp  = r.posicion*r.distTp - r.comTp;
     r.rr     = r.perdidaSL>0 ? r.ganTp/r.perdidaSL : null;
     r.ganTpPctMargen = r.margen>0 ? r.ganTp/r.margen*100 : null;
   }
@@ -5121,6 +5223,24 @@ var CASAS_FUT=[
   ["binance","Binance",0.02,0.05], ["bybit","Bybit",0.02,0.055], ["okx","OKX",0.02,0.05],
   ["bitget","Bitget",0.02,0.06], ["gate","Gate.io",0.02,0.05], ["kucoin","KuCoin",0.02,0.06],
   ["mexc","MEXC",0,0.02], ["kraken","Kraken",0.02,0.05], ["bingx","BingX",0.02,0.05], ["htx","HTX",0.02,0.06]];
+/* v57 · LA COMISIÓN DE SPOT, SOLA. En spot la casa cobra un % de lo que compra o vende, en CADA
+   compra y en CADA venta (no tiene apalancamiento ni tiempo). Tarifa de cuenta normal, sin VIP
+   ni descuentos, orden a mercado (taker), revisada en octubre de 2026. Si su casa le cobró otra
+   cosa, la escribe y manda lo suyo. */
+var CASAS_SPOT={BINANCE:0.1, BYBIT:0.1, OKX:0.1, GATE:0.1, MEXC:0.05, BITGET:0.1, KUCOIN:0.1,
+  COINBASE:0.6, KRAKEN:0.4, CRYPTOCOM:0.08, OTRA:0.1};
+function tasaSpot(casa){ var t=CASAS_SPOT[String(casa||casaGlobal()).toUpperCase()]; return t!=null?t:0.1; }
+function comSpot(casa, valor){ return valor>0 ? cent(valor*tasaSpot(casa)/100) : 0; }
+/* la comisión del formulario de spot: la que escribió, o si lo dejó vacío, la de su casa */
+function kSpotForm(m){
+  var K=document.getElementById("spK"), v=K?num(K.value):null;
+  if(v!=null) return v;
+  if(!SP.sym || esEstable(SP.sym)) return 0;
+  var t=tasaSpot(SP.casa)/100, Ci=document.getElementById("spC"), Pi=document.getElementById("spP");
+  if(m!=null){ return SP.tipo==="venta" ? cent(m*t/(1-t)) : cent(m*t/(1+t)); }
+  var c=Ci?num(Ci.value):null, p=Pi?num(Pi.value):null;
+  return (c>0&&p>0) ? cent(c*p*t) : 0;
+}
 function casaFut(k){ return CASAS_FUT.filter(function(x){ return x[0]===k; })[0]||null; }
 function tarifaFut(casa, orden, propia){
   var c=casaFut(casa);
@@ -6849,7 +6969,7 @@ function engancharPanel(c){
   var editando=null;
   function desdeMonto(){
     if(!M){ recPanel(); return; }
-    var m=num(M.value), p=num(Pq.value), k=num(K.value)||0;
+    var m=num(M.value), p=num(Pq.value), k=kSpotForm(m);
     if(m!=null&&p!=null&&p>0){
       var c2 = SP.tipo==="venta" ? (m+k)/p : (m-k)/p;
       C.value = c2>0 ? String(+c2.toFixed(10)).replace(".",sepDecimal()) : "";
@@ -6857,7 +6977,7 @@ function engancharPanel(c){
     recPanel();
   }
   function desdeCantidad(){
-    var c2=num(C.value), p=num(Pq.value), k=num(K.value)||0;
+    var c2=num(C.value), p=num(Pq.value), k=kSpotForm(null);
     if(M && c2!=null&&p!=null&&p>0){
       var m = SP.tipo==="venta" ? c2*p-k : c2*p+k;
       M.value=String(+m.toFixed(2)).replace(".",sepDecimal());
@@ -6912,8 +7032,10 @@ function recPanel(){
   var r=document.getElementById("spR");
   if(!r) return;
   function g(id){ var e=document.getElementById(id); return e?num(e.value):null; }
-  var c=g("spC"), p=g("spP"), k=g("spK")||0, m=g("spM");
+  var c=g("spC"), p=g("spP"), k=kSpotForm(null), m=g("spM");
   var esV0=SP.tipo==="venta";
+  var Kc=document.getElementById("spK");
+  if(Kc && !(SP.sym&&esEstable(SP.sym))) Kc.placeholder = tr("se calcula sola")+(k>0?": "+usd(k):"")+" ("+pctCorto(tasaSpot(SP.casa))+")";
   function cajitas(rec,g,q){
     var a=document.getElementById("spRecibe"), b=document.getElementById("spGana"), d=document.getElementById("spQueda");
     if(a) a.textContent = rec!=null?usd(rec):"—";
@@ -6950,7 +7072,9 @@ function recPanel(){
   /* cada dato en su pieza (v38): antes era una sola tira con el nombre de la
      casa y negritas en medio, y no había forma de traducirla */
   var txt='<b>'+(esV?"Recibe ":"Paga ")+usd(tot)+" por "+cant(c)+" "+esc(SP.sym)+'</b>'+
-          '<span'+(SP.casa==="OTRA"?'':' translate="no"')+'> · '+esc(nombreCasa(SP.casa))+'</span>';
+          '<span'+(SP.casa==="OTRA"?'':' translate="no"')+'> · '+esc(nombreCasa(SP.casa))+'</span>'+
+          (k>0?'<span> · comisión '+usd(k)+'</span>'+
+            (Kc&&num(Kc.value)==null?'<span> (el '+pctCorto(tasaSpot(SP.casa))+' de lo que '+(esV?'vende':'compra')+')</span>':''):'');
   var pr=precioDe(SP.sym);
   if(!esV&&pr!=null&&p>0){
     var d=(pr-p)/p*100;
@@ -6989,7 +7113,7 @@ function recPanel(){
 function guardarMovimiento(){
   function g(id){ var e=document.getElementById(id); return e?num(e.value):null; }
   function t(id){ var e=document.getElementById(id); return e?e.value:""; }
-  var c=g("spC"), p=g("spP"), k=g("spK")||0, f=t("spF")||hoy(), n=(t("spN")||"").trim();
+  var c=g("spC"), p=g("spP"), k=kSpotForm(null), f=t("spF")||hoy(), n=(t("spN")||"").trim();
   if(!SP.sym){ aviso("Elija la criptomoneda.",true); return; }
   if(c==null||c<=0){ aviso("La cantidad debe ser mayor que cero. Escriba el monto y el precio.",true); return; }
   if(p==null||p<=0){ aviso("Escriba el precio por moneda.",true); return; }
@@ -7119,7 +7243,7 @@ function venderMoneda(sym){
       '<div class="campo"><label>Precio de venta</label>'+
         '<input id="vPr" inputmode="decimal" value="'+(pr!=null?String(pr).replace(".",sepDecimal()):"")+'"></div>'+
       '<div class="campo"><label>Fecha</label><input type="date" id="vF" value="'+hoy()+'"></div>'+
-      '<div class="campo"><label>Comisión (USD)</label><input id="vK" inputmode="decimal" placeholder="sin comisión"></div>'+
+      '<div class="campo"><label>Comisión (USD) <small>· vacío = se calcula sola</small></label><input id="vK" inputmode="decimal" placeholder="se calcula sola"></div>'+
       '<div class="campo"><label>Cantidad exacta</label><input id="vEx" inputmode="decimal"></div>'+
       '<div class="campo ancho"><label>Dónde vendió</label><select id="vCa">'+
         Object.keys(CASAS).map(function(k){
@@ -7136,7 +7260,7 @@ function venderMoneda(sym){
       return e.cantidad*(+rg.value)/100;
     }
     function rec(){
-      var c=elegida(), p=num(M.querySelector("#vPr").value), k=num(M.querySelector("#vK").value)||0;
+      var c=elegida(), p=num(M.querySelector("#vPr").value), k=kVender(c,p);
       M.querySelector("#vPc").textContent = e.cantidad>0?pctS(c/e.cantidad*100):"0%";
       M.querySelector("#vCant").textContent=cant(c)+" "+sym;
       M.querySelector("#vUsd").textContent = p!=null?usd(c*p-k):"—";
@@ -7166,10 +7290,18 @@ function venderMoneda(sym){
     M.querySelectorAll("[data-rp]").forEach(function(b){
       b.onclick=function(){ ex.value=""; rg.value=b.getAttribute("data-rp"); rec(); };
     });
+    function kVender(c,p){
+      var v=num(M.querySelector("#vK").value); if(v!=null) return v;
+      var ca=(M.querySelector("#vCa")||{}).value||casaGlobal();
+      var kk=(c>0&&p>0)?comSpot(ca, c*p):0;
+      M.querySelector("#vK").placeholder=tr("se calcula sola")+(kk>0?": "+usd(kk):"")+" ("+pctCorto(tasaSpot(ca))+")";
+      return kk;
+    }
     ["#vPr","#vK"].forEach(function(id){ M.querySelector(id).addEventListener("input", rec); });
+    (M.querySelector("#vCa")||{addEventListener:function(){}}).addEventListener("change", rec);
     rec();
     M.querySelector("#vOk").onclick=function(){
-      var c=elegida(), p=num(M.querySelector("#vPr").value), k=num(M.querySelector("#vK").value)||0;
+      var c=elegida(), p=num(M.querySelector("#vPr").value), k=kVender(c,p);
       if(c<=0){ aviso("Elija cuánto vender.",true); return; }
       if(p==null||p<=0){ aviso("Escriba el precio de venta.",true); return; }
       if(c>e.cantidad+1e-9){ aviso("No puede vender más de lo que tiene.",true); return; }
@@ -7203,8 +7335,8 @@ function editarOp(id){
         String(o.cant).replace(".",sepDecimal())+'"></div>'+
       '<div class="campo"><label>Precio</label><input id="eP" inputmode="decimal" value="'+
         String(o.precio).replace(".",sepDecimal())+'"></div>'+
-      '<div class="campo"><label>Comisión (USD)</label><input id="eK" inputmode="decimal" value="'+
-        (o.com?String(o.com).replace(".",sepDecimal()):"")+'" placeholder="sin comisión"></div>'+
+      '<div class="campo"><label>Comisión (USD) <small>· vacío = se calcula sola</small></label><input id="eK" inputmode="decimal" value="'+
+        (o.com!=null&&o.com!==""?String(o.com).replace(".",sepDecimal()):"")+'" placeholder="se calcula sola"></div>'+
       '<div class="campo ancho"><label>Dónde</label><select id="eCa">'+
         '<option value=""'+(!o.casa?" selected":"")+'>'+esc(tr("Sin casa indicada"))+'</option>'+
         Object.keys(CASAS).map(function(k){
@@ -7230,16 +7362,23 @@ function editarOp(id){
     });
     function rec(){
       var c=num(M.querySelector("#eC").value), p=num(M.querySelector("#eP").value),
-          k=num(M.querySelector("#eK").value)||0;
+          k=kEd(c,p);
       var r=M.querySelector("#eR");
       if(c==null||p==null){ r.textContent="Escriba cantidad y precio."; return; }
       var tot = tipo==="venta" ? c*p-k : c*p+k;
       r.innerHTML=(tipo==="venta"?"Recibió ":"Pagó ")+"<b>"+usd(tot)+"</b> por "+
         cant(c)+" "+esc(o.sym);
     }
+    function kEd(c,p){
+      var v=num(M.querySelector("#eK").value); if(v!=null) return v;
+      var kk=(c>0&&p>0&&!esEstable(o.sym))?comSpot(M.querySelector("#eCa").value||casaGlobal(), c*p):0;
+      M.querySelector("#eK").placeholder=tr("se calcula sola")+(kk>0?": "+usd(kk):"");
+      return kk;
+    }
     ["#eC","#eP","#eK"].forEach(function(id){
       M.querySelector(id).addEventListener("input", rec);
     });
+    M.querySelector("#eCa").addEventListener("change", rec);
     rec();
     M.querySelector("#eD").onclick=function(){
       cerrar();
@@ -7254,7 +7393,7 @@ function editarOp(id){
     };
     M.querySelector("#eOk").onclick=function(){
       var c=num(M.querySelector("#eC").value), p=num(M.querySelector("#eP").value),
-          k=num(M.querySelector("#eK").value)||0;
+          k=kEd(c,p);
       if(c==null||c<=0){ aviso("La cantidad debe ser mayor que cero.",true); return; }
       if(p==null||p<0){ aviso("Revise el precio.",true); return; }
       o.tipo=tipo; o.cant=c; o.precio=p; o.com=k;
@@ -8320,7 +8459,8 @@ function filaLibre(A){
   if(!L || (L.saldo<=0.005 && L.enUso<=0.005)) return "";
   return '<div class="frDisp"><div class="fdR"><span class="fdT">Disponible para operar</span>'+
       '<span class="fdV'+(L.libre<=0.005?' cero':'')+'" data-libre="1">'+usd(L.libre)+'</span></div>'+
-    (L.enUso>0.005?'<div class="fdS">En operaciones '+usd(L.enUso)+' · de '+usd(L.saldo)+'</div>':'')+'</div>';
+    (L.enUso>0.005?'<div class="fdS"><span>En operaciones '+usd(L.enUso)+' · de '+usd(L.saldo)+'</span>'+
+      (Math.abs(L.cobrado||0)>=0.005?' · <span>'+(L.cobrado>0?'comisiones ya cobradas '+usd(L.cobrado):'financiación a favor '+usd(-L.cobrado))+'</span>':'')+'</div>':'')+'</div>';
 }
 /* v46 · en el teléfono, los ajustes de riesgo caben en UNA línea que se abre con un toque */
 function franjaPlegada(A){
@@ -8612,10 +8752,16 @@ function botonRegistrar(puede, porque){
 }
 
 /* v56 · «Poner solo lo que me queda»: pasa a «por monto» con todo lo libre */
+/* v57 · el margen más grande que cabe en lo libre CONTANDO la comisión de entrar
+   (margen + margen × apalancamiento × tarifa = libre) */
+function margenQueCabe(A, libre){
+  var c=cfgOp(A), k=Math.max(1,+c.apal||1)*(+c.com||0)/100;
+  return Math.floor(libre/(1+k)*100)/100;
+}
 function ajustarALoLibre(A, libre){
   var bm=document.querySelector('#fuModo button[data-modo="monto"]');
   if(!porMonto() && bm) bm.click();
-  FU.margenMano=paraCasilla(Math.floor(libre*100)/100);
+  FU.margenMano=paraCasilla(margenQueCabe(A, libre));
   var M=document.getElementById("fuM"); if(M) M.value=FU.margenMano;
   recLote(A);
 }
@@ -8703,12 +8849,15 @@ function recLote(A){
       '<div><span>Tamaño de la operación</span><b>'+usdF(R.posicion)+'</b>'+
         '<i>'+cant(R.monedas)+' '+esc(sym)+' · su dinero × '+R.apal+'</i></div>'+
       /* v40 · la comisión, de dónde sale (ya está sumada en «si llega al stop») */
-      '<div><span>Comisión (abrir y cerrar)</span><b>'+usdF(R.com)+'</b>'+
-        '<i><span style="display:inline">'+pctCorto(c.com)+' × 2 sobre el tamaño'+'</span> · '+
+      '<div><span>Comisión (abrir y cerrar)</span><b>'+usdF(R.comSl)+'</b>'+
+        '<i><span style="display:inline">(abrir '+usdF(R.comA)+' + cerrar '+usdF(R.comSl-R.comA)+')</span> '+
+        '<span style="display:inline">si sale en el stop</span> · '+
+        '<span style="display:inline">'+pctCorto(c.com)+' al abrir y otro '+pctCorto(c.com)+' al cerrar, sobre el tamaño</span> · '+
         (casaFut(c.casa)
           ? '<span translate="no" style="display:inline">'+esc(casaFut(c.casa)[1])+'</span> · '+
             '<span style="display:inline">'+(c.orden==="limite"?"orden límite":"orden a mercado")+'</span>'
           : '<span style="display:inline">la suya</span>')+
+        ' · <span style="display:inline">financiación ≈ '+usdF(R.posicion*FUND_8H/100)+' cada 8 h</span>'+
         '</i></div>'+
       '<div><span>Si llega al stop</span><b class="dn">−'+usdF(R.perdidaSL)+'</b>'+
         '<i>'+(R.liqAntes?'lo liquidan antes, en '+precio(R.liq):'en '+precio(v.sl))+(pctCart!=null?' · el '+pctS(pctCart,2)+' de su cartera':'')+'</i></div>'+
@@ -8727,7 +8876,7 @@ function recLote(A){
              : '<b><span>Arriesga</span> <em>'+usdF(R.perdidaSL)+'</em></b>')+'</div></div>'+
       '<div class="lzG">'+
         '<div><span>Tamaño de la operación</span><b>'+usdF(R.posicion)+'</b><i>'+cant(R.monedas)+' '+esc(sym)+'</i></div>'+
-        '<div><span>Comisión</span><b>'+usdF(R.com)+'</b><i>'+pctCorto(c.com)+' × 2 sobre el tamaño</i></div>'+
+        '<div><span>Comisión</span><b>'+usdF(R.comSl)+'</b><i><span>(abrir '+usdF(R.comA)+' + cerrar '+usdF(R.comSl-R.comA)+')</span> <span>si sale en el stop</span> · <span>financiación ≈ '+usdF(R.posicion*FUND_8H/100)+' cada 8 h</span></i></div>'+
         '<div><span>Si llega al stop</span><b class="dn">−'+usdF(R.perdidaSL)+'</b>'+
           '<i>'+(R.liqAntes?'lo liquidan antes, en '+precio(R.liq):'en '+precio(v.sl))+(pctCart!=null?' · el '+pctS(pctCart,2)+' de su cartera':'')+'</i></div>'+
         (R.ganTp!=null&&R.tpBien
@@ -8746,12 +8895,15 @@ function recLote(A){
     "a cerrarle. Con <b>"+Math.max(1,R.apalMax)+"x</b> o menos, el stop sí trabaja.");
   /* v56 · se compara contra lo que le QUEDA LIBRE, no contra toda la cartera */
   var LB=libreOperar(A.k, A.prueba&&A.prueba.id), noAlc=false;
-  if(LB && R.margen>LB.libre+0.005){
+  /* v57 · al entrar la casa cobra la comisión de abrir: también sale de lo disponible */
+  var necesita = R.margen + (R.comA||0);
+  if(LB && necesita>LB.libre+0.005){
     noAlc=true;
-    p.push(LB.enUso>0.005
-      ? "No le alcanza el dinero: pondría "+usdF(R.margen)+" y solo le quedan "+usd(LB.libre)+
+    p.push((LB.enUso>0.005
+      ? "No le alcanza el dinero: pondría "+usdF(necesita)+" y solo le quedan "+usd(LB.libre)+
         " disponibles ("+usd(LB.enUso)+" ya están en operaciones abiertas)."
-      : "No le alcanza el dinero: pondría "+usdF(R.margen)+" y solo le quedan "+usd(LB.libre)+" disponibles.");
+      : "No le alcanza el dinero: pondría "+usdF(necesita)+" y solo le quedan "+usd(LB.libre)+" disponibles.")+
+      ((R.comA||0)>=0.005?' <span>Eso es '+usdF(R.margen)+' de margen más '+usdF(R.comA)+' de comisión al entrar.</span>':''));
   } else if(R.pasaCartera) p.push(mon
     ? ("Está poniendo "+usdF(R.margen)+" y su cartera es "+usd(R.cartera)+
        ": está poniendo más de lo que dijo que tiene.")
@@ -8772,7 +8924,7 @@ function recLote(A){
       av.style.display=""; av.className="nota ojo";
       av.innerHTML='<div class="avTit">Antes de entrar, mire esto</div>'+
         p.map(function(x){ return '<div class="avLin">'+x+'</div>'; }).join("")+
-        (!noAlc && LB ? '<div class="avLibre">Después de esta operación le quedarían '+usd(Math.max(0,LB.libre-R.margen))+' disponibles.</div>' : '')+
+        (!noAlc && LB ? '<div class="avLibre">Después de esta operación le quedarían '+usd(Math.max(0,LB.libre-necesita))+' disponibles.</div>' : '')+
         (noAlc && LB.libre>=1 ? '<button type="button" class="b sm ac btAjusta" id="fuAjusta">Poner solo lo que me queda ('+usd(LB.libre)+')</button>' : '')+
         '<div class="avPie">Usted decide. Puede registrarla igual.</div>';
       var bj=av.querySelector("#fuAjusta");
@@ -8782,7 +8934,7 @@ function recLote(A){
       av.innerHTML="Pase lo que pase, si se respeta el stop usted pierde <b>"+usdF(R.perdidaSL)+
         "</b>"+(pctCart!=null?" — el "+pctS(pctCart,2)+" de su cartera":"")+". "+
         "El apalancamiento no cambia eso: solo cambia cuánta plata deja amarrada."+
-        (LB ? '<div class="avLibre">Después de esta operación le quedarían '+usd(Math.max(0,LB.libre-R.margen))+' disponibles.</div>' : "");
+        (LB ? '<div class="avLibre">Después de esta operación le quedarían '+usd(Math.max(0,LB.libre-necesita))+' disponibles.</div>' : "");
     }
   }
 
@@ -8791,7 +8943,7 @@ function recLote(A){
   if(res){
     if(sal!=null&&sal>0&&v.entrada>0){
       var st=estadoOp({sym:FU.sym, lado:FU.lado, monto:R.margen, apal:R.apal, entrada:v.entrada,
-        salida:sal, com:R.com, estado:"cerrada", tp:v.tp, sl:v.sl});
+        salida:sal, com:R.com, comPct:+c.com||0, estado:"cerrada", tp:v.tp, sl:v.sl});
       res.style.display=""; res.className="nota";
       res.innerHTML="Esa operación "+(st.gan>=0?"<b class='up'>gana ":"<b class='dn'>pierde ")+
         usdF(Math.abs(st.gan))+"</b> · el precio se movió "+pct(st.pctPrecio,2)+
@@ -9103,6 +9255,9 @@ function filaAbiertaCorta(e,k){
         '<div><span>Si llega al stop</span><b class="'+(netoSl(e)!=null&&netoSl(e)>=0?"up":"dn")+'">'+
           (e.perSl!=null?usdS(netoSl(e)):"—")+
           '<small>'+pieSl(e)+'</small></b></div>'+
+        '<div><span>Comisión (abrir y cerrar)</span><b>'+usdF(e.comTr)+'<small>(abrir '+usdF(e.comA)+' + cerrar '+usdF(e.comC)+')</small></b></div>'+
+        '<div><span>Financiación</span><b class="'+(e.fund>0.004?"dn":e.fund<-0.004?"up":"")+'">'+
+          (Math.abs(e.fund)<0.005?usdF(0):usdS(-e.fund))+'<small>'+pieFund(e)+'</small></b></div>'+
       '</div>'+
       (e.liquidado?'<div class="nota mal" style="margin-top:8px">El precio ya pasó el punto de '+
         'liquidación ('+precio(e.liq)+'). Con margen aislado no se pierde más que el margen que puso.</div>':'')+
@@ -9152,7 +9307,8 @@ function tablaAbiertas(abiertas,k){
           '<span class="sub">'+pieSl(e)+'</span></td>'+
         '<td class="opt '+(netoTp(e)!=null&&netoTp(e)<0?"dn":"up")+'">'+(e.ganTp!=null?usdS(netoTp(e)):"—")+
           '<span class="sub">'+(e.tp!=null?("en "+precio(e.tp)):"sin objetivo")+'</span></td>'+
-        '<td>'+usdF(e.margen)+'<span class="sub">opera '+usdF(e.valor)+'</span></td>'+
+        '<td>'+usdF(e.margen)+'<span class="sub">opera '+usdF(e.valor)+'</span>'+
+          '<span class="sub">comisión '+usdF(e.comTr)+(textoFund(e)?' · '+textoFund(e):'')+'</span></td>'+
         '<td><span class="'+(e.flot>0?"gpill p":e.flot<0?"gpill n":"gpill z")+'" data-v="futFlot" '+
           'data-f="'+esc(f.id)+'" data-cls="">'+
           (e.flot!=null?((e.flot>=0?"+":"−")+usdF(e.flot).replace("-","")):"sin precio")+'</span>'+
@@ -9184,6 +9340,9 @@ function filaAbierta(e,k){
         '<div><span>Si llega al stop</span><b class="'+(netoSl(e)!=null&&netoSl(e)>=0?"up":"dn")+'">'+
           (e.perSl!=null?usdS(netoSl(e)):"—")+
           '<small>'+pieSl(e)+'</small></b></div>'+
+        '<div><span>Comisión (abrir y cerrar)</span><b>'+usdF(e.comTr)+'<small>(abrir '+usdF(e.comA)+' + cerrar '+usdF(e.comC)+')</small></b></div>'+
+        '<div><span>Financiación</span><b class="'+(e.fund>0.004?"dn":e.fund<-0.004?"up":"")+'">'+
+          (Math.abs(e.fund)<0.005?usdF(0):usdS(-e.fund))+'<small>'+pieFund(e)+'</small></b></div>'+
       '</div>'+
       (riel!=null
         ? '<div class="riel" style="height:30px;margin:10px 0 0"><div class="via"></div>'+
@@ -9287,9 +9446,9 @@ function activarOperacion(id,k){
   if(!f){ aviso("Esa operación ya no existe.",true); return; }
   /* v56 · si no alcanza el dinero libre, en Futuros se pregunta de dónde sale (como al registrar una
      operación abierta); en una prueba no hay de dónde, así que se dice y no se abre */
-  var LB=libreOperar(k, f.prueba), nec=+f.monto||0;
+  var LB=libreOperar(k, f.prueba), nec=(+f.monto||0)+(estadoOp(f).comA||0);
   var abrirla=function(pago){
-    f.estado="abierta"; f.horaEntrada=horaYa(); delete f.sinFondos; tocar(f);
+    f.estado="abierta"; f.horaEntrada=horaYa(); f.fechaEntrada=hoy(); delete f.sinFondos; tocar(f);
     if(pago){ pago.id=idNuevo(); pago.para=f.id; pago.mod=ahoraReal(); BD.ops.push(pago); }
     guardar(); repintar();
     aviso("Listo: la operación de "+esc(f.sym)+" ya cuenta como abierta.");
@@ -9405,7 +9564,8 @@ function tablaHistorial(F,k,T,sinTitulo){
         (e.pctPrecio!=null?' · el precio se movió '+pct(e.pctPrecio,2):'')+
         (e.liquidado?' · <span class="chip s">LIQUIDADA</span>':'')+
         (f.auto&&f.auto!=="liq"?' · <span class="chip a" title="Se cerró sola al tocar el '+esc(f.auto)+'">SOLA · '+esc(f.auto.toUpperCase())+'</span>':'')+
-        (f.estr?' · '+esc(f.estr):'')+'</div></div>'+
+        (f.estr?' · '+esc(f.estr):'')+'</div>'+
+        '<div class="l2 lCom">'+lineaComOp(e)+'</div></div>'+
       '<div class="r"><span>Resultado</span><b class="'+cl(e.gan)+'">'+(e.gan>=0?"+":"−")+usdF(e.gan).replace("-","")+'</b>'+
         '<span class="'+cl(e.gan)+'">'+(e.pctNeto!=null?pct(e.pctNeto,1)+" del margen":"")+'</span></div>'+
       '<div class="pg"><span>Lista de antes de entrar</span><b><span class="chip '+(n===PLAN.length?"l":n>=PLAN.length-2?"g":"s")+'">'+n+' de '+PLAN.length+'</span>'+
@@ -9416,9 +9576,13 @@ function tablaHistorial(F,k,T,sinTitulo){
   if(ver.length){
     var sm=ver.reduce(function(a,e){ return a+e.margen; },0);
     var sg=ver.reduce(function(a,e){ return a+(e.gan||0); },0);
+    var sk=ver.reduce(function(a,e){ return a+(e.comTr||0); },0);
+    var sfu=ver.reduce(function(a,e){ return a+(e.fund||0); },0);
     h+='<div class="fcalc" style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">'+
       '<span>TOTAL · '+plural(ver.length,"operación","operaciones")+(lista.length>ver.length?" (de "+lista.length+")":"")+'</span>'+
       '<span>margen puesto <b>'+usdF(sm)+'</b></span>'+
+      '<span>comisiones <b>'+usdF(sk)+'</b></span>'+
+      (Math.abs(sfu)>=0.005?'<span>'+textoFund({fund:sfu})+'</span>':'')+
       '<span style="margin-left:auto">resultado <b class="'+cl(sg)+'">'+(sg>=0?"+":"−")+usdF(sg).replace("-","")+'</b> · '+
         '<span class="'+cl(sg)+'">'+pct(sm?sg/sm*100:0,1)+' del margen</span></span></div>';
   }
@@ -9525,7 +9689,7 @@ function engancharFormulario(c, A){
     /* v56 · antes ponía TODA la cartera aunque ya hubiera operaciones abiertas */
     var LT=libreOperar(A.k, A.prueba&&A.prueba.id), cart=LT?LT.libre:(+A.cfg.cartera||0);
     if(!(cart>0)){ aviso("No le queda dinero disponible.",true); return; }
-    FU.margenMano=paraCasilla(Math.floor(cart*100)/100);
+    FU.margenMano=paraCasilla(LT?margenQueCabe(A, cart):Math.floor(cart*100)/100);
     if(elM) elM.value=FU.margenMano;
     recLote(A);
   };
@@ -9727,7 +9891,7 @@ function guardarOperacion(A){
   var o={ id:idNuevo(), n:n, sym:String(FU.sym).toUpperCase(), lado:FU.lado,
     monto:+R.margen.toFixed(6), apal:R.apal, entrada:v.entrada,
     sl:v.sl, tp:(v.tp!=null&&v.tp>0)?v.tp:null,
-    salida: sal!=null?sal:null, com:+R.com.toFixed(6),
+    salida: sal!=null?sal:null, com:+R.com.toFixed(6), comPct:+c.com||0,
     fecha:FU.fecha||hoy(), hora:horaYa(),
     cierre: sal!=null?hoy():"",
     nota:(FU.nota||"").trim(), estr:(FU.estr||"").trim(), animo:FU.animo,
@@ -9815,13 +9979,14 @@ function cerrarOperacion(id, k){
       '<div class="campo"><label>Precio de salida</label><input id="cX" inputmode="decimal" value="'+
         (pr!=null?String(pr).replace(".",sepDecimal()):"")+'"></div>'+
       '<div class="campo"><label>Fecha de cierre</label><input type="date" id="cF" value="'+hoy()+'"></div>'+
-      '<div class="campo"><label>Comisión total (USD)</label><input id="cK" inputmode="decimal" value="'+
-        (f.com?String(+(+f.com).toFixed(6)).replace(".",sepDecimal()):"")+'" placeholder="sin comisión"></div>'+
+      /* v57 · la comisión y la financiación se calculan SOLAS con el precio de salida y el tiempo;
+         las casillas son solo por si su casa le cobró otra cosa */
+      '<div class="campo"><label>Comisión real (USD) <small>· opcional</small></label><input id="cK" inputmode="decimal" value="'+
+        (st.comFija!=null?String(+(+st.comFija).toFixed(6)).replace(".",sepDecimal()):"")+'" placeholder="se calcula sola"></div>'+
+      '<div class="campo"><label>Financiación real (USD) <small>· opcional</small></label><input id="cFu" inputmode="decimal" value="'+
+        (st.fundFija?String(+(+f.fund).toFixed(6)).replace(".",sepDecimal()):"")+'" placeholder="se calcula sola"></div>'+
     '</div>'+
-    /* v40 · lo que se puso al abrir es un cálculo; aquí va lo de verdad */
-    '<p class="mut" style="font-size:12.5px;margin:6px 0 0">La comisión que ve es un cálculo. Para que el resultado sea '+
-      'exacto, escriba lo que le cobró su casa de cambio de verdad: las comisiones de abrir y cerrar, más la '+
-      'financiación (funding) si la tuvo abierta varias horas.</p>'+
+    '<div class="nota" id="cKa" style="margin-top:8px"></div>'+
     '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:11px">'+
       (st.sl!=null?'<button class="b rj sm" id="cSl">Me saltó el stop ('+precio(st.sl)+')</button>':'')+
       (st.tp!=null?'<button class="b vd sm" id="cTp">Pegué el objetivo ('+precio(st.tp)+')</button>':'')+
@@ -9832,14 +9997,18 @@ function cerrarOperacion(id, k){
     '<button class="b ac" id="cOk">Cerrar operación</button></div></div>',
   function(M){
     function rec(){
-      var x=num(M.querySelector("#cX").value), k2=num(M.querySelector("#cK").value)||0;
-      var r=M.querySelector("#cR");
+      var x=num(M.querySelector("#cX").value);
+      var r=M.querySelector("#cR"), ka=M.querySelector("#cKa");
       if(x==null||x<=0){
         r.innerHTML='<div class="lc" style="grid-column:1/-1"><div class="s">'+
           'Escriba el precio de salida.</div></div>';
+        ka.innerHTML="";
         return;
       }
-      var s2=estadoOp(Object.assign({},f,{salida:x,com:k2,estado:"cerrada"}));
+      var s2=estadoOp(cierreDe(x));
+      ka.innerHTML='<div><span>Comisión de esta operación: </span><b>'+usdF(s2.comTr)+'</b> '+parteCom(s2)+
+        (s2.comFija!=null?' · <span>la que usted anotó</span>':' · <span>'+pctCorto(s2.comPct)+' al abrir y otro '+pctCorto(s2.comPct)+' al cerrar, sobre el tamaño</span>')+'</div>'+
+        '<div><span>Financiación: </span><b class="'+(s2.fund>0.004?"dn":s2.fund<-0.004?"up":"")+'">'+(Math.abs(s2.fund)<0.005?usdF(0):usdS(-s2.fund))+'</b> · <span>'+pieFund(s2)+'</span></div>';
       r.innerHTML=
         '<div class="lc dest"><div class="e">'+(s2.gan>=0?"GANA":"PIERDE")+'</div>'+
         '<div class="v '+cl(s2.gan)+'">'+(s2.gan>=0?"+":"−")+usdF(s2.gan).replace("-","")+'</div></div>'+
@@ -9853,9 +10022,19 @@ function cerrarOperacion(id, k){
           '<div class="s dn">A ese precio ya lo habrían liquidado (en '+precio(s2.liq)+
           '). Con margen aislado no se pierde más de lo que puso.</div></div>':'');
     }
-    ["#cX","#cK"].forEach(function(id2){
+    function cierreDe(x){
+      var k2=num(M.querySelector("#cK").value), fu=num(M.querySelector("#cFu").value);
+      var fc=M.querySelector("#cF").value||hoy();
+      var o=Object.assign({},f,{salida:x, estado:"cerrada", cierre:fc,
+        horaCierre: fc===hoy() ? horaYa() : (f.horaCierre||"")});
+      if(k2!=null) o.comFija=k2; else { delete o.comFija; if(o.comPct==null && st.comPct!=null) o.comPct=st.comPct; if(o.comPct==null) o.comPct=A.cfg.com; }
+      if(fu!=null) o.fund=fu; else delete o.fund;
+      return o;
+    }
+    ["#cX","#cK","#cFu"].forEach(function(id2){
       M.querySelector(id2).addEventListener("input", rec);
     });
+    M.querySelector("#cF").addEventListener("change", rec);
     var b;
     if((b=M.querySelector("#cSl"))) b.onclick=function(){
       M.querySelector("#cX").value=String(st.sl).replace(".",sepDecimal()); rec(); };
@@ -9867,9 +10046,13 @@ function cerrarOperacion(id, k){
     M.querySelector("#cOk").onclick=function(){
       var x=num(M.querySelector("#cX").value);
       if(x==null||x<=0){ aviso("Escriba el precio de salida.",true); return; }
+      var o2=cierreDe(x);
+      if(num(M.querySelector("#cK").value)!=null && num(M.querySelector("#cK").value)<0){ aviso("La comisión no puede ser negativa.",true); return; }
       f.salida=x; f.estado="cerrada"; f.pct=null;
-      f.cierre=M.querySelector("#cF").value||hoy();
-      f.com=num(M.querySelector("#cK").value)||0;
+      f.cierre=o2.cierre; if(o2.horaCierre) f.horaCierre=o2.horaCierre;
+      if(o2.comFija!=null) f.comFija=o2.comFija; else { delete f.comFija; f.comPct=o2.comPct; }
+      if(o2.fund!=null) f.fund=o2.fund; else delete f.fund;
+      f.com=estadoOp(f).comTr;      /* el total, para quien lo lea con una versión vieja */
       tocar(f);
       guardar(); cerrar(); repintar();
       var s2=estadoOp(f);
@@ -9916,13 +10099,15 @@ function editarOperacion(id, k){
         '<option value="abierta"'+(f.estado!=="programada"?" selected":"")+'>Sí, ya está dentro</option>'+
         '<option value="programada"'+(f.estado==="programada"?" selected":"")+'>No, esperando el precio</option>'+
         '</select></div>'+
-      '<div class="campo"><label>Comisión (USD)</label><input id="eK" inputmode="decimal" value="'+
-        (f.com?String(+(+f.com).toFixed(6)).replace(".",sepDecimal()):"")+'" placeholder="sin comisión">'+
+      '<div class="campo"><label>Comisión real (USD) <small>· vacío = se calcula sola</small></label><input id="eK" inputmode="decimal" value="'+
+        (estadoOp(f).comFija!=null?String(+(+estadoOp(f).comFija).toFixed(6)).replace(".",sepDecimal()):"")+'" placeholder="se calcula sola">'+
         /* v41 · si cambia el margen o el apalancamiento, la comisión de antes se
            queda vieja (a Luis le pasó con su SOL: $0,01794 de una operación que
            después quedó en $16,84). Se avisa y se ofrece ponerla al día; no se
            cambia sola, porque a veces la anotada es la que de verdad le cobraron. */
         '<div id="eKav" class="avComi" style="display:none"></div></div>'+
+      '<div class="campo"><label>Financiación real (USD) <small>· vacío = se calcula sola</small></label><input id="eFu" inputmode="decimal" value="'+
+        (f.fund!=null&&f.fund!==""?String(+(+f.fund).toFixed(6)).replace(".",sepDecimal()):"")+'" placeholder="se calcula sola"></div>'+
       '<div class="campo ancho"><label>Estrategia</label><input id="eEs" style="font-family:inherit" '+
         'value="'+esc(f.estr||"")+'" list="listaEstr2"></div>'+
       '<div class="campo ancho"><label>Nota</label><input id="eNo" style="font-family:inherit" '+
@@ -9962,29 +10147,36 @@ function editarOperacion(id, k){
       return {monto:num(M.querySelector("#eM").value), apal:num(M.querySelector("#eA").value),
         entrada:num(M.querySelector("#eE").value), sl:num(M.querySelector("#eSL").value),
         tp:num(M.querySelector("#eTP").value), salida:num(M.querySelector("#eX").value),
-        com:num(M.querySelector("#eK").value)||0, lado:M.querySelector("#eL").value,
+        comK:num(M.querySelector("#eK").value), fuK:num(M.querySelector("#eFu").value),
+        lado:M.querySelector("#eL").value,
         sym:f.sym, estado: num(M.querySelector("#eX").value)==null
           ? (M.querySelector("#eY").value||"abierta") : "cerrada"};
+    }
+    /* v57 · la operación tal como quedaría, con su comisión calculada sola (o la que escribió) */
+    var CM0=estadoOp(f);
+    function comoQueda(d){
+      var o=Object.assign({},f,{monto:d.monto, apal:d.apal, entrada:d.entrada, sl:d.sl, tp:d.tp,
+        salida:d.salida, lado:d.lado, estado:d.estado, fecha:M.querySelector("#eF").value||f.fecha});
+      if(d.estado==="cerrada"&&!o.cierre) o.cierre=hoy();
+      if(d.comK!=null) o.comFija=d.comK;
+      else { delete o.comFija; o.comPct = f.comPct!=null ? +f.comPct : (CM0.comPct!=null ? CM0.comPct : A.cfg.com); }
+      if(d.fuK!=null) o.fund=d.fuK; else delete o.fund;
+      return o;
     }
     /* v41 · debajo de la comisión, siempre, la que saldría con este tamaño. Si la
        anotada es otra, sale el botón para ponerla al día. No se cambia sola: la
        anotada puede ser la que de verdad le cobró la casa (con BNB, con funding). */
     function avisoComision(d){
       var av=M.querySelector("#eKav"); if(!av) return;
-      var pos=(+d.monto||0)*Math.max(1,+d.apal||1), c=A.cfg.com;
-      if(!(pos>0) || !(c>0)){ av.style.display="none"; return; }
-      var deb=pos*c/100*2, dif=Math.abs((+d.com||0)-deb)>Math.max(0.00005, deb*0.002);
-      av.style.display="";
-      av.className = dif ? "avComi dif" : "avComi";
-      av.innerHTML='<span>'+(dif
-        ? "Al "+pctCorto(c)+" sobre este tamaño sería "+comiTexto(deb)+"."
-        : "Al "+pctCorto(c)+" sobre este tamaño: "+comiTexto(deb)+".")+'</span>'+
-        (dif?'<button type="button" class="b sm" id="eKpon">'+tr("Ponerla al día")+'</button>':'');
+      if(!(d.monto>0)||!(d.entrada>0)){ av.style.display="none"; return; }
+      var o=comoQueda(d), q=estadoOp(o);
+      av.style.display=""; av.className="avComi";
+      av.innerHTML='<span>'+(d.comK!=null?"La que usted anotó":"Se calcula sola")+': <b>'+usdF(q.comTr)+'</b> '+parteCom(q)+
+        (d.comK==null?' · <span>'+pctCorto(q.comPct)+' al abrir y otro '+pctCorto(q.comPct)+' al cerrar, sobre el tamaño</span>':'')+
+        (textoFund(q)?' · <span>'+textoFund(q)+'</span>':'')+'</span>'+
+        (d.comK!=null?'<button type="button" class="b sm" id="eKpon">'+tr("Que se calcule sola")+'</button>':'');
       var bp=av.querySelector("#eKpon");
-      if(bp) bp.onclick=function(){
-        M.querySelector("#eK").value=String(+deb.toFixed(6)).replace(".",sepDecimal());
-        rec();
-      };
+      if(bp) bp.onclick=function(){ M.querySelector("#eK").value=""; rec(); };
     }
     function rec(){
       var d=leer(), r=M.querySelector("#eR");
@@ -9993,7 +10185,7 @@ function editarOperacion(id, k){
         r.innerHTML='<div class="lc" style="grid-column:1/-1"><div class="s">'+
           'Revise el margen y la entrada.</div></div>'; return;
       }
-      var st=estadoOp(d);
+      var st=estadoOp(comoQueda(d));
       r.innerHTML='<div class="lc"><div class="e">LOTE</div><div class="v">'+
         usdF(st.valor)+'</div><div class="s">'+cant(st.monedas)+' '+esc(f.sym||"")+'</div></div>'+
         '<div class="lc"><div class="e">LO LIQUIDAN EN</div><div class="v" style="font-size:16px">'+
@@ -10009,7 +10201,7 @@ function editarOperacion(id, k){
               (st.flot!=null?((st.flot>=0?"+":"−")+usdF(st.flot).replace("-","")):"—")+
               '</div><div class="s">con el precio de este momento</div></div>'));
     }
-    ["#eM","#eA","#eE","#eSL","#eTP","#eX","#eK"].forEach(function(id2){
+    ["#eM","#eA","#eE","#eSL","#eTP","#eX","#eK","#eFu"].forEach(function(id2){
       M.querySelector(id2).addEventListener("input", rec);
     });
     M.querySelector("#eL").addEventListener("change", rec);
@@ -10033,7 +10225,7 @@ function editarOperacion(id, k){
       if(d.apal>125){ aviso("125x es el apalancamiento más alto que existe. Revise ese número.",true); return; }
       if(!(d.entrada>0)){ aviso("Escriba el precio de entrada.",true); return; }
       if(d.salida!=null&&d.salida<=0){ aviso("El precio de salida debe ser mayor que cero.",true); return; }
-      if(d.com<0){ aviso("La comisión no puede ser negativa.",true); return; }
+      if(d.comK!=null&&d.comK<0){ aviso("La comisión no puede ser negativa.",true); return; }
       if(n!=null&&(n<=0||n!==Math.round(n))){
         aviso("El número de operación debe ser entero y mayor que cero.",true); return;
       }
@@ -10043,14 +10235,19 @@ function editarOperacion(id, k){
       }
       f.n=n!=null?n:f.n;
       f.lado=d.lado; f.monto=d.monto; f.apal=d.apal; f.entrada=d.entrada;
-      f.sl=d.sl; f.tp=d.tp; f.salida=d.salida; f.com=d.com;
+      f.sl=d.sl; f.tp=d.tp; f.salida=d.salida;
+      var oq=comoQueda(d);
+      if(oq.comFija!=null) f.comFija=oq.comFija; else { delete f.comFija; f.comPct=oq.comPct; }
+      if(oq.fund!=null) f.fund=oq.fund; else delete f.fund;
       f.fecha=M.querySelector("#eF").value||f.fecha;
       f.estr=M.querySelector("#eEs").value.trim();
       f.nota=M.querySelector("#eNo").value.trim();
       f.plan=plan; f.animo=animo;
       f.estado = d.estado;
       if(f.estado==="cerrada"&&!f.cierre) f.cierre=hoy();
-      f.pct=null; tocar(f);
+      f.pct=null;
+      f.com=estadoOp(f).comTr;      /* el total, para quien lo lea con una versión vieja */
+      tocar(f);
       guardar(); cerrar(); repintar(); aviso("Guardada.");
     };
   });
@@ -10209,7 +10406,7 @@ function vigilarCierres(){
       if(!llego){ if(f.sinFondos) delete f.sinFondos; return; }
       /* v56 · como en la casa de cambio: si el dinero libre no alcanza para el margen, NO se abre.
          Se avisa una vez; cuando haya dinero (o la edite) se abre sola, o con «Ya entré». */
-      var LB=libreOperar(par[0], f.prueba), nec=+f.monto||0;
+      var LB=libreOperar(par[0], f.prueba), nec=(+f.monto||0)+(estadoOp(f).comA||0);
       if(LB && nec>LB.libre+0.005){
         if(!f.sinFondos){
           f.sinFondos=1; tocar(f);
@@ -10220,7 +10417,7 @@ function vigilarCierres(){
         return;
       }
       delete f.sinFondos;
-      f.estado="abierta"; f.horaEntrada=horaYa(); f.fecha=f.fecha||hoy(); tocar(f);
+      f.estado="abierta"; f.horaEntrada=horaYa(); f.fechaEntrada=hoy(); f.fecha=f.fecha||hoy(); tocar(f);
       /* v38 · frases enteras, traducidas una por una ANTES de juntarlas (el
          aviso del teléfono no pasa por la pantalla, así que nadie lo traducía) */
       hechas.push({tipo:par[0], bueno:true,
@@ -10252,7 +10449,9 @@ function vigilarCierres(){
       }
       if(!toco) return;
       f.salida=toco.p; f.estado="cerrada"; f.cierre=hoy(); f.pct=null;
-      f.auto=toco.q; f.horaCierre=horaYa(); tocar(f);
+      f.auto=toco.q; f.horaCierre=horaYa();
+      var em=estadoOp(f); if(f.comPct==null&&f.comFija==null&&em.comPct!=null) f.comPct=em.comPct;
+      f.com=em.comTr; tocar(f);
       var st=estadoOp(f);
       var fr = toco.q==="liq"
         ? "La operación N° "+(f.n||"")+" de "+f.sym+" se liquidó en "+precio(toco.p)+": perdió todo lo que puso ("+usdF(Math.abs(st.gan))+")."
@@ -10284,6 +10483,7 @@ function vigilarCierres(){
     BD.ordenes=BD.ordenes.filter(function(x){ return quitar.indexOf(x)<0; });
     if(esCompra){
       /* compra programada: se hace al precio puesto, si en spot hay el dinero */
+      if(!(+o.com>0)) o.com=comSpot(casaGlobal(), c*o.precio);
       var coste=c*o.precio+(+o.com||0), hay=efectivoDet0().total;
       if(!(c>0) || coste>hay+0.005){
         hechas.push({tipo:"spot", texto:"La compra programada de "+o.sym+" no se hizo: no había dinero suficiente en spot", bueno:false});
@@ -10300,6 +10500,7 @@ function vigilarCierres(){
       return;
     }
     var prom=e.promedio||0;
+    if(!(+o.com>0)) o.com=comSpot(casaGlobal(), c*o.precio);
     BD.ops.push({id:idNuevo(), sym:o.sym, tipo:"venta", cant:c, precio:o.precio, com:+o.com||0,
       fecha:hoy(), nota:etq+" · se cumplió a las "+horaYa(),
       casa:casaGlobal(), auto:true, mod:ahoraReal()});
@@ -11345,6 +11546,8 @@ function verOperacion(id, amb){
           e.ganTp!=null?(netoTp(e)>=0?"ahí gana ":"ahí pierde ")+usdF(Math.abs(netoTp(e))):"", netoTp(e)!=null&&netoTp(e)<0?"dn":"up"):"")+
         (e.liq!=null?cuadroFicha("LIQUIDACIÓN", precio(e.liq),
           "se queda sin el margen"):"")+
+        cuadroFicha("COMISIÓN", usdF(e.comTr), parteCom(e))+
+        cuadroFicha("FINANCIACIÓN", Math.abs(e.fund)<0.005?usdF(0):usdS(-e.fund), pieFund(e), e.fund>0.004?"dn":e.fund<-0.004?"up":"")+
         (e.rr!=null?cuadroFicha("RELACIÓN", e.rr.toFixed(2).replace(".",sepDecimal())+" a 1",
           "gana frente a lo que arriesga"):"")+
         (e.abierta&&e.flot!=null
@@ -12588,6 +12791,10 @@ function nuevaAlerta(){
    «Saldo disponible» y «Comisiones». Antes esas tarjetas no llevaban a
    ningún lado y los números no se podían comprobar.
    ===================================================================== */
+function filaDetH(et, val, nota, clase){
+  return '<div class="fdet"><span class="e">'+et+'</span>'+
+    '<b class="'+(clase||"")+'">'+val+'</b>'+(nota?'<i>'+nota+'</i>':'')+'</div>';
+}
 function filaDet(et, val, nota, clase){
   return '<div class="fdet"><span class="e">'+esc(et)+'</span>'+
     '<b class="'+(clase||"")+'">'+val+'</b>'+
@@ -12641,6 +12848,32 @@ function hojaSaldo(){
    Desde Backtesting enseña la prueba abierta; desde el Resumen o Futuros,
    su dinero de verdad. */
 /* las comisiones de la prueba de Backtesting que tenga abierta */
+/* v57 · la comisión de CADA operación y de CADA compra o venta, no solo el total */
+function listaComOps(fuente){
+  var L=(fuente||[]).map(estadoOp).filter(function(e){ return !e.programada; });
+  if(!L.length) return "";
+  L.sort(function(a,b){ var x=(a.f.cierre||a.f.fecha||""), y=(b.f.cierre||b.f.fecha||""); return x<y?1:x>y?-1:((+b.f.n||0)-(+a.f.n||0)); });
+  return '<div class="fsec">Operación por operación</div>'+L.map(function(e){
+    var f=e.f, t=textoFund(e);
+    return filaDetH('<span>N° '+esc(String(f.n||"—"))+'</span> · <span translate="no">'+esc(f.sym)+'</span> · <span>'+e.apal+'x</span>'+
+        (e.abierta?' · <span>abierta</span>':''),
+      usdF(e.comTr),
+      parteCom(e)+(t?' · <span>'+t+'</span>':'')+(e.comFija!=null?' · <span>la que usted anotó</span>':''));
+  }).join("");
+}
+function listaComSpot(){
+  var L=BD.ops.filter(function(o){ return (+o.com||0)>0 && o.tipo!=="traspaso"; });
+  if(!L.length) return "";
+  L=L.slice().sort(function(a,b){ return (a.fecha||"")<(b.fecha||"")?1:-1; });
+  return '<div class="fsec">Spot, compra por compra y venta por venta</div>'+L.map(function(o){
+    var v=(+o.cant||0)*(+o.precio||0), est=esEstable(o.sym);
+    var et = (est ? '<span>'+(o.tipo==="venta"?"Retiro":"Depósito")+'</span>'
+                 : '<span>'+(o.tipo==="venta"?"Venta de ":"Compra de ")+cant(+o.cant||0)+" "+esc(o.sym)+'</span>')+
+             ' · <span>'+esc(fechaCorta(o.fecha))+'</span>';
+    return filaDetH(et, usdF(+o.com), (v>0&&!est?'<span>el '+pctS(o.com/v*100,3)+' de '+usdF(v)+'</span>':'')+
+      (o.casa&&CASAS[o.casa]?' · <span translate="no">'+esc(CASAS[o.casa].n)+'</span>':''));
+  }).join("");
+}
 function hojaComisionesPrueba(){
   var pr=pruebaActiva();
   if(!pr){ aviso("Primero abra una prueba de backtesting.",true); return; }
@@ -12670,8 +12903,11 @@ function hojaComisionesPrueba(){
         filaDet("Se fue en comisiones", "−"+usdF(T.comision),
                 cuanto>100 ? "la comisión se llevó todo lo que ganó, y más"
                            : "de cada $100 que ganó, "+usdF(cuanto))+
+        (Math.abs(T.fund||0)>=0.005?filaDet("Financiación", (T.fund>0?"−":"+")+usdF(Math.abs(T.fund)),
+                T.fund>0?"lo que pagó por tenerlas abiertas (cada 8 h)":"lo que le pagaron por tenerlas abiertas (cada 8 h)", T.fund>0?"dn":"up"):"")+
         filaDet("Le quedó limpio", usdF(T.gan), "", T.gan>=0?"up":"dn")
       : "")+
+    listaComOps(opsDePrueba(pr.id))+
 
     '<div class="nota">En futuros se paga <b>dos veces</b>: al entrar y al salir. '+
     'Como en la prueba puede poner cantidades enormes, aquí se ve clarísimo cuánto '+
@@ -12714,8 +12950,12 @@ function hojaComisiones(){
         filaDet("Se fue en comisiones", "−"+usdF(K.fut),
                 cuanto>100 ? "la comisión se llevó todo lo que ganó, y más"
                            : "de cada $100 que ganó, "+usdF(cuanto))+
+        (Math.abs(T.fund||0)>=0.005?filaDet("Financiación", (T.fund>0?"−":"+")+usdF(Math.abs(T.fund)),
+                T.fund>0?"lo que pagó por tenerlas abiertas (cada 8 h)":"lo que le pagaron por tenerlas abiertas (cada 8 h)", T.fund>0?"dn":"up"):"")+
         filaDet("Le quedó limpio", usdF(T.gan), "", T.gan>=0?"up":"dn")
       : "")+
+    listaComOps(BD.fut)+
+    listaComSpot()+
 
     '<div class="nota">En futuros se paga <b>dos veces</b>: al entrar y al salir. '+
     'Por eso con '+pctS((+BD.ajustes.comPct||0.05),3)+' de comisión, una operación de '+
@@ -16482,16 +16722,17 @@ function datosInforme(){
       cols:[{t:"N°",k:"int"},{t:"Fecha",k:"f"},{t:"Moneda",k:"t",neg:1},{t:"Lado",k:"t",tr:1},{t:"Estado",k:"t",tr:1},
             {t:"Dinero puesto",k:"usd"},{t:"Apal.",k:"x"},{t:"Entrada",k:"precio"},{t:"Stop",k:"precio"},
             {t:"Objetivo",k:"precio"},{t:"Salida",k:"precio"},{t:"Resultado",k:"usd"},
-            {t:"Resultado %",k:"pct"},{t:"Comisión",k:"usd"},{t:"Nota",k:"t",larga:1}],
+            {t:"Resultado %",k:"pct"},{t:"Comisión abrir",k:"usd"},{t:"Comisión cerrar",k:"usd"},
+            {t:"Financiación",k:"usd"},{t:"Comisión total",k:"usd"},{t:"Nota",k:"t",larga:1}],
       filas:X.lista.map(function(e){
         var est = e.programada ? "Programada" : e.abierta ? "Abierta" : (e.liquidado ? "Liquidada" : "Cerrada");
         var res = e.abierta ? e.flot : e.gan;
         var rp  = e.abierta ? e.pctFlotNeto : e.pctNeto;   /* v39 · el % del resultado, con la comisión */
         return [+e.f.n||null, e.f.fecha||"", e.f.sym||"", e.f.lado==="SHORT"?"Corto":"Largo", est,
                 e.margen, e.apal+"x", e.entrada||null, e.sl, e.tp, e.salida,
-                e.programada?null:res, e.programada?null:rp, e.com, e.f.nota||""];
+                e.programada?null:res, e.programada?null:rp, e.comA, e.comC, e.programada?null:e.fund, e.comTr, e.f.nota||""];
       }),
-      total: XT.n ? ["TOTAL","","","","","","","","","","",XT.gan,null,XT.comision,""] : null,
+      total: XT.n ? ["TOTAL","","","","","","","","","","",XT.gan,null,"","",XT.fund,XT.comision,""] : null,
       vacio:"Todavía no hay operaciones."
     };
   }
@@ -17635,6 +17876,46 @@ function engancharIdioma(box){
    Se respeta el orden de los huecos tal como salen en español.
    ===================================================================== */
 DIC.en={
+"lo que pagó por tenerlas abiertas (cada # h)":"what you paid for keeping them open (every # h)",
+"lo que le pagaron por tenerlas abiertas (cada # h)":"what you were paid for keeping them open (every # h)",
+"Comisión abrir":"Fee open",
+"Comisión cerrar":"Fee close",
+"comisiones ya cobradas $#":"fees already charged $#",
+"financiación a favor $#":"funding in your favor $#",
+"Eso es $# de margen más $# de comisión al entrar.":"That is $# of margin plus $# of fee on entry.",
+"comisión $#":"fee $#",
+"(abrir $# + cerrar $#)":"(open $# + close $#)",
+"financiación $#":"funding $#",
+"le pagaron $# de financiación":"you were paid $# in funding",
+"la que usted anotó":"the one you entered",
+"La que usted anotó:":"The one you entered:",
+"Se calcula sola:":"Calculated automatically:",
+"Que se calcule sola":"Calculate it automatically",
+"todavía ningún cobro (cada # h)":"no funding charge yet (every # h)",
+"# cobro de #% cada # h":"# charge of #% every # h",
+"# cobros de #% cada # h":"# charges of #% every # h",
+"Financiación":"Funding",
+"FINANCIACIÓN":"FUNDING",
+"COMISIÓN":"FEE",
+"comisiones":"fees",
+"Operación por operación":"Trade by trade",
+"Spot, compra por compra y venta por venta":"Spot, buy by buy and sale by sale",
+"Retiro":"Withdrawal",
+"Depósito":"Deposit",
+"Compra de # @":"Buy of # @",
+"Venta de # @":"Sale of # @",
+"el #% de $#":"#% of $#",
+"Comisión real (USD)":"Actual fee (USD)",
+"Financiación real (USD)":"Actual funding (USD)",
+"Comisión de esta operación:":"Fee for this trade:",
+"#% al abrir y otro #% al cerrar, sobre el tamaño":"#% to open and another #% to close, on the size",
+"Financiación:":"Funding:",
+"· vacío = se calcula sola":"· empty = calculated automatically",
+"si sale en el stop":"if it exits at the stop",
+"financiación ≈ $# cada # h":"funding ≈ $# every # h",
+"(el #% de lo que compra)":"(#% of what you buy)",
+"(el #% de lo que vende)":"(#% of what you sell)",
+"Comisión (USD)":"Fee (USD)",
 "lo liquidan antes, en $#":"liquidated first, at $#",
 "Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Careful: before reaching the stop you get liquidated at $# and lose everything you put in ($#), no more.",
 "La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"Trade No. # on @ was liquidated at $#: you lost everything you put in ($#).",
@@ -19597,6 +19878,46 @@ DIC.en={
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
+"lo que pagó por tenerlas abiertas (cada # h)":"o que pagou por mantê-las abertas (a cada # h)",
+"lo que le pagaron por tenerlas abiertas (cada # h)":"o que lhe pagaram por mantê-las abertas (a cada # h)",
+"Comisión abrir":"Taxa abrir",
+"Comisión cerrar":"Taxa fechar",
+"comisiones ya cobradas $#":"taxas já cobradas $#",
+"financiación a favor $#":"financiamento a favor $#",
+"Eso es $# de margen más $# de comisión al entrar.":"Isso é $# de margem mais $# de taxa ao entrar.",
+"comisión $#":"taxa $#",
+"(abrir $# + cerrar $#)":"(abrir $# + fechar $#)",
+"financiación $#":"financiamento $#",
+"le pagaron $# de financiación":"pagaram-lhe $# de financiamento",
+"la que usted anotó":"a que você anotou",
+"La que usted anotó:":"A que você anotou:",
+"Se calcula sola:":"Calcula-se sozinha:",
+"Que se calcule sola":"Que se calcule sozinha",
+"todavía ningún cobro (cada # h)":"ainda nenhuma cobrança (a cada # h)",
+"# cobro de #% cada # h":"# cobrança de #% a cada # h",
+"# cobros de #% cada # h":"# cobranças de #% a cada # h",
+"Financiación":"Financiamento",
+"FINANCIACIÓN":"FINANCIAMENTO",
+"COMISIÓN":"TAXA",
+"comisiones":"taxas",
+"Operación por operación":"Operação por operação",
+"Spot, compra por compra y venta por venta":"Spot, compra por compra e venda por venda",
+"Retiro":"Saque",
+"Depósito":"Depósito",
+"Compra de # @":"Compra de # @",
+"Venta de # @":"Venda de # @",
+"el #% de $#":"#% de $#",
+"Comisión real (USD)":"Taxa real (USD)",
+"Financiación real (USD)":"Financiamento real (USD)",
+"Comisión de esta operación:":"Taxa desta operação:",
+"#% al abrir y otro #% al cerrar, sobre el tamaño":"#% ao abrir e outro #% ao fechar, sobre o tamanho",
+"Financiación:":"Financiamento:",
+"· vacío = se calcula sola":"· vazio = calcula-se sozinha",
+"si sale en el stop":"se sair no stop",
+"financiación ≈ $# cada # h":"financiamento ≈ $# a cada # h",
+"(el #% de lo que compra)":"(#% do que compra)",
+"(el #% de lo que vende)":"(#% do que vende)",
+"Comisión (USD)":"Taxa (USD)",
 "lo liquidan antes, en $#":"liquidam antes, em $#",
 "Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Atenção: antes de chegar ao stop liquidam em $# e perde tudo o que colocou ($#), nada mais.",
 "La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"A operação N° # de @ foi liquidada em $#: perdeu tudo o que colocou ($#).",
@@ -21552,6 +21873,46 @@ DIC.pt={
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
+"lo que pagó por tenerlas abiertas (cada # h)":"ce que vous avez payé pour les garder ouvertes (toutes les # h)",
+"lo que le pagaron por tenerlas abiertas (cada # h)":"ce qu'on vous a versé pour les garder ouvertes (toutes les # h)",
+"Comisión abrir":"Frais ouverture",
+"Comisión cerrar":"Frais fermeture",
+"comisiones ya cobradas $#":"frais déjà prélevés $#",
+"financiación a favor $#":"financement en votre faveur $#",
+"Eso es $# de margen más $# de comisión al entrar.":"Soit $# de marge plus $# de frais à l'entrée.",
+"comisión $#":"frais $#",
+"(abrir $# + cerrar $#)":"(ouvrir $# + fermer $#)",
+"financiación $#":"financement $#",
+"le pagaron $# de financiación":"on vous a versé $# de financement",
+"la que usted anotó":"celle que vous avez saisie",
+"La que usted anotó:":"Celle que vous avez saisie :",
+"Se calcula sola:":"Calculée automatiquement :",
+"Que se calcule sola":"La calculer automatiquement",
+"todavía ningún cobro (cada # h)":"aucun prélèvement pour l'instant (toutes les # h)",
+"# cobro de #% cada # h":"# prélèvement de #% toutes les # h",
+"# cobros de #% cada # h":"# prélèvements de #% toutes les # h",
+"Financiación":"Financement",
+"FINANCIACIÓN":"FINANCEMENT",
+"COMISIÓN":"FRAIS",
+"comisiones":"frais",
+"Operación por operación":"Opération par opération",
+"Spot, compra por compra y venta por venta":"Spot, achat par achat et vente par vente",
+"Retiro":"Retrait",
+"Depósito":"Dépôt",
+"Compra de # @":"Achat de # @",
+"Venta de # @":"Vente de # @",
+"el #% de $#":"#% de $#",
+"Comisión real (USD)":"Frais réels (USD)",
+"Financiación real (USD)":"Financement réel (USD)",
+"Comisión de esta operación:":"Frais de cette opération :",
+"#% al abrir y otro #% al cerrar, sobre el tamaño":"#% à l'ouverture et encore #% à la fermeture, sur la taille",
+"Financiación:":"Financement :",
+"· vacío = se calcula sola":"· vide = calculé automatiquement",
+"si sale en el stop":"s'il sort au stop",
+"financiación ≈ $# cada # h":"financement ≈ $# toutes les # h",
+"(el #% de lo que compra)":"(#% de ce que vous achetez)",
+"(el #% de lo que vende)":"(#% de ce que vous vendez)",
+"Comisión (USD)":"Frais (USD)",
 "lo liquidan antes, en $#":"liquidé avant, à $#",
 "Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Attention : avant d'atteindre le stop, vous êtes liquidé à $# et perdez tout ce que vous avez mis ($#), pas plus.",
 "La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"L'opération n° # sur @ a été liquidée à $# : vous avez perdu tout ce que vous aviez mis ($#).",
@@ -23507,6 +23868,46 @@ DIC.fr={
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
+"lo que pagó por tenerlas abiertas (cada # h)":"was Sie fürs Offenhalten gezahlt haben (alle # h)",
+"lo que le pagaron por tenerlas abiertas (cada # h)":"was Ihnen fürs Offenhalten gezahlt wurde (alle # h)",
+"Comisión abrir":"Gebühr Öffnen",
+"Comisión cerrar":"Gebühr Schließen",
+"comisiones ya cobradas $#":"bereits berechnete Gebühren $#",
+"financiación a favor $#":"Finanzierung zu Ihren Gunsten $#",
+"Eso es $# de margen más $# de comisión al entrar.":"Das sind $# Margin plus $# Gebühr beim Einstieg.",
+"comisión $#":"Gebühr $#",
+"(abrir $# + cerrar $#)":"(Öffnen $# + Schließen $#)",
+"financiación $#":"Finanzierung $#",
+"le pagaron $# de financiación":"Ihnen wurden $# Finanzierung gezahlt",
+"la que usted anotó":"die von Ihnen eingetragene",
+"La que usted anotó:":"Die von Ihnen eingetragene:",
+"Se calcula sola:":"Wird automatisch berechnet:",
+"Que se calcule sola":"Automatisch berechnen lassen",
+"todavía ningún cobro (cada # h)":"noch keine Belastung (alle # h)",
+"# cobro de #% cada # h":"# Belastung von #% alle # h",
+"# cobros de #% cada # h":"# Belastungen von #% alle # h",
+"Financiación":"Finanzierung",
+"FINANCIACIÓN":"FINANZIERUNG",
+"COMISIÓN":"GEBÜHR",
+"comisiones":"Gebühren",
+"Operación por operación":"Trade für Trade",
+"Spot, compra por compra y venta por venta":"Spot, Kauf für Kauf und Verkauf für Verkauf",
+"Retiro":"Auszahlung",
+"Depósito":"Einzahlung",
+"Compra de # @":"Kauf von # @",
+"Venta de # @":"Verkauf von # @",
+"el #% de $#":"#% von $#",
+"Comisión real (USD)":"Tatsächliche Gebühr (USD)",
+"Financiación real (USD)":"Tatsächliche Finanzierung (USD)",
+"Comisión de esta operación:":"Gebühr dieses Trades:",
+"#% al abrir y otro #% al cerrar, sobre el tamaño":"#% beim Öffnen und weitere #% beim Schließen, auf die Größe",
+"Financiación:":"Finanzierung:",
+"· vacío = se calcula sola":"· leer = wird automatisch berechnet",
+"si sale en el stop":"wenn er am Stop aussteigt",
+"financiación ≈ $# cada # h":"Finanzierung ≈ $# alle # h",
+"(el #% de lo que compra)":"(#% von dem, was Sie kaufen)",
+"(el #% de lo que vende)":"(#% von dem, was Sie verkaufen)",
+"Comisión (USD)":"Gebühr (USD)",
 "lo liquidan antes, en $#":"vorher liquidiert, bei $#",
 "Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Achtung: Vor dem Stop werden Sie bei $# liquidiert und verlieren alles, was Sie eingesetzt haben ($#), nicht mehr.",
 "La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"Trade Nr. # auf @ wurde bei $# liquidiert: Sie haben alles verloren, was Sie eingesetzt hatten ($#).",
@@ -25462,6 +25863,46 @@ DIC.de={
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
+"lo que pagó por tenerlas abiertas (cada # h)":"quello che ha pagato per tenerle aperte (ogni # h)",
+"lo que le pagaron por tenerlas abiertas (cada # h)":"quello che le hanno pagato per tenerle aperte (ogni # h)",
+"Comisión abrir":"Commissione apertura",
+"Comisión cerrar":"Commissione chiusura",
+"comisiones ya cobradas $#":"commissioni già addebitate $#",
+"financiación a favor $#":"finanziamento a favore $#",
+"Eso es $# de margen más $# de comisión al entrar.":"Sono $# di margine più $# di commissione all'ingresso.",
+"comisión $#":"commissione $#",
+"(abrir $# + cerrar $#)":"(apertura $# + chiusura $#)",
+"financiación $#":"finanziamento $#",
+"le pagaron $# de financiación":"le hanno pagato $# di finanziamento",
+"la que usted anotó":"quella che ha scritto lei",
+"La que usted anotó:":"Quella che ha scritto lei:",
+"Se calcula sola:":"Si calcola da sola:",
+"Que se calcule sola":"Che si calcoli da sola",
+"todavía ningún cobro (cada # h)":"ancora nessun addebito (ogni # h)",
+"# cobro de #% cada # h":"# addebito del #% ogni # h",
+"# cobros de #% cada # h":"# addebiti del #% ogni # h",
+"Financiación":"Finanziamento",
+"FINANCIACIÓN":"FINANZIAMENTO",
+"COMISIÓN":"COMMISSIONE",
+"comisiones":"commissioni",
+"Operación por operación":"Operazione per operazione",
+"Spot, compra por compra y venta por venta":"Spot, acquisto per acquisto e vendita per vendita",
+"Retiro":"Prelievo",
+"Depósito":"Deposito",
+"Compra de # @":"Acquisto di # @",
+"Venta de # @":"Vendita di # @",
+"el #% de $#":"il #% di $#",
+"Comisión real (USD)":"Commissione reale (USD)",
+"Financiación real (USD)":"Finanziamento reale (USD)",
+"Comisión de esta operación:":"Commissione di questa operazione:",
+"#% al abrir y otro #% al cerrar, sobre el tamaño":"#% all'apertura e un altro #% alla chiusura, sulla dimensione",
+"Financiación:":"Finanziamento:",
+"· vacío = se calcula sola":"· vuoto = si calcola da sola",
+"si sale en el stop":"se esce allo stop",
+"financiación ≈ $# cada # h":"finanziamento ≈ $# ogni # h",
+"(el #% de lo que compra)":"(il #% di ciò che compra)",
+"(el #% de lo que vende)":"(il #% di ciò che vende)",
+"Comisión (USD)":"Commissione (USD)",
 "lo liquidan antes, en $#":"liquidato prima, a $#",
 "Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Attenzione: prima di arrivare allo stop la liquidano a $# e perde tutto quello che ha messo ($#), non di più.",
 "La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"L'operazione N° # di @ è stata liquidata a $#: ha perso tutto quello che aveva messo ($#).",
@@ -27417,6 +27858,46 @@ DIC.it={
 };
 /* NEDERLANDS · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.nl={
+"lo que pagó por tenerlas abiertas (cada # h)":"wat u betaalde om ze open te houden (elke # u)",
+"lo que le pagaron por tenerlas abiertas (cada # h)":"wat u kreeg om ze open te houden (elke # u)",
+"Comisión abrir":"Kosten openen",
+"Comisión cerrar":"Kosten sluiten",
+"comisiones ya cobradas $#":"al betaalde kosten $#",
+"financiación a favor $#":"financiering in uw voordeel $#",
+"Eso es $# de margen más $# de comisión al entrar.":"Dat is $# marge plus $# kosten bij het openen.",
+"comisión $#":"kosten $#",
+"(abrir $# + cerrar $#)":"(openen $# + sluiten $#)",
+"financiación $#":"financiering $#",
+"le pagaron $# de financiación":"u kreeg $# aan financiering",
+"la que usted anotó":"die u invulde",
+"La que usted anotó:":"Die u invulde:",
+"Se calcula sola:":"Wordt vanzelf berekend:",
+"Que se calcule sola":"Vanzelf laten berekenen",
+"todavía ningún cobro (cada # h)":"nog geen afschrijving (elke # u)",
+"# cobro de #% cada # h":"# afschrijving van #% elke # u",
+"# cobros de #% cada # h":"# afschrijvingen van #% elke # u",
+"Financiación":"Financiering",
+"FINANCIACIÓN":"FINANCIERING",
+"COMISIÓN":"KOSTEN",
+"comisiones":"kosten",
+"Operación por operación":"Trade per trade",
+"Spot, compra por compra y venta por venta":"Spot, aankoop per aankoop en verkoop per verkoop",
+"Retiro":"Opname",
+"Depósito":"Storting",
+"Compra de # @":"Aankoop van # @",
+"Venta de # @":"Verkoop van # @",
+"el #% de $#":"#% van $#",
+"Comisión real (USD)":"Werkelijke kosten (USD)",
+"Financiación real (USD)":"Werkelijke financiering (USD)",
+"Comisión de esta operación:":"Kosten van deze trade:",
+"#% al abrir y otro #% al cerrar, sobre el tamaño":"#% bij openen en nog #% bij sluiten, op de grootte",
+"Financiación:":"Financiering:",
+"· vacío = se calcula sola":"· leeg = wordt vanzelf berekend",
+"si sale en el stop":"als hij bij de stop uitstapt",
+"financiación ≈ $# cada # h":"financiering ≈ $# elke # u",
+"(el #% de lo que compra)":"(#% van wat u koopt)",
+"(el #% de lo que vende)":"(#% van wat u verkoopt)",
+"Comisión (USD)":"Kosten (USD)",
 "lo liquidan antes, en $#":"eerder geliquideerd, op $#",
 "Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Let op: vóór de stop wordt u geliquideerd op $# en verliest u alles wat u inlegde ($#), niet meer.",
 "La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"Trade nr. # op @ is geliquideerd op $#: u verloor alles wat u inlegde ($#).",
@@ -29658,6 +30139,46 @@ DIC.nl={
 };
 /* POLSKI · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.pl={
+"lo que pagó por tenerlas abiertas (cada # h)":"ile zapłacono za trzymanie ich otwartych (co # h)",
+"lo que le pagaron por tenerlas abiertas (cada # h)":"ile wypłacono za trzymanie ich otwartych (co # h)",
+"Comisión abrir":"Prowizja otwarcie",
+"Comisión cerrar":"Prowizja zamknięcie",
+"comisiones ya cobradas $#":"już pobrane prowizje $#",
+"financiación a favor $#":"finansowanie na Pana(i) korzyść $#",
+"Eso es $# de margen más $# de comisión al entrar.":"To $# depozytu plus $# prowizji przy wejściu.",
+"comisión $#":"prowizja $#",
+"(abrir $# + cerrar $#)":"(otwarcie $# + zamknięcie $#)",
+"financiación $#":"finansowanie $#",
+"le pagaron $# de financiación":"wypłacono Panu(i) $# finansowania",
+"la que usted anotó":"ta wpisana przez Pana(ią)",
+"La que usted anotó:":"Ta wpisana przez Pana(ią):",
+"Se calcula sola:":"Liczy się sama:",
+"Que se calcule sola":"Niech liczy się sama",
+"todavía ningún cobro (cada # h)":"jeszcze żadnego pobrania (co # h)",
+"# cobro de #% cada # h":"# pobranie #% co # h",
+"# cobros de #% cada # h":"# pobrań #% co # h",
+"Financiación":"Finansowanie",
+"FINANCIACIÓN":"FINANSOWANIE",
+"COMISIÓN":"PROWIZJA",
+"comisiones":"prowizje",
+"Operación por operación":"Transakcja po transakcji",
+"Spot, compra por compra y venta por venta":"Spot, zakup po zakupie i sprzedaż po sprzedaży",
+"Retiro":"Wypłata",
+"Depósito":"Wpłata",
+"Compra de # @":"Zakup # @",
+"Venta de # @":"Sprzedaż # @",
+"el #% de $#":"#% z $#",
+"Comisión real (USD)":"Rzeczywista prowizja (USD)",
+"Financiación real (USD)":"Rzeczywiste finansowanie (USD)",
+"Comisión de esta operación:":"Prowizja tej transakcji:",
+"#% al abrir y otro #% al cerrar, sobre el tamaño":"#% przy otwarciu i kolejne #% przy zamknięciu, od wielkości",
+"Financiación:":"Finansowanie:",
+"· vacío = se calcula sola":"· puste = liczy się samo",
+"si sale en el stop":"jeśli wyjdzie na stopie",
+"financiación ≈ $# cada # h":"finansowanie ≈ $# co # h",
+"(el #% de lo que compra)":"(#% tego, co kupuje)",
+"(el #% de lo que vende)":"(#% tego, co sprzedaje)",
+"Comisión (USD)":"Prowizja (USD)",
 "lo liquidan antes, en $#":"likwidacja wcześniej, przy $#",
 "Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Uwaga: przed stopem nastąpi likwidacja przy $# i traci Pan(i) wszystko, co wpłacono ($#), nie więcej.",
 "La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"Transakcja nr # na @ została zlikwidowana przy $#: strata wszystkiego, co wpłacono ($#).",
@@ -31899,6 +32420,46 @@ DIC.pl={
 };
 /* TÜRKÇE · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.tr={
+"lo que pagó por tenerlas abiertas (cada # h)":"açık tutmak için ödediğiniz (# saatte bir)",
+"lo que le pagaron por tenerlas abiertas (cada # h)":"açık tutmak için size ödenen (# saatte bir)",
+"Comisión abrir":"Açılış komisyonu",
+"Comisión cerrar":"Kapanış komisyonu",
+"comisiones ya cobradas $#":"zaten kesilen komisyonlar $#",
+"financiación a favor $#":"lehinize fonlama $#",
+"Eso es $# de margen más $# de comisión al entrar.":"Bu, $# teminat artı girişte $# komisyon demek.",
+"comisión $#":"komisyon $#",
+"(abrir $# + cerrar $#)":"(açılış $# + kapanış $#)",
+"financiación $#":"fonlama $#",
+"le pagaron $# de financiación":"size $# fonlama ödendi",
+"la que usted anotó":"sizin girdiğiniz",
+"La que usted anotó:":"Sizin girdiğiniz:",
+"Se calcula sola:":"Kendiliğinden hesaplanır:",
+"Que se calcule sola":"Kendiliğinden hesaplansın",
+"todavía ningún cobro (cada # h)":"henüz kesinti yok (# saatte bir)",
+"# cobro de #% cada # h":"# kesinti (%#, # saatte bir)",
+"# cobros de #% cada # h":"# kesinti (%#, # saatte bir)",
+"Financiación":"Fonlama",
+"FINANCIACIÓN":"FONLAMA",
+"COMISIÓN":"KOMİSYON",
+"comisiones":"komisyonlar",
+"Operación por operación":"İşlem işlem",
+"Spot, compra por compra y venta por venta":"Spot, alım alım ve satış satış",
+"Retiro":"Çekim",
+"Depósito":"Yatırım",
+"Compra de # @":"# @ alımı",
+"Venta de # @":"# @ satışı",
+"el #% de $#":"%# ($# üzerinden)",
+"Comisión real (USD)":"Gerçek komisyon (USD)",
+"Financiación real (USD)":"Gerçek fonlama (USD)",
+"Comisión de esta operación:":"Bu işlemin komisyonu:",
+"#% al abrir y otro #% al cerrar, sobre el tamaño":"büyüklük üzerinden açılışta %# ve kapanışta yine %#",
+"Financiación:":"Fonlama:",
+"· vacío = se calcula sola":"· boş = kendiliğinden hesaplanır",
+"si sale en el stop":"stop'ta çıkarsa",
+"financiación ≈ $# cada # h":"fonlama ≈ $# (# saatte bir)",
+"(el #% de lo que compra)":"(aldığınızın %#'i)",
+"(el #% de lo que vende)":"(sattığınızın %#'i)",
+"Comisión (USD)":"Komisyon (USD)",
 "lo liquidan antes, en $#":"daha önce tasfiye, $# seviyesinde",
 "Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Dikkat: stop'a ulaşmadan $# seviyesinde tasfiye edilir ve yatırdığınızın tamamını ($#) kaybedersiniz, fazlasını değil.",
 "La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"No. # @ işlemi $# seviyesinde tasfiye edildi: yatırdığınızın tamamı kaybedildi ($#).",
@@ -34140,6 +34701,46 @@ DIC.tr={
 };
 /* РУССКИЙ · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ru={
+"lo que pagó por tenerlas abiertas (cada # h)":"сколько вы заплатили за удержание открытыми (каждые # ч)",
+"lo que le pagaron por tenerlas abiertas (cada # h)":"сколько вам заплатили за удержание открытыми (каждые # ч)",
+"Comisión abrir":"Комиссия открытие",
+"Comisión cerrar":"Комиссия закрытие",
+"comisiones ya cobradas $#":"уже списанные комиссии $#",
+"financiación a favor $#":"финансирование в вашу пользу $#",
+"Eso es $# de margen más $# de comisión al entrar.":"Это $# маржи плюс $# комиссии при входе.",
+"comisión $#":"комиссия $#",
+"(abrir $# + cerrar $#)":"(открыть $# + закрыть $#)",
+"financiación $#":"финансирование $#",
+"le pagaron $# de financiación":"вам выплатили $# финансирования",
+"la que usted anotó":"та, что вы указали",
+"La que usted anotó:":"Та, что вы указали:",
+"Se calcula sola:":"Считается сама:",
+"Que se calcule sola":"Пусть считается сама",
+"todavía ningún cobro (cada # h)":"пока ни одного списания (каждые # ч)",
+"# cobro de #% cada # h":"# списание по #% каждые # ч",
+"# cobros de #% cada # h":"# списаний по #% каждые # ч",
+"Financiación":"Финансирование",
+"FINANCIACIÓN":"ФИНАНСИРОВАНИЕ",
+"COMISIÓN":"КОМИССИЯ",
+"comisiones":"комиссии",
+"Operación por operación":"Сделка за сделкой",
+"Spot, compra por compra y venta por venta":"Спот, покупка за покупкой и продажа за продажей",
+"Retiro":"Вывод",
+"Depósito":"Пополнение",
+"Compra de # @":"Покупка # @",
+"Venta de # @":"Продажа # @",
+"el #% de $#":"#% от $#",
+"Comisión real (USD)":"Реальная комиссия (USD)",
+"Financiación real (USD)":"Реальное финансирование (USD)",
+"Comisión de esta operación:":"Комиссия этой сделки:",
+"#% al abrir y otro #% al cerrar, sobre el tamaño":"#% при открытии и ещё #% при закрытии, от размера",
+"Financiación:":"Финансирование:",
+"· vacío = se calcula sola":"· пусто = считается само",
+"si sale en el stop":"если выйдет по стопу",
+"financiación ≈ $# cada # h":"финансирование ≈ $# каждые # ч",
+"(el #% de lo que compra)":"(#% от того, что покупаете)",
+"(el #% de lo que vende)":"(#% от того, что продаёте)",
+"Comisión (USD)":"Комиссия (USD)",
 "lo liquidan antes, en $#":"ликвидируют раньше, по $#",
 "Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Внимание: до стопа вас ликвидируют по $# и вы потеряете всё, что вложили ($#), не больше.",
 "La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"Сделку № # по @ ликвидировали по $#: потеряно всё, что вы вложили ($#).",
@@ -36381,6 +36982,46 @@ DIC.ru={
 };
 /* УКРАЇНСЬКА · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.uk={
+"lo que pagó por tenerlas abiertas (cada # h)":"скільки ви заплатили за утримання відкритими (кожні # год)",
+"lo que le pagaron por tenerlas abiertas (cada # h)":"скільки вам заплатили за утримання відкритими (кожні # год)",
+"Comisión abrir":"Комісія відкриття",
+"Comisión cerrar":"Комісія закриття",
+"comisiones ya cobradas $#":"уже списані комісії $#",
+"financiación a favor $#":"фінансування на вашу користь $#",
+"Eso es $# de margen más $# de comisión al entrar.":"Це $# маржі плюс $# комісії при вході.",
+"comisión $#":"комісія $#",
+"(abrir $# + cerrar $#)":"(відкрити $# + закрити $#)",
+"financiación $#":"фінансування $#",
+"le pagaron $# de financiación":"вам виплатили $# фінансування",
+"la que usted anotó":"та, що ви вказали",
+"La que usted anotó:":"Та, що ви вказали:",
+"Se calcula sola:":"Рахується сама:",
+"Que se calcule sola":"Хай рахується сама",
+"todavía ningún cobro (cada # h)":"поки жодного списання (кожні # год)",
+"# cobro de #% cada # h":"# списання по #% кожні # год",
+"# cobros de #% cada # h":"# списань по #% кожні # год",
+"Financiación":"Фінансування",
+"FINANCIACIÓN":"ФІНАНСУВАННЯ",
+"COMISIÓN":"КОМІСІЯ",
+"comisiones":"комісії",
+"Operación por operación":"Угода за угодою",
+"Spot, compra por compra y venta por venta":"Спот, купівля за купівлею і продаж за продажем",
+"Retiro":"Виведення",
+"Depósito":"Поповнення",
+"Compra de # @":"Купівля # @",
+"Venta de # @":"Продаж # @",
+"el #% de $#":"#% від $#",
+"Comisión real (USD)":"Реальна комісія (USD)",
+"Financiación real (USD)":"Реальне фінансування (USD)",
+"Comisión de esta operación:":"Комісія цієї угоди:",
+"#% al abrir y otro #% al cerrar, sobre el tamaño":"#% при відкритті і ще #% при закритті, від розміру",
+"Financiación:":"Фінансування:",
+"· vacío = se calcula sola":"· порожньо = рахується саме",
+"si sale en el stop":"якщо вийде по стопу",
+"financiación ≈ $# cada # h":"фінансування ≈ $# кожні # год",
+"(el #% de lo que compra)":"(#% від того, що купуєте)",
+"(el #% de lo que vende)":"(#% від того, що продаєте)",
+"Comisión (USD)":"Комісія (USD)",
 "lo liquidan antes, en $#":"ліквідують раніше, за $#",
 "Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Увага: до стопу вас ліквідують за $# і ви втратите все, що вклали ($#), не більше.",
 "La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"Угоду № # по @ ліквідовано за $#: втрачено все, що ви вклали ($#).",
@@ -38622,6 +39263,46 @@ DIC.uk={
 };
 /* BAHASA INDONESIA · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.id={
+"lo que pagó por tenerlas abiertas (cada # h)":"yang Anda bayar karena membiarkannya terbuka (setiap # jam)",
+"lo que le pagaron por tenerlas abiertas (cada # h)":"yang dibayarkan kepada Anda karena membiarkannya terbuka (setiap # jam)",
+"Comisión abrir":"Biaya buka",
+"Comisión cerrar":"Biaya tutup",
+"comisiones ya cobradas $#":"biaya yang sudah ditagih $#",
+"financiación a favor $#":"pendanaan untuk Anda $#",
+"Eso es $# de margen más $# de comisión al entrar.":"Itu $# margin ditambah $# biaya saat masuk.",
+"comisión $#":"biaya $#",
+"(abrir $# + cerrar $#)":"(buka $# + tutup $#)",
+"financiación $#":"pendanaan $#",
+"le pagaron $# de financiación":"Anda dibayar $# pendanaan",
+"la que usted anotó":"yang Anda tulis",
+"La que usted anotó:":"Yang Anda tulis:",
+"Se calcula sola:":"Dihitung otomatis:",
+"Que se calcule sola":"Biar dihitung otomatis",
+"todavía ningún cobro (cada # h)":"belum ada tagihan (setiap # jam)",
+"# cobro de #% cada # h":"# tagihan #% setiap # jam",
+"# cobros de #% cada # h":"# tagihan #% setiap # jam",
+"Financiación":"Pendanaan",
+"FINANCIACIÓN":"PENDANAAN",
+"COMISIÓN":"BIAYA",
+"comisiones":"biaya",
+"Operación por operación":"Transaksi demi transaksi",
+"Spot, compra por compra y venta por venta":"Spot, pembelian demi pembelian dan penjualan demi penjualan",
+"Retiro":"Penarikan",
+"Depósito":"Setoran",
+"Compra de # @":"Beli # @",
+"Venta de # @":"Jual # @",
+"el #% de $#":"#% dari $#",
+"Comisión real (USD)":"Biaya sebenarnya (USD)",
+"Financiación real (USD)":"Pendanaan sebenarnya (USD)",
+"Comisión de esta operación:":"Biaya transaksi ini:",
+"#% al abrir y otro #% al cerrar, sobre el tamaño":"#% saat membuka dan #% lagi saat menutup, dari ukurannya",
+"Financiación:":"Pendanaan:",
+"· vacío = se calcula sola":"· kosong = dihitung otomatis",
+"si sale en el stop":"jika keluar di stop",
+"financiación ≈ $# cada # h":"pendanaan ≈ $# setiap # jam",
+"(el #% de lo que compra)":"(#% dari yang Anda beli)",
+"(el #% de lo que vende)":"(#% dari yang Anda jual)",
+"Comisión (USD)":"Biaya (USD)",
 "lo liquidan antes, en $#":"dilikuidasi lebih dulu, di $#",
 "Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Awas: sebelum sampai stop Anda dilikuidasi di $# dan kehilangan semua yang Anda masukkan ($#), tidak lebih.",
 "La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"Transaksi No. # pada @ dilikuidasi di $#: Anda kehilangan semua yang Anda masukkan ($#).",
@@ -40863,6 +41544,46 @@ DIC.id={
 };
 /* TIẾNG VIỆT · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.vi={
+"lo que pagó por tenerlas abiertas (cada # h)":"số bạn trả để giữ lệnh mở (mỗi # giờ)",
+"lo que le pagaron por tenerlas abiertas (cada # h)":"số bạn được trả để giữ lệnh mở (mỗi # giờ)",
+"Comisión abrir":"Phí mở",
+"Comisión cerrar":"Phí đóng",
+"comisiones ya cobradas $#":"phí đã thu $#",
+"financiación a favor $#":"funding có lợi cho bạn $#",
+"Eso es $# de margen más $# de comisión al entrar.":"Tức là $# ký quỹ cộng $# phí khi vào lệnh.",
+"comisión $#":"phí $#",
+"(abrir $# + cerrar $#)":"(mở $# + đóng $#)",
+"financiación $#":"funding $#",
+"le pagaron $# de financiación":"bạn được trả $# funding",
+"la que usted anotó":"số bạn đã ghi",
+"La que usted anotó:":"Số bạn đã ghi:",
+"Se calcula sola:":"Tự tính:",
+"Que se calcule sola":"Để tự tính",
+"todavía ningún cobro (cada # h)":"chưa có lần thu nào (mỗi # giờ)",
+"# cobro de #% cada # h":"# lần thu #% mỗi # giờ",
+"# cobros de #% cada # h":"# lần thu #% mỗi # giờ",
+"Financiación":"Funding",
+"FINANCIACIÓN":"FUNDING",
+"COMISIÓN":"PHÍ",
+"comisiones":"phí",
+"Operación por operación":"Từng giao dịch",
+"Spot, compra por compra y venta por venta":"Spot, từng lần mua và từng lần bán",
+"Retiro":"Rút tiền",
+"Depósito":"Nạp tiền",
+"Compra de # @":"Mua # @",
+"Venta de # @":"Bán # @",
+"el #% de $#":"#% của $#",
+"Comisión real (USD)":"Phí thực (USD)",
+"Financiación real (USD)":"Funding thực (USD)",
+"Comisión de esta operación:":"Phí của giao dịch này:",
+"#% al abrir y otro #% al cerrar, sobre el tamaño":"#% khi mở và thêm #% khi đóng, trên quy mô",
+"Financiación:":"Funding:",
+"· vacío = se calcula sola":"· để trống = tự tính",
+"si sale en el stop":"nếu thoát ở stop",
+"financiación ≈ $# cada # h":"funding ≈ $# mỗi # giờ",
+"(el #% de lo que compra)":"(#% số bạn mua)",
+"(el #% de lo que vende)":"(#% số bạn bán)",
+"Comisión (USD)":"Phí (USD)",
 "lo liquidan antes, en $#":"bị thanh lý trước, tại $#",
 "Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"Lưu ý: trước khi tới stop bạn bị thanh lý tại $# và mất toàn bộ số đã bỏ vào ($#), không hơn.",
 "La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"Giao dịch số # của @ đã bị thanh lý tại $#: mất toàn bộ số đã bỏ vào ($#).",
@@ -43104,6 +43825,46 @@ DIC.vi={
 };
 /* हिन्दी · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.hi={
+"lo que pagó por tenerlas abiertas (cada # h)":"खुले रखने के लिए आपने जो दिया (हर # घंटे)",
+"lo que le pagaron por tenerlas abiertas (cada # h)":"खुले रखने के लिए आपको जो मिला (हर # घंटे)",
+"Comisión abrir":"खोलने का शुल्क",
+"Comisión cerrar":"बंद करने का शुल्क",
+"comisiones ya cobradas $#":"पहले से कटे शुल्क $#",
+"financiación a favor $#":"आपके पक्ष में फंडिंग $#",
+"Eso es $# de margen más $# de comisión al entrar.":"यानी $# मार्जिन और प्रवेश पर $# शुल्क।",
+"comisión $#":"शुल्क $#",
+"(abrir $# + cerrar $#)":"(खोलना $# + बंद करना $#)",
+"financiación $#":"फंडिंग $#",
+"le pagaron $# de financiación":"आपको $# फंडिंग मिली",
+"la que usted anotó":"जो आपने लिखी",
+"La que usted anotó:":"जो आपने लिखी:",
+"Se calcula sola:":"अपने-आप गिनी जाती है:",
+"Que se calcule sola":"अपने-आप गिनने दें",
+"todavía ningún cobro (cada # h)":"अभी कोई कटौती नहीं (हर # घंटे)",
+"# cobro de #% cada # h":"# कटौती, #% (हर # घंटे)",
+"# cobros de #% cada # h":"# कटौतियाँ, #% (हर # घंटे)",
+"Financiación":"फंडिंग",
+"FINANCIACIÓN":"फंडिंग",
+"COMISIÓN":"शुल्क",
+"comisiones":"शुल्क",
+"Operación por operación":"एक-एक ट्रेड",
+"Spot, compra por compra y venta por venta":"स्पॉट, हर खरीद और हर बिक्री",
+"Retiro":"निकासी",
+"Depósito":"जमा",
+"Compra de # @":"# @ की खरीद",
+"Venta de # @":"# @ की बिक्री",
+"el #% de $#":"#% ($# का)",
+"Comisión real (USD)":"असली शुल्क (USD)",
+"Financiación real (USD)":"असली फंडिंग (USD)",
+"Comisión de esta operación:":"इस ट्रेड का शुल्क:",
+"#% al abrir y otro #% al cerrar, sobre el tamaño":"आकार पर खोलते समय #% और बंद करते समय फिर #%",
+"Financiación:":"फंडिंग:",
+"· vacío = se calcula sola":"· खाली = अपने-आप गिना जाता है",
+"si sale en el stop":"अगर स्टॉप पर निकले",
+"financiación ≈ $# cada # h":"फंडिंग ≈ $# (हर # घंटे)",
+"(el #% de lo que compra)":"(जो खरीदते हैं उसका #%)",
+"(el #% de lo que vende)":"(जो बेचते हैं उसका #%)",
+"Comisión (USD)":"शुल्क (USD)",
 "lo liquidan antes, en $#":"पहले लिक्विडेट, $# पर",
 "Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"ध्यान दें: स्टॉप से पहले $# पर लिक्विडेशन होगा और आप जितना लगाया ($#) सब खोएँगे, उससे ज़्यादा नहीं।",
 "La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"@ का ट्रेड नं. # $# पर लिक्विडेट हुआ: जितना लगाया था सब गया ($#)।",
@@ -45345,6 +46106,46 @@ DIC.hi={
 };
 /* 日本語 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ja={
+"lo que pagó por tenerlas abiertas (cada # h)":"保有し続けたことで支払った額（#時間ごと）",
+"lo que le pagaron por tenerlas abiertas (cada # h)":"保有し続けたことで受け取った額（#時間ごと）",
+"Comisión abrir":"開く手数料",
+"Comisión cerrar":"閉じる手数料",
+"comisiones ya cobradas $#":"徴収済みの手数料 $#",
+"financiación a favor $#":"受け取った資金調達料 $#",
+"Eso es $# de margen más $# de comisión al entrar.":"証拠金 $# とエントリー手数料 $# です。",
+"comisión $#":"手数料 $#",
+"(abrir $# + cerrar $#)":"（開く $# + 閉じる $#）",
+"financiación $#":"資金調達料 $#",
+"le pagaron $# de financiación":"資金調達料 $# を受け取りました",
+"la que usted anotó":"ご自身で入力した額",
+"La que usted anotó:":"ご自身で入力した額：",
+"Se calcula sola:":"自動で計算：",
+"Que se calcule sola":"自動で計算する",
+"todavía ningún cobro (cada # h)":"まだ徴収なし（#時間ごと）",
+"# cobro de #% cada # h":"#回 #%（#時間ごと）",
+"# cobros de #% cada # h":"#回 #%（#時間ごと）",
+"Financiación":"資金調達料",
+"FINANCIACIÓN":"資金調達料",
+"COMISIÓN":"手数料",
+"comisiones":"手数料",
+"Operación por operación":"取引ごと",
+"Spot, compra por compra y venta por venta":"現物、購入ごと・売却ごと",
+"Retiro":"出金",
+"Depósito":"入金",
+"Compra de # @":"@ を # 購入",
+"Venta de # @":"@ を # 売却",
+"el #% de $#":"#%（$# のうち）",
+"Comisión real (USD)":"実際の手数料 (USD)",
+"Financiación real (USD)":"実際の資金調達料 (USD)",
+"Comisión de esta operación:":"この取引の手数料：",
+"#% al abrir y otro #% al cerrar, sobre el tamaño":"サイズに対して開くとき #%、閉じるときにさらに #%",
+"Financiación:":"資金調達料：",
+"· vacío = se calcula sola":"· 空欄 = 自動で計算",
+"si sale en el stop":"ストップで決済した場合",
+"financiación ≈ $# cada # h":"資金調達料 ≈ $#（#時間ごと）",
+"(el #% de lo que compra)":"（購入額の #%）",
+"(el #% de lo que vende)":"（売却額の #%）",
+"Comisión (USD)":"手数料 (USD)",
 "lo liquidan antes, en $#":"先に強制ロスカット、$#",
 "Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"注意：ストップに届く前に$#で強制ロスカットされ、入れた金額すべて（$#）を失います。それ以上ではありません。",
 "La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"@の取引No.#は$#で強制ロスカットされました：入れた金額すべて（$#）を失いました。",
@@ -47586,6 +48387,46 @@ DIC.ja={
 };
 /* 한국어 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ko={
+"lo que pagó por tenerlas abiertas (cada # h)":"열어 둔 대가로 낸 금액 (#시간마다)",
+"lo que le pagaron por tenerlas abiertas (cada # h)":"열어 둔 대가로 받은 금액 (#시간마다)",
+"Comisión abrir":"진입 수수료",
+"Comisión cerrar":"청산 수수료",
+"comisiones ya cobradas $#":"이미 부과된 수수료 $#",
+"financiación a favor $#":"받은 펀딩비 $#",
+"Eso es $# de margen más $# de comisión al entrar.":"증거금 $#에 진입 수수료 $#를 더한 금액입니다.",
+"comisión $#":"수수료 $#",
+"(abrir $# + cerrar $#)":"(진입 $# + 청산 $#)",
+"financiación $#":"펀딩비 $#",
+"le pagaron $# de financiación":"펀딩비 $#를 받았습니다",
+"la que usted anotó":"직접 적은 금액",
+"La que usted anotó:":"직접 적은 금액:",
+"Se calcula sola:":"자동 계산:",
+"Que se calcule sola":"자동으로 계산",
+"todavía ningún cobro (cada # h)":"아직 부과 없음 (#시간마다)",
+"# cobro de #% cada # h":"#회 #% (#시간마다)",
+"# cobros de #% cada # h":"#회 #% (#시간마다)",
+"Financiación":"펀딩비",
+"FINANCIACIÓN":"펀딩비",
+"COMISIÓN":"수수료",
+"comisiones":"수수료",
+"Operación por operación":"거래별",
+"Spot, compra por compra y venta por venta":"현물, 매수별·매도별",
+"Retiro":"출금",
+"Depósito":"입금",
+"Compra de # @":"@ # 매수",
+"Venta de # @":"@ # 매도",
+"el #% de $#":"#% ($# 중)",
+"Comisión real (USD)":"실제 수수료 (USD)",
+"Financiación real (USD)":"실제 펀딩비 (USD)",
+"Comisión de esta operación:":"이 거래의 수수료:",
+"#% al abrir y otro #% al cerrar, sobre el tamaño":"규모 기준 진입 시 #%, 청산 시 다시 #%",
+"Financiación:":"펀딩비:",
+"· vacío = se calcula sola":"· 비우면 = 자동 계산",
+"si sale en el stop":"스톱에서 청산하면",
+"financiación ≈ $# cada # h":"펀딩비 ≈ $# (#시간마다)",
+"(el #% de lo que compra)":"(매수 금액의 #%)",
+"(el #% de lo que vende)":"(매도 금액의 #%)",
+"Comisión (USD)":"수수료 (USD)",
 "lo liquidan antes, en $#":"먼저 청산, $#에서",
 "Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"주의: 스톱에 닿기 전에 $#에서 청산되어 넣은 돈 전부($#)를 잃습니다. 그 이상은 아닙니다.",
 "La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"@ 거래 No. #이(가) $#에서 청산되었습니다: 넣은 돈 전부($#)를 잃었습니다.",
@@ -49827,6 +50668,46 @@ DIC.ko={
 };
 /* 中文（简体） · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.zh={
+"lo que pagó por tenerlas abiertas (cada # h)":"持仓期间支付的费用（每 # 小时）",
+"lo que le pagaron por tenerlas abiertas (cada # h)":"持仓期间收到的费用（每 # 小时）",
+"Comisión abrir":"开仓手续费",
+"Comisión cerrar":"平仓手续费",
+"comisiones ya cobradas $#":"已收取的手续费 $#",
+"financiación a favor $#":"对您有利的资金费 $#",
+"Eso es $# de margen más $# de comisión al entrar.":"即保证金 $# 加上开仓手续费 $#。",
+"comisión $#":"手续费 $#",
+"(abrir $# + cerrar $#)":"（开仓 $# + 平仓 $#）",
+"financiación $#":"资金费 $#",
+"le pagaron $# de financiación":"您收到了 $# 资金费",
+"la que usted anotó":"您填写的",
+"La que usted anotó:":"您填写的：",
+"Se calcula sola:":"自动计算：",
+"Que se calcule sola":"让它自动计算",
+"todavía ningún cobro (cada # h)":"尚未收取（每 # 小时）",
+"# cobro de #% cada # h":"#次 #%（每 # 小时）",
+"# cobros de #% cada # h":"#次 #%（每 # 小时）",
+"Financiación":"资金费",
+"FINANCIACIÓN":"资金费",
+"COMISIÓN":"手续费",
+"comisiones":"手续费",
+"Operación por operación":"逐笔交易",
+"Spot, compra por compra y venta por venta":"现货，逐笔买入与逐笔卖出",
+"Retiro":"提现",
+"Depósito":"充值",
+"Compra de # @":"买入 # @",
+"Venta de # @":"卖出 # @",
+"el #% de $#":"#%（共 $#）",
+"Comisión real (USD)":"实际手续费 (USD)",
+"Financiación real (USD)":"实际资金费 (USD)",
+"Comisión de esta operación:":"本笔交易手续费：",
+"#% al abrir y otro #% al cerrar, sobre el tamaño":"按仓位规模开仓 #%，平仓再收 #%",
+"Financiación:":"资金费：",
+"· vacío = se calcula sola":"· 留空 = 自动计算",
+"si sale en el stop":"如果在止损处平仓",
+"financiación ≈ $# cada # h":"资金费 ≈ $#（每 # 小时）",
+"(el #% de lo que compra)":"（买入额的 #%）",
+"(el #% de lo que vende)":"（卖出额的 #%）",
+"Comisión (USD)":"手续费 (USD)",
 "lo liquidan antes, en $#":"会先被强平，在 $#",
 "Ojo: antes de llegar al stop lo liquidan en $# y pierde todo lo que puso ($#), no más.":"注意：在触及止损前会在 $# 被强平，损失投入的全部（$#），不会更多。",
 "La operación N° # de @ se liquidó en $#: perdió todo lo que puso ($#).":"@ 的第 # 号交易在 $# 被强平：损失了投入的全部（$#）。",
