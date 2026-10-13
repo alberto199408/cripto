@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="60">
+<meta name="v" content="62">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -3643,6 +3643,33 @@ function refrescarVivos(){
       var ga=spot().tot.abierto;
       ponTexto(el, (ga>=0?"+":"−")+usd(Math.abs(ga)));
     }
+    /* v61 · ESTA LÍNEA SE QUEDABA CONGELADA. La ganancia grande de Spot llevaba su
+       etiqueta pero no tenía quien la refrescara: era la única huérfana de las 47.
+       Con el precio subiendo seguía diciendo +$339,05 cuando ya era +$788,60. */
+    else if(v==="ganMonCh"){
+      var gm=spot().tot.abierto, pm=spot().tot.abiertoPct;
+      ponTexto(el, (gm>=0?"+":"−")+usd(Math.abs(gm))+" · "+pct(pm,1), "gch "+cl(gm));
+    }
+    /* v61 · lo que le falta a una orden programada de futuros para entrar: al lado
+       se refrescaba el precio de hoy y esto no, así que la fila se contradecía */
+    else if(v==="progFalta"){
+      o=unaFut(id); if(!o) return;
+      e=estadoOp(o);
+      ponTexto(el, e.faltaPct!=null?((e.faltaPct>0?"▲ ":"▼ ")+pctS(Math.abs(e.faltaPct),2)):"", "opPct");
+    }
+    /* v61 · la línea de una alerta: «ahora $# · falta #%» */
+    else if(v==="alrLinea"){
+      var ia=parseInt(el.getAttribute("data-i"),10);
+      var al=(BD.alertas||[])[ia];
+      if(al) ponTexto(el, tr(lineaAlerta(al)));
+    }
+    /* v61 · lo que le falta a una orden programada de spot: igual que la de arriba */
+    else if(v==="ordFalta"){
+      pr=precioDe(s);
+      var meta2=parseFloat(el.getAttribute("data-p"));
+      ponTexto(el, (pr!=null&&isFinite(meta2)&&pr>0)
+        ? tr("falta "+pct((meta2-pr)/pr*100,1)) : "");
+    }
     else if(v==="pieTot"){
       var t=todo().total;   /* la misma cifra que TODO SU DINERO */
       ponTexto(el, (BD.ops.length||BD.fut.length)?usd(t):"—");
@@ -3657,7 +3684,16 @@ function refrescarVivos(){
     else if(v==="futFlotP"){
       o=unaFut(id); if(!o) return;
       e=estadoOp(o);
-      ponTexto(el, e.pctFlotNeto!=null?(pct(e.pctFlotNeto,1)+" de lo que puso"):"", "gsub "+cl(e.pctFlotNeto));
+      /* v61 · aquí se añadía « de lo que puso» y al pintar la fila no se añadía: el
+         mismo número se leía de dos formas según el momento. Se deja como la fila. */
+      ponTexto(el, e.pctFlotNeto!=null?pct(e.pctFlotNeto,1):"", "gsub "+cl(e.pctFlotNeto));
+    }
+    /* v60b · la cuenta de una operación ABIERTA se repinta con cada precio nuevo,
+       igual que el globo de arriba. Si no, las dos cifras se contradicen. */
+    else if(v==="cuenta"){
+      o=unaFut(id); if(!o) return;
+      var htmlC=interiorCuenta(estadoOp(o));
+      if(htmlC && el.innerHTML!==htmlC) el.innerHTML=htmlC;
     }
     else if(v==="futTot"){
       /* v50 · con data-ab (Futuros y Backtesting) suma SOLO esas operaciones; sin él (Resumen) son los Futuros reales */
@@ -4414,7 +4450,7 @@ function estadoDe(sym){
     return String(o.sym).toUpperCase()===S;
   }));
   var cantidad=0, costo=0, realizado=0, comprado=0, vendido=0, nCompras=0, nVentas=0, com=0, volumen=0;
-  var porOp={};
+  var porOp={}, compras=[];
   ops.forEach(function(o){
     var c=+o.cant||0, p=+o.precio||0, k=+o.com||0;
     com+=k; volumen+=c*p;
@@ -4427,11 +4463,27 @@ function estadoDe(sym){
       var g=cent(salida-base);
       porOp[o.id]={tipo:"venta", gan:g, pct: base>0?g/base*100:null, prom:prom, cant:c,
                    recortada: pedida>c+1e-12, sinCosto: !(base>0), entro:salida};
+      /* v61 · AL VENDER, LAS COMPRAS DE ANTES SE ENCOGEN.
+         Luis pidió revisar número por número y aquí había uno que mentía: si compró
+         1,5 ETH y vendió 0,5, la ficha de la COMPRA seguía contando 1,5 monedas y
+         decía «vale hoy $3.675» cuando solo le quedaba 1,0 ($2.450). El total general
+         sí estaba bien; era la ficha de cada compra la que inflaba la ganancia.
+         Al vender se reparte la bajada entre las compras anteriores, en proporción,
+         que es justo como se lleva el precio promedio. */
+      var quedaba=cantidad, sigue=cantidad-c;
+      var factor = quedaba>1e-12 ? sigue/quedaba : 0;
+      compras.forEach(function(x){
+        x.queda=(x.queda!=null?x.queda:x.cant)*factor;
+        x.pagadoQueda=(x.pagadoQueda!=null?x.pagadoQueda:x.pagado)*factor;
+        if(x.queda < x.cant-1e-12) x.vendidaEnParte=true;
+      });
       realizado+=g; costo-=base; cantidad-=c; vendido+=salida; nVentas++;
       if(cantidad<1e-12){ cantidad=0; costo=0; }
     } else {
       var pagado=c*p+k;
-      porOp[o.id]={tipo:"compra", pagado:pagado, precio:p, cant:c};
+      porOp[o.id]={tipo:"compra", pagado:pagado, precio:p, cant:c,
+                   queda:c, pagadoQueda:pagado, vendidaEnParte:false};
+      compras.push(porOp[o.id]);
       cantidad+=c; costo+=pagado; comprado+=pagado; nCompras++;
     }
   });
@@ -4446,9 +4498,11 @@ function estadoDe(sym){
   if(pr!=null) Object.keys(porOp).forEach(function(k2){
     var x=porOp[k2];
     if(x.tipo!=="compra"||!(x.pagado>0)) return;
-    x.valorHoy=x.cant*pr;
-    x.gan=cent(x.valorHoy*(1-tasa)-x.pagado);
-    x.pct=x.gan/x.pagado*100;
+    /* v61 · se cuenta SOLO lo que todavía tiene de esa compra, no lo que ya vendió */
+    var q=(x.queda!=null?x.queda:x.cant), pg=(x.pagadoQueda!=null?x.pagadoQueda:x.pagado);
+    x.valorHoy=q*pr;
+    x.gan= pg>0 ? cent(x.valorHoy*(1-tasa)-pg) : 0;
+    x.pct= pg>0 ? x.gan/pg*100 : null;
   });
   var valor = pr!=null ? cent(cantidad*pr) : null;
   var feeVenta = valor!=null ? cent(valor*tasa) : 0;
@@ -4723,7 +4777,19 @@ function pieFund(e){
    Lo que faltaba era enseñar la resta. Esta función la pinta, y las cuatro
    pantallas (Futuros, Backtesting, abiertas e historial) la llaman a ella.
    ===================================================================== */
+/* v60b · Luis (13 oct): en una ABIERTA el globo de arriba decía −$75,97 y esta cuenta
+   decía +$182,21, en la misma tarjeta. El globo se repinta con CADA precio nuevo
+   (lleva data-v) y esta cuenta no llevaba nada, así que se quedaba congelada en el
+   precio de hace un rato. Ahora la cuenta también lleva data-v="cuenta" y se repinta
+   en el mismo segundo que el globo. Las dos cifras salen del mismo estadoOp(). */
 function bloqueCuenta(e){
+  var ab = e.abierta && e.flot!=null;
+  if((ab ? e.brutoFlot : e.bruto)==null) return "";
+  return '<div class="kvAncho cuenta"'+
+    (ab ? ' data-v="cuenta" data-f="'+esc(e.f.id)+'"' : '')+'>'+
+    interiorCuenta(e)+'</div>';
+}
+function interiorCuenta(e){
   var ab = e.abierta && e.flot!=null;
   var br = ab ? e.brutoFlot : e.bruto;
   if(br==null) return "";
@@ -4741,8 +4807,7 @@ function bloqueCuenta(e){
                   (ab&&e.pctFlot!=null ? "se movió "+pct(e.pctFlot/e.apal,2) : "");
   var subCom = ab ? "solo abrir · cerrar costará "+usdF(e.comC)
                   : "abrir "+usdF(e.comA)+" + cerrar "+usdF(e.comC);
-  return '<div class="kvAncho cuenta">'+
-    '<div class="cuT">La cuenta'+(ab?' · ahora mismo':'')+'</div>'+
+  return '<div class="cuT">La cuenta'+(ab?' · ahora mismo':'')+'</div>'+
     fila("Por el precio", br, subPrecio, cl(br))+
     fila("Comisión de la casa", -com, subCom, "dn")+
     fila("Por mantenerla abierta", -e.fund,
@@ -4751,8 +4816,7 @@ function bloqueCuenta(e){
     '<div class="cuR"><span>'+(ab?"Ahora mismo":"Resultado")+'</span>'+
       '<b class="'+cl(tot)+'">'+usdS(tot)+'</b></div>'+
     (pctT!=null?'<div class="cuP">'+pct(pctT,1)+' de lo que puso</div>':'')+
-    (e.topado?'<div class="cuN">Lo liquidaron: no pierde más de lo que puso.</div>':'')+
-  '</div>';
+    (e.topado?'<div class="cuN">Lo liquidaron: no pierde más de lo que puso.</div>':'');
 }
 function lineaComOp(e){
   var t=textoFund(e);
@@ -6799,12 +6863,16 @@ function historialSpot(){
           (R.pct!=null?' <small style="font-weight:600;font-size:12px">'+pct(R.pct,1)+'</small>':'')+'</b>'+
           (R.recortada?'<span>vendió más de lo que tenía registrado</span>':'')+'</div>'
         : '<div class="r"><span>Resultado</span><b>—</b><span>sin compra previa</span></div>';
+      /* v61 · ANTES ESTA FICHA ENSEÑABA UN SUPUESTO. Si compró 1,5 y vendió 0,5, decía
+         «Hoy valdría $3.675 · si no hubiera vendido nada»: un número que no es su
+         dinero, metido entre movimientos que sí lo son. Ahora dice lo que esa compra
+         vale DE VERDAD con lo que le queda, y debajo, cuánto le queda de ella. */
       else col = R.pct!=null
-        ? '<div class="r"><span>'+(conVentas[String(o.sym).toUpperCase()]?"Hoy valdría":"Hoy vale")+'</span>'+
+        ? '<div class="r"><span>Hoy vale</span>'+
           '<b><span data-v="opVale" data-s="'+esc(o.sym)+'" data-f="'+esc(o.id)+'">'+usd(R.valorHoy)+'</span>'+
           ' <small class="'+cl(R.pct)+'" data-v="opPct" data-s="'+esc(o.sym)+'" data-f="'+esc(o.id)+'" data-cls="" style="font-weight:600;font-size:12px">'+pct(R.pct,1)+'</small></b>'+
-          (conVentas[String(o.sym).toUpperCase()]
-            ? '<span>si no hubiera vendido nada</span>' : '')+'</div>'
+          (R.vendidaEnParte
+            ? '<span>le quedan '+cant(R.queda)+' de las '+cant(o.cant)+' que compró</span>' : '')+'</div>'
         : '<div class="r"><span>Hoy vale</span><b>—</b><span>sin precio hoy</span></div>';
       return '<div class="mv '+(v?"venta":"compra")+'" style="--fc:'+colDe(o.sym)+'">'+
         '<div class="fh"><b>'+(p[2]||"--")+'</b><span>'+(MESES[(+p[1])-1]||"")+" "+
@@ -8598,7 +8666,7 @@ function franjaRiesgo(A){
        dinero × el apalancamiento); lo del tiempo es la financiación, aparte. */
     '<div class="fr frCom"><span>'+"Comisión: "+pctCorto(c.com)+" del tamaño (su dinero × "+(+c.apal||1)+
       "), al abrir y otra vez al cerrar."+'</span> '+
-      '<span>Si la deja abierta varias horas, se suma la comisión por mantenerla abierta (cada 8 h).</span></div>'+
+      '<span>Si la deja abierta varias horas, se suma el pago o cobro por mantenerla abierta.</span></div>'+
   '</div>';
 }
 /* v56 · «DISPONIBLE PARA OPERAR»: cuánto le queda libre y cuánto está ya metido en operaciones */
@@ -8722,7 +8790,7 @@ function hojaComision(A){
     '<div class="nota" style="margin-top:12px"><b>Lo que depende del tiempo es otra cosa.</b> '+
       '<span>La comisión por mantenerla abierta (funding): cada 8 horas (en algunas monedas cada 4 o cada 1) se paga o se cobra un '+
       'pequeño porcentaje del tamaño, casi siempre cerca del 0,01 %; a veces se la pagan a usted. El programa la calcula '+
-      'sola con el 0,01 % cada 8 horas; si su casa le cobró otra, escríbala al cerrar en «Comisión por mantenerla abierta real (USD)».</span></div>'+
+      'sola con el 0,01 % cada 8 horas; si su casa le cobró otra, escríbala al cerrar en «Pago o cobro real por mantenerla abierta (USD)».</span></div>'+
     '</div><div class="hf"><button class="b" data-cerrar>Entendido</button></div></div>');
 }
 
@@ -9005,7 +9073,7 @@ function recLote(A){
           ? '<span translate="no" style="display:inline">'+esc(casaFut(c.casa)[1])+'</span> · '+
             '<span style="display:inline">'+(c.orden==="limite"?"orden límite":"orden a mercado")+'</span>'
           : '<span style="display:inline">la suya</span>')+
-        ' · <span style="display:inline">comisión por mantenerla abierta ≈ '+usdF(R.posicion*FUND_8H/100)+' cada 8 h</span>'+
+        ' · <span style="display:inline">pago o cobro por mantenerla abierta ≈ '+usdF(R.posicion*tasaCobro()/100)+' cada '+horasFund()+' h</span>'+
         '</i></div>'+
       '<div><span>Si llega al stop</span><b class="dn">−'+usdF(R.perdidaSL)+'</b>'+
         '<i>'+(R.liqAntes?'lo liquidan antes, en '+precio(R.liq):'en '+precio(v.sl))+(pctCart!=null?' · el '+pctS(pctCart,2)+' de su cartera':'')+'</i></div>'+
@@ -9024,7 +9092,7 @@ function recLote(A){
              : '<b><span>Arriesga</span> <em>'+usdF(R.perdidaSL)+'</em></b>')+'</div></div>'+
       '<div class="lzG">'+
         '<div><span>Tamaño de la operación</span><b>'+usdF(R.posicion)+'</b><i>'+cant(R.monedas)+' '+esc(sym)+'</i></div>'+
-        '<div><span>Comisión</span><b>'+usdF(R.comSl)+'</b><i><span>(abrir '+usdF(R.comA)+' + cerrar '+usdF(R.comSl-R.comA)+')</span> <span>si sale en el stop</span> · <span>comisión por mantenerla abierta ≈ '+usdF(R.posicion*FUND_8H/100)+' cada 8 h</span></i></div>'+
+        '<div><span>Comisión</span><b>'+usdF(R.comSl)+'</b><i><span>(abrir '+usdF(R.comA)+' + cerrar '+usdF(R.comSl-R.comA)+')</span> <span>si sale en el stop</span> · <span>pago o cobro por mantenerla abierta ≈ '+usdF(R.posicion*tasaCobro()/100)+' cada '+horasFund()+' h</span></i></div>'+
         '<div><span>Si llega al stop</span><b class="dn">−'+usdF(R.perdidaSL)+'</b>'+
           '<i>'+(R.liqAntes?'lo liquidan antes, en '+precio(R.liq):'en '+precio(v.sl))+(pctCart!=null?' · el '+pctS(pctCart,2)+' de su cartera':'')+'</i></div>'+
         (R.ganTp!=null&&R.tpBien
@@ -9614,7 +9682,8 @@ function filaProgramada(e,k,LB){
           '<span>hoy <b data-v="pr" data-s="'+esc(f.sym)+'">'+precio(pr)+'</b></span></div>'+
       '</div>'+
       '<div class="opD"><span class="espera"><i></i>ESPERANDO</span>'+
-        '<span class="opPct">'+(e.faltaPct!=null?((e.faltaPct>0?"▲ ":"▼ ")+pctS(Math.abs(e.faltaPct),2)):"")+'</span></div>'+
+        '<span class="opPct" data-v="progFalta" data-f="'+esc(f.id)+'" data-cls="opPct">'+
+          (e.faltaPct!=null?((e.faltaPct>0?"▲ ":"▼ ")+pctS(Math.abs(e.faltaPct),2)):"")+'</span></div>'+
     '</div>'+
     '<div class="opDet"'+(abierta?'':' hidden')+' data-det="'+esc(f.id)+'" style="--fc:'+colDe(f.sym)+'">'+
       '<div class="kv">'+
@@ -9774,7 +9843,7 @@ function tablaHistorial(F,k,T,sinTitulo){
       '<div><span>Operaciones</span><b>'+ver.length+(lista.length>ver.length?'<small>de '+lista.length+'</small>':'')+'</b></div>'+
       '<div><span>Dinero que puso</span><b>'+usdF(sm2)+'</b></div>'+
       '<div><span>Comisiones</span><b>'+usdF(sk2)+'<small>abrir y cerrar</small></b></div>'+
-      '<div><span>Comisión por mantenerla abierta</span><b class="'+(sf2>0.004?"dn":sf2<-0.004?"up":"")+'">'+(Math.abs(sf2)<0.005?usdF(0):usdS(-sf2))+'</b></div>'+
+      '<div><span>Por mantenerla abierta</span><b class="'+(sf2>0.004?"dn":sf2<-0.004?"up":"")+'">'+(Math.abs(sf2)<0.005?usdF(0):usdS(-sf2))+'</b></div>'+
       '<div class="kvAncho"><span>Resultado</span><b class="'+cl(sg2)+'">'+(sg2>=0?"+":"−")+usdF(sg2).replace("-","")+
         '<small>'+pct(sm2?sg2/sm2*100:0,1)+' de lo que puso</small></b></div>'+
     '</div></div>';
@@ -10195,7 +10264,7 @@ function cerrarOperacion(id, k){
          las casillas son solo por si su casa le cobró otra cosa */
       '<div class="campo"><label>Comisión real (USD) <small>· opcional</small></label><input id="cK" inputmode="decimal" value="'+
         (st.comFija!=null?String(+(+st.comFija).toFixed(6)).replace(".",sepDecimal()):"")+'" placeholder="se calcula sola"></div>'+
-      '<div class="campo"><label>Comisión por mantenerla abierta real (USD) <small>· opcional</small></label><input id="cFu" inputmode="decimal" value="'+
+      '<div class="campo"><label>Pago o cobro real por mantenerla abierta (USD) <small>· opcional</small></label><input id="cFu" inputmode="decimal" value="'+
         (st.fundFija?String(+(+f.fund).toFixed(6)).replace(".",sepDecimal()):"")+'" placeholder="se calcula sola"></div>'+
     '</div>'+
     '<div class="nota" id="cKa" style="margin-top:8px"></div>'+
@@ -10220,7 +10289,7 @@ function cerrarOperacion(id, k){
       var s2=estadoOp(cierreDe(x));
       ka.innerHTML='<div><span>Comisión de esta operación: </span><b>'+usdF(s2.comTr)+'</b> '+parteCom(s2)+
         (s2.comFija!=null?' · <span>la que usted anotó</span>':' · <span>'+pctCorto(s2.comPct)+' al abrir y otro '+pctCorto(s2.comPct)+' al cerrar, sobre el tamaño</span>')+'</div>'+
-        '<div><span>Comisión por mantenerla abierta: </span><b class="'+(s2.fund>0.004?"dn":s2.fund<-0.004?"up":"")+'">'+(Math.abs(s2.fund)<0.005?usdF(0):usdS(-s2.fund))+'</b> · <span>'+pieFund(s2)+'</span></div>';
+        '<div><span>Por mantenerla abierta: </span><b class="'+(s2.fund>0.004?"dn":s2.fund<-0.004?"up":"")+'">'+(Math.abs(s2.fund)<0.005?usdF(0):usdS(-s2.fund))+'</b> · <span>'+pieFund(s2)+'</span></div>';
       r.innerHTML=
         '<div class="lc dest"><div class="e">'+(s2.gan>=0?"GANA":"PIERDE")+'</div>'+
         '<div class="v '+cl(s2.gan)+'">'+(s2.gan>=0?"+":"−")+usdF(s2.gan).replace("-","")+'</div></div>'+
@@ -10318,7 +10387,7 @@ function editarOperacion(id, k){
            después quedó en $16,84). Se avisa y se ofrece ponerla al día; no se
            cambia sola, porque a veces la anotada es la que de verdad le cobraron. */
         '<div id="eKav" class="avComi" style="display:none"></div></div>'+
-      '<div class="campo"><label>Comisión por mantenerla abierta real (USD) <small>· vacío = se calcula sola</small></label><input id="eFu" inputmode="decimal" value="'+
+      '<div class="campo"><label>Pago o cobro real por mantenerla abierta (USD) <small>· vacío = se calcula sola</small></label><input id="eFu" inputmode="decimal" value="'+
         (f.fund!=null&&f.fund!==""?String(+(+f.fund).toFixed(6)).replace(".",sepDecimal()):"")+'" placeholder="se calcula sola"></div>'+
       '<div class="campo ancho"><label>Estrategia</label><input id="eEs" style="font-family:inherit" '+
         'value="'+esc(f.estr||"")+'" list="listaEstr2"></div>'+
@@ -11048,7 +11117,8 @@ function cajaOrdenes(){
         '<div class="l1">'+(esC?'Comprar':'Vender')+' '+cant(o.cant)+' '+esc(o.sym)+' cuando '+
         (esSl?"baje a":"suba a")+' '+precio(o.precio)+'</div>'+
         '<div class="l2">ahora <b data-v="pr" data-s="'+esc(o.sym)+'">'+precio(pr)+'</b>'+
-        (falta!=null?' · <span>falta '+pct(falta,1)+'</span>':'')+' · <span>programada el</span> <span translate="no">'+esc(o.creada||"")+'</span></div></div>'+
+        (falta!=null?' · <span data-v="ordFalta" data-s="'+esc(o.sym)+'" data-p="'+o.precio+
+          '">falta '+pct(falta,1)+'</span>':'')+' · <span>programada el</span> <span translate="no">'+esc(o.creada||"")+'</span></div></div>'+
         '<div class="acc"><button class="b sm" onclick="quitarOrden(\''+esc(o.id)+'\')">Quitar</button></div></div>';
     }).join("")
     : '<div class="mut">Deje dicho «vende o compra tanto de tal moneda cuando llegue a tal precio» y el '+
@@ -12868,6 +12938,16 @@ function tarjetaAlertas(){
             '">'+pctS(x.falta)+'</b><span>falta</span>':'<span>sin precio</span>'))+'</div></div>';
     }).join("")+'</div></div>';
 }
+/* v61 · el texto de una alerta, en un solo sitio: lo usa el pintado y también el
+   refresco de cada segundo, para que nunca digan cosas distintas */
+function lineaAlerta(a){
+  if(!a) return "";
+  var p=precioDe(a.sym);
+  if(p==null) return "sin precio todavía";
+  var sono=alertaSuena(a);
+  if(sono) return "ahora "+precio(p)+(a.visto?" · cumplida (ya la vio)":" · ¡cumplida!");
+  return "ahora "+precio(p)+" · falta "+pct((a.precio-p)/p*100,1);
+}
 function pintarAlr(){
   var c=document.getElementById("cuerpo");
   var lista=BD.alertas||[];
@@ -12890,10 +12970,10 @@ function pintarAlr(){
         '<div class="lg">'+icono(a.sym,30)+'</div>'+
         '<div class="q"><div class="l1">'+esc(a.sym)+' '+(a.dir==="sube"?"sube a":"baja a")+
         ' <em>'+precio(a.precio)+'</em></div>'+
-        '<div class="l2">'+(p!=null
-          ? ("ahora "+precio(p)+(sono?(a.visto?" · cumplida (ya la vio)":" · ¡cumplida!")
-                                    :" · falta "+pct(falta,1)))
-          : "sin precio todavía")+'</div></div>'+
+        /* v61 · esta línea no se refrescaba: seguía diciendo «ahora $64.000 · falta
+           +9,4%» con el precio ya en $69.000. Ahora lleva etiqueta y se rehace con
+           cada precio nuevo, igual que el resto de la pantalla. */
+        '<div class="l2" data-v="alrLinea" data-i="'+i+'">'+lineaAlerta(a)+'</div></div>'+
         (sono?'<span class="chip a">CUMPLIDA</span>':'')+
         '<div class="acc">'+
         (sono&&!a.visto?'<button class="b sm ac" data-avis="'+i+'">Ya la vi</button>':'')+
@@ -13114,7 +13194,7 @@ function hojaComisionesPrueba(){
         filaDet("Se fue en comisiones", "−"+usdF(T.comision),
                 cuanto>100 ? "la comisión se llevó todo lo que ganó, y más"
                            : "de cada $100 que ganó, "+usdF(cuanto))+
-        (Math.abs(T.fund||0)>=0.005?filaDet("Comisión por mantenerla abierta", (T.fund>0?"−":"+")+usdF(Math.abs(T.fund)),
+        (Math.abs(T.fund||0)>=0.005?filaDet("Por mantenerla abierta", (T.fund>0?"−":"+")+usdF(Math.abs(T.fund)),
                 T.fund>0?"lo que pagó por tenerlas abiertas (cada 8 h)":"lo que le pagaron por tenerlas abiertas (cada 8 h)", T.fund>0?"dn":"up"):"")+
         filaDet("Le quedó limpio", usdF(T.gan), "", T.gan>=0?"up":"dn")
       : "")+
@@ -13161,7 +13241,7 @@ function hojaComisiones(){
         filaDet("Se fue en comisiones", "−"+usdF(K.fut),
                 cuanto>100 ? "la comisión se llevó todo lo que ganó, y más"
                            : "de cada $100 que ganó, "+usdF(cuanto))+
-        (Math.abs(T.fund||0)>=0.005?filaDet("Comisión por mantenerla abierta", (T.fund>0?"−":"+")+usdF(Math.abs(T.fund)),
+        (Math.abs(T.fund||0)>=0.005?filaDet("Por mantenerla abierta", (T.fund>0?"−":"+")+usdF(Math.abs(T.fund)),
                 T.fund>0?"lo que pagó por tenerlas abiertas (cada 8 h)":"lo que le pagaron por tenerlas abiertas (cada 8 h)", T.fund>0?"dn":"up"):"")+
         filaDet("Le quedó limpio", usdF(T.gan), "", T.gan>=0?"up":"dn")
       : "")+
@@ -16934,7 +17014,7 @@ function datosInforme(){
             {t:"Dinero puesto",k:"usd"},{t:"Apal.",k:"x"},{t:"Entrada",k:"precio"},{t:"Stop",k:"precio"},
             {t:"Objetivo",k:"precio"},{t:"Salida",k:"precio"},{t:"Resultado",k:"usd"},
             {t:"Resultado %",k:"pct"},{t:"Comisión abrir",k:"usd"},{t:"Comisión cerrar",k:"usd"},
-            {t:"Comisión por mantenerla abierta",k:"usd"},{t:"Comisión total",k:"usd"},{t:"Nota",k:"t",larga:1}],
+            {t:"Por mantenerla abierta",k:"usd"},{t:"Comisión total",k:"usd"},{t:"Nota",k:"t",larga:1}],
       filas:X.lista.map(function(e){
         var est = e.programada ? "Programada" : e.abierta ? "Abierta" : (e.liquidado ? "Liquidada" : "Cerrada");
         var res = e.abierta ? e.flot : e.gan;
@@ -18087,6 +18167,29 @@ function engancharIdioma(box){
    Se respeta el orden de los huecos tal como salen en español.
    ===================================================================== */
 DIC.en={
+"La cuenta":"The maths",
+"La cuenta · ahora mismo":"The maths · right now",
+"Por el precio":"From the price",
+"Comisión de la casa":"Exchange fee",
+"Por mantenerla abierta":"For keeping it open",
+"Por mantenerla abierta:":"For keeping it open:",
+"Ahora mismo":"Right now",
+"no alcanzó ningún cobro (cada # h)":"no charge was due yet (every # h)",
+"# cobros de # % cada # h · estimado":"# charges of # % every # h · estimated",
+"el que usted anotó":"the one you wrote down",
+"se movió +#%":"moved +#%",
+"se movió -#%":"moved -#%",
+"se movió #%":"moved #%",
+"solo abrir · cerrar costará $#":"opening only · closing will cost $#",
+"abrir $# + cerrar $#":"opening $# + closing $#",
+"lo pagó usted ·":"you paid it ·",
+"se lo pagaron ·":"you were paid ·",
+"de lo que puso":"of what you put in",
+"Lo liquidaron: no pierde más de lo que puso.":"You were liquidated: you lose no more than you put in.",
+"El precio guardado es viejo. Escriba a qué precio salió.":"The saved price is old. Type the price you exited at.",
+"le quedan # de las # que compró":"# left of the # you bought",
+"Pago o cobro real por mantenerla abierta (@)":"Actual payment or credit for keeping it open (@)",
+
 "Cuánto se movió el precio":"How much the price moved",
 "Cómo se cerró":"How it closed",
 "DE LO QUE PUSO":"OF WHAT YOU PUT IN",
@@ -18128,7 +18231,7 @@ DIC.en={
 "Comisión por mantenerla abierta:":"Time fee:",
 "comisión por mantenerla abierta ≈ $# cada # h":"time fee ≈ $# every # h",
 "Si la deja abierta varias horas, se suma la comisión por mantenerla abierta (cada # h).":"If you keep it open for several hours, the time fee is added (every # h).",
-"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Comisión por mantenerla abierta real (USD)».":"The time fee (funding): every # hours (on some coins every # or every #) a small percentage of the size is paid or received, almost always around # %; sometimes you are the one paid. The app calculates it on its own at # % every # hours; if your exchange charged something else, enter it when closing in «Actual time fee (USD)».",
+"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Pago o cobro real por mantenerla abierta (USD)».":"The time fee (funding): every # hours (on some coins every # or every #) a small percentage of the size is paid or received, almost always around # %; sometimes you are the one paid. The app calculates it on its own at # % every # hours; if your exchange charged something else, enter it when closing in «Actual time fee (USD)».",
 "lo que pagó por tenerlas abiertas (cada # h)":"what you paid for keeping them open (every # h)",
 "lo que le pagaron por tenerlas abiertas (cada # h)":"what you were paid for keeping them open (every # h)",
 "Comisión abrir":"Fee open",
@@ -20131,6 +20234,29 @@ DIC.en={
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
+"La cuenta":"A conta",
+"La cuenta · ahora mismo":"A conta · agora mesmo",
+"Por el precio":"Pelo preço",
+"Comisión de la casa":"Comissão da corretora",
+"Por mantenerla abierta":"Por mantê-la aberta",
+"Por mantenerla abierta:":"Por mantê-la aberta:",
+"Ahora mismo":"Agora mesmo",
+"no alcanzó ningún cobro (cada # h)":"não chegou nenhuma cobrança (a cada # h)",
+"# cobros de # % cada # h · estimado":"# cobranças de # % a cada # h · estimado",
+"el que usted anotó":"o que você anotou",
+"se movió +#%":"mexeu +#%",
+"se movió -#%":"mexeu -#%",
+"se movió #%":"mexeu #%",
+"solo abrir · cerrar costará $#":"só abrir · fechar vai custar $#",
+"abrir $# + cerrar $#":"abrir $# + fechar $#",
+"lo pagó usted ·":"você pagou ·",
+"se lo pagaron ·":"pagaram a você ·",
+"de lo que puso":"do que você colocou",
+"Lo liquidaron: no pierde más de lo que puso.":"Foi liquidado: não perde mais do que colocou.",
+"El precio guardado es viejo. Escriba a qué precio salió.":"O preço guardado está velho. Escreva a que preço saiu.",
+"le quedan # de las # que compró":"restam # das # que comprou",
+"Pago o cobro real por mantenerla abierta (@)":"Pagamento ou crédito real por mantê-la aberta (@)",
+
 "Cuánto se movió el precio":"Quanto o preço se moveu",
 "Cómo se cerró":"Como foi fechada",
 "DE LO QUE PUSO":"DO QUE VOCÊ COLOCOU",
@@ -20172,7 +20298,7 @@ DIC.pt={
 "Comisión por mantenerla abierta:":"Taxa por tempo:",
 "comisión por mantenerla abierta ≈ $# cada # h":"taxa por tempo ≈ $# a cada # h",
 "Si la deja abierta varias horas, se suma la comisión por mantenerla abierta (cada # h).":"Se a deixar aberta várias horas, soma-se a taxa por tempo (a cada # h).",
-"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Comisión por mantenerla abierta real (USD)».":"A taxa por tempo (funding): a cada # horas (em algumas moedas a cada # ou a cada #) paga-se ou recebe-se uma pequena porcentagem do tamanho, quase sempre perto de # %; às vezes pagam a você. O programa calcula sozinho com # % a cada # horas; se a sua corretora cobrou outra, escreva-a ao fechar em «Taxa por tempo real (USD)».",
+"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Pago o cobro real por mantenerla abierta (USD)».":"A taxa por tempo (funding): a cada # horas (em algumas moedas a cada # ou a cada #) paga-se ou recebe-se uma pequena porcentagem do tamanho, quase sempre perto de # %; às vezes pagam a você. O programa calcula sozinho com # % a cada # horas; se a sua corretora cobrou outra, escreva-a ao fechar em «Taxa por tempo real (USD)».",
 "lo que pagó por tenerlas abiertas (cada # h)":"o que pagou por mantê-las abertas (a cada # h)",
 "lo que le pagaron por tenerlas abiertas (cada # h)":"o que lhe pagaram por mantê-las abertas (a cada # h)",
 "Comisión abrir":"Taxa abrir",
@@ -22168,6 +22294,29 @@ DIC.pt={
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
+"La cuenta":"Le calcul",
+"La cuenta · ahora mismo":"Le calcul · en ce moment",
+"Por el precio":"Par le prix",
+"Comisión de la casa":"Frais de la plateforme",
+"Por mantenerla abierta":"Pour la garder ouverte",
+"Por mantenerla abierta:":"Pour la garder ouverte :",
+"Ahora mismo":"En ce moment",
+"no alcanzó ningún cobro (cada # h)":"aucun prélèvement atteint (toutes les # h)",
+"# cobros de # % cada # h · estimado":"# prélèvements de # % toutes les # h · estimé",
+"el que usted anotó":"celui que vous avez saisi",
+"se movió +#%":"a bougé de +#%",
+"se movió -#%":"a bougé de -#%",
+"se movió #%":"a bougé de #%",
+"solo abrir · cerrar costará $#":"ouverture seule · la clôture coûtera $#",
+"abrir $# + cerrar $#":"ouverture $# + clôture $#",
+"lo pagó usted ·":"vous l’avez payé ·",
+"se lo pagaron ·":"on vous l’a versé ·",
+"de lo que puso":"de ce que vous avez mis",
+"Lo liquidaron: no pierde más de lo que puso.":"Vous avez été liquidé : vous ne perdez pas plus que votre mise.",
+"El precio guardado es viejo. Escriba a qué precio salió.":"Le prix enregistré est ancien. Saisissez le prix de sortie.",
+"le quedan # de las # que compró":"il vous reste # sur les # achetées",
+"Pago o cobro real por mantenerla abierta (@)":"Paiement ou crédit réel pour la garder ouverte (@)",
+
 "Cuánto se movió el precio":"De combien le prix a bougé",
 "Cómo se cerró":"Comment elle s'est fermée",
 "DE LO QUE PUSO":"DE CE QUE VOUS AVEZ MIS",
@@ -22209,7 +22358,7 @@ DIC.fr={
 "Comisión por mantenerla abierta:":"Frais de durée :",
 "comisión por mantenerla abierta ≈ $# cada # h":"frais de durée ≈ $# toutes les # h",
 "Si la deja abierta varias horas, se suma la comisión por mantenerla abierta (cada # h).":"Si vous la gardez ouverte plusieurs heures, les frais de durée s'ajoutent (toutes les # h).",
-"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Comisión por mantenerla abierta real (USD)».":"Les frais de durée (funding) : toutes les # heures (sur certaines monnaies toutes les # ou toutes les #), on paie ou on reçoit un petit pourcentage de la taille, presque toujours autour de # % ; parfois c'est vous qui recevez. Le programme les calcule seul à # % toutes les # heures ; si votre plateforme vous a facturé autre chose, saisissez-le à la fermeture dans «Frais de durée réels (USD)».",
+"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Pago o cobro real por mantenerla abierta (USD)».":"Les frais de durée (funding) : toutes les # heures (sur certaines monnaies toutes les # ou toutes les #), on paie ou on reçoit un petit pourcentage de la taille, presque toujours autour de # % ; parfois c'est vous qui recevez. Le programme les calcule seul à # % toutes les # heures ; si votre plateforme vous a facturé autre chose, saisissez-le à la fermeture dans «Frais de durée réels (USD)».",
 "lo que pagó por tenerlas abiertas (cada # h)":"ce que vous avez payé pour les garder ouvertes (toutes les # h)",
 "lo que le pagaron por tenerlas abiertas (cada # h)":"ce qu'on vous a versé pour les garder ouvertes (toutes les # h)",
 "Comisión abrir":"Frais ouverture",
@@ -24205,6 +24354,29 @@ DIC.fr={
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
+"La cuenta":"Die Rechnung",
+"La cuenta · ahora mismo":"Die Rechnung · jetzt gerade",
+"Por el precio":"Durch den Kurs",
+"Comisión de la casa":"Gebühr der Börse",
+"Por mantenerla abierta":"Fürs Offenhalten",
+"Por mantenerla abierta:":"Fürs Offenhalten:",
+"Ahora mismo":"Jetzt gerade",
+"no alcanzó ningún cobro (cada # h)":"noch keine Abrechnung erreicht (alle # Std.)",
+"# cobros de # % cada # h · estimado":"# Abrechnungen zu # % alle # Std. · geschätzt",
+"el que usted anotó":"der von Ihnen eingetragene",
+"se movió +#%":"bewegte sich +#%",
+"se movió -#%":"bewegte sich -#%",
+"se movió #%":"bewegte sich #%",
+"solo abrir · cerrar costará $#":"nur Eröffnung · Schließen kostet $#",
+"abrir $# + cerrar $#":"Eröffnung $# + Schließen $#",
+"lo pagó usted ·":"Sie haben gezahlt ·",
+"se lo pagaron ·":"Ihnen wurde gezahlt ·",
+"de lo que puso":"des eingesetzten Geldes",
+"Lo liquidaron: no pierde más de lo que puso.":"Sie wurden liquidiert: Sie verlieren nicht mehr als Ihren Einsatz.",
+"El precio guardado es viejo. Escriba a qué precio salió.":"Der gespeicherte Kurs ist alt. Tragen Sie Ihren Ausstiegskurs ein.",
+"le quedan # de las # que compró":"# übrig von den gekauften #",
+"Pago o cobro real por mantenerla abierta (@)":"Tatsächliche Zahlung oder Gutschrift fürs Offenhalten (@)",
+
 "Cuánto se movió el precio":"Wie stark sich der Preis bewegt hat",
 "Cómo se cerró":"Wie sie geschlossen wurde",
 "DE LO QUE PUSO":"VOM EINGESETZTEN GELD",
@@ -24246,7 +24418,7 @@ DIC.de={
 "Comisión por mantenerla abierta:":"Zeitgebühr:",
 "comisión por mantenerla abierta ≈ $# cada # h":"Zeitgebühr ≈ $# alle # h",
 "Si la deja abierta varias horas, se suma la comisión por mantenerla abierta (cada # h).":"Wenn Sie sie mehrere Stunden offen lassen, kommt die Zeitgebühr dazu (alle # h).",
-"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Comisión por mantenerla abierta real (USD)».":"Die Zeitgebühr (Funding): alle # Stunden (bei manchen Coins alle # oder jede #) wird ein kleiner Prozentsatz der Größe gezahlt oder erhalten, fast immer um # %; manchmal bekommen Sie ihn. Das Programm berechnet sie selbst mit # % alle # Stunden; hat Ihre Börse etwas anderes berechnet, tragen Sie es beim Schließen in «Tatsächliche Zeitgebühr (USD)» ein.",
+"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Pago o cobro real por mantenerla abierta (USD)».":"Die Zeitgebühr (Funding): alle # Stunden (bei manchen Coins alle # oder jede #) wird ein kleiner Prozentsatz der Größe gezahlt oder erhalten, fast immer um # %; manchmal bekommen Sie ihn. Das Programm berechnet sie selbst mit # % alle # Stunden; hat Ihre Börse etwas anderes berechnet, tragen Sie es beim Schließen in «Tatsächliche Zeitgebühr (USD)» ein.",
 "lo que pagó por tenerlas abiertas (cada # h)":"was Sie fürs Offenhalten gezahlt haben (alle # h)",
 "lo que le pagaron por tenerlas abiertas (cada # h)":"was Ihnen fürs Offenhalten gezahlt wurde (alle # h)",
 "Comisión abrir":"Gebühr Öffnen",
@@ -26242,6 +26414,29 @@ DIC.de={
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
+"La cuenta":"Il conto",
+"La cuenta · ahora mismo":"Il conto · adesso",
+"Por el precio":"Dal prezzo",
+"Comisión de la casa":"Commissione della piattaforma",
+"Por mantenerla abierta":"Per tenerla aperta",
+"Por mantenerla abierta:":"Per tenerla aperta:",
+"Ahora mismo":"Adesso",
+"no alcanzó ningún cobro (cada # h)":"nessun addebito raggiunto (ogni # h)",
+"# cobros de # % cada # h · estimado":"# addebiti del # % ogni # h · stimato",
+"el que usted anotó":"quello che ha scritto",
+"se movió +#%":"si è mosso +#%",
+"se movió -#%":"si è mosso -#%",
+"se movió #%":"si è mosso #%",
+"solo abrir · cerrar costará $#":"solo apertura · chiudere costerà $#",
+"abrir $# + cerrar $#":"apertura $# + chiusura $#",
+"lo pagó usted ·":"l’ha pagato lei ·",
+"se lo pagaron ·":"gliel’hanno pagato ·",
+"de lo que puso":"di quanto ha messo",
+"Lo liquidaron: no pierde más de lo que puso.":"È stato liquidato: non perde più di quanto ha messo.",
+"El precio guardado es viejo. Escriba a qué precio salió.":"Il prezzo salvato è vecchio. Scriva a che prezzo è uscito.",
+"le quedan # de las # que compró":"le restano # delle # che ha comprato",
+"Pago o cobro real por mantenerla abierta (@)":"Pagamento o accredito reale per tenerla aperta (@)",
+
 "Cuánto se movió el precio":"Quanto si è mosso il prezzo",
 "Cómo se cerró":"Come si è chiusa",
 "DE LO QUE PUSO":"DI QUELLO CHE HA MESSO",
@@ -26283,7 +26478,7 @@ DIC.it={
 "Comisión por mantenerla abierta:":"Commissione per tempo:",
 "comisión por mantenerla abierta ≈ $# cada # h":"commissione per tempo ≈ $# ogni # h",
 "Si la deja abierta varias horas, se suma la comisión por mantenerla abierta (cada # h).":"Se la lascia aperta per varie ore, si aggiunge la commissione per tempo (ogni # h).",
-"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Comisión por mantenerla abierta real (USD)».":"La commissione per tempo (funding): ogni # ore (su alcune monete ogni # o ogni #) si paga o si riceve una piccola percentuale della dimensione, quasi sempre intorno al # %; a volte la pagano a lei. Il programma la calcola da solo con il # % ogni # ore; se il suo exchange le ha addebitato altro, lo scriva alla chiusura in «Commissione per tempo reale (USD)».",
+"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Pago o cobro real por mantenerla abierta (USD)».":"La commissione per tempo (funding): ogni # ore (su alcune monete ogni # o ogni #) si paga o si riceve una piccola percentuale della dimensione, quasi sempre intorno al # %; a volte la pagano a lei. Il programma la calcola da solo con il # % ogni # ore; se il suo exchange le ha addebitato altro, lo scriva alla chiusura in «Commissione per tempo reale (USD)».",
 "lo que pagó por tenerlas abiertas (cada # h)":"quello che ha pagato per tenerle aperte (ogni # h)",
 "lo que le pagaron por tenerlas abiertas (cada # h)":"quello che le hanno pagato per tenerle aperte (ogni # h)",
 "Comisión abrir":"Commissione apertura",
@@ -28279,6 +28474,29 @@ DIC.it={
 };
 /* NEDERLANDS · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.nl={
+"La cuenta":"De rekensom",
+"La cuenta · ahora mismo":"De rekensom · nu",
+"Por el precio":"Door de prijs",
+"Comisión de la casa":"Kosten van de beurs",
+"Por mantenerla abierta":"Voor het openhouden",
+"Por mantenerla abierta:":"Voor het openhouden:",
+"Ahora mismo":"Nu",
+"no alcanzó ningún cobro (cada # h)":"nog geen afrekening bereikt (elke # u)",
+"# cobros de # % cada # h · estimado":"# afrekeningen van # % elke # u · geschat",
+"el que usted anotó":"die u hebt ingevuld",
+"se movió +#%":"bewoog +#%",
+"se movió -#%":"bewoog -#%",
+"se movió #%":"bewoog #%",
+"solo abrir · cerrar costará $#":"alleen openen · sluiten kost $#",
+"abrir $# + cerrar $#":"openen $# + sluiten $#",
+"lo pagó usted ·":"u hebt betaald ·",
+"se lo pagaron ·":"u kreeg betaald ·",
+"de lo que puso":"van wat u inlegde",
+"Lo liquidaron: no pierde más de lo que puso.":"U bent geliquideerd: u verliest niet meer dan uw inleg.",
+"El precio guardado es viejo. Escriba a qué precio salió.":"De opgeslagen prijs is oud. Vul in tegen welke prijs u uitstapte.",
+"le quedan # de las # que compró":"# over van de # die u kocht",
+"Pago o cobro real por mantenerla abierta (@)":"Werkelijke betaling of ontvangst voor het openhouden (@)",
+
 "Cuánto se movió el precio":"Hoeveel de prijs bewoog",
 "Cómo se cerró":"Hoe hij sloot",
 "DE LO QUE PUSO":"VAN WAT U INLEGDE",
@@ -28320,7 +28538,7 @@ DIC.nl={
 "Comisión por mantenerla abierta:":"Tijdkosten:",
 "comisión por mantenerla abierta ≈ $# cada # h":"tijdkosten ≈ $# elke # u",
 "Si la deja abierta varias horas, se suma la comisión por mantenerla abierta (cada # h).":"Als u hem enkele uren open laat, komen er tijdkosten bij (elke # u).",
-"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Comisión por mantenerla abierta real (USD)».":"De tijdkosten (funding): elke # uur (bij sommige munten elke # of elk #) wordt een klein percentage van de grootte betaald of ontvangen, bijna altijd rond # %; soms krijgt u het. Het programma rekent ze zelf uit met # % elke # uur; als uw exchange iets anders rekende, vul het bij het sluiten in bij «Werkelijke tijdkosten (USD)».",
+"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Pago o cobro real por mantenerla abierta (USD)».":"De tijdkosten (funding): elke # uur (bij sommige munten elke # of elk #) wordt een klein percentage van de grootte betaald of ontvangen, bijna altijd rond # %; soms krijgt u het. Het programma rekent ze zelf uit met # % elke # uur; als uw exchange iets anders rekende, vul het bij het sluiten in bij «Werkelijke tijdkosten (USD)».",
 "lo que pagó por tenerlas abiertas (cada # h)":"wat u betaalde om ze open te houden (elke # u)",
 "lo que le pagaron por tenerlas abiertas (cada # h)":"wat u kreeg om ze open te houden (elke # u)",
 "Comisión abrir":"Kosten openen",
@@ -30602,6 +30820,29 @@ DIC.nl={
 };
 /* POLSKI · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.pl={
+"La cuenta":"Rachunek",
+"La cuenta · ahora mismo":"Rachunek · teraz",
+"Por el precio":"Z ceny",
+"Comisión de la casa":"Prowizja giełdy",
+"Por mantenerla abierta":"Za utrzymanie otwartej",
+"Por mantenerla abierta:":"Za utrzymanie otwartej:",
+"Ahora mismo":"Teraz",
+"no alcanzó ningún cobro (cada # h)":"nie doszło do rozliczenia (co # godz.)",
+"# cobros de # % cada # h · estimado":"# rozliczeń po # % co # godz. · szacunek",
+"el que usted anotó":"ten, który Pan wpisał",
+"se movió +#%":"zmieniła się o +#%",
+"se movió -#%":"zmieniła się o -#%",
+"se movió #%":"zmieniła się o #%",
+"solo abrir · cerrar costará $#":"tylko otwarcie · zamknięcie będzie kosztować $#",
+"abrir $# + cerrar $#":"otwarcie $# + zamknięcie $#",
+"lo pagó usted ·":"zapłacił Pan ·",
+"se lo pagaron ·":"zapłacono Panu ·",
+"de lo que puso":"tego, co Pan włożył",
+"Lo liquidaron: no pierde más de lo que puso.":"Została Panu zamknięta pozycja: nie traci Pan więcej, niż włożył.",
+"El precio guardado es viejo. Escriba a qué precio salió.":"Zapisana cena jest stara. Proszę wpisać cenę wyjścia.",
+"le quedan # de las # que compró":"zostało # z # kupionych",
+"Pago o cobro real por mantenerla abierta (@)":"Rzeczywista zapłata lub wpływ za utrzymanie otwartej (@)",
+
 "Cuánto se movió el precio":"O ile ruszyła się cena",
 "Cómo se cerró":"Jak została zamknięta",
 "DE LO QUE PUSO":"Z TEGO, CO WŁOŻONO",
@@ -30643,7 +30884,7 @@ DIC.pl={
 "Comisión por mantenerla abierta:":"Prowizja za czas:",
 "comisión por mantenerla abierta ≈ $# cada # h":"prowizja za czas ≈ $# co # h",
 "Si la deja abierta varias horas, se suma la comisión por mantenerla abierta (cada # h).":"Jeśli zostawi ją otwartą kilka godzin, dolicza się prowizja za czas (co # h).",
-"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Comisión por mantenerla abierta real (USD)».":"Prowizja za czas (funding): co # godzin (przy niektórych monetach co # lub co #) płaci się lub otrzymuje niewielki procent wielkości, prawie zawsze około # %; czasem to Panu(i) płacą. Program liczy ją sam: # % co # godzin; jeśli giełda pobrała inną, proszę ją wpisać przy zamknięciu w «Rzeczywista prowizja za czas (USD)».",
+"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Pago o cobro real por mantenerla abierta (USD)».":"Prowizja za czas (funding): co # godzin (przy niektórych monetach co # lub co #) płaci się lub otrzymuje niewielki procent wielkości, prawie zawsze około # %; czasem to Panu(i) płacą. Program liczy ją sam: # % co # godzin; jeśli giełda pobrała inną, proszę ją wpisać przy zamknięciu w «Rzeczywista prowizja za czas (USD)».",
 "lo que pagó por tenerlas abiertas (cada # h)":"ile zapłacono za trzymanie ich otwartych (co # h)",
 "lo que le pagaron por tenerlas abiertas (cada # h)":"ile wypłacono za trzymanie ich otwartych (co # h)",
 "Comisión abrir":"Prowizja otwarcie",
@@ -32925,6 +33166,29 @@ DIC.pl={
 };
 /* TÜRKÇE · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.tr={
+"La cuenta":"Hesap",
+"La cuenta · ahora mismo":"Hesap · şu anda",
+"Por el precio":"Fiyattan",
+"Comisión de la casa":"Borsa komisyonu",
+"Por mantenerla abierta":"Açık tutmak için",
+"Por mantenerla abierta:":"Açık tutmak için:",
+"Ahora mismo":"Şu anda",
+"no alcanzó ningún cobro (cada # h)":"hiç kesinti olmadı (her # saatte)",
+"# cobros de # % cada # h · estimado":"her # saatte # %’lik # kesinti · tahmini",
+"el que usted anotó":"sizin girdiğiniz",
+"se movió +#%":"+#% hareket etti",
+"se movió -#%":"-#% hareket etti",
+"se movió #%":"#% hareket etti",
+"solo abrir · cerrar costará $#":"sadece açılış · kapanış $# tutacak",
+"abrir $# + cerrar $#":"açılış $# + kapanış $#",
+"lo pagó usted ·":"siz ödediniz ·",
+"se lo pagaron ·":"size ödendi ·",
+"de lo que puso":"koyduğunuz paranın",
+"Lo liquidaron: no pierde más de lo que puso.":"Tasfiye edildiniz: koyduğunuzdan fazlasını kaybetmezsiniz.",
+"El precio guardado es viejo. Escriba a qué precio salió.":"Kayıtlı fiyat eski. Hangi fiyattan çıktığınızı yazın.",
+"le quedan # de las # que compró":"aldığınız #’den # kaldı",
+"Pago o cobro real por mantenerla abierta (@)":"Açık tutmak için gerçek ödeme veya alacak (@)",
+
 "Cuánto se movió el precio":"Fiyat ne kadar hareket etti",
 "Cómo se cerró":"Nasıl kapandı",
 "DE LO QUE PUSO":"KOYDUĞUNUZ PARANIN",
@@ -32966,7 +33230,7 @@ DIC.tr={
 "Comisión por mantenerla abierta:":"Süre komisyonu:",
 "comisión por mantenerla abierta ≈ $# cada # h":"süre komisyonu ≈ $# (# saatte bir)",
 "Si la deja abierta varias horas, se suma la comisión por mantenerla abierta (cada # h).":"Birkaç saat açık bırakırsanız süre komisyonu eklenir (# saatte bir).",
-"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Comisión por mantenerla abierta real (USD)».":"Süre komisyonu (funding): her # saatte bir (bazı coinlerde # veya # saatte bir) büyüklüğün küçük bir yüzdesi ödenir ya da alınır, neredeyse her zaman % # civarında; bazen size ödenir. Program bunu kendiliğinden % # ile her # saatte bir hesaplar; borsanız farklı kestiyse kapatırken «Gerçek süre komisyonu (USD)» alanına yazın.",
+"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Pago o cobro real por mantenerla abierta (USD)».":"Süre komisyonu (funding): her # saatte bir (bazı coinlerde # veya # saatte bir) büyüklüğün küçük bir yüzdesi ödenir ya da alınır, neredeyse her zaman % # civarında; bazen size ödenir. Program bunu kendiliğinden % # ile her # saatte bir hesaplar; borsanız farklı kestiyse kapatırken «Gerçek süre komisyonu (USD)» alanına yazın.",
 "lo que pagó por tenerlas abiertas (cada # h)":"açık tutmak için ödediğiniz (# saatte bir)",
 "lo que le pagaron por tenerlas abiertas (cada # h)":"açık tutmak için size ödenen (# saatte bir)",
 "Comisión abrir":"Açılış komisyonu",
@@ -35248,6 +35512,29 @@ DIC.tr={
 };
 /* РУССКИЙ · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ru={
+"La cuenta":"Расчёт",
+"La cuenta · ahora mismo":"Расчёт · прямо сейчас",
+"Por el precio":"От цены",
+"Comisión de la casa":"Комиссия биржи",
+"Por mantenerla abierta":"За удержание позиции",
+"Por mantenerla abierta:":"За удержание позиции:",
+"Ahora mismo":"Прямо сейчас",
+"no alcanzó ningún cobro (cada # h)":"ни одного списания (каждые # ч)",
+"# cobros de # % cada # h · estimado":"# списаний по # % каждые # ч · оценка",
+"el que usted anotó":"тот, что вы записали",
+"se movió +#%":"изменилась на +#%",
+"se movió -#%":"изменилась на -#%",
+"se movió #%":"изменилась на #%",
+"solo abrir · cerrar costará $#":"только открытие · закрытие обойдётся в $#",
+"abrir $# + cerrar $#":"открытие $# + закрытие $#",
+"lo pagó usted ·":"заплатили вы ·",
+"se lo pagaron ·":"заплатили вам ·",
+"de lo que puso":"от вложенного",
+"Lo liquidaron: no pierde más de lo que puso.":"Позицию ликвидировали: вы не теряете больше вложенного.",
+"El precio guardado es viejo. Escriba a qué precio salió.":"Сохранённая цена устарела. Впишите цену выхода.",
+"le quedan # de las # que compró":"осталось # из купленных #",
+"Pago o cobro real por mantenerla abierta (@)":"Фактическая выплата или начисление за удержание (@)",
+
 "Cuánto se movió el precio":"На сколько сдвинулась цена",
 "Cómo se cerró":"Как закрылась",
 "DE LO QUE PUSO":"ОТ ВЛОЖЕННЫХ ДЕНЕГ",
@@ -35289,7 +35576,7 @@ DIC.ru={
 "Comisión por mantenerla abierta:":"Комиссия за время:",
 "comisión por mantenerla abierta ≈ $# cada # h":"комиссия за время ≈ $# каждые # ч",
 "Si la deja abierta varias horas, se suma la comisión por mantenerla abierta (cada # h).":"Если держать её открытой несколько часов, добавляется комиссия за время (каждые # ч).",
-"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Comisión por mantenerla abierta real (USD)».":"Комиссия за время (funding): каждые # часов (по некоторым монетам каждые # или каждый #) платится или получается небольшой процент от размера, почти всегда около # %; иногда платят вам. Программа считает её сама: # % каждые # часов; если биржа взяла другую, впишите её при закрытии в «Реальная комиссия за время (USD)».",
+"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Pago o cobro real por mantenerla abierta (USD)».":"Комиссия за время (funding): каждые # часов (по некоторым монетам каждые # или каждый #) платится или получается небольшой процент от размера, почти всегда около # %; иногда платят вам. Программа считает её сама: # % каждые # часов; если биржа взяла другую, впишите её при закрытии в «Реальная комиссия за время (USD)».",
 "lo que pagó por tenerlas abiertas (cada # h)":"сколько вы заплатили за удержание открытыми (каждые # ч)",
 "lo que le pagaron por tenerlas abiertas (cada # h)":"сколько вам заплатили за удержание открытыми (каждые # ч)",
 "Comisión abrir":"Комиссия открытие",
@@ -37571,6 +37858,29 @@ DIC.ru={
 };
 /* УКРАЇНСЬКА · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.uk={
+"La cuenta":"Розрахунок",
+"La cuenta · ahora mismo":"Розрахунок · просто зараз",
+"Por el precio":"Від ціни",
+"Comisión de la casa":"Комісія біржі",
+"Por mantenerla abierta":"За утримання позиції",
+"Por mantenerla abierta:":"За утримання позиції:",
+"Ahora mismo":"Просто зараз",
+"no alcanzó ningún cobro (cada # h)":"жодного списання (кожні # год)",
+"# cobros de # % cada # h · estimado":"# списань по # % кожні # год · оцінка",
+"el que usted anotó":"той, що ви записали",
+"se movió +#%":"змінилася на +#%",
+"se movió -#%":"змінилася на -#%",
+"se movió #%":"змінилася на #%",
+"solo abrir · cerrar costará $#":"лише відкриття · закриття коштуватиме $#",
+"abrir $# + cerrar $#":"відкриття $# + закриття $#",
+"lo pagó usted ·":"заплатили ви ·",
+"se lo pagaron ·":"заплатили вам ·",
+"de lo que puso":"від вкладеного",
+"Lo liquidaron: no pierde más de lo que puso.":"Позицію ліквідували: ви не втрачаєте більше за вкладене.",
+"El precio guardado es viejo. Escriba a qué precio salió.":"Збережена ціна застаріла. Впишіть ціну виходу.",
+"le quedan # de las # que compró":"лишилося # з куплених #",
+"Pago o cobro real por mantenerla abierta (@)":"Фактична виплата або нарахування за утримання (@)",
+
 "Cuánto se movió el precio":"На скільки зсунулася ціна",
 "Cómo se cerró":"Як закрилася",
 "DE LO QUE PUSO":"ВІД ВКЛАДЕНИХ ГРОШЕЙ",
@@ -37612,7 +37922,7 @@ DIC.uk={
 "Comisión por mantenerla abierta:":"Комісія за час:",
 "comisión por mantenerla abierta ≈ $# cada # h":"комісія за час ≈ $# кожні # год",
 "Si la deja abierta varias horas, se suma la comisión por mantenerla abierta (cada # h).":"Якщо тримати її відкритою кілька годин, додається комісія за час (кожні # год).",
-"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Comisión por mantenerla abierta real (USD)».":"Комісія за час (funding): кожні # годин (для деяких монет кожні # або кожну #) сплачується або отримується невеликий відсоток від розміру, майже завжди близько # %; іноді платять вам. Програма рахує її сама: # % кожні # годин; якщо біржа взяла іншу, впишіть її при закритті в «Реальна комісія за час (USD)».",
+"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Pago o cobro real por mantenerla abierta (USD)».":"Комісія за час (funding): кожні # годин (для деяких монет кожні # або кожну #) сплачується або отримується невеликий відсоток від розміру, майже завжди близько # %; іноді платять вам. Програма рахує її сама: # % кожні # годин; якщо біржа взяла іншу, впишіть її при закритті в «Реальна комісія за час (USD)».",
 "lo que pagó por tenerlas abiertas (cada # h)":"скільки ви заплатили за утримання відкритими (кожні # год)",
 "lo que le pagaron por tenerlas abiertas (cada # h)":"скільки вам заплатили за утримання відкритими (кожні # год)",
 "Comisión abrir":"Комісія відкриття",
@@ -39894,6 +40204,29 @@ DIC.uk={
 };
 /* BAHASA INDONESIA · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.id={
+"La cuenta":"Perhitungan",
+"La cuenta · ahora mismo":"Perhitungan · sekarang",
+"Por el precio":"Dari harga",
+"Comisión de la casa":"Biaya bursa",
+"Por mantenerla abierta":"Untuk menahannya terbuka",
+"Por mantenerla abierta:":"Untuk menahannya terbuka:",
+"Ahora mismo":"Sekarang",
+"no alcanzó ningún cobro (cada # h)":"belum ada penagihan (setiap # jam)",
+"# cobros de # % cada # h · estimado":"# penagihan # % setiap # jam · perkiraan",
+"el que usted anotó":"yang Anda catat",
+"se movió +#%":"bergerak +#%",
+"se movió -#%":"bergerak -#%",
+"se movió #%":"bergerak #%",
+"solo abrir · cerrar costará $#":"hanya buka · menutup akan biaya $#",
+"abrir $# + cerrar $#":"buka $# + tutup $#",
+"lo pagó usted ·":"Anda yang membayar ·",
+"se lo pagaron ·":"Anda yang dibayar ·",
+"de lo que puso":"dari yang Anda setor",
+"Lo liquidaron: no pierde más de lo que puso.":"Anda terlikuidasi: kerugian tidak melebihi yang Anda setor.",
+"El precio guardado es viejo. Escriba a qué precio salió.":"Harga tersimpan sudah lama. Tulis harga keluar Anda.",
+"le quedan # de las # que compró":"sisa # dari # yang dibeli",
+"Pago o cobro real por mantenerla abierta (@)":"Pembayaran atau penerimaan nyata untuk menahannya terbuka (@)",
+
 "Cuánto se movió el precio":"Berapa harga bergerak",
 "Cómo se cerró":"Bagaimana ditutup",
 "DE LO QUE PUSO":"DARI UANG YANG ANDA MASUKKAN",
@@ -39935,7 +40268,7 @@ DIC.id={
 "Comisión por mantenerla abierta:":"Biaya waktu:",
 "comisión por mantenerla abierta ≈ $# cada # h":"biaya waktu ≈ $# setiap # jam",
 "Si la deja abierta varias horas, se suma la comisión por mantenerla abierta (cada # h).":"Jika dibiarkan terbuka beberapa jam, biaya waktu ditambahkan (setiap # jam).",
-"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Comisión por mantenerla abierta real (USD)».":"Biaya waktu (funding): setiap # jam (pada beberapa koin setiap # atau setiap #) dibayar atau diterima persentase kecil dari ukuran, hampir selalu sekitar # %; kadang Anda yang dibayar. Program menghitungnya sendiri dengan # % setiap # jam; jika bursa Anda menagih lain, tulis saat menutup di «Biaya waktu sebenarnya (USD)».",
+"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Pago o cobro real por mantenerla abierta (USD)».":"Biaya waktu (funding): setiap # jam (pada beberapa koin setiap # atau setiap #) dibayar atau diterima persentase kecil dari ukuran, hampir selalu sekitar # %; kadang Anda yang dibayar. Program menghitungnya sendiri dengan # % setiap # jam; jika bursa Anda menagih lain, tulis saat menutup di «Biaya waktu sebenarnya (USD)».",
 "lo que pagó por tenerlas abiertas (cada # h)":"yang Anda bayar karena membiarkannya terbuka (setiap # jam)",
 "lo que le pagaron por tenerlas abiertas (cada # h)":"yang dibayarkan kepada Anda karena membiarkannya terbuka (setiap # jam)",
 "Comisión abrir":"Biaya buka",
@@ -42217,6 +42550,29 @@ DIC.id={
 };
 /* TIẾNG VIỆT · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.vi={
+"La cuenta":"Phép tính",
+"La cuenta · ahora mismo":"Phép tính · ngay bây giờ",
+"Por el precio":"Từ giá",
+"Comisión de la casa":"Phí sàn",
+"Por mantenerla abierta":"Để giữ lệnh mở",
+"Por mantenerla abierta:":"Để giữ lệnh mở:",
+"Ahora mismo":"Ngay bây giờ",
+"no alcanzó ningún cobro (cada # h)":"chưa tới kỳ thu nào (mỗi # giờ)",
+"# cobros de # % cada # h · estimado":"# lần thu # % mỗi # giờ · ước tính",
+"el que usted anotó":"giá trị bạn đã ghi",
+"se movió +#%":"biến động +#%",
+"se movió -#%":"biến động -#%",
+"se movió #%":"biến động #%",
+"solo abrir · cerrar costará $#":"chỉ mở · đóng sẽ tốn $#",
+"abrir $# + cerrar $#":"mở $# + đóng $#",
+"lo pagó usted ·":"bạn đã trả ·",
+"se lo pagaron ·":"bạn được trả ·",
+"de lo que puso":"so với số bạn bỏ ra",
+"Lo liquidaron: no pierde más de lo que puso.":"Bạn đã bị thanh lý: không mất quá số tiền đã bỏ ra.",
+"El precio guardado es viejo. Escriba a qué precio salió.":"Giá đã lưu đã cũ. Hãy nhập giá bạn thoát lệnh.",
+"le quedan # de las # que compró":"còn # trong # đã mua",
+"Pago o cobro real por mantenerla abierta (@)":"Khoản trả hoặc nhận thực tế để giữ lệnh mở (@)",
+
 "Cuánto se movió el precio":"Giá đã di chuyển bao nhiêu",
 "Cómo se cerró":"Đóng như thế nào",
 "DE LO QUE PUSO":"TRÊN SỐ TIỀN BẠN BỎ VÀO",
@@ -42258,7 +42614,7 @@ DIC.vi={
 "Comisión por mantenerla abierta:":"Phí theo thời gian:",
 "comisión por mantenerla abierta ≈ $# cada # h":"phí theo thời gian ≈ $# mỗi # giờ",
 "Si la deja abierta varias horas, se suma la comisión por mantenerla abierta (cada # h).":"Nếu để mở vài giờ, sẽ cộng thêm phí theo thời gian (mỗi # giờ).",
-"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Comisión por mantenerla abierta real (USD)».":"Phí theo thời gian (funding): cứ mỗi # giờ (một số coin mỗi # hoặc mỗi #) trả hoặc nhận một tỷ lệ nhỏ của quy mô, gần như luôn khoảng # %; đôi khi bạn được trả. Chương trình tự tính với # % mỗi # giờ; nếu sàn thu khác, hãy ghi khi đóng vào «Phí theo thời gian thực (USD)».",
+"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Pago o cobro real por mantenerla abierta (USD)».":"Phí theo thời gian (funding): cứ mỗi # giờ (một số coin mỗi # hoặc mỗi #) trả hoặc nhận một tỷ lệ nhỏ của quy mô, gần như luôn khoảng # %; đôi khi bạn được trả. Chương trình tự tính với # % mỗi # giờ; nếu sàn thu khác, hãy ghi khi đóng vào «Phí theo thời gian thực (USD)».",
 "lo que pagó por tenerlas abiertas (cada # h)":"số bạn trả để giữ lệnh mở (mỗi # giờ)",
 "lo que le pagaron por tenerlas abiertas (cada # h)":"số bạn được trả để giữ lệnh mở (mỗi # giờ)",
 "Comisión abrir":"Phí mở",
@@ -44540,6 +44896,29 @@ DIC.vi={
 };
 /* हिन्दी · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.hi={
+"La cuenta":"हिसाब",
+"La cuenta · ahora mismo":"हिसाब · अभी",
+"Por el precio":"कीमत से",
+"Comisión de la casa":"एक्सचेंज शुल्क",
+"Por mantenerla abierta":"खुला रखने के लिए",
+"Por mantenerla abierta:":"खुला रखने के लिए:",
+"Ahora mismo":"अभी",
+"no alcanzó ningún cobro (cada # h)":"कोई वसूली नहीं हुई (हर # घंटे)",
+"# cobros de # % cada # h · estimado":"# वसूली, # % हर # घंटे · अनुमान",
+"el que usted anotó":"जो आपने दर्ज किया",
+"se movió +#%":"+#% हिला",
+"se movió -#%":"-#% हिला",
+"se movió #%":"#% हिला",
+"solo abrir · cerrar costará $#":"केवल खोलना · बंद करने पर $# लगेगा",
+"abrir $# + cerrar $#":"खोलना $# + बंद करना $#",
+"lo pagó usted ·":"आपने चुकाया ·",
+"se lo pagaron ·":"आपको मिला ·",
+"de lo que puso":"आपने जो लगाया उसका",
+"Lo liquidaron: no pierde más de lo que puso.":"परिसमापन हुआ: आपने जो लगाया उससे ज़्यादा नहीं खोते।",
+"El precio guardado es viejo. Escriba a qué precio salió.":"सहेजी गई कीमत पुरानी है। बाहर निकलने की कीमत लिखें।",
+"le quedan # de las # que compró":"खरीदे गए # में से # बचे",
+"Pago o cobro real por mantenerla abierta (@)":"खुला रखने का वास्तविक भुगतान या प्राप्ति (@)",
+
 "Cuánto se movió el precio":"कीमत कितनी हिली",
 "Cómo se cerró":"कैसे बंद हुई",
 "DE LO QUE PUSO":"आपके लगाए पैसे में से",
@@ -44581,7 +44960,7 @@ DIC.hi={
 "Comisión por mantenerla abierta:":"समय शुल्क:",
 "comisión por mantenerla abierta ≈ $# cada # h":"समय शुल्क ≈ $# (हर # घंटे)",
 "Si la deja abierta varias horas, se suma la comisión por mantenerla abierta (cada # h).":"कई घंटे खुला रखने पर समय शुल्क जुड़ता है (हर # घंटे)।",
-"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Comisión por mantenerla abierta real (USD)».":"समय शुल्क (funding): हर # घंटे (कुछ सिक्कों में हर # या हर #) आकार का छोटा प्रतिशत दिया या लिया जाता है, लगभग हमेशा # % के आसपास; कभी-कभी आपको मिलता है। प्रोग्राम इसे खुद # % हर # घंटे से गिनता है; अगर आपके एक्सचेंज ने अलग लिया, तो बंद करते समय «असली समय शुल्क (USD)» में लिखें।",
+"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Pago o cobro real por mantenerla abierta (USD)».":"समय शुल्क (funding): हर # घंटे (कुछ सिक्कों में हर # या हर #) आकार का छोटा प्रतिशत दिया या लिया जाता है, लगभग हमेशा # % के आसपास; कभी-कभी आपको मिलता है। प्रोग्राम इसे खुद # % हर # घंटे से गिनता है; अगर आपके एक्सचेंज ने अलग लिया, तो बंद करते समय «असली समय शुल्क (USD)» में लिखें।",
 "lo que pagó por tenerlas abiertas (cada # h)":"खुले रखने के लिए आपने जो दिया (हर # घंटे)",
 "lo que le pagaron por tenerlas abiertas (cada # h)":"खुले रखने के लिए आपको जो मिला (हर # घंटे)",
 "Comisión abrir":"खोलने का शुल्क",
@@ -46863,6 +47242,29 @@ DIC.hi={
 };
 /* 日本語 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ja={
+"La cuenta":"内訳",
+"La cuenta · ahora mismo":"内訳 · 現在",
+"Por el precio":"値動きから",
+"Comisión de la casa":"取引所の手数料",
+"Por mantenerla abierta":"保有に対して",
+"Por mantenerla abierta:":"保有に対して:",
+"Ahora mismo":"現在",
+"no alcanzó ningún cobro (cada # h)":"まだ徴収なし（# 時間ごと）",
+"# cobros de # % cada # h · estimado":"# 回の徴収、# %（# 時間ごと）· 概算",
+"el que usted anotó":"ご自身で入力した値",
+"se movió +#%":"+#% 動いた",
+"se movió -#%":"-#% 動いた",
+"se movió #%":"#% 動いた",
+"solo abrir · cerrar costará $#":"開くぶんのみ · 閉じると $# かかる",
+"abrir $# + cerrar $#":"開く $# + 閉じる $#",
+"lo pagó usted ·":"あなたが支払った ·",
+"se lo pagaron ·":"あなたが受け取った ·",
+"de lo que puso":"入れた額に対して",
+"Lo liquidaron: no pierde más de lo que puso.":"清算されました。入れた額を超えて失うことはありません。",
+"El precio guardado es viejo. Escriba a qué precio salió.":"保存された価格は古いです。決済した価格を入力してください。",
+"le quedan # de las # que compró":"購入した # のうち # が残っています",
+"Pago o cobro real por mantenerla abierta (@)":"保有に対する実際の支払い・受取り（@）",
+
 "Cuánto se movió el precio":"価格の動き",
 "Cómo se cerró":"クローズの仕方",
 "DE LO QUE PUSO":"投じた金額に対して",
@@ -46904,7 +47306,7 @@ DIC.ja={
 "Comisión por mantenerla abierta:":"時間手数料：",
 "comisión por mantenerla abierta ≈ $# cada # h":"時間手数料 ≈ $#（#時間ごと）",
 "Si la deja abierta varias horas, se suma la comisión por mantenerla abierta (cada # h).":"数時間保有すると時間手数料が加わります（#時間ごと）。",
-"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Comisión por mantenerla abierta real (USD)».":"時間手数料（funding）：#時間ごと（一部の銘柄は#時間か#時間ごと）にサイズのわずかな割合を支払うか受け取ります。ほぼ # % 前後で、受け取る側になることもあります。プログラムは # % を#時間ごとに自動で計算します。取引所の請求が違えば、決済時に「実際の時間手数料 (USD)」に入力してください。",
+"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Pago o cobro real por mantenerla abierta (USD)».":"時間手数料（funding）：#時間ごと（一部の銘柄は#時間か#時間ごと）にサイズのわずかな割合を支払うか受け取ります。ほぼ # % 前後で、受け取る側になることもあります。プログラムは # % を#時間ごとに自動で計算します。取引所の請求が違えば、決済時に「実際の時間手数料 (USD)」に入力してください。",
 "lo que pagó por tenerlas abiertas (cada # h)":"保有し続けたことで支払った額（#時間ごと）",
 "lo que le pagaron por tenerlas abiertas (cada # h)":"保有し続けたことで受け取った額（#時間ごと）",
 "Comisión abrir":"開く手数料",
@@ -49186,6 +49588,29 @@ DIC.ja={
 };
 /* 한국어 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ko={
+"La cuenta":"계산",
+"La cuenta · ahora mismo":"계산 · 현재",
+"Por el precio":"가격으로",
+"Comisión de la casa":"거래소 수수료",
+"Por mantenerla abierta":"보유에 대해",
+"Por mantenerla abierta:":"보유에 대해:",
+"Ahora mismo":"현재",
+"no alcanzó ningún cobro (cada # h)":"징수 없음 (# 시간마다)",
+"# cobros de # % cada # h · estimado":"# 회 징수, # % (# 시간마다) · 추정",
+"el que usted anotó":"직접 입력한 값",
+"se movió +#%":"+#% 움직임",
+"se movió -#%":"-#% 움직임",
+"se movió #%":"#% 움직임",
+"solo abrir · cerrar costará $#":"진입분만 · 청산 시 $# 발생",
+"abrir $# + cerrar $#":"진입 $# + 청산 $#",
+"lo pagó usted ·":"내가 지급 ·",
+"se lo pagaron ·":"내가 수령 ·",
+"de lo que puso":"넣은 금액 대비",
+"Lo liquidaron: no pierde más de lo que puso.":"청산되었습니다. 넣은 금액 이상은 잃지 않습니다.",
+"El precio guardado es viejo. Escriba a qué precio salió.":"저장된 가격이 오래되었습니다. 청산한 가격을 입력하세요.",
+"le quedan # de las # que compró":"매수한 # 중 # 남음",
+"Pago o cobro real por mantenerla abierta (@)":"보유에 대한 실제 지급 또는 수령 (@)",
+
 "Cuánto se movió el precio":"가격이 움직인 폭",
 "Cómo se cerró":"청산 방식",
 "DE LO QUE PUSO":"넣은 돈 대비",
@@ -49227,7 +49652,7 @@ DIC.ko={
 "Comisión por mantenerla abierta:":"시간 수수료:",
 "comisión por mantenerla abierta ≈ $# cada # h":"시간 수수료 ≈ $# (#시간마다)",
 "Si la deja abierta varias horas, se suma la comisión por mantenerla abierta (cada # h).":"몇 시간 열어 두면 시간 수수료가 붙습니다 (#시간마다).",
-"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Comisión por mantenerla abierta real (USD)».":"시간 수수료(funding): #시간마다(일부 코인은 # 또는 #시간마다) 규모의 작은 비율을 내거나 받으며, 거의 항상 # % 안팎입니다. 받을 때도 있습니다. 프로그램은 # %를 #시간마다 자동으로 계산합니다. 거래소가 다르게 부과했다면 청산할 때 «실제 시간 수수료 (USD)»에 적으세요.",
+"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Pago o cobro real por mantenerla abierta (USD)».":"시간 수수료(funding): #시간마다(일부 코인은 # 또는 #시간마다) 규모의 작은 비율을 내거나 받으며, 거의 항상 # % 안팎입니다. 받을 때도 있습니다. 프로그램은 # %를 #시간마다 자동으로 계산합니다. 거래소가 다르게 부과했다면 청산할 때 «실제 시간 수수료 (USD)»에 적으세요.",
 "lo que pagó por tenerlas abiertas (cada # h)":"열어 둔 대가로 낸 금액 (#시간마다)",
 "lo que le pagaron por tenerlas abiertas (cada # h)":"열어 둔 대가로 받은 금액 (#시간마다)",
 "Comisión abrir":"진입 수수료",
@@ -51509,6 +51934,29 @@ DIC.ko={
 };
 /* 中文（简体） · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.zh={
+"La cuenta":"账目",
+"La cuenta · ahora mismo":"账目 · 此刻",
+"Por el precio":"来自价格",
+"Comisión de la casa":"交易所手续费",
+"Por mantenerla abierta":"持仓期间",
+"Por mantenerla abierta:":"持仓期间:",
+"Ahora mismo":"此刻",
+"no alcanzó ningún cobro (cada # h)":"尚未发生扣收（每 # 小时）",
+"# cobros de # % cada # h · estimado":"# 次扣收，每 # 小时 # % · 估算",
+"el que usted anotó":"您填写的数值",
+"se movió +#%":"变动 +#%",
+"se movió -#%":"变动 -#%",
+"se movió #%":"变动 #%",
+"solo abrir · cerrar costará $#":"仅开仓 · 平仓将花费 $#",
+"abrir $# + cerrar $#":"开仓 $# + 平仓 $#",
+"lo pagó usted ·":"由您支付 ·",
+"se lo pagaron ·":"收到支付 ·",
+"de lo que puso":"占您投入的",
+"Lo liquidaron: no pierde más de lo que puso.":"已被强平：亏损不会超过您投入的金额。",
+"El precio guardado es viejo. Escriba a qué precio salió.":"保存的价格已过时。请填写您的平仓价格。",
+"le quedan # de las # que compró":"买入的 # 中还剩 #",
+"Pago o cobro real por mantenerla abierta (@)":"持仓期间的实际支付或收取（@）",
+
 "Cuánto se movió el precio":"价格波动幅度",
 "Cómo se cerró":"如何平仓",
 "DE LO QUE PUSO":"占投入资金的",
@@ -51550,7 +51998,7 @@ DIC.zh={
 "Comisión por mantenerla abierta:":"持仓时间费：",
 "comisión por mantenerla abierta ≈ $# cada # h":"持仓时间费 ≈ $#（每 # 小时）",
 "Si la deja abierta varias horas, se suma la comisión por mantenerla abierta (cada # h).":"持仓数小时会加上持仓时间费（每 # 小时）。",
-"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Comisión por mantenerla abierta real (USD)».":"持仓时间费（funding）：每 # 小时（部分币种每 # 或每 # 小时）按仓位规模支付或收取一小部分，几乎总在 # % 左右；有时是您收到。程序按 # % 每 # 小时自动计算；若交易所收取不同，平仓时在「实际持仓时间费 (USD)」中填写。",
+"La comisión por mantenerla abierta (funding): cada # horas (en algunas monedas cada # o cada #) se paga o se cobra un pequeño porcentaje del tamaño, casi siempre cerca del # %; a veces se la pagan a usted. El programa la calcula sola con el # % cada # horas; si su casa le cobró otra, escríbala al cerrar en «Pago o cobro real por mantenerla abierta (USD)».":"持仓时间费（funding）：每 # 小时（部分币种每 # 或每 # 小时）按仓位规模支付或收取一小部分，几乎总在 # % 左右；有时是您收到。程序按 # % 每 # 小时自动计算；若交易所收取不同，平仓时在「实际持仓时间费 (USD)」中填写。",
 "lo que pagó por tenerlas abiertas (cada # h)":"持仓期间支付的费用（每 # 小时）",
 "lo que le pagaron por tenerlas abiertas (cada # h)":"持仓期间收到的费用（每 # 小时）",
 "Comisión abrir":"开仓手续费",
