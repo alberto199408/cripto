@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="59">
+<meta name="v" content="60">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -2168,7 +2168,17 @@ body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+8)>h2 .ic{background:linear-grad
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por su cuenta de Google.
    ===================================================================== */
-var VERSION="60";
+/* v60 · EL NÚMERO DE VERSIÓN VIVE EN UN SOLO SITIO: la etiqueta <meta name="v">
+   de la cabecera (línea 5). Tiene que estar ahí porque el teléfono lee solo los
+   primeros 2 kB del archivo para saber si hay versión nueva, sin bajarse los 4 MB.
+   Antes el número estaba escrito DOS veces (en la etiqueta y aquí) y al cambiar
+   solo una, el aviso de «su equipo se quedó con la versión vieja» no se callaba
+   nunca. Ahora esto lee de la etiqueta: se cambia un solo número. */
+var VERSION=(function(){
+  var m=document.querySelector('meta[name="v"]');
+  var v=m?String(m.getAttribute("content")||"").trim():"";
+  return v||"60";
+})();
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
