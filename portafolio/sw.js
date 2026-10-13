@@ -1,5 +1,5 @@
 /* =====================================================================
-   AYUDANTE DEL TELÉFONO · Mi Portafolio Cripto v62
+   AYUDANTE DEL TELÉFONO · Mi Portafolio Cripto v63
    Guarda el programa para que abra sin internet y, cuando usted publica
    una versión nueva, la trae solo la próxima vez que lo abra con internet.
 
@@ -30,7 +30,7 @@
      · y ninguna petición puede tener la pantalla parada más de 8 segundos.
    ===================================================================== */
 var VER = "59";
-var CAJA = "cripto-v62";
+var CAJA = "cripto-v63";
 var ARRANQUE = "./CRIPTO.html";
 var ARCHIVOS = ["./", "./index.html", "./CRIPTO.html", "./manifest.webmanifest", "./icono-192.png", "./icono-512.png", "./icono-mask-192.png", "./icono-mask-512.png", "./privacidad.html"];
 var ESPERA = 8000;          /* lo máximo que internet puede tener la pantalla parada */
