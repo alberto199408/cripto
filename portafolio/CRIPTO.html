@@ -896,6 +896,7 @@ a:hover{color:var(--ac2)}
 .opDet .kv b.kvTx{font-size:14px;font-weight:700}
 .opDet.totHist{margin-top:14px!important;border:1px solid var(--ln)!important;border-radius:14px!important}
 .totHist .kv .kvAncho{grid-column:1/-1}
+.avSal{display:block;font-size:11px;color:var(--dn);margin-top:5px;line-height:1.35}
 .mv .q .l2.lCom .mut{color:var(--t3)}
 /* operaciones programadas del teléfono: una línea que se abre; aviso y botones siempre a la vista */
 .opProg{margin-bottom:9px}
@@ -2009,6 +2010,34 @@ body.conCerrojo #aviso{z-index:10001}
   font-weight:800}
 .opDet .kv b{font-size:13.5px;font-weight:800}
 .opDet .kv b small{display:block;font-size:10.5px;color:var(--t3);font-weight:700}
+/* =====================================================================
+   v60 · LA CUENTA — el bloque de la resta dentro de la tarjeta.
+   Va DESPUÉS de las reglas de .opDet .kv para que mande esta, y con la
+   especificidad subida (.kv .cuenta ...) porque .opDet .kv div pone las
+   cosas en columna y aquí tienen que ir en la misma línea.
+   ===================================================================== */
+.kv .kvAncho{grid-column:1/-1!important}
+.kv .cuenta{display:block!important;border:1px solid var(--ln);border-radius:12px;
+  padding:10px 12px;background:rgba(0,0,0,.14)}
+.kv .cuenta .cuT{display:block;font-size:10px!important;font-weight:800;letter-spacing:.05em;
+  color:var(--t3);text-transform:uppercase;margin:0 0 6px}
+.kv .cuenta .cuL{display:flex!important;flex-direction:row!important;align-items:baseline;
+  justify-content:space-between;gap:12px;padding:4px 0;border:0;min-width:0}
+.kv .cuenta .cuL>span{display:block;font-size:12.5px!important;font-weight:500;color:var(--tx);
+  text-transform:none;letter-spacing:0;margin:0;flex:1 1 auto;min-width:0}
+.kv .cuenta .cuL>b{display:block;font-size:14px!important;font-weight:800;white-space:nowrap;
+  text-align:right;flex:0 0 auto;font-variant-numeric:tabular-nums}
+.kv .cuenta .cuS{font-size:10px;font-weight:600;color:var(--t3);text-align:right;
+  margin:-1px 0 3px;line-height:1.3;white-space:normal}
+.kv .cuenta .cuR{display:flex!important;flex-direction:row!important;align-items:baseline;
+  justify-content:space-between;gap:12px;margin-top:6px;padding-top:7px;
+  border:0;border-top:1px solid var(--ln)}
+.kv .cuenta .cuR>span{display:block;font-size:10px!important;font-weight:800;letter-spacing:.05em;
+  color:var(--t3);text-transform:uppercase;margin:0}
+.kv .cuenta .cuR>b{display:block;font-size:19px!important;font-weight:800;white-space:nowrap;
+  font-variant-numeric:tabular-nums}
+.kv .cuenta .cuP{text-align:right;font-size:10.5px;color:var(--t3);margin-top:1px}
+.kv .cuenta .cuN{font-size:10.5px;color:var(--t3);margin-top:6px;line-height:1.35}
 .opDet .opBts{display:flex;gap:7px;margin-top:10px}
 .opDet .opBts .b{flex:1;justify-content:center}
 
@@ -2139,7 +2168,7 @@ body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+8)>h2 .ic{background:linear-grad
    últimos precios y los usa. Los datos se guardan en este equipo al
    momento, y el botón ENVIAR los manda al otro equipo por su cuenta de Google.
    ===================================================================== */
-var VERSION="59";
+var VERSION="60";
 /* el nombre con el que se vende y con el que salen las notificaciones */
 var APP_NOMBRE="Mi Portafolio Cripto";
 var LLAVE="portafolio-cripto-v7";     /* la MISMA caja de siempre: no se pierde nada */
@@ -4666,12 +4695,54 @@ function parteCom(e){ return '<span>(abrir '+usdF(e.comA)+' + cerrar '+usdF(e.co
 function textoFund(e){
   if(Math.abs(e.fund||0)<0.005) return "";
   /* v58 · Luis: «comisión» es la palabra que todos conocen, no «financiación» */
-  return e.fund>0 ? 'comisión por mantenerla abierta '+usdF(e.fund) : 'comisión por mantenerla abierta a su favor '+usdF(-e.fund);
+  return e.fund>0 ? 'pagó por mantenerla abierta '+usdF(e.fund) : 'le pagaron por mantenerla abierta '+usdF(-e.fund);
 }
+/* v60 · el pie dice la verdad: que es un cálculo, no un dato que vino de la casa */
 function pieFund(e){
-  if(e.fundFija) return "la que usted anotó";
-  if(!e.nFund) return "todavía ningún cobro (cada 8 h)";
-  return plural(e.nFund,"cobro","cobros")+" de "+pctCorto(FUND_8H)+" cada 8 h";
+  if(e.fundFija) return "el que usted anotó";
+  var h=horasFund();
+  if(!e.nFund) return "no alcanzó ningún cobro (cada "+h+" h)";
+  return plural(e.nFund,"cobro","cobros")+" de "+pctCorto(tasaCobro())+" cada "+h+" h"+
+    (FINANCIACION.estimada?" · estimado":"");
+}
+/* =====================================================================
+   v60 · LA CUENTA DE LA OPERACIÓN — escrita UNA sola vez
+   Luis (13 oct): «−$70,20 arriba y $70,20 de comisión abajo parece que me
+   cobran dos veces». No se cobra dos veces: cuando el precio no da nada, lo
+   único que queda es la comisión, y entonces el resultado ES la comisión.
+   Lo que faltaba era enseñar la resta. Esta función la pinta, y las cuatro
+   pantallas (Futuros, Backtesting, abiertas e historial) la llaman a ella.
+   ===================================================================== */
+function bloqueCuenta(e){
+  var ab = e.abierta && e.flot!=null;
+  var br = ab ? e.brutoFlot : e.bruto;
+  if(br==null) return "";
+  var tot  = ab ? e.flot : e.gan;
+  var pctT = ab ? e.pctFlotNeto : e.pctNeto;
+  var com  = ab ? e.comA : e.comTr;
+  /* la nota va en su propia línea, debajo: si va dentro del número se monta encima
+     de la etiqueta cuando es larga */
+  var fila=function(t,v,sub,cls){
+    var n = Math.abs(v)<0.005 ? usdF(0) : usdS(v);
+    return '<div class="cuL"><span>'+t+'</span><b'+(cls?' class="'+cls+'"':'')+'>'+n+'</b></div>'+
+      (sub?'<div class="cuS">'+sub+'</div>':'');
+  };
+  var subPrecio = e.pctPrecio!=null ? "se movió "+pct(e.pctPrecio,2) :
+                  (ab&&e.pctFlot!=null ? "se movió "+pct(e.pctFlot/e.apal,2) : "");
+  var subCom = ab ? "solo abrir · cerrar costará "+usdF(e.comC)
+                  : "abrir "+usdF(e.comA)+" + cerrar "+usdF(e.comC);
+  return '<div class="kvAncho cuenta">'+
+    '<div class="cuT">La cuenta'+(ab?' · ahora mismo':'')+'</div>'+
+    fila("Por el precio", br, subPrecio, cl(br))+
+    fila("Comisión de la casa", -com, subCom, "dn")+
+    fila("Por mantenerla abierta", -e.fund,
+         (Math.abs(e.fund)<0.005 ? "" : (e.fund>0?"lo pagó usted · ":"se lo pagaron · "))+pieFund(e),
+         Math.abs(e.fund)<0.005 ? "" : cl(-e.fund))+
+    '<div class="cuR"><span>'+(ab?"Ahora mismo":"Resultado")+'</span>'+
+      '<b class="'+cl(tot)+'">'+usdS(tot)+'</b></div>'+
+    (pctT!=null?'<div class="cuP">'+pct(pctT,1)+' de lo que puso</div>':'')+
+    (e.topado?'<div class="cuN">Lo liquidaron: no pierde más de lo que puso.</div>':'')+
+  '</div>';
 }
 function lineaComOp(e){
   var t=textoFund(e);
@@ -4753,7 +4824,37 @@ function comisionesTotales(){ return comisionesDet().total; }
    (f.fund), manda lo suyo. Las operaciones viejas que solo guardaban un total: si ese total era
    el cálculo automático, se vuelve a calcular bien; si era un número que usted escribió, se respeta.
    ===================================================================== */
-var FUND_8H=0.01;
+/* =====================================================================
+   v60 · LA FINANCIACIÓN, TODA EN UN SOLO SITIO
+   Esto NO lo cobra la casa de cambio. En futuros no hay dueño de la moneda:
+   están los que apuestan a que sube (LARGO) y los que apuestan a que baja
+   (CORTO), y cada cierto rato el bando más lleno le paga al otro. Por eso a
+   veces sale a favor y a veces en contra.
+   Aquí están TODAS las perillas de esto, las seis, juntas y a la vista:
+     1 · tasa      — cuánto se paga en cada cobro, en % del tamaño
+     2 · horas     — cada cuántas horas hay cobro, casa por casa
+     3 · horasOtra — el de una casa que no esté en la lista
+     4 · quienPaga — qué lado paga cuando la tasa es positiva
+     5 · estimada  — si se avisa de que es un cálculo y no un dato real
+     6 · avisoAlt  — avisar de que en muchas alternativas el cobro es más seguido
+   La tasa real cambia en CADA cobro y puede ponerse en negativo (entonces es
+   al revés: paga el corto). El programa no la puede saber. Si usted sabe la de
+   verdad, la escribe al cerrar en «financiación real» y esa manda. */
+var FINANCIACION={
+  tasa: 0.01,
+  horas: { binance:8, bybit:8, okx:8, bitget:8, gate:8, kucoin:8,
+           mexc:8, kraken:1, bingx:8, htx:8 },
+  horasOtra: 8,
+  quienPaga: "largo",
+  estimada: true,
+  avisoAlt: true
+};
+var FUND_8H=FINANCIACION.tasa;   /* el nombre de antes, para no romper nada */
+/* cada cuántas horas cobra la casa donde opera */
+function horasFund(){
+  var h=FINANCIACION.horas[casaFutDeGlobal()];
+  return (h>0) ? h : FINANCIACION.horasOtra;
+}
 function comModelo(f, valor){
   if(f.comFija!=null && f.comFija!=="" && isFinite(+f.comFija)) return {pct:null, fija:+f.comFija};
   if(f.comPct!=null && f.comPct!=="" && isFinite(+f.comPct)) return {pct:+f.comPct, fija:null};
@@ -4784,9 +4885,12 @@ function vecesFunding(f){
     t1=msDe(fc, f.horaCierre||"12:00");
   } else return 0;
   if(t1==null||!(t1>t0)) return 0;
-  var H8=8*3600e3;
-  return Math.max(0, Math.floor(t1/H8)-Math.floor(t0/H8));
+  var H=horasFund()*3600e3;
+  return Math.max(0, Math.floor(t1/H)-Math.floor(t0/H));
 }
+/* lo que se paga EN CADA COBRO. Si la casa cobra más seguido, cada cobro es
+   más pequeño: en 8 horas se paga lo mismo. Así lo hacen Binance, OKX y KuCoin. */
+function tasaCobro(){ return FINANCIACION.tasa*horasFund()/8; }
 function estadoOp(f){
   var margen=+f.monto||0, apal=+f.apal||1, ent=+f.entrada||0;
   var valor=margen*apal;
@@ -4810,13 +4914,19 @@ function estadoOp(f){
     var tot0=ent+pxCierre; comA=tot0>0?CM.fija*ent/tot0:CM.fija/2; comC=CM.fija-comA;
   } else { comA=monedas*ent*CM.pct/100; comC=monedas*pxCierre*CM.pct/100; }
   var nFund=vecesFunding(f);
-  var fundEst=cent((signo>0?1:-1)*valor*FUND_8H/100*nFund);
+  var fundEst=cent((signo>0?1:-1)*valor*tasaCobro()/100*nFund);
   var fund = (f.fund!=null&&f.fund!==""&&isFinite(+f.fund)) ? +f.fund : (f.estado==="programada"?0:fundEst);
   comA=cent(comA); comC=cent(comC);
   var comTr=cent(comA+comC);
   var com=cent(comTr+fund);
   /* lo que costaría cerrar en el objetivo o en el stop (la de cerrar cambia con el precio) */
   var comEn=function(px){ return CM.fija!=null ? com : cent(comA+monedas*px*CM.pct/100+fund); };
+  /* v60 · lo que dio el PRECIO, sin tocarle nada: es la primera línea de la cuenta */
+  var bruto = pctMargen!=null ? cent(margen*pctMargen/100) : null;
+  /* v60 · en una operación ABIERTA la casa todavía NO le ha cobrado la de cerrar.
+     Binance solo le cobró la de abrir. Por eso lo que se enseña mientras está
+     abierta descuenta comA (y la financiación que ya corrió), no comC. */
+  var comAb = cent(comA+fund);
   var gan = pctMargen!=null ? cent(margen*pctMargen/100-com) : null;
 
   var liq = (ent>0&&apal>1)
@@ -4861,12 +4971,13 @@ function estadoOp(f){
     }
   }
 
-  var flot=null, pctFlot=null, enPeligro=null;
+  var flot=null, pctFlot=null, enPeligro=null, brutoFlot=null;
   if(sal==null && f.estado==="abierta" && ent>0 && f.sym){
     var pr=precioDe(f.sym);
     if(pr!=null){
       pctFlot=signo*(pr-ent)/ent*100*apal;
-      flot=cent(margen*pctFlot/100-com);
+      brutoFlot=cent(margen*pctFlot/100);
+      flot=cent(margen*pctFlot/100-comAb);
       if(liq!=null){
         enPeligro=signo*(pr-liq)/liq*100;
         if((f.lado==="SHORT")?(pr>=liq):(pr<=liq)) liquidado=true;
@@ -4882,7 +4993,8 @@ function estadoOp(f){
   return {f:f, margen:margen, apal:apal, entrada:ent, valor:valor, monedas:monedas,
     salida:sal, pctPrecio:pctPrecio, pct: pctMargen!=null?pctMargen/100:null,
     pctNeto:pctNeto, pctFlotNeto:pctFlotNeto,
-    pctMargen:pctMargen, gan:gan, com:com, comA:comA, comC:comC, comTr:comTr, fund:fund, fundEst:fundEst,
+    pctMargen:pctMargen, gan:gan, bruto:bruto, brutoFlot:brutoFlot, comAb:comAb,
+    com:com, comA:comA, comC:comC, comTr:comTr, fund:fund, fundEst:fundEst,
     nFund:nFund, comPct:CM.pct, comFija:CM.fija, fundFija:(f.fund!=null&&f.fund!==""), comTp:comTp, comSl:comSl,
     liq:liq, liquidado:liquidado, topado:topado,
     enPeligro:enPeligro, tp:tp, sl:sl, ganTp:ganTp, perSl:perSl, rr:rr, slLiq:slLiq,
@@ -5233,13 +5345,19 @@ function avisosRiesgo(R){
 var CASAS_FUT=[
   ["binance","Binance",0.02,0.05], ["bybit","Bybit",0.02,0.055], ["okx","OKX",0.02,0.05],
   ["bitget","Bitget",0.02,0.06], ["gate","Gate.io",0.02,0.05], ["kucoin","KuCoin",0.02,0.06],
-  ["mexc","MEXC",0,0.02], ["kraken","Kraken",0.02,0.05], ["bingx","BingX",0.02,0.05], ["htx","HTX",0.02,0.06]];
+  /* v60 · MEXC: el 0 % / 0,02 % era una PROMOCIÓN de 2024. A Latinoamérica se la
+     quitaron en abril de 2025 — la tarifa normal es 0,01 % / 0,04 %. */
+  ["mexc","MEXC",0.01,0.04], ["kraken","Kraken",0.02,0.05], ["bingx","BingX",0.02,0.05], ["htx","HTX",0.02,0.06]];
 /* v57 · LA COMISIÓN DE SPOT, SOLA. En spot la casa cobra un % de lo que compra o vende, en CADA
    compra y en CADA venta (no tiene apalancamiento ni tiempo). Tarifa de cuenta normal, sin VIP
    ni descuentos, orden a mercado (taker), revisada en octubre de 2026. Si su casa le cobró otra
    cosa, la escribe y manda lo suyo. */
+/* v60 · tres estaban mal, comprobadas una por una en octubre de 2026:
+     Coinbase  0,6 → 0,10 %  (Coinbase Advanced fuera de EE.UU. y Europa, desde el 16 sep 2026)
+     Kraken    0,4 → 0,80 %  (el 0,4 % es el de orden límite; a mercado es el doble)
+     Crypto.com 0,08 → 0,50 % (nivel 1 sin CRO guardado; cobraba seis veces lo que decía) */
 var CASAS_SPOT={BINANCE:0.1, BYBIT:0.1, OKX:0.1, GATE:0.1, MEXC:0.05, BITGET:0.1, KUCOIN:0.1,
-  COINBASE:0.6, KRAKEN:0.4, CRYPTOCOM:0.08, OTRA:0.1};
+  COINBASE:0.1, KRAKEN:0.8, CRYPTOCOM:0.5, OTRA:0.1};
 function tasaSpot(casa){ var t=CASAS_SPOT[String(casa||casaGlobal()).toUpperCase()]; return t!=null?t:0.1; }
 function comSpot(casa, valor){ return valor>0 ? cent(valor*tasaSpot(casa)/100) : 0; }
 /* la comisión del formulario de spot: la que escribió, o si lo dejó vacío, la de su casa */
@@ -9278,11 +9396,7 @@ function filaCerradaCorta(e,k){
         '<div><span>Precio de salida</span><b>'+(e.salida!=null?precio(e.salida):"—")+'<small>'+(f.cierre?fechaCorta(f.cierre):"")+'</small></b></div>'+
         '<div><span>Cuánto se movió el precio</span><b>'+(e.pctPrecio!=null?pct(e.pctPrecio,2):"—")+'<small>con '+e.apal+'x</small></b></div>'+
         '<div><span>Cómo se cerró</span><b class="kvTx">'+comoCerro(e)+'</b></div>'+
-        '<div><span>Comisión (abrir y cerrar)</span><b>'+usdF(e.comTr)+'<small>(abrir '+usdF(e.comA)+' + cerrar '+usdF(e.comC)+')</small></b></div>'+
-        '<div><span>Comisión por mantenerla abierta</span><b class="'+(e.fund>0.004?"dn":e.fund<-0.004?"up":"")+'">'+
-          (Math.abs(e.fund)<0.005?usdF(0):usdS(-e.fund))+'<small>'+pieFund(e)+'</small></b></div>'+
-        '<div><span>Resultado</span><b class="'+cl(e.gan)+'">'+(e.gan>=0?"+":"−")+usdF(e.gan).replace("-","")+
-          '<small>'+(e.pctNeto!=null?pct(e.pctNeto,1)+" de lo que puso":"")+'</small></b></div>'+
+        bloqueCuenta(e)+
         '<div><span>Lista de antes de entrar</span><b>'+n+' de '+PLAN.length+(f.animo?'<small>'+esc(f.animo)+'</small>':'')+'</b></div>'+
       '</div>'+
       '<div class="opBts">'+
@@ -9326,9 +9440,7 @@ function filaAbiertaCorta(e,k){
         '<div><span>Si llega al stop</span><b class="'+(netoSl(e)!=null&&netoSl(e)>=0?"up":"dn")+'">'+
           (e.perSl!=null?usdS(netoSl(e)):"—")+
           '<small>'+pieSl(e)+'</small></b></div>'+
-        '<div><span>Comisión (abrir y cerrar)</span><b>'+usdF(e.comTr)+'<small>(abrir '+usdF(e.comA)+' + cerrar '+usdF(e.comC)+')</small></b></div>'+
-        '<div><span>Comisión por mantenerla abierta</span><b class="'+(e.fund>0.004?"dn":e.fund<-0.004?"up":"")+'">'+
-          (Math.abs(e.fund)<0.005?usdF(0):usdS(-e.fund))+'<small>'+pieFund(e)+'</small></b></div>'+
+        bloqueCuenta(e)+
       '</div>'+
       (e.liquidado?'<div class="nota mal" style="margin-top:8px">El precio ya pasó el punto de '+
         'liquidación ('+precio(e.liq)+'). No pierde más de lo que puso.</div>':'')+
@@ -9411,9 +9523,7 @@ function filaAbierta(e,k){
         '<div><span>Si llega al stop</span><b class="'+(netoSl(e)!=null&&netoSl(e)>=0?"up":"dn")+'">'+
           (e.perSl!=null?usdS(netoSl(e)):"—")+
           '<small>'+pieSl(e)+'</small></b></div>'+
-        '<div><span>Comisión (abrir y cerrar)</span><b>'+usdF(e.comTr)+'<small>(abrir '+usdF(e.comA)+' + cerrar '+usdF(e.comC)+')</small></b></div>'+
-        '<div><span>Comisión por mantenerla abierta</span><b class="'+(e.fund>0.004?"dn":e.fund<-0.004?"up":"")+'">'+
-          (Math.abs(e.fund)<0.005?usdF(0):usdS(-e.fund))+'<small>'+pieFund(e)+'</small></b></div>'+
+        bloqueCuenta(e)+
       '</div>'+
       (riel!=null
         ? '<div class="riel" style="height:30px;margin:10px 0 0"><div class="via"></div>'+
@@ -10051,7 +10161,12 @@ function cerrarOperacion(id, k){
   var A=ambito(k);
   var f=A.lista.filter(function(x){ return x.id===id; })[0];
   if(!f){ aviso("Esa operación ya no existe.",true); return; }
-  var st=estadoOp(f), pr=precioDe(f.sym);
+  /* v60 · Luis (13 oct): «yo vi que el precio se estaba moviendo» y le quedó la
+     salida igual que la entrada. La casilla se rellenaba con el ÚLTIMO precio
+     guardado, aunque fuera de hace horas. Ahora solo se rellena con un precio
+     fresco (menos de 10 minutos) o escrito por usted; si está viejo, la casilla
+     queda vacía y se avisa, para que no cierre con un precio que ya no existe. */
+  var st=estadoOp(f), pr=precioVigente(f.sym), prViejo=(pr==null && precioDe(f.sym)!=null);
   MIRANDO=String(f.sym).toUpperCase();
   abrir('<div class="hoja '+(f.lado==="SHORT"?"esc":"elar")+'"><div class="hh">'+icono(f.sym,30)+
     '<h3>Cerrar la operación N° '+esc(String(f.n||""))+'</h3>'+
@@ -10062,7 +10177,9 @@ function cerrarOperacion(id, k){
       (st.sl!=null?' · stop '+precio(st.sl):'')+(st.tp!=null?' · objetivo '+precio(st.tp):'')+'</div>'+
     '<div class="campos" style="margin-top:13px">'+
       '<div class="campo"><label>Precio de salida</label><input id="cX" inputmode="decimal" value="'+
-        (pr!=null?String(pr).replace(".",sepDecimal()):"")+'"></div>'+
+        (pr!=null?String(pr).replace(".",sepDecimal()):"")+'">'+
+        (prViejo?'<small class="avSal">El precio guardado es viejo. Escriba a qué precio salió.</small>':'')+
+        '</div>'+
       '<div class="campo"><label>Fecha de cierre</label><input type="date" id="cF" value="'+hoy()+'"></div>'+
       /* v57 · la comisión y la financiación se calculan SOLAS con el precio de salida y el tiempo;
          las casillas son solo por si su casa le cobró otra cosa */
