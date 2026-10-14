@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="64">
+<meta name="v" content="65">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -271,6 +271,7 @@ main>*{max-width:var(--anchoMax);margin-left:auto;margin-right:auto}
   margin-bottom:var(--e4);align-items:stretch}
 .cima .mets{margin:0;align-content:stretch;grid-template-columns:repeat(3,1fr)}
 .cima .hero{display:flex;flex-direction:column}
+.cima.cimaSpot .mets{grid-template-columns:repeat(2,1fr)}   /* v65 · Spot tiene cuatro tarjetas: dos y dos */
 .cima .hz{flex:1}
 @media(max-width:1250px){ .cima{grid-template-columns:1fr} .cima .mets{grid-template-columns:repeat(3,1fr)} }
 .hero{border-radius:var(--rad);overflow:hidden;position:relative;margin-bottom:var(--e4);
@@ -355,6 +356,25 @@ tbody tr td:first-child{position:relative}
 tbody tr.cl td:first-child::before{content:"";position:absolute;left:0;top:10px;bottom:10px;
   width:4px;border-radius:0 4px 4px 0;background:var(--fc,transparent)}
 .sub{display:block;font-size:var(--f2);font-weight:500;color:var(--t2);margin-top:2px}
+/* v65 · PC: las tablas cabían solo en pantallas de más de 2.000 px; en una de 1.280–1.920 la última columna
+   (Cerrar, Editar, Ganancia…) quedaba escondida a la derecha. Ahora se aprietan los lados de cada celda y los
+   renglones de apoyo bajan a otra línea, y lo que quede de sobra se desliza. */
+@media(min-width:901px){
+  .env table thead th,.env table tbody td,.env table tfoot td{padding-left:9px;padding-right:9px}
+  .env table thead th:first-child,.env table tbody td:first-child,.env table tfoot td:first-child{padding-left:16px}
+  .env table thead th:last-child,.env table tbody td:last-child,.env table tfoot td:last-child{padding-right:16px}
+  .env table thead th{letter-spacing:.05em;padding-top:11px;padding-bottom:11px}
+  .env table tbody td .sub{white-space:normal;margin-left:auto;max-width:170px}
+  .env table tbody td{padding-top:12px;padding-bottom:12px}
+}
+@media(min-width:901px) and (max-width:1320px){
+  .env table thead th,.env table tbody td,.env table tfoot td{padding-left:6px;padding-right:6px}
+  .env table thead th:first-child,.env table tbody td:first-child,.env table tfoot td:first-child{padding-left:12px}
+  .env table thead th:last-child,.env table tbody td:last-child,.env table tfoot td:last-child{padding-right:12px}
+  .env table thead th{letter-spacing:.02em}
+  .env table tbody td .sub{max-width:150px}
+  .env table tbody td .cri>div>span{white-space:normal;display:block;max-width:92px}
+}
 tfoot td{padding:15px var(--e4);border-top:1px solid color-mix(in srgb,var(--vac) 28%,var(--ln));
   background:color-mix(in srgb,var(--vacD) 16%,var(--b2));
   font-size:var(--f4);text-align:right;font-variant-numeric:tabular-nums;
@@ -442,6 +462,10 @@ a:hover{color:var(--ac2)}
 .pill button.on{background:var(--b3);color:var(--tx)}
 .pill button.on.v{background:color-mix(in srgb,var(--up) 24%,transparent);color:var(--upTx)}
 .pill button.on.r{background:color-mix(in srgb,var(--dn) 22%,transparent);color:var(--dnTx)}
+/* v65 · en Spot VENDER es verde (entra dinero) y COMPRAR es rojo (sale dinero): nunca el mismo color.
+   Futuros sigue con largo = verde, corto = rojo (.v y .r). */
+.pill button.on.vta{background:color-mix(in srgb,var(--up) 24%,transparent);color:var(--upTx)}
+.pill button.on.cmp{background:color-mix(in srgb,var(--dn) 22%,transparent);color:var(--dnTx)}
 .pill.grande button{flex-direction:column;gap:2px;padding:10px 8px;font-size:14px}
 .pill.grande button span{display:block;font-size:11px;font-weight:500;opacity:.8}
 /* ---------- las dos formas de sacar el tamaño del lote ---------- */
@@ -822,24 +846,219 @@ a:hover{color:var(--ac2)}
 .greglaEt[hidden]{display:none}
 .graf.conHerr .gzona{cursor:crosshair}
 .gherr{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 10px;border-top:1px solid var(--ln)}
-.gherr button{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;font-weight:700;color:var(--tx);
+.gherr .gg>button{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;font-weight:700;color:var(--tx);
   background:transparent;border:1px solid color-mix(in srgb,var(--tx) 22%,transparent);border-radius:999px;
   padding:4px 9px;min-height:32px;cursor:pointer}
-.gherr button svg{width:14px;height:14px;flex:none}
-.gherr button.on{background:color-mix(in srgb,var(--ac) 18%,transparent);border-color:var(--ac);color:var(--acTx)}
-.gherr button[hidden]{display:none}
-.gherr .lCe,.gherr button.on .lAb{display:none}
-.gherr button.on .lCe{display:inline}
+.gherr .gg>button svg{width:14px;height:14px;flex:none}
+.gherr .gg>button.on{background:color-mix(in srgb,var(--ac) 18%,transparent);border-color:var(--ac);color:var(--acTx)}
+.gherr .gg>button[hidden]{display:none}
+.gherr .lCe,.gherr .gg>button.on .lAb{display:none}
+.gherr .gg>button.on .lCe{display:inline}
 .gherr .gpista{margin-left:auto;flex:1 1 90px;min-width:0;font-size:11px;line-height:1.25;color:var(--t3);text-align:right}
 .graf.grande{position:fixed;inset:0;z-index:9500;margin:0;border-radius:0;border:0;display:flex;flex-direction:column;
   padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
 .graf.grande .gzona{flex:1 1 auto;height:auto!important;min-height:200px}
 .graf.grande .gpieg{max-height:28vh;overflow:auto}
 html.grafGrande,html.grafGrande body{overflow:hidden}
+/* v65 · pantalla completa en el teléfono: que quepa todo y la gráfica no se quede chiquita */
+@container graf (max-width:619px){
+  .graf.grande .gint{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:4px;padding-bottom:2px}
+  .graf.grande .gint::-webkit-scrollbar{display:none}
+  .graf.grande .gint button{flex:0 0 auto;min-width:66px}
+  .graf.grande .gpieg{display:none}
+  .graf.grande .gposp{max-height:32vh;overflow:auto}
+  .graf.grande .gzona{min-height:240px}
+}
+/* pantalla ancha o teléfono acostado: las herramientas arriba, la gráfica grande y el lotaje al costado */
+@media (min-width:900px), (max-height:520px){
+  .graf.grande{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto;
+    grid-template-areas:"cab" "herr" "zona" "pie";overflow:hidden}
+  .graf.grande:has(.gposp:not([hidden])){grid-template-columns:minmax(0,1fr) 340px;
+    grid-template-areas:"cab cab" "herr pos" "zona pos" "pie pos"}
+  .graf.grande .gcab{grid-area:cab}
+  .graf.grande .gherr{grid-area:herr}
+  .graf.grande .gzona{grid-area:zona;height:auto!important;min-height:0}
+  .graf.grande .gpieg{grid-area:pie}
+  .graf.grande .gposp{grid-area:pos;max-height:none;overflow-y:auto;border-top:0;border-left:1px solid var(--ln)}
+  .graf.grande .gposp .gp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .graf.grande .gposp .gp-cfg{grid-template-columns:minmax(0,1fr) minmax(0,.8fr) minmax(0,1.2fr)}
+  .graf.grande .gposp .gp-cfg label>span{letter-spacing:.02em;font-size:10px;white-space:nowrap}
+  .graf.grande .gsel{flex:0 1 auto}
+}
+@media (min-width:900px), (max-height:520px){
+  /* con las herramientas arriba, los menús se abren hacia abajo y flotan sobre la gráfica */
+  .graf.grande .gpop{bottom:auto;top:calc(100% + 6px)}
+  .graf.grande .gpVelas{position:absolute;flex:none;left:8px;width:min(430px,calc(100% - 16px));
+    max-height:calc(100dvh - 110px);overflow:auto;box-shadow:0 14px 36px rgba(0,0,0,.55);background:var(--b2)}
+}
+/* teléfono acostado: todo más bajito y en una sola línea, para que la gráfica mande */
+@media (max-height:520px){
+  .graf.grande .gpieg,.graf.grande .gpista{display:none}
+  .graf.grande .gcab{flex-wrap:nowrap;align-items:center;padding-top:4px;padding-bottom:4px;gap:8px}
+  .graf.grande .gcab .sp{display:none}
+  .graf.grande .gint{display:flex;flex:1 1 0;min-width:0;overflow-x:auto;scrollbar-width:none;gap:4px}
+  .graf.grande .gint::-webkit-scrollbar{display:none}
+  .graf.grande .gint button{flex:0 0 auto;min-width:54px;min-height:28px;padding:3px 8px;font-size:11.5px}
+  .graf.grande .gherr{padding:4px 8px;gap:5px 8px}
+  .graf.grande .gherr .gg>button{min-height:32px;padding:3px 10px}
+  .graf.grande .gherr .gg>button span{display:none}
+  .graf.grande .gsel{flex:0 1 auto;padding:2px 8px}
+  .graf.grande .gpMas{width:min(470px,calc(100% - 16px))}
+  .graf.grande .gpMas .gpgrid{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+  .graf.grande .gpMas .gpgrid button{padding:8px 2px 6px}
+  .graf.grande .gpMas .gpt{display:none}
+}
+
+/* =====================================================================
+   v65 · LAS HERRAMIENTAS DE LA GRÁFICA (premium, teléfono y PC)
+   ===================================================================== */
+.graf{position:relative;container-type:inline-size;container-name:graf}
+/* los intervalos: dos filas de cinco en el teléfono; una sola fila cuando hay ancho (PC) */
+.gint{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.gint button{min-height:34px;padding:5px 2px;font-size:12px}
+@container graf (min-width:620px){ .gint{grid-template-columns:repeat(10,minmax(0,1fr))} }
+/* lo dibujado: capas (rayas y rellenos), etiquetas y piezas tocables */
+.gtags{position:absolute;inset:0;z-index:5;pointer-events:none;overflow:hidden}
+.gtag{position:absolute;white-space:nowrap;font-size:11px;font-weight:700;line-height:1.15;color:var(--tx);
+  text-shadow:0 0 3px var(--b0),0 0 6px var(--b0);font-variant-numeric:tabular-nums}
+.gtag.px{font-size:10.5px;color:var(--t2)}
+.gtag.fib{font-size:10.5px}
+.gtag.fib i{font-style:normal;opacity:.8;font-weight:600}
+.gtag.pz{padding:3px 7px;border-radius:7px;text-shadow:none;font-size:10.5px;letter-spacing:.02em}
+.gtag.pz.ptp{background:var(--up);color:var(--upInk)}
+.gtag.pz.psl{background:var(--dn);color:var(--dnInk)}
+.gtag.pz b{margin-left:3px}
+.gtag.pz i{font-style:normal;font-weight:600;margin-left:4px;opacity:.85}
+.gtag.cen{display:flex;gap:6px;align-items:center;padding:4px 9px;border-radius:999px;background:var(--b2);
+  border:1px solid var(--ln);text-shadow:none;font-size:10.5px;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.gtag.cen em{font-style:normal;font-weight:800;letter-spacing:.06em}
+.gtag.cen em.up{color:var(--upTx)} .gtag.cen em.dn{color:var(--dnTx)}
+.gtag.cen u{text-decoration:none;color:var(--t2);font-weight:600}
+.gmanij{position:absolute;inset:0;z-index:4;pointer-events:none}
+.gm{position:absolute;pointer-events:auto;touch-action:none;-webkit-tap-highlight-color:transparent}
+.gm.c{cursor:move;z-index:1}
+.gm.s{cursor:pointer;z-index:2;transform-origin:0 50%;border-radius:8px}
+.gm.s:hover{background:color-mix(in srgb,#4B9FE1 22%,transparent)}
+.gm.h{width:32px;height:32px;z-index:3;cursor:grab}
+.gm.h::after{content:"";position:absolute;left:50%;top:50%;width:11px;height:11px;margin:-5.5px 0 0 -5.5px;
+  background:#fff;border:2px solid #2962FF;border-radius:3px;
+  box-shadow:0 0 0 3px rgba(41,98,255,.20),0 2px 6px rgba(0,0,0,.5);transition:transform .08s}
+.gm.h:hover::after{transform:scale(1.25)}
+.gm.h.ns{cursor:ns-resize} .gm.h.ew{cursor:ew-resize} .gm.h.nwse{cursor:nwse-resize} .gm.h.nesw{cursor:nesw-resize}
+@media (pointer:coarse){
+  .gm.h::after{width:13px;height:13px;margin:-6.5px 0 0 -6.5px}
+}
+.graf.conHerr .gm{pointer-events:none}
+.graf.conHerr .gzona{touch-action:none}
+.gzona.moviendo,.gzona.moviendo *{cursor:grabbing!important}
+/* el aviso de «qué toca ahora», dentro de la gráfica */
+.gayuda{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:6;pointer-events:none;
+  background:color-mix(in srgb,var(--b2) 94%,transparent);border:1px solid color-mix(in srgb,var(--ac) 55%,var(--ln));
+  color:var(--tx);padding:7px 14px;border-radius:999px;font-size:12.5px;font-weight:650;width:max-content;max-width:92%;text-align:center;
+  box-shadow:0 8px 22px rgba(0,0,0,.4)}
+.gayuda::first-letter{text-transform:uppercase}
+.gayuda[hidden]{display:none}
+/* la barra de la figura elegida: va FUERA de la gráfica (encima de las herramientas) para no tapar nada */
+.gsel{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;padding:6px 9px;
+  background:var(--b1);border:1px solid var(--ln);border-radius:12px;touch-action:manipulation}
+.gsel[hidden]{display:none}
+.gsel .gnom{font-size:12px;font-weight:700;color:var(--t2);padding:0 4px}
+.gsw{display:flex;gap:6px;align-items:center}
+.gc{box-sizing:border-box;width:22px;height:22px;border-radius:50%;background:var(--c);border:2px solid var(--b2);padding:0;cursor:pointer;flex:none;
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--tx) 28%,transparent)}
+.gc.on{box-shadow:0 0 0 2px var(--tx)}
+.gc.pick{margin:0;position:relative;overflow:hidden;display:block;
+  background:conic-gradient(#f43f5e,#f59e0b,#eab308,#22c55e,#06b6d4,#6366f1,#ec4899,#f43f5e)}
+.gc.pick input{position:absolute;inset:-8px;width:40px;height:40px;opacity:0;cursor:pointer;padding:0;border:0;margin:0}
+@media (pointer:coarse){ .gc{width:26px;height:26px} }
+.gsel .ic{display:inline-flex;align-items:center;justify-content:center;gap:3px;min-width:34px;height:34px;border-radius:9px;
+  background:transparent;border:0;color:var(--tx);font:inherit;font-size:12px;font-weight:800;cursor:pointer;padding:0 6px}
+.gsel .ic svg{width:18px;height:18px}
+.gsel .ic:hover{background:var(--b3)}
+.gsel .ic.del{color:var(--dnTx)}
+/* la barra de herramientas: iconos con su nombre debajo (teléfono) o en pastilla (PC) */
+.gherr{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:8px 10px 9px;border-top:1px solid var(--ln)}
+.gherr .gg{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:6px}
+.gherr .gg>button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  min-height:50px;padding:7px 2px 6px;border-radius:12px;font:inherit;font-size:11.5px;font-weight:700;color:var(--tx);
+  background:var(--b1);border:1px solid color-mix(in srgb,var(--tx) 16%,transparent);cursor:pointer}
+.gherr .gg>button svg{width:19px;height:19px;flex:none}
+.gherr .gg>button:hover{border-color:color-mix(in srgb,var(--tx) 36%,transparent)}
+.gherr .gg>button.on,.gherr .gg>button.abierto{background:color-mix(in srgb,var(--ac) 18%,transparent);border-color:var(--ac);color:var(--acTx)}
+.gherr .gg>button[hidden]{display:none}
+.gherr .gpista{margin:0;flex:none;min-height:0;font-size:11.5px;line-height:1.3;color:var(--t3);text-align:center}
+.gherr .gpista:empty{display:none}
+@container graf (min-width:560px){
+  .gsel{flex:1 1 100%}
+  .gherr{flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px 10px}
+  .gherr .gg{display:flex;gap:6px}
+  .gherr .gvis{margin-left:auto}
+  .gherr .gg>button{flex-direction:row;min-height:34px;padding:4px 11px;border-radius:999px;font-size:12.5px;gap:5px}
+  .gherr .gg>button svg{width:16px;height:16px}
+  .gherr .gpista{flex:1 1 100%;text-align:left}
+}
+/* los menús que se abren desde la barra */
+.gpop{position:absolute;left:8px;bottom:calc(100% + 6px);z-index:30;width:min(340px,calc(100% - 16px));
+  background:var(--b2);border:1px solid var(--ln);border-radius:14px;padding:12px;box-shadow:0 14px 36px rgba(0,0,0,.55)}
+.gpop[hidden]{display:none}
+/* el de las velas se abre en su sitio, empujando lo de abajo: la gráfica queda a la vista y el cambio se ve al instante */
+.gpVelas{position:static;width:auto;flex:1 1 100%;box-shadow:none;background:var(--b1)}
+.gpVelas .gpf{flex-direction:column;align-items:flex-start;gap:7px;margin-bottom:12px}
+.gpVelas .gsw{gap:6px;flex-wrap:nowrap}
+@container graf (min-width:560px){
+  .gpVelas{flex:0 1 430px;max-width:430px}
+  .gpVelas .gpf{flex-direction:row;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+  .gpVelas .gsw{gap:5px;justify-content:flex-end}
+}
+.gpt{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);font-weight:800;margin-bottom:8px}
+.gpt.s{margin-top:12px}
+.gpgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.gpgrid button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px 10px;border-radius:12px;
+  background:var(--b1);border:1px solid var(--ln);color:var(--tx);font:inherit;font-size:11.5px;font-weight:700;cursor:pointer}
+.gpgrid button svg{width:24px;height:24px}
+.gpgrid button:hover{border-color:var(--ac);color:var(--acTx)}
+.gpf{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;font-size:12.5px;font-weight:650}
+.gpf>span{flex:0 0 auto}
+.gpest{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.gpest button{display:flex;align-items:center;gap:4px;padding:9px 10px;border-radius:10px;background:var(--b1);
+  border:1px solid var(--ln);color:var(--tx);font:inherit;font-size:12px;font-weight:700;cursor:pointer;min-height:38px}
+.gpest button:hover{border-color:var(--ac)}
+.gpest i{width:14px;height:14px;border-radius:50%;background:var(--c);flex:none}
+.gpest button span{margin-left:4px}
+/* el lotaje de la caja Largo / Corto */
+.gposp{padding:11px 11px 13px;border-top:1px solid var(--ln);display:flex;flex-direction:column;gap:10px;background:var(--b1)}
+.gposp[hidden]{display:none}
+.gp-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.gp-lado{display:inline-flex;background:var(--b0);border:1px solid var(--ln);border-radius:11px;padding:3px;gap:3px}
+.gp-lado button{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border:0;border-radius:8px;background:transparent;
+  color:var(--t2);font:inherit;font-size:13px;font-weight:800;cursor:pointer;min-height:34px}
+.gp-lado button em{font-style:normal;font-size:10px}
+.gp-lado button.on.v{background:var(--up);color:var(--upInk)}
+.gp-lado button.on.r{background:var(--dn);color:var(--dnInk)}
+.gp-usar{min-height:38px}
+.gp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@container graf (min-width:560px){ .gp-grid{grid-template-columns:repeat(3,minmax(0,1fr))} }
+.gp-c{background:var(--b0);border:1px solid var(--ln);border-radius:12px;padding:9px 11px;min-width:0}
+.gp-e{display:block;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);font-weight:700}
+.gp-c b{display:block;font-size:17px;font-weight:800;margin-top:3px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.gp-c i{display:block;font-style:normal;font-size:11.5px;line-height:1.3;color:var(--t2);margin-top:2px}
+.gp-c i:empty{display:none}
+.gp-c.dn b{color:var(--dnTx)} .gp-c.up b{color:var(--upTx)} .gp-c.liq b{color:var(--liqTx)}
+.gp-cfg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.8fr) minmax(0,1.2fr);gap:8px}
+.gp-cfg label{display:flex;flex-direction:column;gap:4px;min-width:0}
+.gp-cfg label>span{white-space:nowrap;font-size:10.5px;letter-spacing:.03em;text-transform:uppercase;color:var(--t3);font-weight:700}
+.gp-in{display:flex;align-items:center;gap:4px;background:var(--b0);border:1px solid var(--ln);border-radius:10px;padding:0 9px;min-width:0}
+.gp-in:focus-within{border-color:var(--ac)}
+.gp-in em{font-style:normal;color:var(--t3);font-size:13px;font-weight:700}
+.gp-in input{flex:1;min-width:0;width:100%;background:none;border:0;outline:0;box-shadow:none;color:var(--tx);
+  font:inherit;font-size:15px;font-weight:700;padding:9px 0;text-align:left}
+.gp-av[hidden]{display:none}
+.gp-av .avLin{font-size:12px;line-height:1.45;color:var(--t2);padding:7px 10px;margin-top:5px;
+  border-left:3px solid var(--ojoTx);background:color-mix(in srgb,var(--ojoTx) 9%,transparent);border-radius:0 9px 9px 0}
+.greglaEt span+span{padding-left:8px;border-left:1px solid var(--ln)}
 
 /* ---------- lo opcional, plegado debajo del botón de registrar ---------- */
-.abreGraf{width:100%;justify-content:center;margin-top:10px;font-weight:700}
-.opform>.cp>.abreGraf{order:2}
+.abreGraf{width:100%;justify-content:center;margin:2px 0 10px;font-weight:700}
 #misNumeros>.cuerpoOp{padding:var(--e4) var(--e5) var(--e5)}
 #misNumeros .mets{margin:0}
 #misNumeros .caja{margin-top:var(--e4)}
@@ -892,12 +1111,14 @@ html.grafGrande,html.grafGrande body{overflow:hidden}
 .lg.verGraf:hover,.lg.verGraf:focus-visible{background:var(--b2);outline:none}
 .lg.verGraf:hover em,.lg.verGraf:focus-visible em{color:var(--acTx)}
 .lg.verGraf:active{transform:scale(.95)}
-.mv.compra{border-left:3px solid var(--up)}
-.mv.venta{border-left:3px solid var(--dn)}
-.mv.venta.tp{border-left-color:var(--up)}
+.mv.compra{border-left:3px solid var(--dn)}
+.mv.venta{border-left:3px solid var(--up)}
+.mv.venta.tp,.mv.venta.sl{border-left-color:var(--up)}
+/* en el historial de Futuros el borde dice si ganó (verde) o perdió (rojo), no si compró o vendió */
+.mv.compra.gana{border-left-color:var(--up)}.mv.venta.pierde{border-left-color:var(--dn)}
 .ordBtns{display:flex;gap:8px;margin-bottom:10px}.ordBtns .b{flex:1;justify-content:center}
-.mv.venta.cp2{border-left-color:var(--ac)}
-.mv.venta .l0.ac{color:var(--acTx)}
+.mv.venta.cp2{border-left-color:var(--dn)}
+.mv.venta .l0.ac{color:var(--dnTx)}
 .mv.venta .l0{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:2px}
 .mv.venta .l0.up{color:var(--upTx)}.mv.venta .l0.dn{color:var(--dnTx)}
 .campo label.up{color:var(--upTx)}.campo label.dn{color:var(--dnTx)}
@@ -1063,7 +1284,8 @@ html.grafGrande,html.grafGrande body{overflow:hidden}
 .hoja .hf{padding:14px 19px;border-top:1px solid var(--ln);display:flex;gap:9px;
   justify-content:flex-end;flex-wrap:wrap}
 .hoja.elar .hh{background:linear-gradient(115deg,color-mix(in srgb,var(--up) 26%,var(--b1)),var(--b1))}
-.hoja.esc .hh,.hoja.venta .hh{background:linear-gradient(115deg,color-mix(in srgb,var(--dn) 24%,var(--b1)),var(--b1))}
+.hoja.esc .hh,.hoja.comprar .hh{background:linear-gradient(115deg,color-mix(in srgb,var(--dn) 24%,var(--b1)),var(--b1))}
+.hoja.venta .hh{background:linear-gradient(115deg,color-mix(in srgb,var(--up) 26%,var(--b1)),var(--b1))}
 /* v42 · la «×» medía 27×30 px. Es el botón que más se toca en todo el
    programa y era el más chico. Mínimo 40×40, como manda Google. */
 .x{background:none;border:0;color:var(--t2);font-size:22px;cursor:pointer;border-radius:7px;
@@ -1815,7 +2037,7 @@ body.conCerrojo #aviso{z-index:10001}
      gráfica es para mirar»), y lo opcional queda al final */
   .opform>.cp{display:flex;flex-direction:column}
   .opform>.cp>*{order:0}
-  .opform>.cp>#fuGraf{order:3;margin-top:10px}
+  .opform>.cp>#fuGraf{margin:0 0 10px}
   .opform>.caja>h2,.opform>h2{flex-wrap:wrap}
   .opform #fuL{flex:1 1 100%;max-width:none!important}
   .pill.grande button{padding:6px 6px;font-size:13px;gap:0}
@@ -2102,6 +2324,13 @@ body.conCerrojo #aviso{z-index:10001}
 .opL.abierta{border-bottom-left-radius:0;border-bottom-right-radius:0;border-bottom:0;margin-bottom:0}
 .opL .opIc{width:30px;height:30px}
 .opL .opIc img,.opL .opIc svg,.opL .opIc .fich{width:30px;height:30px}
+/* v65 · «ver gráfica» a la vista en cada línea (antes solo salía abriendo el detalle) */
+.opL.conGr{grid-template-columns:50px minmax(0,1fr) auto}
+.opL .opIc.verGr{width:50px;height:auto;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:3px 0;margin:-3px 0;border-radius:9px;cursor:pointer}
+.opL .opIc.verGr:active{background:var(--b2)}
+.opL .opIc.verGr em{font-style:normal;font-size:8.5px;font-weight:800;letter-spacing:.03em;line-height:1.05;
+  color:var(--vacTx);text-transform:uppercase;text-align:center;overflow-wrap:anywhere}
 .opL .n1{display:flex;align-items:center;gap:5px;flex-wrap:wrap;font-size:14px;font-weight:800}
 .opL .n1 .chip{font-size:9.5px;padding:1px 6px}
 .opL .n2{display:flex;gap:1px 7px;flex-wrap:wrap;font-size:11.5px;color:var(--t2);margin-top:2px}
@@ -2142,6 +2371,7 @@ body.conCerrojo #aviso{z-index:10001}
 .kv .cuenta .cuQ{font:inherit;font-size:11.5px;font-weight:700;color:var(--acTx);background:none;border:0;padding:2px 0;
   cursor:pointer;white-space:nowrap;text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--acTx) 45%,transparent);
   text-underline-offset:3px}
+.fcCuenta{display:flex;justify-content:flex-end;margin-top:10px}
 .kv .cuenta .cuPos{display:flex!important;flex-direction:row!important;flex-wrap:wrap;align-items:center;gap:4px 8px;
   padding:7px 0 3px;font-size:12px;color:var(--t2)}
 .kv .cuenta .cuPos .chip{font-size:10px!important;font-weight:800!important;padding:2px 8px}
@@ -2552,9 +2782,12 @@ function usdF(n){
   var a=Math.abs(n), d=a>=0.01?2:(a>=0.001?3:4);
   return (n<0?"-":"")+"$"+fmtNum(a,2,d);
 }
+/* cuántos decimales se muestran en un precio (y por tanto cuál es el «mínimo» de esa moneda:
+   $0,01 en el BTC, $0,0001 en el ATOM, $0,00000001 en el SHIB) */
+function decPrecio(a){ a=Math.abs(a); return a>=1000?2:a>=1?4:a>=0.01?6:8; }
 function precio(n){
   if(n==null||isNaN(n)||!isFinite(n)) return "—";
-  var a=Math.abs(n), d=a>=1000?2:a>=1?4:a>=0.01?6:8;
+  var a=Math.abs(n), d=decPrecio(a);
   return (n<0?"-":"")+"$"+fmtNum(a,2,d);
 }
 /* precio corto: para las líneas de resumen, donde seis decimales estorban */
@@ -2575,6 +2808,18 @@ function pct(n,dec){
 function pctS(n,dec){
   if(n==null||isNaN(n)||!isFinite(n)) return "—";
   return n.toFixed(dec==null?1:dec).replace(".",sepDecimal())+"%";
+}
+/* v65 · un porcentaje con los decimales que hagan falta para que se vea la diferencia real:
+   «0,55%», pero también «0,0015%» cuando falta un solo centavo en una moneda cara */
+function decPctFino(x, base){
+  x=Math.abs(x); base=base==null?2:base;
+  if(!(x>0) || x>=Math.pow(10,-base)*1.5) return base;
+  return Math.min(8, Math.max(base, Math.ceil(-Math.log10(x))+1));
+}
+function pctFino(n, base, conSigno){
+  if(n==null||isNaN(n)||!isFinite(n)) return "—";
+  var d=decPctFino(n, base);
+  return conSigno ? pct(n,d) : pctS(n,d);
 }
 function cl(n){ return n==null||isNaN(n)?"nt":(n>0?"up":(n<0?"dn":"nt")); }
 function P(n){ return (n<10?"0":"")+n; }
@@ -2626,7 +2871,19 @@ function redondearPrecio(p){
 /* un número listo para escribirlo en una casilla, con coma decimal */
 function paraCasilla(n){
   if(n==null||isNaN(n)) return "";
-  return String(+(+n).toFixed(10)).replace(".",sepDecimal());
+  var s=String(+(+n).toFixed(10));
+  if(/e/i.test(s)) s=(+n).toFixed(10).replace(/0+$/,"").replace(/\.$/,"");     /* 1e-8 → 0.00000001 */
+  return s.replace(".",sepDecimal());
+}
+/* un PRECIO listo para una casilla: todos sus decimales, nunca «1e-7» (SHIB, PEPE, BONK…) */
+function paraCasillaPrecio(n){
+  if(n==null||isNaN(n)||!isFinite(n)) return "";
+  var x=+(+n).toPrecision(10);
+  if(!(x>0)) return String(x).replace(".",sepDecimal());
+  var d=Math.min(30, Math.max(0, 9-Math.floor(Math.log10(x))));
+  var t=x.toFixed(d);
+  if(t.indexOf(".")>=0) t=t.replace(/0+$/,"").replace(/\.$/,"");
+  return t.replace(".",sepDecimal());
 }
 
 function aviso(txt, malo){
@@ -3823,7 +4080,7 @@ function refrescarVivos(){
       pr=precioDe(s);
       var meta2=parseFloat(el.getAttribute("data-p"));
       ponTexto(el, (pr!=null&&isFinite(meta2)&&pr>0)
-        ? tr("falta "+pct((meta2-pr)/pr*100,1)) : "");
+        ? tr("falta "+pctFino((meta2-pr)/pr*100,1,true)) : "");
     }
     else if(v==="pieTot"){
       var t=todo().total;   /* la misma cifra que TODO SU DINERO */
@@ -3912,8 +4169,10 @@ function posicionRiel(e){
    no se repinta todo, por eso no se traba.
    ===================================================================== */
 /* v63 · Luis: «la gráfica solo tiene hasta 5 minutos; alguien que opere en 3 minutos, o en 1». */
-var INTERVALOS=[["1m","1 min"],["3m","3 min"],["5m","5 min"],["15m","15 min"],["1h","1 h"],["4h","4 h"],["1d","1 día"]];
-var MS_INTER={"1m":6e4,"3m":18e4,"5m":3e5,"15m":9e5,"1h":36e5,"4h":144e5,"1d":864e5};
+/* v65 · Luis: «las gráficas no me permiten ver ni en temporales de 3 días, ni de semana, ni de mes». */
+var INTERVALOS=[["1m","1 min"],["3m","3 min"],["5m","5 min"],["15m","15 min"],["1h","1 h"],["4h","4 h"],
+                ["1d","1 día"],["3d","3 días"],["1w","1 semana"],["1M","1 mes"]];
+var MS_INTER={"1m":6e4,"3m":18e4,"5m":3e5,"15m":9e5,"1h":36e5,"4h":144e5,"1d":864e5,"3d":2592e5,"1w":6048e5,"1M":2592e6};
 var VELAS={};
 var GRAF=null;
 
@@ -3939,7 +4198,7 @@ function traerVelas(sym, inter){
   }).catch(function(){
     var cg=cgDe(sym);
     if(!cg) return null;
-    var dias={"1m":1,"3m":1,"5m":1,"15m":1,"1h":7,"4h":30,"1d":180}[inter]||7;
+    var dias={"1m":1,"3m":1,"5m":1,"15m":1,"1h":7,"4h":30,"1d":180,"3d":365,"1w":365,"1M":365}[inter]||7;
     return conTiempo("https://api.coingecko.com/api/v3/coins/"+cg+
       "/market_chart?vs_currency=usd&days="+dias,11000).then(function(j){
       var pr=(j&&j.prices)||[];
@@ -3965,21 +4224,77 @@ function traerVelas(sym, inter){
    cambie el intervalo o se corra la gráfica, como en TradingView. */
 var TRAZOS=(function(){ try{ return JSON.parse(localStorage.getItem("cripto-trazos")||"{}")||{}; }catch(e){ return {}; } })();
 function guardarTrazos(){ try{ localStorage.setItem("cripto-trazos", JSON.stringify(TRAZOS)); }catch(e){} }
+/* =====================================================================
+   v65 · LAS HERRAMIENTAS DE LA GRÁFICA, COMO EN TRADINGVIEW
+   ---------------------------------------------------------------------
+   Luis (13 oct): «la línea de tendencia es terrible: me deja marcar el primer punto y de
+   ahí se ve invisible; y una vez trazada no me deja mover nada. Deben ser de fácil
+   manipulación, al antojo de uno, subir, bajar, como desee. Y por qué no agregaste otro
+   como TradingView, que sirve para calcular el lotaje».
+
+   Cómo funciona ahora (igual con el dedo que con el ratón):
+     · Se elige una herramienta. El primer punto SE VE al instante (un punto con aro) y,
+       hasta poner el segundo, la figura sigue al dedo / al ratón.
+     · Todo lo dibujado se puede tocar: queda elegido, le salen cuadritos en las puntas
+       (se arrastran para cambiarlo) y se mueve entero arrastrándolo por el cuerpo.
+     · Una barra flotante deja cambiar el color, el grosor y el tipo de raya, o quitarla.
+     · «Largo» y «Corto» ponen la caja de TradingView (entrada, stop y objetivo) y debajo
+       se calcula el lotaje con la cartera y el riesgo del usuario.
+   Los dibujos se guardan por moneda en TRAZOS[MONEDA] y no dependen del intervalo: cada
+   punto es {t: hora, p: precio}.
+   ===================================================================== */
 var ICG={
   ampliar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg>',
   linea:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 19 19 5"/><circle cx="5" cy="19" r="2" fill="currentColor"/><circle cx="19" cy="5" r="2" fill="currentColor"/></svg>',
+  rayo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="5" cy="18" r="2" fill="currentColor"/><path d="M7 16.5 20 6"/><path d="M15.5 5.5H20.5V10.5" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+  flecha:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 19 5M10 5h9v9"/></svg>',
+  horiz:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 12h18"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/></svg>',
+  vert:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3v18"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/></svg>',
+  rect:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="4" y="6.5" width="16" height="11" rx="1.5" fill="currentColor" fill-opacity=".15"/></svg>',
+  fib:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5h18M3 9.5h18M3 14h18M3 19h18" opacity=".9"/><path d="M6 19 18 5" stroke-dasharray="2 2.5" stroke-width="1.6"/></svg>',
+  largo:'<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="8.5" rx="1.6" fill="#16D98A" fill-opacity=".38" stroke="#16D98A"/><rect x="3.5" y="12" width="17" height="6.5" rx="1.6" fill="#FF4D6A" fill-opacity=".38" stroke="#FF4D6A"/><path d="M3.5 12h17" stroke="#F5C542" stroke-width="2.2"/></svg>',
+  corto:'<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="5.5" width="17" height="6.5" rx="1.6" fill="#FF4D6A" fill-opacity=".38" stroke="#FF4D6A"/><rect x="3.5" y="12" width="17" height="8.5" rx="1.6" fill="#16D98A" fill-opacity=".38" stroke="#16D98A"/><path d="M3.5 12h17" stroke="#F5C542" stroke-width="2.2"/></svg>',
   regla:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="8" width="19" height="8" rx="1.5"/><path d="M6.5 8v3M10.5 8v4M14.5 8v3M18.5 8v4"/></svg>',
-  borrar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'
+  mas:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><path d="M17 13.5v7M13.5 17h7"/></svg>',
+  velas:'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 3.5v3M7.5 16.5v4M16.5 6.5v3M16.5 15.5v4" stroke="currentColor"/><rect x="5" y="6.5" width="5" height="10" rx="1.2" fill="var(--up)" stroke="var(--up)"/><rect x="14" y="9.5" width="5" height="6" rx="1.2" fill="var(--dn)" stroke="var(--dn)"/></svg>',
+  borrar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
+  grosor:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M4 6h16" stroke-width="1"/><path d="M4 11h16" stroke-width="2"/><path d="M4 17h16" stroke-width="4"/></svg>',
+  raya0:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 12h18"/></svg>',
+  raya1:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 12h4M10 12h4M17 12h4"/></svg>',
+  raya2:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M3.5 12h.01M8.5 12h.01M13.5 12h.01M18.5 12h.01"/></svg>'
 };
+/* qué se puede dibujar. pts = cuántos toques hacen falta */
+var HERRAMIENTAS={
+  linea:{pts:2}, rayo:{pts:2}, flecha:{pts:2}, horiz:{pts:1}, vert:{pts:1},
+  rect:{pts:2}, fib:{pts:2}, largo:{pts:1}, corto:{pts:1}, regla:{pts:2}
+};
+var HERR_EXTRAS=[["rayo","Rayo"],["flecha","Flecha"],["horiz","Línea horizontal"],["vert","Línea vertical"],
+                 ["rect","Rectángulo"],["fib","Fibonacci"]];
+var PALETA_TRAZO=["#4B9FE1","#FFB020","#16D98A","#FF4D6A","#9B6BFF","var(--tx)"];
+var FIB_NIVELES=[0,0.236,0.382,0.5,0.618,0.786,1];
+var FIB_COLORES=["#9AA4B2","#F23645","#FF9800","#4CAF50","#089981","#2962FF","#9AA4B2"];
+/* v65 · colores de las velas: el primero es el de fábrica (verde / rojo del programa) */
+var VELA_ESTILOS=[["Clásico",null,null],["TradingView","#26A69A","#EF5350"],
+                  ["Azul y naranja","#3B82F6","#F59E0B"],["Blanco y gris","#E5E7EB","#6B7280"]];
+var VELA_SUBE=["#26A69A","#22C55E","#2DD4BF","#3B82F6","#FACC15","#E5E7EB"];
+var VELA_BAJA=["#EF5350","#F43F5E","#F97316","#A855F7","#6B7280","#FB7185"];
+function colorOk(c){ return typeof c==="string" && (/^#[0-9a-fA-F]{6}$/.test(c) || c==="var(--tx)"); }
+function colorVela(sube){
+  var a=BD.ajustes||{}, c=sube?a.velaUp:a.velaDn;
+  return colorOk(c) ? c : (sube?"var(--up)":"var(--dn)");
+}
 function montarGrafica(cont, op){
   if(!cont) return;
   var inter0=op.inter||BD.ajustes.inter||"15m";
   if(!MS_INTER[inter0]) inter0="15m";
   var estado={ cont:cont, op:op, inter:inter0,
                velas:null, min:0, max:1, cargando:false, ultimoPintado:0,
-               herr:null, punto:null, regla:null };
+               herr:null, crea:null, sel:null, regla:null, mapa:{}, pop:null };
   GRAF=estado;
   cont.className="graf"+(op.soloVer?"":" edit");
+  function botonH(h, ic, txt, cls){
+    return '<button type="button" data-herr="'+h+'"'+(cls?' class="'+cls+'"':'')+' title="'+txt+'">'+ic+'<span>'+txt+'</span></button>';
+  }
   cont.innerHTML=
     '<div class="gcab">'+
       '<span class="gsym"></span>'+
@@ -3995,20 +4310,39 @@ function montarGrafica(cont, op){
       '<svg class="gtraz" preserveAspectRatio="none"></svg>'+
       '<div class="greglaEt" hidden></div>'+
       '<div class="glineas"></div>'+
+      '<div class="gtags"></div>'+
+      '<div class="gmanij"></div>'+
+      '<div class="gayuda" hidden></div>'+
       '<div class="gtope"></div>'+
       '<button type="button" class="gahora" title="Volver al momento de ahora">'+
         '⟶ ahora</button>'+
       '<div class="gcargando">Trayendo la gráfica…</div>'+
     '</div>'+
-    /* v63 · Luis: «poder ampliar, líneas de tendencia, una regla para medir; nada como
-       TradingView, lo básico». Tres botones, debajo de las velas. */
+    /* v65 · la barra: lo que más se usa a la vista; lo demás, en «Más». Nada de cajas apiladas. */
     '<div class="gherr">'+
-      '<button type="button" data-herr="ampliar">'+ICG.ampliar+'<span class="lAb">Ampliar</span><span class="lCe">Reducir</span></button>'+
-      '<button type="button" data-herr="linea">'+ICG.linea+'<span>Línea</span></button>'+
-      '<button type="button" data-herr="regla">'+ICG.regla+'<span>Regla</span></button>'+
-      '<button type="button" data-herr="borrar" class="gBorrar" hidden>'+ICG.borrar+'<span>Borrar</span></button>'+
+      '<div class="gsel" hidden></div>'+
+      '<div class="gg">'+
+        botonH("linea", ICG.linea, "Línea")+
+        botonH("largo", ICG.largo, "Largo", "hLargo")+
+        botonH("corto", ICG.corto, "Corto", "hCorto")+
+        botonH("regla", ICG.regla, "Regla")+
+        '<button type="button" data-herr="mas" class="hMas" title="Más herramientas">'+ICG.mas+'<span class="hMasN">Más</span></button>'+
+      '</div>'+
+      '<div class="gg gvis">'+
+        botonH("velas", ICG.velas, "Velas")+
+        '<button type="button" data-herr="ampliar" title="Ampliar">'+ICG.ampliar+'<span class="lAb">Ampliar</span><span class="lCe">Reducir</span></button>'+
+        '<button type="button" data-herr="borrar" class="gBorrar" title="Borrar todo" hidden>'+ICG.borrar+'<span>Borrar todo</span></button>'+
+      '</div>'+
       '<span class="gpista"></span>'+
+      '<div class="gpop gpMas" hidden>'+
+        '<div class="gpt">Más herramientas</div>'+
+        '<div class="gpgrid">'+HERR_EXTRAS.map(function(x){
+          return '<button type="button" data-herr2="'+x[0]+'">'+ICG[x[0]]+'<span>'+x[1]+'</span></button>';
+        }).join("")+'</div>'+
+      '</div>'+
+      '<div class="gpop gpVelas" hidden></div>'+
     '</div>'+
+    '<div class="gposp" hidden></div>'+
     '<div class="gpieg"></div>';
 
   cont.querySelectorAll("[data-int]").forEach(function(b){
@@ -4022,24 +4356,35 @@ function montarGrafica(cont, op){
       cargarVelas();
     };
   });
-  /* ---- las herramientas ---- */
+  /* ---- la barra de herramientas ---- */
   cont.querySelectorAll("[data-herr]").forEach(function(b){
     b.onclick=function(ev){
       ev.stopPropagation();
       var h=b.getAttribute("data-herr");
-      if(h==="ampliar"){ ampliarGrafica(estado); return; }
+      if(h==="ampliar"){ cerrarPops(estado); ampliarGrafica(estado); return; }
+      if(h==="mas" || h==="velas"){ alternarPop(estado, h); return; }
       if(h==="borrar"){
-        delete TRAZOS[String(op.sym).toUpperCase()]; guardarTrazos();
-        estado.regla=null; estado.herr=null; estado.punto=null;
+        cerrarPops(estado);
+        delete TRAZOS[simTrazos(estado)]; guardarTrazos();
+        estado.regla=null; estado.herr=null; estado.crea=null; estado.sel=null;
         dibujar(estado); return;
       }
-      /* Línea o Regla: un toque la elige, otro toque la suelta */
-      estado.herr = (estado.herr===h) ? null : h;
-      estado.punto=null;
-      if(h==="regla") estado.regla=null;
-      dibujar(estado);
+      elegirHerramienta(estado, h);
     };
   });
+  cont.querySelectorAll("[data-herr2]").forEach(function(b){
+    b.onclick=function(ev){ ev.stopPropagation(); elegirHerramienta(estado, b.getAttribute("data-herr2")); };
+  });
+  /* tocar fuera de un menú lo cierra (en cualquier parte de la pantalla) */
+  if(!window._popFuera){
+    window._popFuera=true;
+    document.addEventListener("pointerdown", function(ev){
+      var G=GRAF;
+      if(!G || !G.pop) return;
+      if(ev.target.closest && ev.target.closest(".gpop,[data-herr=mas],[data-herr=velas]")) return;
+      cerrarPops(G);
+    }, true);
+  }
   function cargarVelas(){
     estado.cargando=true;
     var z=cont.querySelector(".gcargando");
@@ -4057,52 +4402,83 @@ function montarGrafica(cont, op){
      CORRER LA GRÁFICA CON EL DEDO. Se arrastra el fondo hacia la derecha y
      se ve lo de antes; hacia la izquierda, se vuelve. Las tres líneas de
      precio siguen mandando donde se las toca (ellas paran el arrastre).
-     v63 · Con «Línea» o «Regla» elegidas, un toque marca un punto.
+     v65 · Con una herramienta elegida, tocar pone puntos; sin ella, tocar un dibujo lo
+     elige, y tocar un sitio vacío lo suelta.
      --------------------------------------------------------------------- */
   var zona=cont.querySelector(".gzona");
   var volver=cont.querySelector(".gahora");
   if(volver) volver.onclick=function(ev){ ev.stopPropagation(); irAlFinal(estado); };
-  if(zona) zona.addEventListener("pointerdown", function(ev){
-    if(ev.target.closest("button")) return;
-    if(estado.herr || estado.regla){
-      /* un toque (sin arrastrar): un punto de la línea o de la regla */
-      var tx0=ev.clientX, ty0=ev.clientY;
-      var alSoltar=function(e3){
-        window.removeEventListener("pointerup", alSoltar);
-        if(Math.abs(e3.clientX-tx0)>8 || Math.abs(e3.clientY-ty0)>8) return;
-        if(!estado.herr){ estado.regla=null; dibujar(estado); return; }   /* tocar fuera borra la medida */
-        tocarPunto(estado, e3.clientX, e3.clientY);
-      };
-      window.addEventListener("pointerup", alSoltar);
-      if(estado.herr) return;
-    }
-    if(ev.target.closest(ev.pointerType==="mouse" ? "[data-ln]" : ".ln .tir,.ln .et")) return;   /* eso es mover una línea */
-    var v=estado.velas;
-    if(!v||v.length<=(estado.cuantas||VENTANA)) return;   /* no hay nada más que ver */
-    var r=zona.getBoundingClientRect();
-    var x0=ev.clientX, fin0=estado.fin!=null?estado.fin:v.length;
-    var movido=false;
-    zona.classList.add("corriendo");
-    function mover(e2){
-      var dx=e2.clientX-x0;
-      if(!movido && Math.abs(dx)<4) return;
-      movido=true;
-      var ancho=Math.max(1, r.width-(estado.margenDer||0));
-      var porVela=ancho/(estado.cuantas||VENTANA);
-      var fin=Math.round(fin0 - dx/porVela);
-      fin=Math.max(estado.cuantas||VENTANA, Math.min(v.length, fin));
-      if(fin!==estado.fin){ estado.fin=fin; dibujar(estado); }
-    }
-    function soltar(){
-      zona.classList.remove("corriendo");
-      window.removeEventListener("pointermove", mover);
-      window.removeEventListener("pointerup", soltar);
-      window.removeEventListener("pointercancel", soltar);
-    }
-    window.addEventListener("pointermove", mover);
-    window.addEventListener("pointerup", soltar);
-    window.addEventListener("pointercancel", soltar);
+  var capa=cont.querySelector(".gmanij");
+  if(capa) capa.addEventListener("pointerdown", function(ev){
+    var el=ev.target.closest&&ev.target.closest(".gm");
+    if(!el) return;
+    if(ev.pointerType==="mouse" && ev.button!==0) return;
+    if(estado.herr) return;                          /* con una herramienta elegida, esto no atrapa nada */
+    ev.preventDefault(); ev.stopPropagation();
+    empezarArrastre(estado, el.getAttribute("data-z"), el.getAttribute("data-m"), ev);
   });
+  var barra=cont.querySelector(".gsel");
+  if(barra){
+    barra.addEventListener("pointerdown", function(ev){ ev.stopPropagation(); });
+    enganchaBarra(estado, barra);
+  }
+  var panel=cont.querySelector(".gposp");
+  if(panel) enganchaPanelPos(estado, panel);
+  if(zona){
+    /* el ratón, sin apretar: la figura sigue al puntero hasta poner el segundo punto */
+    zona.addEventListener("pointermove", function(ev){
+      if(ev.pointerType!=="mouse" || ev.buttons) return;
+      if(!estado.crea || estado.crea.fase!==2) return;
+      var r=zona.getBoundingClientRect();
+      estado.crea.b=ptDePx(estado, ev.clientX-r.left, ev.clientY-r.top);
+      pintarTrazos(estado);
+    });
+    zona.addEventListener("pointerdown", function(ev){
+      if(ev.pointerType==="mouse" && ev.button!==0) return;
+      if(ev.target.closest("button,.gsel,.gpop,.gm")) return;
+      if(estado.herr){ crearToque(estado, ev); return; }
+      if(ev.target.closest(ev.pointerType==="mouse" ? "[data-ln]" : ".ln .tir,.ln .et")) return;   /* eso es mover una línea */
+      /* un toque (sin arrastrar) en un sitio vacío: se suelta lo que estaba elegido */
+      var tx0=ev.clientX, ty0=ev.clientY;
+      var alSoltarT=function(e3){
+        window.removeEventListener("pointerup", alSoltarT);
+        window.removeEventListener("pointercancel", alCancelarT);
+        if(Math.abs(e3.clientX-tx0)>8 || Math.abs(e3.clientY-ty0)>8) return;
+        if(estado.sel || estado.regla) soltarSeleccion(estado);
+      };
+      var alCancelarT=function(){
+        window.removeEventListener("pointerup", alSoltarT);
+        window.removeEventListener("pointercancel", alCancelarT);
+      };
+      window.addEventListener("pointerup", alSoltarT);
+      window.addEventListener("pointercancel", alCancelarT);
+      var v=estado.velas;
+      if(!v||v.length<=(estado.cuantas||VENTANA)) return;   /* no hay nada más que ver */
+      var r=zona.getBoundingClientRect();
+      var x0=ev.clientX, fin0=estado.fin!=null?estado.fin:v.length;
+      var movido=false;
+      zona.classList.add("corriendo");
+      function mover(e2){
+        var dx=e2.clientX-x0;
+        if(!movido && Math.abs(dx)<4) return;
+        movido=true;
+        var ancho=Math.max(1, r.width-(estado.margenDer||0));
+        var porVela=ancho/(estado.cuantas||VENTANA);
+        var fin=Math.round(fin0 - dx/porVela);
+        fin=Math.max(estado.cuantas||VENTANA, Math.min(v.length, fin));
+        if(fin!==estado.fin){ estado.fin=fin; dibujar(estado); }
+      }
+      function soltar(){
+        zona.classList.remove("corriendo");
+        window.removeEventListener("pointermove", mover);
+        window.removeEventListener("pointerup", soltar);
+        window.removeEventListener("pointercancel", soltar);
+      }
+      window.addEventListener("pointermove", mover);
+      window.addEventListener("pointerup", soltar);
+      window.addEventListener("pointercancel", soltar);
+    });
+  }
 
   cargarVelas();
   estado.redibujar=function(){ dibujar(estado); };
@@ -4138,27 +4514,444 @@ function tDeX(estado, x, pegar){
   if(idx<=0) return v[0].t+idx*ms;
   var i=Math.floor(idx); return v[i].t+(idx-i)*(v[i+1].t-v[i].t);
 }
-function tocarPunto(estado, cx, cy){
-  var zona=estado.cont.querySelector(".gzona");
-  if(!zona||!estado.velas||!estado.velas.length) return;
-  var r=zona.getBoundingClientRect();
-  var x=cx-r.left, y=cy-r.top;
-  if(x<0||y<0||x>r.width||y>r.height) return;
-  var pt={t:tDeX(estado,x,true), p:aP(estado, y/r.height*100)};
-  if(!(pt.p>0)) return;
-  if(!estado.punto){ estado.punto=pt; dibujar(estado); return; }
-  var a=estado.punto; estado.punto=null;
-  if(estado.herr==="linea"){
-    var k=String(estado.op.sym).toUpperCase();
-    (TRAZOS[k]=TRAZOS[k]||[]).push({t1:a.t,p1:a.p,t2:pt.t,p2:pt.p});
-    if(TRAZOS[k].length>30) TRAZOS[k].shift();
-    guardarTrazos();
-  } else {
-    estado.regla={t1:a.t,p1:a.p,t2:pt.t,p2:pt.p};
-  }
-  estado.herr=null;
-  dibujar(estado);
+/* ---------------------------------------------------------------------
+   v65 · EL MOTOR DE LOS DIBUJOS
+   --------------------------------------------------------------------- */
+function idTrazo(){ return "z"+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function simTrazos(E){ return String(E.op.sym).toUpperCase(); }
+/* los dibujos de esta moneda (los de la v63 no traían id ni tipo: eran líneas) */
+function listaTrazos(E){
+  var L=TRAZOS[simTrazos(E)]||[];
+  L.forEach(function(z){ if(!z.id) z.id=idTrazo(); if(!z.tipo) z.tipo="linea"; });
+  return L;
 }
+function buscarTrazo(E, id){
+  if(!id) return null;
+  if(id==="regla") return E.regla||null;
+  var L=listaTrazos(E);
+  for(var i=0;i<L.length;i++) if(L[i].id===id) return L[i];
+  return null;
+}
+function agregarTrazo(E, z){
+  var k=simTrazos(E), L=(TRAZOS[k]=TRAZOS[k]||[]);
+  L.push(z);
+  while(L.length>40) L.shift();
+  guardarTrazos();
+}
+function quitarTrazo(E, id){
+  if(id==="regla") E.regla=null;
+  else {
+    var k=simTrazos(E), L=TRAZOS[k]||[];
+    TRAZOS[k]=L.filter(function(z){ return z.id!==id; });
+    if(!TRAZOS[k].length) delete TRAZOS[k];
+    guardarTrazos();
+  }
+  if(E.sel===id) E.sel=null;
+  dibujar(E);
+}
+function colorTrazo(z){ return colorOk(z.c) ? z.c : PALETA_TRAZO[0]; }
+function anchoTrazo(z){ var w=+z.w; return (w>=1&&w<=4) ? w : 2; }
+function rayaTrazo(z){
+  var d=+z.d||0, w=anchoTrazo(z);
+  return d===1 ? ' stroke-dasharray="'+(5+w*2)+' '+(4+w*1.5)+'"'
+       : d===2 ? ' stroke-dasharray="0.1 '+(3+w*2)+'"' : '';
+}
+/* ---- de la pantalla a la gráfica y al revés (píxeles dentro de la zona) ---- */
+function ptDePx(E, x, y){ return {t:tDeX(E,x,false), p:Math.max(1e-12, aP(E, y/(E.escH||1)))}; }
+function pxDeT(E, t){ return xDeT(E,t); }
+function pxDeP(E, p){ return aY(E,p)*(E.escH||1); }
+function hitTam(){ try{ return (window.matchMedia && window.matchMedia("(pointer:coarse)").matches) ? 30 : 16; }catch(e){ return 16; } }
+/* un trozo de recta, recortado a la pantalla (para no pedirle al navegador cajas de 6000 px) */
+function recortarSeg(x1,y1,x2,y2,W,H){
+  var m=30, xmin=-m, xmax=W+m, ymin=-m, ymax=H+m, dx=x2-x1, dy=y2-y1, t0=0, t1=1;
+  var p=[-dx,dx,-dy,dy], q=[x1-xmin,xmax-x1,y1-ymin,ymax-y1];
+  for(var i=0;i<4;i++){
+    if(p[i]===0){ if(q[i]<0) return null; }
+    else {
+      var r=q[i]/p[i];
+      if(p[i]<0){ if(r>t1) return null; if(r>t0) t0=r; }
+      else { if(r<t0) return null; if(r<t1) t1=r; }
+    }
+  }
+  return [x1+t0*dx, y1+t0*dy, x1+t1*dx, y1+t1*dy];
+}
+function fechaHoraTag(E, t){
+  var d=new Date(t), ms=msInter(E);
+  try{
+    if(ms>=6048e5) return d.toLocaleDateString(localeNumeros(), {month:"short", year:"numeric"});
+    return d.toLocaleDateString(localeNumeros(), {day:"numeric", month:"short"})+
+           (ms<864e5 ? " "+P(d.getHours())+":"+P(d.getMinutes()) : "");
+  }catch(e){ return ""; }
+}
+function fmtRR(x){ return x.toFixed(2).replace(".",sepDecimal()); }
+function nivelTxt(L){ return String(L).replace(".",sepDecimal()); }
+
+/* ---------------------------------------------------------------------
+   CREAR. Con una herramienta elegida:
+     · de UN toque (horizontal, vertical, largo, corto): se pone ahí y, sin soltar,
+       se puede deslizar hasta el sitio exacto;
+     · de DOS puntos: el primero se ve de inmediato; se puede arrastrar sin soltar
+       hasta el segundo, o soltar y tocar el segundo (el ratón la va siguiendo).
+   --------------------------------------------------------------------- */
+function elegirHerramienta(E, h){
+  cerrarPops(E);
+  E.herr = (E.herr===h) ? null : h;
+  E.crea=null; E.sel=null;
+  if(E.herr==="regla") E.regla=null;
+  dibujar(E);
+}
+function rangoMedio(E){
+  var v=E.velas||[], n=Math.min(30, v.length), s=0, c=0;
+  for(var i=v.length-n;i<v.length;i++){
+    if(i<0||v[i].linea) continue;
+    var r=v[i].h-v[i].b; if(r>0){ s+=r; c++; }
+  }
+  return c ? s/c : 0;
+}
+function nuevoTrazoUno(E, tipo, pt){
+  var base={id:idTrazo(), c:PALETA_TRAZO[0], w:2, d:0};
+  if(tipo==="horiz"){ base.tipo="horiz"; base.t1=pt.t; base.p1=pt.p; return base; }
+  if(tipo==="vert"){ base.tipo="vert"; base.t1=pt.t; base.p1=pt.p; return base; }
+  /* largo / corto: una caja de TradingView, con el stop a unas cuantas velas y el objetivo al doble */
+  var largo=(tipo==="largo"), p=pt.p, ms=msInter(E);
+  var d=rangoMedio(E)*2.5;
+  var vis=(E.max-E.min)||p*0.05;
+  d=Math.min(d||p*0.015, vis*0.22);
+  d=Math.max(d, p*0.004);
+  d=Math.min(d, p*0.4);
+  var n=Math.max(8, Math.round((E.cuantas||VENTANA)*0.34));
+  return {id:idTrazo(), tipo:"pos", lado:largo?"LONG":"SHORT", t1:pt.t, t2:pt.t+n*ms, p:p,
+          sl:largo?p-d:p+d, tp:largo?p+2*d:p-2*d};
+}
+function crearToque(E, ev){
+  ev.preventDefault();
+  var h=HERRAMIENTAS[E.herr];
+  if(!h || !E.velas || !E.velas.length) return;
+  var zona=E.cont.querySelector(".gzona"), r=zona.getBoundingClientRect();
+  var pt=function(e){ return ptDePx(E, e.clientX-r.left, e.clientY-r.top); };
+  var x0=ev.clientX, y0=ev.clientY;
+  if(h.pts===1){
+    var z=nuevoTrazoUno(E, E.herr, pt(ev));
+    agregarTrazo(E, z);
+    E.herr=null; E.crea=null; E.sel=z.id;
+    dibujar(E);
+    empezarArrastre(E, z.id, "c", ev);
+    return;
+  }
+  var fase2 = !!E.crea;
+  if(!fase2){ var a=pt(ev); E.crea={tipo:E.herr, a:a, b:a, fase:1}; }
+  else E.crea.b=pt(ev);
+  var movido=false;
+  pintarTrazos(E); pintarAyuda(E);
+  function limpiar(){
+    window.removeEventListener("pointermove", mv);
+    window.removeEventListener("pointerup", up);
+    window.removeEventListener("pointercancel", cancel);
+  }
+  function mv(e){
+    if(Math.abs(e.clientX-x0)>8 || Math.abs(e.clientY-y0)>8) movido=true;
+    if((movido || fase2) && E.crea){ E.crea.b=pt(e); pintarTrazos(E); }
+  }
+  function up(e){
+    limpiar();
+    if(!E.crea) return;
+    if(!fase2 && !movido){      /* solo tocó: el primer punto queda puesto y falta el segundo */
+      E.crea.fase=2; E.crea.b=E.crea.a;
+      pintarTrazos(E); pintarAyuda(E); return;
+    }
+    terminarCreacion(E, pt(e));
+  }
+  function cancel(){
+    limpiar();
+    if(!fase2) E.crea=null;
+    pintarTrazos(E); pintarAyuda(E);
+  }
+  window.addEventListener("pointermove", mv);
+  window.addEventListener("pointerup", up);
+  window.addEventListener("pointercancel", cancel);
+}
+function terminarCreacion(E, b){
+  var c=E.crea; if(!c) return;
+  var A={x:pxDeT(E,c.a.t), y:pxDeP(E,c.a.p)}, B={x:pxDeT(E,b.t), y:pxDeP(E,b.p)};
+  if(Math.abs(A.x-B.x)+Math.abs(A.y-B.y) < 6){       /* el mismo sitio: sigue esperando el segundo */
+    c.fase=2; c.b=c.a; pintarTrazos(E); pintarAyuda(E); return;
+  }
+  var tipo=c.tipo;
+  E.crea=null; E.herr=null;
+  var z={id:tipo==="regla"?"regla":idTrazo(), tipo:tipo, t1:c.a.t, p1:c.a.p, t2:b.t, p2:b.p};
+  if(tipo!=="regla"){ z.c=PALETA_TRAZO[0]; z.w=2; z.d=0; agregarTrazo(E, z); }
+  else E.regla=z;
+  E.sel=z.id;
+  dibujar(E);
+}
+function soltarSeleccion(E){
+  E.sel=null; E.regla=null;
+  pintarTrazos(E);
+  var pi=E.cont.querySelector(".gpista"); if(pi) pintarAyuda(E);
+}
+
+/* ---------------------------------------------------------------------
+   MOVER. Se agarra un cuadrito (cambia esa punta) o el cuerpo (se mueve entero).
+   Se aplica la DIFERENCIA del dedo a lo que había: el dibujo no salta bajo el dedo.
+   --------------------------------------------------------------------- */
+function empezarArrastre(E, id, modo, ev){
+  var z=buscarTrazo(E, id);
+  if(!z) return;
+  var cambioSel = (E.sel!==id);
+  E.sel=id;
+  if(cambioSel) pintarTrazos(E);
+  var zona=E.cont.querySelector(".gzona"), r=zona.getBoundingClientRect();
+  var orig=JSON.parse(JSON.stringify(z));
+  var x0=ev.clientX, y0=ev.clientY, movido=false;
+  var P0=ptDePx(E, x0-r.left, y0-r.top);
+  E.arrastrando=true;
+  zona.classList.add("moviendo");
+  function mover(e){
+    if(!movido && Math.abs(e.clientX-x0)<3 && Math.abs(e.clientY-y0)<3) return;
+    movido=true;
+    var P=ptDePx(E, e.clientX-r.left, e.clientY-r.top);
+    aplicarArrastre(E, z, orig, modo, P.t-P0.t, P.p-P0.p);
+    pintarTrazos(E);
+  }
+  function soltar(){
+    window.removeEventListener("pointermove", mover);
+    window.removeEventListener("pointerup", soltar);
+    window.removeEventListener("pointercancel", soltar);
+    E.arrastrando=false;
+    zona.classList.remove("moviendo");
+    if(movido){
+      if(id!=="regla") guardarTrazos();
+      if(z.tipo==="pos") dibujar(E);       /* la escala se estira si la caja se salió */
+      else pintarTrazos(E);
+    }
+  }
+  window.addEventListener("pointermove", mover);
+  window.addEventListener("pointerup", soltar);
+  window.addEventListener("pointercancel", soltar);
+}
+function aplicarArrastre(E, z, o, modo, dt, dp){
+  var pp=function(x){ return Math.max(x, 1e-12); };
+  var T=z.tipo;
+  if(T==="horiz"){ z.p1=pp(o.p1+dp); return; }
+  if(T==="vert"){ z.t1=o.t1+dt; return; }
+  if(T==="pos"){
+    if(modo==="tp") z.tp=alLadoQueToca("tp", pp(o.tp+dp), z.p, z.lado);
+    else if(modo==="sl") z.sl=alLadoQueToca("sl", pp(o.sl+dp), z.p, z.lado);
+    else if(modo==="en"){
+      z.p=entradaEnMedio(pp(o.p+dp), z.sl, z.tp, z.lado);
+      z.t1=Math.min(o.t1+dt, z.t2-msInter(E));
+    }
+    else if(modo==="an") z.t2=Math.max(o.t2+dt, z.t1+msInter(E));
+    else {
+      z.t1=o.t1+dt; z.t2=o.t2+dt;
+      z.p=pp(o.p+dp); z.sl=pp(o.sl+dp); z.tp=pp(o.tp+dp);
+    }
+    return;
+  }
+  if(modo==="p1"){ z.t1=o.t1+dt; z.p1=pp(o.p1+dp); }
+  else if(modo==="p2"){ z.t2=o.t2+dt; z.p2=pp(o.p2+dp); }
+  else if(modo==="a"){ z.t2=o.t2+dt; z.p1=pp(o.p1+dp); }      /* esquina de arriba a la derecha */
+  else if(modo==="b"){ z.t1=o.t1+dt; z.p2=pp(o.p2+dp); }      /* esquina de abajo a la izquierda */
+  else { z.t1=o.t1+dt; z.t2=o.t2+dt; z.p1=pp(o.p1+dp); z.p2=pp(o.p2+dp); }
+}
+
+/* ---------------------------------------------------------------------
+   LAS PIEZAS TOCABLES: cuadritos, rayas y cajas, hechos con HTML (así el navegador
+   respeta touch-action:none y el dedo no se lleva la página). Se reusan entre pintadas:
+   el que se está arrastrando nunca se destruye.
+   --------------------------------------------------------------------- */
+function pintarPartes(E, lista){
+  var capa=E.cont.querySelector(".gmanij");
+  if(!capa) return;
+  var mapa=E.mapa||(E.mapa={}), visto={}, HIT=hitTam();
+  lista.forEach(function(p){
+    var key=p.z+":"+p.k; visto[key]=1;
+    var el=mapa[key];
+    if(!el){
+      el=document.createElement("div");
+      el.setAttribute("data-z", p.z);
+      capa.appendChild(el); mapa[key]=el;
+    }
+    if(el.getAttribute("data-m")!==p.m) el.setAttribute("data-m", p.m);
+    var cls="gm "+p.t+(p.cur?" "+p.cur:"");
+    if(el.className!==cls) el.className=cls;
+    var st=el.style;
+    if(p.t==="h"){
+      st.left=(p.x-16).toFixed(1)+"px"; st.top=(p.y-16).toFixed(1)+"px";
+    } else if(p.t==="s"){
+      var dx=p.x2-p.x1, dy=p.y2-p.y1, len=Math.max(1, Math.sqrt(dx*dx+dy*dy));
+      st.left=p.x1.toFixed(1)+"px"; st.top=(p.y1-HIT/2).toFixed(1)+"px";
+      st.width=len.toFixed(1)+"px"; st.height=HIT+"px";
+      st.transform="rotate("+Math.atan2(dy,dx).toFixed(5)+"rad)";
+    } else {
+      st.left=p.x.toFixed(1)+"px"; st.top=p.y.toFixed(1)+"px";
+      st.width=Math.max(1,p.w).toFixed(1)+"px"; st.height=Math.max(1,p.h).toFixed(1)+"px";
+    }
+  });
+  for(var k in mapa) if(!visto[k]){
+    var e2=mapa[k]; if(e2.parentNode) e2.parentNode.removeChild(e2);
+    delete mapa[k];
+  }
+}
+/* las cuatro rayas de un rectángulo, como piezas tocables */
+function bordesCaja(id, x1,y1,x2,y2, pre){
+  return [
+    {z:id,k:pre+"1",m:"c",t:"s",x1:x1,y1:y1,x2:x2,y2:y1},
+    {z:id,k:pre+"2",m:"c",t:"s",x1:x2,y1:y1,x2:x2,y2:y2},
+    {z:id,k:pre+"3",m:"c",t:"s",x1:x2,y1:y2,x2:x1,y2:y2},
+    {z:id,k:pre+"4",m:"c",t:"s",x1:x1,y1:y2,x2:x1,y2:y1}];
+}
+function tag(cls, x, y, html, anclaX, anclaY){
+  var tx = anclaX==="c" ? "-50%" : anclaX==="d" ? "-100%" : "0";
+  var ty = anclaY==="c" ? "-50%" : anclaY==="a" ? "-100%" : "0";
+  return '<div class="gtag '+cls+'" style="left:'+x.toFixed(1)+'px;top:'+y.toFixed(1)+'px;transform:translate('+tx+','+ty+')">'+html+'</div>';
+}
+function flechaPunta(x1,y1,x2,y2,w,col){
+  var a=Math.atan2(y2-y1,x2-x1), L=9+w*2.2, ab=0.42;
+  var ax=x2-L*Math.cos(a-ab), ay=y2-L*Math.sin(a-ab), bx=x2-L*Math.cos(a+ab), by=y2-L*Math.sin(a+ab);
+  return '<path d="M'+ax.toFixed(1)+' '+ay.toFixed(1)+' L'+x2.toFixed(1)+' '+y2.toFixed(1)+' L'+bx.toFixed(1)+' '+by.toFixed(1)+
+         '" fill="none" stroke="'+col+'" stroke-width="'+w+'" stroke-linecap="round" stroke-linejoin="round"/>';
+}
+/* el dibujo de UNA figura: lo que se ve (svg y etiquetas) y lo que se toca (partes) */
+function dibujoDe(E, z, sel, W, H, previa){
+  var R={svg:"", tags:"", partes:[]}, id=z.id, T=z.tipo;
+  var X=function(t){ return pxDeT(E,t); }, Y=function(p){ return pxDeP(E,p); };
+  var col=colorTrazo(z), w=anchoTrazo(z), da=rayaTrazo(z);
+  function cuadritos(lista){
+    if(!sel||previa) return;
+    lista.forEach(function(q){ R.partes.push({z:id,k:"h"+q[0],m:q[0],t:"h",x:q[1],y:q[2],cur:q[3]||"mv"}); });
+  }
+  function linea(x1,y1,x2,y2,extra){
+    return '<line x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+
+           '" stroke="'+col+'" stroke-width="'+w+'" stroke-linecap="round"'+da+(extra||"")+'/>';
+  }
+  if(T==="linea" || T==="rayo" || T==="flecha"){
+    var x1=X(z.t1), y1=Y(z.p1), x2=X(z.t2), y2=Y(z.p2), ex=x2, ey=y2;
+    if(T==="rayo"){
+      var dx=x2-x1, dy=y2-y1, L=Math.sqrt(dx*dx+dy*dy)||1;
+      ex=x1+dx/L*6000; ey=y1+dy/L*6000;
+    }
+    R.svg+=linea(x1,y1,ex,ey);
+    if(T==="flecha") R.svg+=flechaPunta(x1,y1,x2,y2,w,col);
+    if(!previa){
+      var s=recortarSeg(x1,y1,ex,ey,W,H);
+      if(s) R.partes.push({z:id,k:"c",m:"c",t:"s",x1:s[0],y1:s[1],x2:s[2],y2:s[3]});
+    }
+    cuadritos([["p1",x1,y1],["p2",x2,y2]]);
+  }
+  else if(T==="horiz"){
+    var yh=Y(z.p1);
+    R.svg+=linea(0,yh,W,yh);
+    R.tags+=tag("px", 6, yh-3, precioEt(z.p1), "i", "a");
+    if(!previa){
+      R.partes.push({z:id,k:"c",m:"c",t:"s",x1:0,y1:yh,x2:W,y2:yh});
+    }
+    cuadritos([["c",30,yh,"ns"]]);
+  }
+  else if(T==="vert"){
+    var xv=X(z.t1);
+    R.svg+=linea(xv,0,xv,H);
+    R.tags+=tag("px", xv, H-6, esc(fechaHoraTag(E,z.t1)), "c", "a");
+    if(!previa){
+      R.partes.push({z:id,k:"c",m:"c",t:"s",x1:xv,y1:0,x2:xv,y2:H});
+    }
+    cuadritos([["c",xv,30,"ew"]]);
+  }
+  else if(T==="rect"){
+    var a1=X(z.t1), b1=Y(z.p1), a2=X(z.t2), b2=Y(z.p2);
+    var rx=Math.min(a1,a2), ry=Math.min(b1,b2), rw=Math.abs(a2-a1), rh=Math.abs(b2-b1);
+    R.svg+='<rect x="'+rx.toFixed(1)+'" y="'+ry.toFixed(1)+'" width="'+rw.toFixed(1)+'" height="'+rh.toFixed(1)+
+           '" rx="2" fill="'+col+'" fill-opacity=".13" stroke="'+col+'" stroke-width="'+w+'"'+da+'/>';
+    if(!previa){
+      if(sel) R.partes.push({z:id,k:"in",m:"c",t:"c",x:rx,y:ry,w:rw,h:rh});
+      R.partes=R.partes.concat(bordesCaja(id,rx,ry,rx+rw,ry+rh,"e"));
+    }
+    cuadritos([["p1",a1,b1,"nwse"],["p2",a2,b2,"nwse"],["a",a2,b1,"nesw"],["b",a1,b2,"nesw"]]);
+  }
+  else if(T==="fib"){
+    var f1=X(z.t1), g1=Y(z.p1), f2=X(z.t2), g2=Y(z.p2);
+    var xa=Math.min(f1,f2), xb=Math.max(f1,f2);
+    if(xb-xa<30) xb=xa+30;
+    var prev=null, ymin=1e9, ymax=-1e9;
+    FIB_NIVELES.forEach(function(Lv,i){
+      var p=z.p2-(z.p2-z.p1)*Lv, y=Y(p), c=FIB_COLORES[i];
+      if(prev) R.svg+='<rect x="'+xa.toFixed(1)+'" y="'+Math.min(prev,y).toFixed(1)+'" width="'+(xb-xa).toFixed(1)+
+                      '" height="'+Math.abs(y-prev).toFixed(1)+'" fill="'+c+'" fill-opacity=".07"/>';
+      R.svg+='<line x1="'+xa.toFixed(1)+'" y1="'+y.toFixed(1)+'" x2="'+xb.toFixed(1)+'" y2="'+y.toFixed(1)+
+             '" stroke="'+c+'" stroke-width="1.4"/>';
+      R.tags+=tag("fib", xa+4, y-2, '<span style="color:'+c+'">'+nivelTxt(Lv)+'</span> <i>('+precioEt(p)+')</i>', "i", "a");
+      if(!previa) R.partes.push({z:id,k:"n"+i,m:"c",t:"s",x1:xa,y1:y,x2:xb,y2:y});
+      prev=y; ymin=Math.min(ymin,y); ymax=Math.max(ymax,y);
+    });
+    R.svg+='<line x1="'+f1.toFixed(1)+'" y1="'+g1.toFixed(1)+'" x2="'+f2.toFixed(1)+'" y2="'+g2.toFixed(1)+
+           '" stroke="#9AA4B2" stroke-width="1.3" stroke-dasharray="4 4" stroke-linecap="round"/>';
+    if(!previa){
+      R.partes.push({z:id,k:"d",m:"c",t:"s",x1:f1,y1:g1,x2:f2,y2:g2});
+      if(sel) R.partes.push({z:id,k:"in",m:"c",t:"c",x:xa,y:ymin,w:xb-xa,h:ymax-ymin});
+    }
+    cuadritos([["p1",f1,g1],["p2",f2,g2]]);
+  }
+  else if(T==="pos"){
+    var x1p=X(z.t1), x2p=X(z.t2), yE=Y(z.p), yS=Y(z.sl), yT=Y(z.tp), xm=(x1p+x2p)/2;
+    var largo=(z.lado!=="SHORT");
+    var wB=Math.max(1,x2p-x1p);
+    R.svg+='<rect x="'+x1p.toFixed(1)+'" y="'+Math.min(yE,yT).toFixed(1)+'" width="'+wB.toFixed(1)+'" height="'+Math.abs(yT-yE).toFixed(1)+
+           '" fill="var(--up)" fill-opacity=".20"/>'+
+           '<rect x="'+x1p.toFixed(1)+'" y="'+Math.min(yE,yS).toFixed(1)+'" width="'+wB.toFixed(1)+'" height="'+Math.abs(yS-yE).toFixed(1)+
+           '" fill="var(--dn)" fill-opacity=".20"/>'+
+           '<line x1="'+x1p.toFixed(1)+'" y1="'+yT.toFixed(1)+'" x2="'+x2p.toFixed(1)+'" y2="'+yT.toFixed(1)+'" stroke="var(--up)" stroke-width="1.6"/>'+
+           '<line x1="'+x1p.toFixed(1)+'" y1="'+yS.toFixed(1)+'" x2="'+x2p.toFixed(1)+'" y2="'+yS.toFixed(1)+'" stroke="var(--dn)" stroke-width="1.6"/>'+
+           '<line x1="'+x1p.toFixed(1)+'" y1="'+yE.toFixed(1)+'" x2="'+x2p.toFixed(1)+'" y2="'+yE.toFixed(1)+'" stroke="#F5C542" stroke-width="2"/>';
+    /* las etiquetas: dentro de cada zona, con su porcentaje; en el centro, la relación */
+    var pcTp=(z.tp-z.p)/z.p*100, pcSl=(z.sl-z.p)/z.p*100;
+    var D=datosPos(E,z), money=D.R&&D.R.ok;
+    var tpAbajo=!largo, slAbajo=largo;      /* en corto, el objetivo está abajo */
+    R.tags+=tag("pz ptp", x1p+6, tpAbajo? yT-5 : yT+5,
+                'OBJETIVO <b>'+pctS(Math.abs(pcTp),2)+'</b>'+(money&&D.R.ganTp!=null?' <i>+'+usdF(D.R.ganTp)+'</i>':''), "i", tpAbajo?"a":"n");
+    R.tags+=tag("pz psl", x1p+6, slAbajo? yS-5 : yS+5,
+                'STOP <b>'+pctS(Math.abs(pcSl),2)+'</b>'+(money&&D.R.perdidaSL!=null?' <i>−'+usdF(D.R.perdidaSL)+'</i>':''), "i", slAbajo?"a":"n");
+    /* la pastilla del centro se acorta si la caja es angosta, para no pisar los precios del borde */
+    R.tags+=tag("cen", xm, yE, (wB>=150?'<em class="'+(largo?"up":"dn")+'">'+(largo?"LARGO":"CORTO")+'</em>':'')+
+                (D.rr!=null?(wB>=260?'<u>Relación</u>':'')+'<b>'+fmtRR(D.rr)+'</b>':''), "c", "c");
+    if(sel){
+      R.tags+=tag("px", x2p+5, yT, precioEt(z.tp), "i", "c");
+      R.tags+=tag("px", x2p+5, yS, precioEt(z.sl), "i", "c");
+      /* si la entrada está pegada al precio de hoy, el cartelito de «HOY» ya dice lo mismo: no se encima */
+      var prH=precioDe(E.op.sym), pegada=(prH!=null && Math.abs(yE-Y(prH))<15);
+      if(!pegada) R.tags+=tag("px", x2p+5, yE, precioEt(z.p), "i", "c");
+    }
+    if(!previa){
+      if(sel){
+        R.partes.push({z:id,k:"in",m:"c",t:"c",x:x1p,y:Math.min(yT,yS),w:wB,h:Math.abs(yS-yT)});
+      }
+      R.partes.push({z:id,k:"l0",m:"c",t:"s",x1:x1p,y1:yE,x2:x2p,y2:yE});
+      R.partes.push({z:id,k:"l1",m:"c",t:"s",x1:x1p,y1:yT,x2:x2p,y2:yT});
+      R.partes.push({z:id,k:"l2",m:"c",t:"s",x1:x1p,y1:yS,x2:x2p,y2:yS});
+      R.partes.push({z:id,k:"l3",m:"c",t:"s",x1:x1p,y1:yT,x2:x1p,y2:yS});
+      R.partes.push({z:id,k:"l4",m:"c",t:"s",x1:x2p,y1:yT,x2:x2p,y2:yS});
+    }
+    cuadritos([["tp",xm,yT,"ns"],["sl",xm,yS,"ns"],["en",x1p,yE,"nesw"],["an",x2p,yE,"ew"]]);
+  }
+  else if(T==="regla"){
+    var q1=X(z.t1), r1=Y(z.p1), q2=X(z.t2), r2=Y(z.p2);
+    var sube=z.p2>=z.p1, cr=sube?"var(--up)":"var(--dn)";
+    var mx=Math.min(q1,q2), my=Math.min(r1,r2), mw=Math.max(1,Math.abs(q2-q1)), mh=Math.max(1,Math.abs(r2-r1));
+    R.svg+='<rect x="'+mx.toFixed(1)+'" y="'+my.toFixed(1)+'" width="'+mw.toFixed(1)+'" height="'+mh.toFixed(1)+
+           '" fill="'+cr+'" fill-opacity=".16" stroke="'+cr+'" stroke-width="1"/>'+
+           '<line x1="'+q1.toFixed(1)+'" y1="'+r1.toFixed(1)+'" x2="'+q2.toFixed(1)+'" y2="'+r2.toFixed(1)+
+           '" stroke="'+cr+'" stroke-width="1.6" stroke-dasharray="4 3"/>'+
+           flechaPunta(q1,r1,q2,r2,1.6,cr);
+    if(!previa){
+      if(sel) R.partes.push({z:id,k:"in",m:"c",t:"c",x:mx,y:my,w:mw,h:mh});
+      R.partes.push({z:id,k:"d",m:"c",t:"s",x1:q1,y1:r1,x2:q2,y2:r2});
+      R.partes=R.partes.concat(bordesCaja(id,mx,my,mx+mw,my+mh,"e"));
+    }
+    cuadritos([["p1",q1,r1,"mv"],["p2",q2,r2,"mv"]]);
+    R.regla={x:mx,y:my,w:mw,h:mh};
+  }
+  return R;
+}
+
 /* «3 h 20 min», «45 min», «2 d 4 h» */
 function duracionCorta(ms){
   var m=Math.round(Math.abs(ms)/6e4);
@@ -4191,6 +4984,21 @@ function ampliarGrafica(estado){
 }
 /* Escape reduce la gráfica ampliada */
 document.addEventListener("keydown", function(ev){
+  var G=GRAF;
+  if(G && G.cont && document.body.contains(G.cont)){
+    var enCampo=/^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement&&document.activeElement.tagName)||"");
+    /* v65 · Esc: cierra el menú, suelta la herramienta o suelta lo elegido; Supr quita lo elegido */
+    if(ev.key==="Escape" && (G.pop||G.herr||G.crea||G.sel)){
+      ev.stopImmediatePropagation();
+      if(G.pop) cerrarPops(G);
+      else if(G.herr||G.crea){ G.herr=null; G.crea=null; dibujar(G); }
+      else soltarSeleccion(G);
+      return;
+    }
+    if((ev.key==="Delete"||ev.key==="Backspace") && G.sel && !enCampo){
+      ev.preventDefault(); quitarTrazo(G, G.sel); return;
+    }
+  }
   if(ev.key==="Escape" && GRAF && GRAF.grande){ ev.stopImmediatePropagation(); try{ ampliarGrafica(GRAF); }catch(e){} }
 });
 /* si cambia el tamaño de la pantalla (girar el teléfono), las velas se vuelven a medir */
@@ -4257,6 +5065,13 @@ function calcularEscala(estado){
   var lo=vlo, hi=vhi;
   var quiero=[val.entrada,val.sl,val.tp,val.liq,val.salida];
   (op.marcas||[]).forEach(function(m){ quiero.push(m.p); });
+  /* v65 · las cajas Largo / Corto que se ven en esta ventana: que su stop y su objetivo quepan */
+  if(v && v.length){
+    var tv0=v[0].t, tv1=v[v.length-1].t+msInter(estado)*3;
+    listaTrazos(estado).forEach(function(z){
+      if(z.tipo==="pos" && z.t2>=tv0 && z.t1<=tv1) quiero.push(z.p, z.sl, z.tp);
+    });
+  }
   quiero.forEach(function(x){
     if(x==null||isNaN(x)||x<=0) return;
     if(x<lo) lo=Math.max(piso,x);
@@ -4416,7 +5231,10 @@ function dibujar(estado){
                         liq:"LIQUIDACIÓN", salida:"SALIÓ", ahora:"HOY"}, op.etiquetas||{});
   function yClamp(p){ return Math.max(0,Math.min(100, aY(estado,p))); }
   var hl="";
-  if(!op.soloVer){
+  /* v65 · con una caja Largo/Corto en el formulario, sus tres líneas y sus zonas se esconden:
+     dos juegos de líneas a la vez confunden. «Pasar a mi operación» las devuelve ya puestas. */
+  var conCaja=!op.soloVer && listaTrazos(estado).some(function(z){ return z.tipo==="pos"; });
+  if(!op.soloVer && !conCaja){
     /* la zona ROJA va de la entrada al stop: es lo que arriesga.
        la zona VERDE va de la entrada al objetivo: es lo que puede ganar. */
     if(val.entrada>0 && val.sl>0){
@@ -4446,6 +5264,7 @@ function dibujar(estado){
    {k:"ahora",c:"ahora",v:pr}]
   .map(function(x){
     if(x.v==null||isNaN(x.v)||x.v<=0) return null;
+    if(conCaja && (x.k==="entrada"||x.k==="sl"||x.k==="tp")) return null;
     var f=fueraDe(estado,x.v);
     x.f=f; x.y=f?(f>0?0.8:99.2):aY(estado,x.v);
     return x;
@@ -4497,6 +5316,7 @@ function dibujar(estado){
     estado.per=per;
     var cuerpo=Math.max(1, Math.floor(per*0.68));
     if(per>=3 && cuerpo>=per-0.5) cuerpo=Math.max(1, Math.floor(per)-1);
+    var cUp=colorVela(true), cDn=colorVela(false);     /* v65 · los colores que eligió el usuario */
     var s="";
     if(v[0].linea){
       var d="";
@@ -4507,7 +5327,7 @@ function dibujar(estado){
     } else {
       v.forEach(function(x,i){
         var sube=x.c>=x.a, ult=(i===n-1);
-        var col=sube?"var(--up)":"var(--dn)";
+        var col=sube?cUp:cDn;
         var cx=Math.floor(i*per+per/2)+0.5;
         var y1=aY(estado,x.h)*estado.escH, y2=aY(estado,x.b)*estado.escH;
         var ya=aY(estado,x.a)*estado.escH, yc=aY(estado,x.c)*estado.escH;
@@ -4546,17 +5366,18 @@ function dibujar(estado){
   /* la barra de herramientas: qué está elegido y qué hacer ahora */
   cont.querySelectorAll("[data-herr]").forEach(function(b){
     var h=b.getAttribute("data-herr");
-    if(h==="linea"||h==="regla") b.classList.toggle("on", estado.herr===h);
     if(h==="ampliar") b.classList.toggle("on", !!estado.grande);
+    else if(h==="mas"){
+      var ex=HERR_EXTRAS.filter(function(x){ return x[0]===estado.herr; })[0];
+      b.classList.toggle("on", !!ex);
+      var nn=b.querySelector(".hMasN"), tx=ex?ex[1]:"Más";
+      if(nn && nn.getAttribute("data-t")!==tx){ nn.setAttribute("data-t",tx); nn.textContent=tx; }
+    }
+    else if(HERRAMIENTAS[h]) b.classList.toggle("on", estado.herr===h);
   });
-  var hayTrazos=!!((TRAZOS[String(op.sym).toUpperCase()]||[]).length||estado.regla);
+  var hayTrazos=!!(listaTrazos(estado).length||estado.regla);
   var bB=cont.querySelector(".gBorrar"); if(bB) bB.hidden=!hayTrazos;
-  var pista=cont.querySelector(".gpista");
-  if(pista){
-    var tp = estado.herr ? (estado.punto ? "toque el segundo punto" : "toque el primer punto")
-           : (estado.velas && estado.velas.length > (estado.cuantas||VENTANA) ? "arrastre para ver lo de antes" : "");
-    if(pista.getAttribute("data-t")!==tp){ pista.setAttribute("data-t",tp); pista.textContent=tp; }
-  }
+  pintarAyuda(estado);
   cont.classList.toggle("conHerr", !!estado.herr);
 
   /* --- arrastrar --- */
@@ -4637,47 +5458,353 @@ function dibujar(estado){
 
   pintarPie(estado);
 }
-/* v63 · las líneas de tendencia (guardadas por moneda) y la regla (una medida suelta) */
-function pintarTrazos(estado, W, H){
-  var cont=estado.cont, sv=cont.querySelector(".gtraz"), et=cont.querySelector(".greglaEt");
-  if(!sv) return;
-  sv.setAttribute("viewBox","0 0 "+W+" "+H);
-  if(!estado.velas||!estado.velas.length){ sv.innerHTML=""; if(et) et.hidden=true; return; }
-  var yP=function(p){ return aY(estado,p)*estado.escH; };
-  var s="";
-  (TRAZOS[String(estado.op.sym).toUpperCase()]||[]).forEach(function(z){
-    var x1=xDeT(estado,z.t1), x2=xDeT(estado,z.t2), y1=yP(z.p1), y2=yP(z.p2);
-    s+='<line x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+
-       '" stroke="#4B9FE1" stroke-width="2" stroke-linecap="round"/>'+
-       '<circle cx="'+x1.toFixed(1)+'" cy="'+y1.toFixed(1)+'" r="3.5" fill="#4B9FE1"/>'+
-       '<circle cx="'+x2.toFixed(1)+'" cy="'+y2.toFixed(1)+'" r="3.5" fill="#4B9FE1"/>';
-  });
-  if(estado.punto){
-    s+='<circle cx="'+xDeT(estado,estado.punto.t).toFixed(1)+'" cy="'+yP(estado.punto.p).toFixed(1)+
-       '" r="5" fill="none" stroke="var(--tx)" stroke-width="2"/>';
+/* ---------------------------------------------------------------------
+   v65 · LA AYUDA, LA BARRA DE LA FIGURA ELEGIDA, LOS MENÚS Y EL PANEL DEL LOTAJE
+   --------------------------------------------------------------------- */
+function pintarAyuda(E){
+  var cont=E.cont, pista=cont.querySelector(".gpista"), ay=cont.querySelector(".gayuda");
+  var tp="", pasos="";
+  if(E.herr){
+    var h=HERRAMIENTAS[E.herr];
+    tp = h.pts===1 ? "toque donde quiere ponerla" : (E.crea ? "toque el segundo punto" : "toque el primer punto");
+    pasos=tp;
+  } else if(E.sel){
+    var zs=buscarTrazo(E,E.sel);
+    tp = (zs&&zs.tipo==="pos") ? "arrastre los cuadritos o la caja" : "arrastre los cuadritos o la figura";
+  } else if(E.velas && E.velas.length > (E.cuantas||VENTANA)) tp="arrastre para ver lo de antes";
+  if(pista && pista.getAttribute("data-t")!==tp){ pista.setAttribute("data-t",tp); pista.textContent=tp; }
+  if(ay){
+    if(pasos){
+      if(ay.getAttribute("data-t")!==pasos){ ay.setAttribute("data-t",pasos); ay.textContent=pasos; }
+      ay.hidden=false;
+    } else { ay.hidden=true; ay.removeAttribute("data-t"); }
   }
-  var R=estado.regla;
-  if(R && et){
-    var a1=xDeT(estado,R.t1), a2=xDeT(estado,R.t2), b1=yP(R.p1), b2=yP(R.p2);
-    var sube=R.p2>=R.p1, col=sube?"var(--up)":"var(--dn)";
-    var x=Math.min(a1,a2), y=Math.min(b1,b2), w=Math.max(1,Math.abs(a2-a1)), h=Math.max(1,Math.abs(b2-b1));
-    s+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+
-       '" fill="'+col+'" fill-opacity=".16" stroke="'+col+'" stroke-width="1"/>'+
-       '<line x1="'+a1.toFixed(1)+'" y1="'+b1.toFixed(1)+'" x2="'+a2.toFixed(1)+'" y2="'+b2.toFixed(1)+
-       '" stroke="'+col+'" stroke-width="1.5" stroke-dasharray="4 3"/>';
-    var dp=(R.p2-R.p1)/R.p1*100, dd=R.p2-R.p1;
-    et.innerHTML='<span class="'+(sube?"up":"dn")+'">'+pct(dp,2)+'</span>'+
-      '<span>'+(dd>=0?"+":"−")+precioC(Math.abs(dd))+'</span>'+
-      '<span>'+duracionCorta(R.t2-R.t1)+'</span>';
-    et.hidden=false;
-    /* la cajita va arriba de la medida, sin salirse de la gráfica */
-    var ew=et.offsetWidth||120, eh=et.offsetHeight||22;
-    var lx=Math.max(4, Math.min(W-ew-4, x+w/2-ew/2)), ly=y-eh-6;
-    if(ly<4) ly=Math.min(H-eh-4, y+h+6);
-    et.style.left=lx.toFixed(0)+"px"; et.style.top=ly.toFixed(0)+"px";
-  } else if(et) et.hidden=true;
-  sv.innerHTML=s;
 }
+/* ---- la barra flotante de la figura elegida: color, grosor, tipo de raya y quitar ---- */
+function hex7(c){ return (typeof c==="string" && /^#[0-9a-fA-F]{6}$/.test(c)) ? c : "#ffffff"; }
+function pintarBarra(E){
+  var b=E.cont.querySelector(".gsel"); if(!b) return;
+  var z=E.sel?buscarTrazo(E,E.sel):null;
+  if(!z || E.herr || E.crea){ if(!b.hidden){ b.hidden=true; b.innerHTML=""; } E.barraDe=null; return; }
+  var simple={linea:1,rayo:1,flecha:1,horiz:1,vert:1,rect:1}[z.tipo];
+  var firma=z.id+"|"+z.tipo+"|"+anchoTrazo(z)+"|"+(+z.d||0);
+  if(E.barraDe===firma && !b.hidden){ marcarColorBarra(b, z); return; }
+  E.barraDe=firma;
+  var h="";
+  if(simple){
+    h+='<div class="gsw">'+PALETA_TRAZO.map(function(c){
+        return '<button type="button" class="gc" data-gc="'+c+'" style="--c:'+c+'" aria-label="Color"></button>';
+      }).join("")+
+      '<label class="gc pick" title="Otro color"><input type="color" data-gp value="'+hex7(z.c)+'" aria-label="Otro color"></label></div>'+
+      '<button type="button" class="ic" data-gw title="Grosor de la raya">'+ICG.grosor+'<b>'+anchoTrazo(z)+'</b></button>'+
+      '<button type="button" class="ic" data-gd title="Tipo de raya">'+ICG["raya"+(+z.d||0)]+'</button>';
+  } else {
+    h+='<span class="gnom">'+({pos:"Posición",fib:"Fibonacci",regla:"Regla"}[z.tipo]||"")+'</span>';
+  }
+  h+='<button type="button" class="ic del" data-gq title="Quitar">'+ICG.borrar+'</button>';
+  b.innerHTML=h; b.hidden=false;
+  marcarColorBarra(b, z);
+}
+function marcarColorBarra(b, z){
+  var c=colorTrazo(z);
+  b.querySelectorAll("[data-gc]").forEach(function(x){ x.classList.toggle("on", x.getAttribute("data-gc")===c); });
+  var pk=b.querySelector(".pick"); if(pk) pk.classList.toggle("on", PALETA_TRAZO.indexOf(c)<0);
+}
+function enganchaBarra(E, b){
+  b.addEventListener("click", function(ev){
+    var z=E.sel?buscarTrazo(E,E.sel):null; if(!z) return;
+    var t=ev.target.closest("[data-gc],[data-gw],[data-gd],[data-gq]"); if(!t) return;
+    if(t.hasAttribute("data-gq")){ quitarTrazo(E, E.sel); return; }
+    if(t.hasAttribute("data-gc")) z.c=t.getAttribute("data-gc");
+    else if(t.hasAttribute("data-gw")) z.w=(anchoTrazo(z)%4)+1;
+    else if(t.hasAttribute("data-gd")) z.d=((+z.d||0)+1)%3;
+    guardarTrazos(); pintarTrazos(E);
+  });
+  /* el selector de color del sistema avisa mientras se elige: la figura cambia en vivo */
+  b.addEventListener("input", function(ev){
+    var t=ev.target; if(!t.hasAttribute || !t.hasAttribute("data-gp")) return;
+    var z=E.sel?buscarTrazo(E,E.sel):null; if(!z) return;
+    z.c=t.value; pintarTrazos(E);
+  });
+  b.addEventListener("change", function(ev){
+    var t=ev.target; if(t.hasAttribute && t.hasAttribute("data-gp")) guardarTrazos();
+  });
+}
+/* ---- los dos menús de la barra: «Más» (otras figuras) y «Velas» (colores) ---- */
+function cerrarPops(E){
+  E.pop=null;
+  E.cont.querySelectorAll(".gpop").forEach(function(p){ p.hidden=true; });
+  E.cont.querySelectorAll("[data-herr=mas],[data-herr=velas]").forEach(function(b){ b.classList.remove("abierto"); });
+}
+function alternarPop(E, cual){
+  var ya=(E.pop===cual);
+  cerrarPops(E);
+  if(ya) return;
+  if(E.herr || E.crea){ E.herr=null; E.crea=null; dibujar(E); }
+  var p=E.cont.querySelector(cual==="mas" ? ".gpMas" : ".gpVelas");
+  if(!p) return;
+  if(cual==="velas") pintarPopVelas(E, p);
+  p.hidden=false; E.pop=cual;
+  /* el de las velas se abre en su sitio: si queda fuera de la pantalla, se acerca lo justo */
+  if(cual==="velas" && p.scrollIntoView){ try{ p.scrollIntoView({block:"nearest",behavior:"smooth"}); }catch(e){} }
+  var b=E.cont.querySelector("[data-herr="+cual+"]"); if(b) b.classList.add("abierto");
+}
+function pintarPopVelas(E, p){
+  var a=BD.ajustes||{};
+  function fila(clave, actual, lista, def){
+    return '<div class="gpf"><span>'+(clave==="up"?"Vela que sube":"Vela que baja")+'</span>'+
+      '<div class="gsw" data-vc="'+clave+'">'+
+      '<button type="button" class="gc'+(!colorOk(actual)?" on":"")+'" data-c="" style="--c:'+def+'" title="Color de fábrica"></button>'+
+      lista.map(function(c){
+        return '<button type="button" class="gc'+(actual===c?" on":"")+'" data-c="'+c+'" style="--c:'+c+'" aria-label="Color"></button>';
+      }).join("")+
+      '<label class="gc pick'+((colorOk(actual)&&lista.indexOf(actual)<0)?" on":"")+'" title="Otro color">'+
+        '<input type="color" data-vp value="'+hex7(actual)+'" aria-label="Otro color"></label>'+
+      '</div></div>';
+  }
+  p.innerHTML='<div class="gpt">Colores de las velas</div>'+
+    fila("up", a.velaUp, VELA_SUBE, "var(--up)")+fila("dn", a.velaDn, VELA_BAJA, "var(--dn)")+
+    '<div class="gpt s">Estilos listos</div>'+
+    '<div class="gpest">'+VELA_ESTILOS.map(function(e,i){
+      return '<button type="button" data-ve="'+i+'"><i style="--c:'+(e[1]||"var(--up)")+'"></i><i style="--c:'+(e[2]||"var(--dn)")+'"></i><span>'+e[0]+'</span></button>';
+    }).join("")+'</div>';
+  if(!p._enganchado){
+    p._enganchado=true;
+    function poner(clave, c, guardarYa){
+      BD.ajustes[clave==="up"?"velaUp":"velaDn"]=c||null;
+      if(guardarYa){ tocar(BD.ajustes); guardar(); }
+      dibujar(E);
+    }
+    p.addEventListener("click", function(ev){
+      var c=ev.target.closest(".gc[data-c]");
+      if(c){ poner(c.parentNode.getAttribute("data-vc"), c.getAttribute("data-c"), true); pintarPopVelas(E,p); return; }
+      var e=ev.target.closest("[data-ve]");
+      if(e){
+        var es=VELA_ESTILOS[+e.getAttribute("data-ve")];
+        BD.ajustes.velaUp=es[1]||null; BD.ajustes.velaDn=es[2]||null;
+        tocar(BD.ajustes); guardar(); dibujar(E); pintarPopVelas(E,p);
+      }
+    });
+    p.addEventListener("input", function(ev){
+      var t=ev.target; if(!t.hasAttribute||!t.hasAttribute("data-vp")) return;
+      poner(t.closest("[data-vc]").getAttribute("data-vc"), t.value, false);
+    });
+    p.addEventListener("change", function(ev){
+      var t=ev.target; if(!t.hasAttribute||!t.hasAttribute("data-vp")) return;
+      tocar(BD.ajustes); guardar(); pintarPopVelas(E,p);
+    });
+  }
+}
+/* ---------------------------------------------------------------------
+   EL LOTAJE DE LA CAJA «LARGO / CORTO»
+   Sale de la misma calculadora de Futuros (calcLote): el riesgo del usuario es un %
+   de su cartera, y de la distancia al stop sale cuánto poner. Cartera, riesgo y
+   apalancamiento se pueden cambiar aquí mismo sin tocar los de Futuros.
+   --------------------------------------------------------------------- */
+function cfgBase(E){
+  var t=Date.now();
+  if(E.cfgC && t-E.cfgC.t<1500) return E.cfgC.v;
+  var c=null;
+  try{ c=(typeof E.op.cfgPos==="function") ? E.op.cfgPos() : null; }catch(e){}
+  if(!c){ try{ c=cfgReal(); }catch(e2){ c={cartera:0, riesgo:1, apal:10, com:0.05}; } }
+  var v={cartera:+c.cartera||0, riesgo:(c.riesgo!=null&&isFinite(+c.riesgo)&&+c.riesgo>0)?+c.riesgo:1,
+         apal:Math.max(1,+c.apal||10), com:+c.com||0};
+  E.cfgC={t:t, v:v};
+  return v;
+}
+function cfgPos(E, z){
+  var b=cfgBase(E), o={cartera:b.cartera, riesgo:b.riesgo, apal:b.apal, com:b.com};
+  if(z){
+    if(z.cartera>0) o.cartera=+z.cartera;
+    if(z.riesgo>0) o.riesgo=+z.riesgo;
+    if(z.apal>=1) o.apal=Math.min(125, +z.apal);
+  }
+  return o;
+}
+function datosPos(E, z){
+  var cfg=cfgPos(E,z), R=calcLote(cfg, z.p, z.sl, z.lado, z.tp);
+  var dsl=Math.abs(z.p-z.sl);
+  /* la relación de la caja es la de las distancias (la de los porcentajes que se ven); la que ya
+     descuenta comisiones va debajo, en el panel */
+  var rr=(dsl>0) ? Math.abs(z.tp-z.p)/dsl : null;
+  return {cfg:cfg, R:R, rr:rr, rrNeto:(R.ok && R.rr!=null && R.rr>0) ? R.rr : null};
+}
+function voltearPos(z){
+  var ds=z.sl-z.p, dt=z.tp-z.p;
+  z.lado = (z.lado==="SHORT") ? "LONG" : "SHORT";
+  z.sl=Math.max(1e-12, z.p-ds); z.tp=Math.max(1e-12, z.p-dt);
+}
+function htmlPanelPos(E, z){
+  var cfg=cfgPos(E,z), enForm=(typeof E.op.usarPosicion==="function");
+  var v=function(n){ return n>0 ? paraCasilla(+(+n).toFixed(2)) : ""; };
+  function tarjeta(k, tit, cls){
+    return '<div class="gp-c '+(cls||"")+'"><span class="gp-e">'+tit+'</span><b data-pn="'+k+'">—</b><i data-pn="'+k+'S"></i></div>';
+  }
+  return '<div class="gp-top">'+
+      '<div class="gp-lado" role="group">'+
+        '<button type="button" data-pl="LONG" class="'+(z.lado!=="SHORT"?"on v":"")+'"><em>▲</em><span>Largo</span></button>'+
+        '<button type="button" data-pl="SHORT" class="'+(z.lado==="SHORT"?"on r":"")+'"><em>▼</em><span>Corto</span></button>'+
+      '</div>'+
+      '<button type="button" class="b sm ac gp-usar" data-pu>'+(enForm?"Pasar a mi operación":"Usar en una operación")+'</button>'+
+    '</div>'+
+    '<div class="gp-grid">'+
+      tarjeta("margen","Dinero que pone","")+
+      tarjeta("pos","Tamaño de la operación","")+
+      tarjeta("perd","Si llega al stop","dn")+
+      tarjeta("gan","Si llega al objetivo","up")+
+      tarjeta("rr","Relación","")+
+      tarjeta("liq","Lo liquidan en","liq")+
+    '</div>'+
+    '<div class="gp-cfg">'+
+      '<label><span>Cartera</span><div class="gp-in"><em>$</em><input data-pi="cartera" inputmode="decimal" value="'+v(cfg.cartera)+'"></div></label>'+
+      '<label><span>Riesgo</span><div class="gp-in"><input data-pi="riesgo" inputmode="decimal" value="'+v(cfg.riesgo)+'"><em>%</em></div></label>'+
+      '<label><span>Apalancamiento</span><div class="gp-in"><input data-pi="apal" inputmode="numeric" value="'+Math.round(cfg.apal)+'"><em>x</em></div></label>'+
+    '</div>'+
+    '<div class="gp-av" data-pn="aviso"></div>';
+}
+function pintarPanelPos(E){
+  var pn=E.cont.querySelector(".gposp"); if(!pn) return;
+  var z=E.sel?buscarTrazo(E,E.sel):null;
+  if(!z || z.tipo!=="pos" || E.herr || E.crea){
+    if(!pn.hidden){ pn.hidden=true; pn.innerHTML=""; }
+    E.panelDe=null; return;
+  }
+  var firma=z.id+"|"+z.lado+"|"+(typeof E.op.usarPosicion==="function"?1:0);
+  if(E.panelDe!==firma || pn.hidden){
+    E.panelDe=firma; pn.hidden=false; pn.innerHTML=htmlPanelPos(E,z);
+  }
+  var D=datosPos(E,z), R=D.R, sym=E.op.sym;
+  function poner(k, txt, cls){
+    var el=pn.querySelector('[data-pn="'+k+'"]');
+    if(!el) return;
+    if(el.textContent!==txt) el.textContent=txt;
+  }
+  if(R.ok){
+    poner("margen", usdF(R.margen));      poner("margenS", "con "+R.apal+"x");
+    poner("pos", usdF(R.posicion));       poner("posS", cant(R.monedas)+" "+sym);
+    poner("perd", "−"+usdF(R.perdidaSL));
+    poner("perdS", R.cartera>0 ? "el "+pctS(R.perdidaSL/R.cartera*100, R.perdidaSL/R.cartera*100>=10?1:2)+" de su cartera" : "");
+    poner("gan", R.ganTp!=null ? "+"+usdF(R.ganTp) : "—");
+    poner("ganS", R.ganTp!=null&&R.ganTpPctMargen!=null ? "el "+pctS(R.ganTpPctMargen,1)+" de lo que pone" : "");
+    poner("liq", precio(R.liq));
+    poner("liqS", R.liqAntes ? "lo liquidan antes del stop" : "más allá de ahí pierde todo lo que puso");
+  } else {
+    ["margen","pos","perd","gan","liq"].forEach(function(k){ poner(k,"—"); poner(k+"S",""); });
+  }
+  poner("rr", D.rr!=null ? fmtRR(D.rr) : "—");
+  poner("rrS", D.rr==null ? "" : (D.rr<1 ? "arriesga más de lo que gana"
+        : (D.rrNeto!=null ? fmtRR(D.rrNeto)+" veces lo que arriesga" : "")));
+  /* los avisos de siempre (los mismos de Futuros), cortos */
+  var av=pn.querySelector('[data-pn="aviso"]'), h="";
+  if(!(D.cfg.cartera>0)) h='<div class="avLin">Escriba su cartera para calcular cuánto poner.</div>';
+  else if(!R.ok) h='<div class="avLin">Revise la entrada y el stop.</div>';
+  else {
+    var ps=avisosRiesgo(R);
+    if(R.liqAntes) ps.push("Con "+R.apal+"x lo liquidan a "+pctS(100/R.apal,1)+
+      " y su stop está a "+pctS(R.distPct,1)+": <b>lo liquidarían antes</b> de que el stop alcance "+
+      "a cerrarle. Con <b>"+Math.max(1,R.apalMax)+"x</b> o menos, el stop sí trabaja.");
+    if(R.pasaCartera) ps.push("Lo que pone ("+usdF(R.margen)+") es más que toda su cartera ("+
+      usd(R.cartera)+"). Ese stop está demasiado cerca para este riesgo.");
+    h=ps.map(function(x){ return '<div class="avLin">'+x+'</div>'; }).join("");
+  }
+  if(av && av.getAttribute("data-h")!==h){ av.setAttribute("data-h",h); av.innerHTML=h; av.hidden=!h; }
+}
+function enganchaPanelPos(E, pn){
+  pn.addEventListener("pointerdown", function(ev){ ev.stopPropagation(); });
+  pn.addEventListener("click", function(ev){
+    var z=E.sel?buscarTrazo(E,E.sel):null; if(!z || z.tipo!=="pos") return;
+    var l=ev.target.closest("[data-pl]");
+    if(l){
+      if(l.getAttribute("data-pl")!==z.lado){ voltearPos(z); guardarTrazos(); dibujar(E); }
+      return;
+    }
+    if(ev.target.closest("[data-pu]")) usarPosicion(E, z);
+  });
+  pn.addEventListener("input", function(ev){
+    var t=ev.target, k=t.getAttribute&&t.getAttribute("data-pi"); if(!k) return;
+    var z=E.sel?buscarTrazo(E,E.sel):null; if(!z || z.tipo!=="pos") return;
+    var n=num(t.value);
+    if(n!=null && n>0) z[k]=n; else delete z[k];
+    guardarTrazos(); pintarTrazos(E);
+  });
+}
+/* «Usar en una operación»: la entrada, el stop y el objetivo de la caja pasan a Futuros */
+function usarPosicion(E, z){
+  var op=E.op;
+  var d={sym:op.sym, lado:z.lado, entrada:redondearPrecio(z.p), sl:redondearPrecio(z.sl),
+         tp:redondearPrecio(z.tp), apal:(z.apal>=1 ? Math.round(z.apal) : null), id:z.id};
+  if(typeof op.usarPosicion==="function"){ op.usarPosicion(d); return; }
+  usarPosicionEnFuturos(d);
+}
+function usarPosicionEnFuturos(d){
+  try{ cerrar(); }catch(e){}
+  limpiarFU("fut");
+  FU.sym=d.sym; MIRANDO=d.sym; FU.lado=d.lado;
+  FU.entrada=paraCasillaPrecio(d.entrada); FU.sl=paraCasillaPrecio(d.sl); FU.tp=paraCasillaPrecio(d.tp);
+  if(d.apal) FU.apal=String(d.apal);
+  FU.ya=null;
+  try{ conectarVivo(); traerPrecios(true); }catch(e2){}
+  irA("fut");
+  if(esTel()) setTimeout(function(){ try{ hojaNuevaOperacion("fut"); }catch(e3){} }, 60);
+  aviso("Listo: la entrada, el stop y el objetivo pasaron a una operación nueva.");
+}
+/* ---------------------------------------------------------------------
+   v63→v65 · PINTAR LOS DIBUJOS (se llama también mientras se arrastra)
+   --------------------------------------------------------------------- */
+function pintarTrazos(estado, W, H){
+  var cont=estado.cont, sv=cont.querySelector(".gtraz"), et=cont.querySelector(".greglaEt"), tg=cont.querySelector(".gtags");
+  if(!sv) return;
+  if(W==null){ W=estado.zW||sv.clientWidth||300; H=estado.zH||sv.clientHeight||250; }
+  estado.zW=W; estado.zH=H;
+  sv.setAttribute("viewBox","0 0 "+W+" "+H);
+  if(!estado.velas || !estado.velas.length || !estado.escH){
+    sv.innerHTML=""; if(et) et.hidden=true; if(tg) tg.innerHTML="";
+    pintarPartes(estado, []); pintarBarra(estado); pintarPanelPos(estado);
+    return;
+  }
+  var s="", th="", partes=[], rg=null;
+  var lista=listaTrazos(estado).slice();
+  if(estado.regla) lista.push(estado.regla);
+  lista.sort(function(a,b){ return (a.id===estado.sel?1:0)-(b.id===estado.sel?1:0); });   /* la elegida, encima */
+  lista.forEach(function(z){
+    var r=dibujoDe(estado, z, estado.sel===z.id, W, H, false);
+    s+=r.svg; th+=r.tags; partes=partes.concat(r.partes);
+    if(z.tipo==="regla") rg={r:r.regla, z:z};
+  });
+  var c=estado.crea;
+  if(c){
+    var ax=pxDeT(estado,c.a.t), ay=pxDeP(estado,c.a.p), bx=pxDeT(estado,c.b.t), by=pxDeP(estado,c.b.p);
+    if(Math.abs(ax-bx)+Math.abs(ay-by) >= 3){
+      var zz={id:"nuevo", tipo:c.tipo, t1:c.a.t, p1:c.a.p, t2:c.b.t, p2:c.b.p, c:PALETA_TRAZO[0], w:2, d:0};
+      var rr=dibujoDe(estado, zz, false, W, H, true);
+      s+=rr.svg; th+=rr.tags;
+      if(c.tipo==="regla") rg={r:rr.regla, z:zz};
+    }
+    /* el PRIMER PUNTO se ve desde el primer toque: un punto con aro */
+    s+='<circle cx="'+ax.toFixed(1)+'" cy="'+ay.toFixed(1)+'" r="14" fill="var(--ac)" fill-opacity=".16"/>'+
+       '<circle cx="'+ax.toFixed(1)+'" cy="'+ay.toFixed(1)+'" r="5.5" fill="var(--b0)" stroke="var(--ac)" stroke-width="2.4"/>';
+  }
+  sv.innerHTML=s; if(tg) tg.innerHTML=th;
+  pintarPartes(estado, partes);
+  /* la cajita de la regla: cuánto se movió, en dinero, en % y en tiempo */
+  if(et){
+    if(rg && rg.r){
+      var Z=rg.z, q=rg.r, sube=Z.p2>=Z.p1, dp=(Z.p2-Z.p1)/Z.p1*100, dd=Z.p2-Z.p1;
+      var nv=Math.round(Math.abs(Z.t2-Z.t1)/Math.max(1,msInter(estado)));
+      et.innerHTML='<span class="'+(sube?"up":"dn")+'">'+pct(dp,2)+'</span>'+
+        '<span>'+(dd>=0?"+":"−")+precioC(Math.abs(dd))+'</span>'+
+        '<span>'+duracionCorta(Z.t2-Z.t1)+'</span>'+
+        '<span>'+nv+' '+(nv===1?"vela":"velas")+'</span>';
+      et.hidden=false;
+      var ew=et.offsetWidth||150, eh=et.offsetHeight||22;
+      var lx=Math.max(4, Math.min(W-ew-4, q.x+q.w/2-ew/2)), ly=q.y-eh-8;
+      if(ly<4) ly=Math.min(H-eh-4, q.y+q.h+8);
+      et.style.left=lx.toFixed(0)+"px"; et.style.top=ly.toFixed(0)+"px";
+    } else et.hidden=true;
+  }
+  pintarBarra(estado); pintarPanelPos(estado);
+}
+
 /* v40 · el pie de la gráfica, aparte: se repinta también MIENTRAS se arrastra
    una línea (lo único que cambia bajo el dedo), sin tocar nada más de la página */
 function pintarPie(estado){
@@ -4728,7 +5855,7 @@ function refrescarGrafica(){
     /* v63 · con 1 y 3 minutos la vela se acaba enseguida: cuando pasa su tiempo, empieza
        una nueva aquí mismo (antes la última vela se estiraba hasta que se volvían a traer) */
     var msV=msInter(E);
-    if(Date.now()>=u.t+msV && msV>0){
+    if(Date.now()>=u.t+msV && msV>0 && E.inter!=="1M"){
       var nt=u.t+Math.floor((Date.now()-u.t)/msV)*msV;
       v.push({t:nt, a:u.c, h:Math.max(u.c,pr), b:Math.min(u.c,pr), c:pr});
       if(v.length>1500) v.shift();
@@ -4740,7 +5867,7 @@ function refrescarGrafica(){
     if(pr>E.max||pr<E.min){ dibujar(E); return; }
     var rect=E.cont.querySelector("#vUlt"), mecha=E.cont.querySelector("#vUltM");
     if(rect&&mecha){
-      var sube=u.c>=u.a, col=sube?"var(--up)":"var(--dn)";
+      var sube=u.c>=u.a, col=colorVela(sube);
       var eh=E.escH||3;
       var ya=aY(E,u.a)*eh, yc=aY(E,u.c)*eh;
       rect.setAttribute("y", Math.round(Math.min(ya,yc)));
@@ -6702,8 +7829,8 @@ function heroResultado(titulo, gan, base, ahora, dicho, serie, nAb, flot, vivo, 
    ===================================================================== */
 function filaMonedaCorta(e){
   var chg=cambioDe(e.sym), abierta=!!UI_OPAB["m_"+e.sym];
-  return '<div class="opL'+(abierta?' abierta':'')+'" style="--fc:'+colDe(e.sym)+'" data-opab="m_'+esc(e.sym)+'">'+
-      '<div class="opIc">'+icono(e.sym,30)+'</div>'+
+  return '<div class="opL conGr'+(abierta?' abierta':'')+'" style="--fc:'+colDe(e.sym)+'" data-opab="m_'+esc(e.sym)+'">'+
+      opIcGraf(e.sym, 'data-vermon="'+esc(e.sym)+'"')+
       '<div class="opQ">'+
         '<div class="n1"><b translate="no">'+esc(e.sym)+'</b>'+
           '<span class="chip '+(chg>=0?"l":"s")+'" data-v="ch" data-s="'+esc(e.sym)+'" data-cls="chip '+(chg>=0?"l":"s")+'">'+
@@ -7228,8 +8355,10 @@ function pintarSpot(){
      en la computadora, las mismas cuatro tarjetas de siempre. */
   if(TEL) h+='<button class="b ac btNueva" id="btRegSpot">+ Registrar compra</button>';
   if(!vacioSpot && TEL) h+=heroSpot(S,D)+marcadorSpot(S);
+  /* v65 · la computadora también lleva «TODO SU SPOT» (lo que valen las monedas + el USDT disponible),
+     igual que el teléfono y que Futuros: la cifra grande a la izquierda y las cuatro tarjetas al lado */
   if(!vacioSpot && !TEL)
-  h+='<div class="mets">'+
+  h+='<div class="cima cimaSpot">'+heroSpot(S,D)+'<div class="mets">'+
     met(IC.banco,"Dinero que puso", usd(S.tot.costo),"",
         plural(vivas.length,"moneda","monedas")+" en el portafolio", 1,
         null, "#misMonedas")+
@@ -7247,7 +8376,7 @@ function pintarSpot(){
     /* v38: el USDT disponible ya NO va en una tarjeta aquí: está en la barra
        de dinero, justo debajo, con sus botones. Dos sitios con la misma cifra
        era lo que Luis pidió quitar. */
-  '</div>';
+  '</div></div>';
 
   if(vacioSpot)
     h+='<div class="caja"><div class="vacio" style="padding:26px 20px">'+
@@ -7360,17 +8489,26 @@ function pintarSpot(){
      · compra más BAJO → «compra si baja»  · compra más ALTO → «compra si sube»
      · venta más ALTO  → take profit       · venta más BAJO → stop loss
    Para anotar algo que YA pasó se pone la fecha de ese día: con otra fecha se anota tal cual.
-   Hasta el 1 % de diferencia se toma como el precio de ahora (la casa y este programa nunca
-   ven el mismo precio al centavo): así una compra de verdad no se vuelve orden por error.
+   v65 · «al mínimo centavo»: si el precio lo ESCRIBIÓ la persona, cualquier diferencia real
+   es una orden (1,83 → 1,82 ya es «compra si baja»), en cada moneda a su propia escala:
+   $0,01 en el BTC, $0,0001 en el ATOM, $0,00000001 en el SHIB (lo que muestra el precio).
+   Solo se toma como «precio de ahora»:
+     · lo que se ve igual que el precio de ahora (media unidad del último decimal), y
+     · el precio que puso el propio programa (botón «ahora», o al elegir la moneda): ahí se da
+       1 % de margen, para que una compra de verdad no se vuelva orden porque el precio
+       se movió unos segundos mientras la persona llenaba lo demás.
    --------------------------------------------------------------------- */
-var ORDEN_TOLERANCIA=1;      /* % */
-function ordenSpot(venta, sym, p, fecha){
+var ORDEN_TOLERANCIA_AHORA=1;    /* %  · precio que puso el programa («ahora») */
+function ordenSpot(venta, sym, p, fecha, deAhora){
   if(!sym || esEstable(sym) || !(p>0)) return null;
   var pr=precioVigente(sym);                            /* sin precio fresco no se puede saber: se anota */
   if(pr==null || !(pr>0)) return null;
   if(fecha && fecha!==hoy()) return null;               /* otro día: ya pasó, se anota tal cual */
   var dif=(p-pr)/pr*100;
-  if(Math.abs(dif)<ORDEN_TOLERANCIA) return null;       /* es el precio de ahora */
+  /* a mano: es «el de ahora» solo si coincide con el precio que se ve (media unidad del último
+     decimal); del programa («ahora»): 1 % de margen */
+  var tol = deAhora ? pr*ORDEN_TOLERANCIA_AHORA/100 : Math.pow(10,-decPrecio(pr))/2;
+  if(Math.abs(p-pr) < tol*(1+1e-9)) return null;
   return {venta:!!venta, sym:String(sym).toUpperCase(), p:p, pr:pr, dif:dif, dir:dif>0?"sube":"baja"};
 }
 /* deja la orden esperando en «Órdenes» (BD.ordenes) */
@@ -7391,7 +8529,7 @@ function dejarOrdenSpot(Y, c, k, nota, casa){
   BD.ordenes.push(o);
   guardar();
   try{ var vi=document.getElementById("veloIn"); if(vi && vi.firstChild) cerrar(); }catch(e){}
-  SP.casa=casaGlobal();
+  SP.casa=casaGlobal(); SP.modo="hoy";
   if(esTel()) SPOT_PEST="ord";                 /* en el teléfono se ve la orden recién dejada */
   repintar(); conectarVivo();
   pedirPermisoAvisos();
@@ -7408,7 +8546,7 @@ function dejarOrdenSpot(Y, c, k, nota, casa){
 function frasesOrdenSpot(Y){
   var v=Y.venta, sube=Y.dir==="sube";
   return {
-    ahora: 'Ahora '+esc(Y.sym)+' está en '+precio(Y.pr)+': falta que '+(sube?'suba':'baje')+' '+pctS(Math.abs(Y.dif),2)+'.',
+    ahora: 'Ahora '+esc(Y.sym)+' está en '+precio(Y.pr)+': falta que '+(sube?'suba':'baje')+' '+pctFino(Math.abs(Y.dif),2)+'.',
     nada: v ? 'Mientras tanto no gana ni pierde nada y sus monedas no se tocan.'
             : 'Mientras tanto no gana ni pierde nada y su dinero no se toca.',
     fecha: v ? '¿Ya la vendió? Ponga la fecha del día en que fue y se anota como hecha.'
@@ -7428,8 +8566,8 @@ function panelRegistro(enHoja){
   var esV=SP.tipo==="venta";
   var e = SP.sym ? estadoDe(SP.sym) : null;
   var TIPOS='<div class="pill" id="spT" style="width:'+(enHoja?"100%":"168px")+'">'+
-      '<button data-t="compra" class="'+(!esV?"on v":"")+'">COMPRA</button>'+
-      '<button data-t="venta" class="'+(esV?"on r":"")+'">VENTA</button>'+
+      '<button data-t="compra" class="'+(!esV?"on cmp":"")+'">COMPRA</button>'+
+      '<button data-t="venta" class="'+(esV?"on vta":"")+'">VENTA</button>'+
     '</div>';
   return (enHoja
     ? '<div class="cp" style="padding-top:0">'+TIPOS
@@ -7485,7 +8623,7 @@ function panelRegistro(enHoja){
     '</div>'+
     '<div class="nota" id="spR">Elija la moneda y escriba cuántos dólares.</div>'+
     '<div style="margin-top:12px;display:flex;gap:9px;flex-wrap:wrap">'+
-      '<button class="b '+(esV?"rj":"vd")+' gr" id="spOk" style="flex:1;min-width:170px">'+
+      '<button class="b '+(esV?"vd":"rj")+' gr" id="spOk" style="flex:1;min-width:170px">'+
       (esV?"Registrar venta":"Registrar compra")+'</button>'+
       '<button class="b gh" id="spLimpia">Limpiar</button>'+
     '</div></div>';
@@ -7875,11 +9013,11 @@ function engancharPanel(c){
     elegirMoneda(SP.sym, function(s){
       SP.sym=s; MIRANDO=s;
       traerPrecios(true); conectarVivo();
-      if(precioDe(s)!=null && !g.p) g.p=String(precioDe(s)).replace(".",sepDecimal());
+      if(precioDe(s)!=null && !g.p){ g.p=paraCasillaPrecio(precioDe(s)); SP.modo="hoy"; }
       if(volverPanel(g)) return;
       repintarPanelSpot();
       var pp=document.getElementById("spP");
-      if(pp && !pp.value && precioDe(s)!=null) pp.value=String(precioDe(s)).replace(".",sepDecimal());
+      if(pp && !pp.value && precioDe(s)!=null){ pp.value=paraCasillaPrecio(precioDe(s)); SP.modo="hoy"; }
       recPanel();
     }, function(){ volverPanel(g); });
   };
@@ -7928,7 +9066,7 @@ function engancharPanel(c){
     if(!SP.sym){ aviso("Primero elija la moneda.",true); return; }
     var p=precioDe(SP.sym);
     if(p==null){ aviso("Todavía no hay precio de "+SP.sym+".",true); return; }
-    Pq.value=String(p).replace(".",sepDecimal());
+    Pq.value=paraCasillaPrecio(p);
     SP.modo="hoy";
     if(editando==="c") desdeCantidad(); else desdeMonto();
   };
@@ -7939,7 +9077,7 @@ function engancharPanel(c){
       if(!(e.cantidad>0)){ aviso("No tiene "+SP.sym+" para vender.",true); return; }
       var cc = p===100 ? e.cantidad : e.cantidad*p/100;
       C.value=paraCasilla(cc);
-      if(!Pq.value && precioDe(SP.sym)!=null) Pq.value=paraCasilla(precioDe(SP.sym));
+      if(!Pq.value && precioDe(SP.sym)!=null){ Pq.value=paraCasillaPrecio(precioDe(SP.sym)); SP.modo="hoy"; }
       editando="c"; desdeCantidad();
       c.querySelectorAll("#spPanel [data-rp]").forEach(function(x){
         x.className = x===b ? "on" : "";
@@ -7951,6 +9089,7 @@ function engancharPanel(c){
     ["spM","spP","spC","spK","spN"].forEach(function(id){
       var el=document.getElementById(id); if(el) el.value="";
     });
+    SP.modo="hoy";
     recPanel();
   };
   var ok=q("#spOk");
@@ -7961,7 +9100,7 @@ function engancharPanel(c){
 function ordenDelForm(){
   var venta=SP.tipo==="venta";
   function v(id){ var e=document.getElementById(id); return e?e.value:""; }
-  var Y=ordenSpot(venta, SP.sym, num(v("spP")), v("spF"));
+  var Y=ordenSpot(venta, SP.sym, num(v("spP")), v("spF"), SP.modo==="hoy");
   if(Y && venta && !(estadoDe(SP.sym).cantidad>0)) Y=null;     /* sin monedas: ya sale el otro aviso */
   var ok=document.getElementById("spOk");
   if(ok){
@@ -8111,7 +9250,7 @@ function guardarMovimiento(){
   }
   /* v64 · un precio que no es el de ahora NO se anota como compra/venta hecha: queda en «Órdenes»
      y no toca nada hasta que el precio llegue */
-  var Y=ordenSpot(SP.tipo==="venta", SP.sym, p, f);
+  var Y=ordenSpot(SP.tipo==="venta", SP.sym, p, f, SP.modo==="hoy");
   if(Y){ dejarOrdenSpot(Y, c, k, n, SP.casa); return; }
   var nuevo={id:idNuevo(), sym:String(SP.sym).toUpperCase(), tipo:SP.tipo, cant:c, precio:p,
                com:k, fecha:f, nota:n, casa:SP.casa, mod:ahoraReal()};
@@ -8148,7 +9287,7 @@ function registrarCompraVenta(nuevo, pago){
     : (pago ? (pago.tipo==="traspaso" ? "Compra registrada, con el paso de "+usd(pago.cant)+" desde futuros."
                                       : "Compra registrada, con su depósito de "+usd(pago.cant)+".")
             : ("Compra registrada · "+cant(c)+" "+SP.sym+" en "+nombreCasa(SP.casa)+".")));
-  SP.casa=casaGlobal();     /* v48 · la próxima operación vuelve a empezar con la casa única */
+  SP.casa=casaGlobal(); SP.modo="hoy";     /* v48 · la próxima operación vuelve a empezar con la casa única */
 }
 /* v40 · «¿CON QUÉ DINERO PAGÓ ESTA COMPRA?» — como en Binance, donde no se
    puede comprar sin tener el dinero en spot (y si compra con tarjeta, Binance
@@ -8212,7 +9351,7 @@ function venderMoneda(sym){
     '</div>'+
     '<div class="campos" style="margin-top:13px">'+
       '<div class="campo"><label>Precio de venta</label>'+
-        '<input id="vPr" inputmode="decimal" value="'+(pr!=null?String(pr).replace(".",sepDecimal()):"")+'"></div>'+
+        '<input id="vPr" inputmode="decimal" value="'+(pr!=null?paraCasillaPrecio(pr):"")+'"></div>'+
       '<div class="campo"><label>Fecha</label><input type="date" id="vF" value="'+hoy()+'"></div>'+
       '<div class="campo"><label>Comisión (USD) <small>· vacío = se calcula sola</small></label><input id="vK" inputmode="decimal" placeholder="se calcula sola"></div>'+
       '<div class="campo"><label>Cantidad exacta</label><input id="vEx" inputmode="decimal"></div>'+
@@ -8222,7 +9361,7 @@ function venderMoneda(sym){
             esc(CASAS[k].n)+'</option>'; }).join("")+'</select></div>'+
     '</div><div class="nota" id="vR">Mueva la barra para elegir cuánto vender.</div>'+
     '</div><div class="hf"><button class="b" data-cerrar>Cancelar</button>'+
-    '<button class="b rj" id="vOk">Registrar venta</button></div></div>',
+    '<button class="b vd" id="vOk">Registrar venta</button></div></div>',
   function(M){
     var rg=M.querySelector("#vRg"), ex=M.querySelector("#vEx");
     function elegida(){
@@ -8230,6 +9369,7 @@ function venderMoneda(sym){
       if(v!=null) return Math.max(0,Math.min(v,e.cantidad));
       return e.cantidad*(+rg.value)/100;
     }
+    var manoV=false;      /* v65 · ¿el precio lo escribió la persona? (si no, es el de ahora) */
     function rec(){
       var c=elegida(), p=num(M.querySelector("#vPr").value), k=kVender(c,p);
       M.querySelector("#vPc").textContent = e.cantidad>0?pctS(c/e.cantidad*100):"0%";
@@ -8241,7 +9381,7 @@ function venderMoneda(sym){
       gel.className="v "+cl(g);
       var r=M.querySelector("#vR");
       /* v64 · un precio que no es el de ahora es una orden que espera (take profit o stop loss) */
-      var Yv=p!=null ? ordenSpot(true, sym, p, M.querySelector("#vF").value) : null;
+      var Yv=p!=null ? ordenSpot(true, sym, p, M.querySelector("#vF").value, !manoV) : null;
       var bOk=M.querySelector("#vOk"), tOk=Yv?"Dejar venta programada":"Registrar venta";
       if(bOk && bOk._t!==tOk){ bOk._t=tOk; bOk.textContent=tOk; }
       if(p==null){ r.textContent="Escriba el precio de venta."; return; }
@@ -8274,6 +9414,7 @@ function venderMoneda(sym){
       M.querySelector("#vK").placeholder=tr("se calcula sola")+(kk>0?": "+usd(kk):"")+" ("+pctCorto(tasaSpot(ca))+")";
       return kk;
     }
+    M.querySelector("#vPr").addEventListener("input", function(){ manoV=true; });
     ["#vPr","#vK"].forEach(function(id){ M.querySelector(id).addEventListener("input", rec); });
     M.querySelector("#vF").addEventListener("change", rec);
     (M.querySelector("#vCa")||{addEventListener:function(){}}).addEventListener("change", rec);
@@ -8284,7 +9425,7 @@ function venderMoneda(sym){
       if(p==null||p<=0){ aviso("Escriba el precio de venta.",true); return; }
       if(c>e.cantidad+1e-9){ aviso("No puede vender más de lo que tiene.",true); return; }
       var ca=(M.querySelector("#vCa")||{}).value||casaGlobal();
-      var Yo=ordenSpot(true, sym, p, M.querySelector("#vF").value||hoy());
+      var Yo=ordenSpot(true, sym, p, M.querySelector("#vF").value||hoy(), !manoV);
       if(Yo){ dejarOrdenSpot(Yo, c, k, "", ca); return; }      /* v64 · queda esperando en «Órdenes» */
       BD.ops.push({id:idNuevo(), sym:String(sym).toUpperCase(), tipo:"venta", cant:c, precio:p,
         com:k, fecha:M.querySelector("#vF").value||hoy(), nota:"", casa:ca, mod:ahoraReal()});
@@ -8306,8 +9447,8 @@ function editarOp(id){
   abrir('<div class="hoja"><div class="hh">'+icono(o.sym,28)+'<h3>Editar movimiento</h3>'+
     '<button class="x" data-cerrar>×</button></div><div class="hb">'+
     '<div class="pill" id="eT" style="margin-bottom:14px">'+
-      '<button data-t="compra" class="'+(o.tipo!=="venta"?"on v":"")+'">COMPRA</button>'+
-      '<button data-t="venta" class="'+(o.tipo==="venta"?"on r":"")+'">VENTA</button></div>'+
+      '<button data-t="compra" class="'+(o.tipo!=="venta"?"on cmp":"")+'">COMPRA</button>'+
+      '<button data-t="venta" class="'+(o.tipo==="venta"?"on vta":"")+'">VENTA</button></div>'+
     '<div class="campos">'+
       '<div class="campo"><label>Fecha</label><input type="date" id="eF" value="'+
         esc(o.fecha||hoy())+'"></div>'+
@@ -9050,8 +10191,8 @@ function verMoneda(sym){
     (ventas.length?'<div class="fsec">Sus ventas</div>'+filasMov(e,sym,true):'')+
     '</div><div class="hf">'+
     (e.ops.length?'<button class="b gh" id="mQuit" style="margin-right:auto">Quitar esta moneda</button>':'')+
-    '<button class="b vd" id="mCom">Comprar más</button>'+
-    (e.cantidad>0?'<button class="b rj" id="mVen">Vender</button>':'')+
+    '<button class="b rj" id="mCom">Comprar más</button>'+
+    (e.cantidad>0?'<button class="b vd" id="mVen">Vender</button>':'')+
     '<button class="b" data-cerrar>Cerrar</button></div></div>',
   function(M){
     var g=M.querySelector("#vmGraf");
@@ -9066,7 +10207,7 @@ function verMoneda(sym){
       cerrar(); SP.tipo="compra"; SP.sym=sym; SP.sel=sym;
       if(vista!=="spot") irA("spot"); else pintarSpot();
       var p=document.getElementById("spP");
-      if(p&&precioDe(sym)!=null) p.value=String(precioDe(sym)).replace(".",sepDecimal());
+      if(p&&precioDe(sym)!=null){ p.value=paraCasillaPrecio(precioDe(sym)); SP.modo="hoy"; }
       var m=document.getElementById("spM"); if(m) m.focus();
     };
     var bv=M.querySelector("#mVen");
@@ -9605,6 +10746,12 @@ function panelOperacion(A, enHoja){
       '<div class="campo ancho"><label>Moneda</label>'+
         '<button class="selector" id="fuS" type="button"></button></div>'+
     '</div>'+
+    /* v65 · «Ver gráfica» justo debajo de la moneda, donde se ve sin bajar (Luis, 13 oct: «en ningún
+       lado me sale para ver la gráfica en futuros»). Antes estaba debajo de «Registrar operación».
+       Se acuerda de lo que usted elija (BD.ajustes.verGraf); la gráfica se abre aquí mismo. */
+    '<button type="button" class="b abreGraf" id="fuVerG">'+
+      (verGraf()?"Ocultar la gráfica":"Ver gráfica · mover el stop y el objetivo con el dedo")+'</button>'+
+    '<div id="fuGraf"'+(verGraf()?"":' hidden')+'></div>'+
     /* las tres casillas de precio y el resultado, todo dentro del mismo bloque */
     '<div class="opbloq">'+
       '<div class="campos dos">'+
@@ -9655,9 +10802,6 @@ function panelOperacion(A, enHoja){
     /* v54 · LA GRÁFICA YA NO ESTÁ SIEMPRE ABIERTA. Luis (12 oct): «la gráfica debería
        ocultarse, a menos que uno pulse para colocar el stop loss o el take profit».
        El botón se acuerda de lo que usted elija (BD.ajustes.verGraf). */
-    (FU.sym ? '<button type="button" class="b abreGraf" id="fuVerG">'+
-      (verGraf()?"Ocultar la gráfica":"Ver gráfica · mover el stop y el objetivo con el dedo")+'</button>' : '')+
-    '<div id="fuGraf"'+(verGraf()?"":' hidden')+'></div>'+
     /* ¿ya entró o está esperando que el precio llegue? */
     '<div id="fuYa"></div>'+
     '<div class="nota" id="fuRes" style="display:none"></div>'+
@@ -10244,8 +11388,8 @@ function comoCerro(e){
 }
 function filaCerradaCorta(e,k){
   var f=e.f, id="h_"+f.id, abierta=!!UI_OPAB[id], n=planCuantos(f);
-  return '<div class="opL'+(abierta?' abierta':'')+'" style="--fc:'+colDe(f.sym)+'" data-opab="'+esc(id)+'">'+
-      '<div class="opIc">'+icono(f.sym,30)+'</div>'+
+  return '<div class="opL conGr'+(abierta?' abierta':'')+'" style="--fc:'+colDe(f.sym)+'" data-opab="'+esc(id)+'">'+
+      opIcFicha(f,k)+
       '<div class="opQ">'+
         '<div class="n1"><b translate="no">'+esc(f.sym||"—")+'</b>'+
           '<span class="chip '+(f.lado==="SHORT"?"s":"l")+'">'+(f.lado==="SHORT"?"▼ CORTO":"▲ LARGO")+'</span>'+
@@ -10282,8 +11426,8 @@ function filaCerradaCorta(e,k){
 function filaAbiertaCorta(e,k){
   var f=e.f, pr=precioDe(f.sym), riel=posicionRiel(e);
   var abierta=!!UI_OPAB[f.id];
-  return '<div class="opL'+(abierta?' abierta':'')+'" style="--fc:'+colDe(f.sym)+'" data-opab="'+esc(f.id)+'">'+
-      '<div class="opIc">'+icono(f.sym,30)+'</div>'+
+  return '<div class="opL conGr'+(abierta?' abierta':'')+'" style="--fc:'+colDe(f.sym)+'" data-opab="'+esc(f.id)+'">'+
+      opIcFicha(f,k)+
       '<div class="opQ">'+
         '<div class="n1"><b translate="no">'+esc(f.sym)+'</b>'+
           '<span class="chip '+(f.lado==="SHORT"?"s":"l")+'">'+(f.lado==="SHORT"?"▼ CORTO":"▲ LARGO")+'</span>'+
@@ -10467,8 +11611,8 @@ function filaProgramada(e,k,LB){
   /* v56 · una línea que se abre al tocarla, como las operaciones abiertas. Lo que NO se esconde
      nunca: el aviso de que no alcanza el dinero y los botones «Ya entré» y «Editar». */
   return '<div class="opProg'+(noAlc?' sinFondos':'')+'">'+
-    '<div class="opL'+(abierta?' abierta':'')+'" style="--fc:'+colDe(f.sym)+'" data-opab="'+esc(f.id)+'">'+
-      '<div class="opIc">'+icono(f.sym,30)+'</div>'+
+    '<div class="opL conGr'+(abierta?' abierta':'')+'" style="--fc:'+colDe(f.sym)+'" data-opab="'+esc(f.id)+'">'+
+      opIcFicha(f,k)+
       '<div class="opQ">'+
         '<div class="n1"><b translate="no">'+esc(f.sym)+'</b>'+
           '<span class="chip '+(f.lado==="SHORT"?"s":"l")+'">'+(f.lado==="SHORT"?"▼ CORTO":"▲ LARGO")+'</span>'+
@@ -10610,7 +11754,7 @@ function tablaHistorial(F,k,T,sinTitulo){
     if(esTel()){ h+=filaCerradaCorta(e,k); return; }
     var f=e.f, n=planCuantos(f);
     var p=String(f.fecha||"").split("-");
-    h+='<div class="mv '+(e.gan>=0?"compra":"venta")+'" style="--fc:'+(f.sym?colDe(f.sym):"var(--ac)")+'">'+
+    h+='<div class="mv '+(e.gan>=0?"compra gana":"venta pierde")+'" style="--fc:'+(f.sym?colDe(f.sym):"var(--ac)")+'">'+
       '<div class="fh"><b>'+(p[2]||"--")+'</b><span>'+(MESES[(+p[1])-1]||"")+" "+(p[0]||"").slice(2)+'</span></div>'+
       iconoFicha(f,k,30)+
       '<div class="q"><div class="l1"><em>'+esc(f.sym||"—")+'</em> '+
@@ -10711,7 +11855,7 @@ function engancharFormulario(c, A){
     elegirMoneda(FU.sym, function(s){
       FU.sym=s; MIRANDO=s;
       conectarVivo(); traerPrecios(true); traerLogo(s);
-      if(!FU.entrada && precioDe(s)!=null) FU.entrada=String(precioDe(s)).replace(".",sepDecimal());
+      if(!FU.entrada && precioDe(s)!=null) FU.entrada=paraCasillaPrecio(precioDe(s));
       if(enHoja){ volverAHoja(); return; }
       pintaMon();
       var E=document.getElementById("fuE");
@@ -10803,7 +11947,7 @@ function engancharFormulario(c, A){
     var p=precioDe(FU.sym);
     if(p==null){ aviso("Todavía no hay precio de "+FU.sym+".",true); return; }
     var E=document.getElementById("fuE");
-    E.value=String(p).replace(".",sepDecimal()); FU.entrada=E.value;
+    E.value=paraCasillaPrecio(p); FU.entrada=E.value;
     recLote(A); pintarLineas(A);
   };
   var det=c.querySelector("#fuDet");
@@ -10813,7 +11957,10 @@ function engancharFormulario(c, A){
   var ok=c.querySelector("#fuOk");
   if(ok) ok.onclick=function(){ guardarOperacion(A); };
   var bg=c.querySelector("#fuVerG");
-  if(bg) bg.onclick=function(){ ponerVerGraf(!verGraf()); };
+  if(bg) bg.onclick=function(){
+    if(!FU.sym){ aviso("Primero elija la moneda.",true); return; }
+    ponerVerGraf(!verGraf());
+  };
   montarGraf(A);
   recLote(A);
 }
@@ -10914,6 +12061,21 @@ function montarGraf(A){
       return '<span class="piePone">'+"Pone "+usdF(R.margen)+"."+'</span> '+(pc!=null
         ? '<span class="pieRiesgo">'+"Si salta el stop pierde "+usdF(R.perdidaSL)+" (el "+pctS(pc, pc>=10?1:2)+" de su cartera)."+'</span>'
         : '<span class="pieRiesgo">'+"Si salta el stop pierde "+usdF(R.perdidaSL)+"."+'</span>');
+    },
+    /* v65 · la caja Largo / Corto calcula el lotaje con la cartera y el apalancamiento de este formulario */
+    cfgPos:function(){ return cfgOp(A); },
+    usarPosicion:function(d){
+      FU.lado=d.lado;
+      FU.entrada=paraCasillaPrecio(d.entrada); FU.sl=paraCasillaPrecio(d.sl); FU.tp=paraCasillaPrecio(d.tp);
+      if(d.apal) FU.apal=String(d.apal);
+      FU.ya=null;
+      /* la caja ya cumplió su trabajo: sus tres líneas son ahora las de la operación */
+      var kz=String(FU.sym).toUpperCase();
+      if(TRAZOS[kz]){ TRAZOS[kz]=TRAZOS[kz].filter(function(z){ return z.id!==d.id; }); if(!TRAZOS[kz].length) delete TRAZOS[kz]; guardarTrazos(); }
+      var g0=document.getElementById("fuGraf");
+      var enHoja=!!(g0 && g0.closest && g0.closest("#veloIn"));
+      if(enHoja) hojaNuevaOperacion(A.k); else A.pinta();
+      aviso("Listo: la entrada, el stop y el objetivo pasaron a su operación.");
     },
     alMover:function(campo, p){
       p=redondearPrecio(p);
@@ -11064,7 +12226,7 @@ function cerrarOperacion(id, k){
       (st.sl!=null?' · stop '+precio(st.sl):'')+(st.tp!=null?' · objetivo '+precio(st.tp):'')+'</div>'+
     '<div class="campos" style="margin-top:13px">'+
       '<div class="campo"><label>Precio de salida</label><input id="cX" inputmode="decimal" value="'+
-        (pr!=null?String(pr).replace(".",sepDecimal()):"")+'">'+
+        (pr!=null?paraCasillaPrecio(pr):"")+'">'+
         (prViejo?'<small class="avSal">El precio guardado es viejo. Escriba a qué precio salió.</small>':'')+
         '</div>'+
       '<div class="campo"><label>Fecha de cierre</label><input type="date" id="cF" value="'+hoy()+'"></div>'+
@@ -11133,7 +12295,7 @@ function cerrarOperacion(id, k){
     if((b=M.querySelector("#cTp"))) b.onclick=function(){
       M.querySelector("#cX").value=String(st.tp).replace(".",sepDecimal()); rec(); };
     if((b=M.querySelector("#cHoy"))) b.onclick=function(){
-      M.querySelector("#cX").value=String(pr).replace(".",sepDecimal()); rec(); };
+      M.querySelector("#cX").value=paraCasillaPrecio(pr); rec(); };
     rec();
     M.querySelector("#cOk").onclick=function(){
       var x=num(M.querySelector("#cX").value);
@@ -11696,7 +12858,7 @@ function programarVenta(symIni){
     '<div class="nota" id="ovR"></div>'+
     '<div class="mut" style="font-size:12px;margin-top:8px">¿Ya la vendió? Anótela con «Vender» o «Registrar operación»: ahí vale cualquier precio, porque ya pasó.</div>'+
     '</div><div class="hf"><button class="b" data-cerrar>Cancelar</button>'+
-    '<button class="b rj" id="ovOk">Dejar programada</button></div></div>',
+    '<button class="b vd" id="ovOk">Dejar programada</button></div></div>',
   function(M){
     function e(){ return estadoDe(M.querySelector("#ovS").value); }
     function ponerEjemplos(){
@@ -11804,7 +12966,7 @@ function programarCompra(symIni){
   if(!syms.length){ aviso("No hay monedas para comprar.",true); return; }
   var sym=symIni&&syms.indexOf(String(symIni).toUpperCase())>=0?String(symIni).toUpperCase():syms[0];
   MIRANDO=sym;
-  abrir('<div class="hoja venta"><div class="hh">'+icono(sym,28)+
+  abrir('<div class="hoja comprar"><div class="hh">'+icono(sym,28)+
     '<h3>Programar una compra</h3><button class="x" data-cerrar>×</button></div><div class="hb">'+
     '<div class="campos">'+
       '<div class="campo ancho"><label>Moneda</label><select id="ocS">'+
@@ -11916,13 +13078,13 @@ function cajaOrdenes(){
   return '<div class="caja"><h2><span class="ic">'+IC.alr+'</span>Órdenes programadas'+
     (l.length?'<span class="chip a">'+l.length+'</span>':'')+
     '</h2><div class="cp">'+
-    '<div class="ordBtns"><button class="b ac" onclick="programarVenta()">+ Vender</button>'+
-    '<button class="b ac" onclick="programarCompra()">+ Comprar</button></div>'+
+    '<div class="ordBtns"><button class="b vd" onclick="programarVenta()">+ Vender</button>'+
+    '<button class="b rj" onclick="programarCompra()">+ Comprar</button></div>'+
     (l.length ? l.map(function(o){
       var pr=precioDe(o.sym), falta=pr!=null?(o.precio-pr)/pr*100:null;
       var esC = o.lado==="compra", esSl = o.dir==="baja";
       var etq = esC ? "Compra" : (esSl?"Stop loss":"Take profit");
-      var cls = esC ? "ac" : (esSl?"dn":"up");
+      var cls = esC ? "ac" : "up";      /* v65 · comprar rojo (ac→rojo en el CSS), vender verde */
       return '<div class="mv venta '+(esC?"cp2":(esSl?"sl":"tp"))+'" style="--fc:'+colDe(o.sym)+'">'+
         '<div class="fh">'+icono(o.sym,30)+'</div>'+
         '<div class="q"><div class="l0 '+cls+'">'+etq+'</div>'+
@@ -11930,7 +13092,7 @@ function cajaOrdenes(){
         (esSl?"baje a":"suba a")+' '+precio(o.precio)+'</div>'+
         '<div class="l2">ahora <b data-v="pr" data-s="'+esc(o.sym)+'">'+precio(pr)+'</b>'+
         (falta!=null?' · <span data-v="ordFalta" data-s="'+esc(o.sym)+'" data-p="'+o.precio+
-          '">falta '+pct(falta,1)+'</span>':'')+' · <span>programada el</span> <span translate="no">'+esc(o.creada||"")+'</span></div></div>'+
+          '">falta '+pctFino(falta,1,true)+'</span>':'')+' · <span>programada el</span> <span translate="no">'+esc(o.creada||"")+'</span></div></div>'+
         '<div class="acc"><button class="b sm" onclick="quitarOrden(\''+esc(o.id)+'\')">Quitar</button></div></div>';
     }).join("")
     : '<div class="mut">Deje dicho «vende o compra tanto de tal moneda cuando llegue a tal precio» y el '+
@@ -12498,6 +13660,12 @@ function iconoFicha(f, k, tam){
     'role="button" tabindex="0" aria-label="Ver la gráfica de esta operación">'+
     icono(f.sym, tam||34)+'<em>ver gráfica</em></div>';
 }
+/* v65 · el mismo botón en las líneas cortas del teléfono (abiertas, esperando, cerradas y monedas de Spot) */
+function opIcGraf(sym, attrs){
+  return '<div class="opIc verGr" '+attrs+' role="button" tabindex="0" aria-label="Ver la gráfica">'+
+    icono(sym,30)+'<em>ver gráfica</em></div>';
+}
+function opIcFicha(f,k){ return opIcGraf(f.sym, 'data-ficha="'+esc(String(f.id))+'" data-amb="'+esc(k)+'"'); }
 /* Lo mismo en SPOT: ahí no hay stop ni objetivo por operación, así que el
    icono abre la ficha de la moneda, que ya trae su gráfica con una raya por
    cada compra y su precio promedio. */
@@ -12517,6 +13685,24 @@ function engancharFichas(c){
     };
     b.onkeydown=function(ev){
       if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); b.click(); }
+    };
+  });
+  /* v65 · PC: toda la fila de la tabla abre la ficha de la operación (antes solo el iconito de la moneda,
+     y nada avisaba). Así en la PC se llega a lo mismo que en el teléfono: tamaño, stop, objetivo,
+     financiación, comisión y «¿Cómo se calcula?». Los botones de la fila siguen haciendo lo suyo. */
+  c.querySelectorAll("tr").forEach(function(tr){
+    if(tr.hasAttribute("data-sym")) return;
+    var f=tr.querySelector("[data-ficha]"); if(!f) return;
+    tr.classList.add("cl");
+    tr.setAttribute("tabindex","0"); tr.setAttribute("role","button");
+    var abrirFicha=function(){ verOperacion(f.getAttribute("data-ficha"), f.getAttribute("data-amb")); };
+    tr.onclick=function(ev){
+      if(ev.target.closest("button,a,input,select,textarea,[data-ficha],[data-vermon]")) return;
+      abrirFicha();
+    };
+    tr.onkeydown=function(ev){
+      if(ev.target!==tr) return;
+      if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); abrirFicha(); }
     };
   });
   c.querySelectorAll("[data-vermon]").forEach(function(b){
@@ -12699,11 +13885,14 @@ function verOperacion(id, amb){
     '<div class="hb">'+
       '<div id="opGraf"></div>'+
       '<div class="lote" style="margin-top:12px">'+
-        cuadroFicha("ENTRÓ EN", precio(e.entrada),
+        /* v65 · una orden programada todavía NO entró: decía «ENTRÓ EN» y «+6,67 % desde su entrada» */
+        cuadroFicha(e.programada?"ENTRA EN":"ENTRÓ EN", precio(e.entrada),
           e.monedas?cant(e.monedas)+" "+esc(f.sym):"")+
         cuadroFicha("PRECIO AHORA",
           '<span data-v="pr" data-s="'+esc(f.sym)+'">'+precio(pr)+'</span>',
-          pr!=null&&e.entrada>0 ? '<span data-v="desdeEnt" data-f="'+esc(f.id)+'">'+pct((pr-e.entrada)/e.entrada*100,2)+" desde su entrada"+'</span>' : "")+
+          e.programada
+            ? (e.faltaPct!=null ? "falta "+(e.faltaPct>0?"que suba ":"que baje ")+pctS(Math.abs(e.faltaPct),2) : "")
+            : (pr!=null&&e.entrada>0 ? '<span data-v="desdeEnt" data-f="'+esc(f.id)+'">'+pct((pr-e.entrada)/e.entrada*100,2)+" desde su entrada"+'</span>' : ""))+
         cuadroFicha("DINERO QUE PUSO", usdF(e.margen), "tamaño "+usdF(e.valor))+
         (e.sl!=null?cuadroFicha("STOP", precio(e.sl),
           e.perSl!=null?(e.slLiq?"lo liquidan antes, en "+precio(e.liq):(netoSl(e)>=0?"ahí gana ":"ahí pierde ")+usdF(Math.abs(netoSl(e)))):"",
@@ -12726,6 +13915,8 @@ function verOperacion(id, amb){
               e.salida!=null?"salió en "+precio(e.salida):"", cl(e.gan))
           : "")+
       '</div>'+
+      /* v65 · la cuenta paso a paso, también aquí: en la PC la tabla no la traía y solo el teléfono llegaba a ella */
+      (e.programada?'':'<div class="fcCuenta"><button type="button" class="b sm" data-comocalc="'+esc(f.id)+'">¿Cómo se calcula?</button></div>')+
       (f.nota?'<div class="nota" style="margin-top:12px"><b>Su nota:</b> '+esc(f.nota)+'</div>':'')+
     '</div>'+
     '<div class="hf">'+
@@ -19068,6 +20259,51 @@ function engancharIdioma(box){
    Se respeta el orden de los huecos tal como salen en español.
    ===================================================================== */
 DIC.en={
+"Línea horizontal":"Horizontal line",
+"Línea vertical":"Vertical line",
+"Rayo":"Ray",
+"Flecha":"Arrow",
+"Rectángulo":"Rectangle",
+"Fibonacci":"Fibonacci",
+"Más":"More",
+"Más herramientas":"More tools",
+"Velas":"Candles",
+"Posición":"Position",
+"Colores de las velas":"Candle colors",
+"Vela que sube":"Rising candle",
+"Vela que baja":"Falling candle",
+"Estilos listos":"Ready-made styles",
+"Clásico":"Classic",
+"TradingView":"TradingView",
+"Azul y naranja":"Blue and orange",
+"Blanco y gris":"White and gray",
+"Color de fábrica":"Default color",
+"Otro color":"Other color",
+"Color":"Color",
+"Grosor de la raya":"Line thickness",
+"Tipo de raya":"Line style",
+"toque donde quiere ponerla":"tap where you want to place it",
+"arrastre los cuadritos o la caja":"drag the squares or the box",
+"arrastre los cuadritos o la figura":"drag the squares or the shape",
+"Riesgo":"Risk",
+"Pasar a mi operación":"Send to my trade",
+"Usar en una operación":"Use in a trade",
+"Escriba su cartera para calcular cuánto poner.":"Enter your account size to calculate how much to put in.",
+"Revise la entrada y el stop.":"Check the entry and the stop.",
+"arriesga más de lo que gana":"it risks more than it gains",
+"lo liquidan antes del stop":"you get liquidated before the stop",
+"el #% de lo que pone":"#% of what you put in",
+"el #% de su cartera":"#% of your account",
+"# semana":"# week",
+"# mes":"# month",
+"# velas":"# candles",
+"# vela":"# candle",
+"Listo: la entrada, el stop y el objetivo pasaron a su operación.":"Done: the entry, the stop and the target went into your trade.",
+"Listo: la entrada, el stop y el objetivo pasaron a una operación nueva.":"Done: the entry, the stop and the target went into a new trade.",
+"Ver la gráfica":"View the chart",
+"Está poniendo $# y su cartera es $#: está poniendo más de lo que dijo que tiene.":"You are putting in $# and your account is $#: that is more than you said you have.",
+"Lo que pone ($#) es más que toda su cartera ($#). Ese stop está demasiado cerca para este riesgo.":"The margin ($#) is more than your whole account ($#). That stop is too close for this risk.",
+
 "Dejar compra programada":"Place scheduled buy",
 "Dejar venta programada":"Place scheduled sell",
 "Cuando llegue, paga $# por # @":"When it gets there, you pay $# for # @",
@@ -21271,6 +22507,51 @@ DIC.en={
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
+"Línea horizontal":"Linha horizontal",
+"Línea vertical":"Linha vertical",
+"Rayo":"Raio",
+"Flecha":"Seta",
+"Rectángulo":"Retângulo",
+"Fibonacci":"Fibonacci",
+"Más":"Mais",
+"Más herramientas":"Mais ferramentas",
+"Velas":"Velas",
+"Posición":"Posição",
+"Colores de las velas":"Cores das velas",
+"Vela que sube":"Vela que sobe",
+"Vela que baja":"Vela que desce",
+"Estilos listos":"Estilos prontos",
+"Clásico":"Clássico",
+"TradingView":"TradingView",
+"Azul y naranja":"Azul e laranja",
+"Blanco y gris":"Branco e cinza",
+"Color de fábrica":"Cor padrão",
+"Otro color":"Outra cor",
+"Color":"Cor",
+"Grosor de la raya":"Espessura da linha",
+"Tipo de raya":"Tipo de linha",
+"toque donde quiere ponerla":"toque onde quer colocá-la",
+"arrastre los cuadritos o la caja":"arraste os quadradinhos ou a caixa",
+"arrastre los cuadritos o la figura":"arraste os quadradinhos ou a figura",
+"Riesgo":"Risco",
+"Pasar a mi operación":"Passar para a minha operação",
+"Usar en una operación":"Usar numa operação",
+"Escriba su cartera para calcular cuánto poner.":"Escreva a sua banca para calcular quanto colocar.",
+"Revise la entrada y el stop.":"Revise a entrada e o stop.",
+"arriesga más de lo que gana":"arrisca mais do que ganha",
+"lo liquidan antes del stop":"é liquidado antes do stop",
+"el #% de lo que pone":"#% do que você coloca",
+"el #% de su cartera":"#% da sua banca",
+"# semana":"# semana",
+"# mes":"# mês",
+"# velas":"# velas",
+"# vela":"# vela",
+"Listo: la entrada, el stop y el objetivo pasaron a su operación.":"Pronto: a entrada, o stop e o objetivo passaram para a sua operação.",
+"Listo: la entrada, el stop y el objetivo pasaron a una operación nueva.":"Pronto: a entrada, o stop e o objetivo passaram para uma nova operação.",
+"Ver la gráfica":"Ver o gráfico",
+"Está poniendo $# y su cartera es $#: está poniendo más de lo que dijo que tiene.":"Está a colocar $# e a sua banca é $#: está a colocar mais do que disse que tem.",
+"Lo que pone ($#) es más que toda su cartera ($#). Ese stop está demasiado cerca para este riesgo.":"A margem ($#) é mais do que toda a sua carteira ($#). Esse stop está demasiado perto para este risco.",
+
 "Dejar compra programada":"Deixar compra programada",
 "Dejar venta programada":"Deixar venda programada",
 "Cuando llegue, paga $# por # @":"Quando chegar lá, você paga $# por # @",
@@ -23467,6 +24748,51 @@ DIC.pt={
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
+"Línea horizontal":"Ligne horizontale",
+"Línea vertical":"Ligne verticale",
+"Rayo":"Demi-droite",
+"Flecha":"Flèche",
+"Rectángulo":"Rectangle",
+"Fibonacci":"Fibonacci",
+"Más":"Plus",
+"Más herramientas":"Plus d'outils",
+"Velas":"Bougies",
+"Posición":"Position",
+"Colores de las velas":"Couleurs des bougies",
+"Vela que sube":"Bougie haussière",
+"Vela que baja":"Bougie baissière",
+"Estilos listos":"Styles prêts à l'emploi",
+"Clásico":"Classique",
+"TradingView":"TradingView",
+"Azul y naranja":"Bleu et orange",
+"Blanco y gris":"Blanc et gris",
+"Color de fábrica":"Couleur d'origine",
+"Otro color":"Autre couleur",
+"Color":"Couleur",
+"Grosor de la raya":"Épaisseur du trait",
+"Tipo de raya":"Style de trait",
+"toque donde quiere ponerla":"touchez où vous voulez la placer",
+"arrastre los cuadritos o la caja":"faites glisser les carrés ou la boîte",
+"arrastre los cuadritos o la figura":"faites glisser les carrés ou la forme",
+"Riesgo":"Risque",
+"Pasar a mi operación":"Envoyer vers mon opération",
+"Usar en una operación":"Utiliser dans une opération",
+"Escriba su cartera para calcular cuánto poner.":"Saisissez votre capital pour calculer combien mettre.",
+"Revise la entrada y el stop.":"Vérifiez l'entrée et le stop.",
+"arriesga más de lo que gana":"il risque plus qu'il ne rapporte",
+"lo liquidan antes del stop":"vous êtes liquidé avant le stop",
+"el #% de lo que pone":"#% de ce que vous mettez",
+"el #% de su cartera":"#% de votre capital",
+"# semana":"# semaine",
+"# mes":"# mois",
+"# velas":"# bougies",
+"# vela":"# bougie",
+"Listo: la entrada, el stop y el objetivo pasaron a su operación.":"C'est fait : l'entrée, le stop et l'objectif sont passés dans votre opération.",
+"Listo: la entrada, el stop y el objetivo pasaron a una operación nueva.":"C'est fait : l'entrée, le stop et l'objectif sont passés dans une nouvelle opération.",
+"Ver la gráfica":"Voir le graphique",
+"Está poniendo $# y su cartera es $#: está poniendo más de lo que dijo que tiene.":"Vous mettez $# et votre capital est de $# : vous mettez plus que ce que vous avez dit avoir.",
+"Lo que pone ($#) es más que toda su cartera ($#). Ese stop está demasiado cerca para este riesgo.":"La marge ($#) dépasse tout votre portefeuille ($#). Ce stop est trop proche pour ce risque.",
+
 "Dejar compra programada":"Programmer l'achat",
 "Dejar venta programada":"Programmer la vente",
 "Cuando llegue, paga $# por # @":"Une fois atteint, vous payez $# pour # @",
@@ -25663,6 +26989,51 @@ DIC.fr={
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
+"Línea horizontal":"Horizontale Linie",
+"Línea vertical":"Vertikale Linie",
+"Rayo":"Strahl",
+"Flecha":"Pfeil",
+"Rectángulo":"Rechteck",
+"Fibonacci":"Fibonacci",
+"Más":"Mehr",
+"Más herramientas":"Weitere Werkzeuge",
+"Velas":"Kerzen",
+"Posición":"Position",
+"Colores de las velas":"Kerzenfarben",
+"Vela que sube":"Steigende Kerze",
+"Vela que baja":"Fallende Kerze",
+"Estilos listos":"Fertige Stile",
+"Clásico":"Klassisch",
+"TradingView":"TradingView",
+"Azul y naranja":"Blau und Orange",
+"Blanco y gris":"Weiß und Grau",
+"Color de fábrica":"Standardfarbe",
+"Otro color":"Andere Farbe",
+"Color":"Farbe",
+"Grosor de la raya":"Linienstärke",
+"Tipo de raya":"Linienart",
+"toque donde quiere ponerla":"tippen Sie dorthin, wo sie hin soll",
+"arrastre los cuadritos o la caja":"ziehen Sie die Quadrate oder die Box",
+"arrastre los cuadritos o la figura":"ziehen Sie die Quadrate oder die Figur",
+"Riesgo":"Risiko",
+"Pasar a mi operación":"In meinen Trade übernehmen",
+"Usar en una operación":"In einem Trade verwenden",
+"Escriba su cartera para calcular cuánto poner.":"Geben Sie Ihr Kapital ein, um zu berechnen, wie viel Sie einsetzen sollten.",
+"Revise la entrada y el stop.":"Prüfen Sie Einstieg und Stopp.",
+"arriesga más de lo que gana":"das Risiko ist größer als der Gewinn",
+"lo liquidan antes del stop":"Sie werden vor dem Stopp liquidiert",
+"el #% de lo que pone":"#% Ihres Einsatzes",
+"el #% de su cartera":"#% Ihres Kapitals",
+"# semana":"# Woche",
+"# mes":"# Monat",
+"# velas":"# Kerzen",
+"# vela":"# Kerze",
+"Listo: la entrada, el stop y el objetivo pasaron a su operación.":"Fertig: Einstieg, Stopp und Ziel wurden in Ihren Trade übernommen.",
+"Listo: la entrada, el stop y el objetivo pasaron a una operación nueva.":"Fertig: Einstieg, Stopp und Ziel wurden in einen neuen Trade übernommen.",
+"Ver la gráfica":"Diagramm anzeigen",
+"Está poniendo $# y su cartera es $#: está poniendo más de lo que dijo que tiene.":"Sie setzen $# ein und Ihr Kapital beträgt $#: Sie setzen mehr ein, als Sie angegeben haben.",
+"Lo que pone ($#) es más que toda su cartera ($#). Ese stop está demasiado cerca para este riesgo.":"Die Margin ($#) ist mehr als Ihr ganzes Kapital ($#). Dieser Stopp ist für dieses Risiko zu nah.",
+
 "Dejar compra programada":"Kauf vormerken",
 "Dejar venta programada":"Verkauf vormerken",
 "Cuando llegue, paga $# por # @":"Sobald erreicht, zahlen Sie $# für # @",
@@ -27859,6 +29230,51 @@ DIC.de={
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
+"Línea horizontal":"Linea orizzontale",
+"Línea vertical":"Linea verticale",
+"Rayo":"Raggio",
+"Flecha":"Freccia",
+"Rectángulo":"Rettangolo",
+"Fibonacci":"Fibonacci",
+"Más":"Altro",
+"Más herramientas":"Altri strumenti",
+"Velas":"Candele",
+"Posición":"Posizione",
+"Colores de las velas":"Colori delle candele",
+"Vela que sube":"Candela che sale",
+"Vela que baja":"Candela che scende",
+"Estilos listos":"Stili pronti",
+"Clásico":"Classico",
+"TradingView":"TradingView",
+"Azul y naranja":"Blu e arancione",
+"Blanco y gris":"Bianco e grigio",
+"Color de fábrica":"Colore predefinito",
+"Otro color":"Altro colore",
+"Color":"Colore",
+"Grosor de la raya":"Spessore della linea",
+"Tipo de raya":"Tipo di linea",
+"toque donde quiere ponerla":"tocchi dove vuole metterla",
+"arrastre los cuadritos o la caja":"trascini i quadratini o il riquadro",
+"arrastre los cuadritos o la figura":"trascini i quadratini o la figura",
+"Riesgo":"Rischio",
+"Pasar a mi operación":"Porta nella mia operazione",
+"Usar en una operación":"Usa in un'operazione",
+"Escriba su cartera para calcular cuánto poner.":"Inserisca il suo capitale per calcolare quanto mettere.",
+"Revise la entrada y el stop.":"Controlli l'ingresso e lo stop.",
+"arriesga más de lo que gana":"rischia più di quanto guadagna",
+"lo liquidan antes del stop":"viene liquidato prima dello stop",
+"el #% de lo que pone":"il #% di ciò che mette",
+"el #% de su cartera":"il #% del suo capitale",
+"# semana":"# settimana",
+"# mes":"# mese",
+"# velas":"# candele",
+"# vela":"# candela",
+"Listo: la entrada, el stop y el objetivo pasaron a su operación.":"Fatto: ingresso, stop e obiettivo sono passati alla sua operazione.",
+"Listo: la entrada, el stop y el objetivo pasaron a una operación nueva.":"Fatto: ingresso, stop e obiettivo sono passati a una nuova operazione.",
+"Ver la gráfica":"Vedi il grafico",
+"Está poniendo $# y su cartera es $#: está poniendo más de lo que dijo que tiene.":"Sta mettendo $# e il suo capitale è $#: sta mettendo più di quanto ha detto di avere.",
+"Lo que pone ($#) es más que toda su cartera ($#). Ese stop está demasiado cerca para este riesgo.":"Il margine ($#) è più di tutto il suo portafoglio ($#). Quello stop è troppo vicino per questo rischio.",
+
 "Dejar compra programada":"Programma l'acquisto",
 "Dejar venta programada":"Programma la vendita",
 "Cuando llegue, paga $# por # @":"Quando arriva, paga $# per # @",
@@ -30055,6 +31471,51 @@ DIC.it={
 };
 /* NEDERLANDS · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.nl={
+"Línea horizontal":"Horizontale lijn",
+"Línea vertical":"Verticale lijn",
+"Rayo":"Straal",
+"Flecha":"Pijl",
+"Rectángulo":"Rechthoek",
+"Fibonacci":"Fibonacci",
+"Más":"Meer",
+"Más herramientas":"Meer hulpmiddelen",
+"Velas":"Kaarsen",
+"Posición":"Positie",
+"Colores de las velas":"Kleuren van de kaarsen",
+"Vela que sube":"Stijgende kaars",
+"Vela que baja":"Dalende kaars",
+"Estilos listos":"Kant-en-klare stijlen",
+"Clásico":"Klassiek",
+"TradingView":"TradingView",
+"Azul y naranja":"Blauw en oranje",
+"Blanco y gris":"Wit en grijs",
+"Color de fábrica":"Standaardkleur",
+"Otro color":"Andere kleur",
+"Color":"Kleur",
+"Grosor de la raya":"Lijndikte",
+"Tipo de raya":"Lijnstijl",
+"toque donde quiere ponerla":"tik waar u hem wilt plaatsen",
+"arrastre los cuadritos o la caja":"sleep de vierkantjes of het vak",
+"arrastre los cuadritos o la figura":"sleep de vierkantjes of de figuur",
+"Riesgo":"Risico",
+"Pasar a mi operación":"Overnemen in mijn trade",
+"Usar en una operación":"Gebruiken in een trade",
+"Escriba su cartera para calcular cuánto poner.":"Vul uw saldo in om te berekenen hoeveel u moet inzetten.",
+"Revise la entrada y el stop.":"Controleer de instap en de stop.",
+"arriesga más de lo que gana":"het risico is groter dan de winst",
+"lo liquidan antes del stop":"u wordt vóór de stop geliquideerd",
+"el #% de lo que pone":"#% van wat u inzet",
+"el #% de su cartera":"#% van uw saldo",
+"# semana":"# week",
+"# mes":"# maand",
+"# velas":"# kaarsen",
+"# vela":"# kaars",
+"Listo: la entrada, el stop y el objetivo pasaron a su operación.":"Klaar: de instap, de stop en het doel staan nu in uw trade.",
+"Listo: la entrada, el stop y el objetivo pasaron a una operación nueva.":"Klaar: de instap, de stop en het doel staan nu in een nieuwe trade.",
+"Ver la gráfica":"Grafiek bekijken",
+"Está poniendo $# y su cartera es $#: está poniendo más de lo que dijo que tiene.":"U zet $# in en uw saldo is $#: u zet meer in dan u zei te hebben.",
+"Lo que pone ($#) es más que toda su cartera ($#). Ese stop está demasiado cerca para este riesgo.":"De marge ($#) is meer dan uw hele saldo ($#). Die stop ligt te dichtbij voor dit risico.",
+
 "Dejar compra programada":"Aankoop plannen",
 "Dejar venta programada":"Verkoop plannen",
 "Cuando llegue, paga $# por # @":"Zodra de prijs er is, betaalt u $# voor # @",
@@ -32537,6 +33998,51 @@ DIC.nl={
 };
 /* POLSKI · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.pl={
+"Línea horizontal":"Linia pozioma",
+"Línea vertical":"Linia pionowa",
+"Rayo":"Półprosta",
+"Flecha":"Strzałka",
+"Rectángulo":"Prostokąt",
+"Fibonacci":"Fibonacci",
+"Más":"Więcej",
+"Más herramientas":"Więcej narzędzi",
+"Velas":"Świece",
+"Posición":"Pozycja",
+"Colores de las velas":"Kolory świec",
+"Vela que sube":"Świeca wzrostowa",
+"Vela que baja":"Świeca spadkowa",
+"Estilos listos":"Gotowe style",
+"Clásico":"Klasyczny",
+"TradingView":"TradingView",
+"Azul y naranja":"Niebieski i pomarańczowy",
+"Blanco y gris":"Biały i szary",
+"Color de fábrica":"Kolor domyślny",
+"Otro color":"Inny kolor",
+"Color":"Kolor",
+"Grosor de la raya":"Grubość linii",
+"Tipo de raya":"Rodzaj linii",
+"toque donde quiere ponerla":"dotknij miejsca, gdzie ma być",
+"arrastre los cuadritos o la caja":"przeciągnij kwadraciki lub pole",
+"arrastre los cuadritos o la figura":"przeciągnij kwadraciki lub figurę",
+"Riesgo":"Ryzyko",
+"Pasar a mi operación":"Przenieś do mojej transakcji",
+"Usar en una operación":"Użyj w transakcji",
+"Escriba su cartera para calcular cuánto poner.":"Proszę wpisać saldo, aby obliczyć, ile wpłacić.",
+"Revise la entrada y el stop.":"Proszę sprawdzić wejście i stop.",
+"arriesga más de lo que gana":"ryzyko jest większe niż zysk",
+"lo liquidan antes del stop":"nastąpi likwidacja przed stopem",
+"el #% de lo que pone":"#% tego, co Pan wkłada",
+"el #% de su cartera":"#% Pańskiego salda",
+"# semana":"# tydzień",
+"# mes":"# miesiąc",
+"# velas":"# świec",
+"# vela":"# świeca",
+"Listo: la entrada, el stop y el objetivo pasaron a su operación.":"Gotowe: wejście, stop i cel trafiły do Pańskiej transakcji.",
+"Listo: la entrada, el stop y el objetivo pasaron a una operación nueva.":"Gotowe: wejście, stop i cel trafiły do nowej transakcji.",
+"Ver la gráfica":"Zobacz wykres",
+"Está poniendo $# y su cartera es $#: está poniendo más de lo que dijo que tiene.":"Wkłada Pan $#, a Pana saldo to $#: wkłada Pan więcej, niż Pan podał.",
+"Lo que pone ($#) es más que toda su cartera ($#). Ese stop está demasiado cerca para este riesgo.":"Depozyt zabezpieczający ($#) przekracza całe Twoje saldo ($#). Ten stop jest za blisko jak na takie ryzyko.",
+
 "Dejar compra programada":"Zaplanuj zakup",
 "Dejar venta programada":"Zaplanuj sprzedaż",
 "Cuando llegue, paga $# por # @":"Gdy cena dotrze, zapłaci Pan $# za # @",
@@ -35019,6 +36525,51 @@ DIC.pl={
 };
 /* TÜRKÇE · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.tr={
+"Línea horizontal":"Yatay çizgi",
+"Línea vertical":"Dikey çizgi",
+"Rayo":"Işın",
+"Flecha":"Ok",
+"Rectángulo":"Dikdörtgen",
+"Fibonacci":"Fibonacci",
+"Más":"Daha fazla",
+"Más herramientas":"Daha fazla araç",
+"Velas":"Mumlar",
+"Posición":"Pozisyon",
+"Colores de las velas":"Mum renkleri",
+"Vela que sube":"Yükselen mum",
+"Vela que baja":"Düşen mum",
+"Estilos listos":"Hazır stiller",
+"Clásico":"Klasik",
+"TradingView":"TradingView",
+"Azul y naranja":"Mavi ve turuncu",
+"Blanco y gris":"Beyaz ve gri",
+"Color de fábrica":"Varsayılan renk",
+"Otro color":"Başka renk",
+"Color":"Renk",
+"Grosor de la raya":"Çizgi kalınlığı",
+"Tipo de raya":"Çizgi türü",
+"toque donde quiere ponerla":"koymak istediğiniz yere dokunun",
+"arrastre los cuadritos o la caja":"kareleri veya kutuyu sürükleyin",
+"arrastre los cuadritos o la figura":"kareleri veya şekli sürükleyin",
+"Riesgo":"Risk",
+"Pasar a mi operación":"İşlemime aktar",
+"Usar en una operación":"Bir işlemde kullan",
+"Escriba su cartera para calcular cuánto poner.":"Ne kadar koyacağınızı hesaplamak için bakiyenizi yazın.",
+"Revise la entrada y el stop.":"Girişi ve stopu kontrol edin.",
+"arriesga más de lo que gana":"riski kazancından büyük",
+"lo liquidan antes del stop":"stoptan önce tasfiye edilirsiniz",
+"el #% de lo que pone":"Koyduğunuz tutara oranı: %#",
+"el #% de su cartera":"Bakiyenize oranı: %#",
+"# semana":"# hafta",
+"# mes":"# ay",
+"# velas":"# mum",
+"# vela":"# mum",
+"Listo: la entrada, el stop y el objetivo pasaron a su operación.":"Tamam: giriş, stop ve hedef işleminize aktarıldı.",
+"Listo: la entrada, el stop y el objetivo pasaron a una operación nueva.":"Tamam: giriş, stop ve hedef yeni bir işleme aktarıldı.",
+"Ver la gráfica":"Grafiği gör",
+"Está poniendo $# y su cartera es $#: está poniendo más de lo que dijo que tiene.":"$# koyuyorsunuz, bakiyeniz ise $#: sahip olduğunuzu söylediğinizden fazlasını koyuyorsunuz.",
+"Lo que pone ($#) es más que toda su cartera ($#). Ese stop está demasiado cerca para este riesgo.":"Marjin ($#) tüm bakiyenizden ($#) fazla. Bu risk için stop çok yakın.",
+
 "Dejar compra programada":"Alımı programla",
 "Dejar venta programada":"Satışı programla",
 "Cuando llegue, paga $# por # @":"Fiyat gelince $# ödersiniz — # @",
@@ -37501,6 +39052,51 @@ DIC.tr={
 };
 /* РУССКИЙ · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ru={
+"Línea horizontal":"Горизонтальная линия",
+"Línea vertical":"Вертикальная линия",
+"Rayo":"Луч",
+"Flecha":"Стрелка",
+"Rectángulo":"Прямоугольник",
+"Fibonacci":"Фибоначчи",
+"Más":"Ещё",
+"Más herramientas":"Другие инструменты",
+"Velas":"Свечи",
+"Posición":"Позиция",
+"Colores de las velas":"Цвета свечей",
+"Vela que sube":"Растущая свеча",
+"Vela que baja":"Падающая свеча",
+"Estilos listos":"Готовые стили",
+"Clásico":"Классика",
+"TradingView":"TradingView",
+"Azul y naranja":"Синий и оранжевый",
+"Blanco y gris":"Белый и серый",
+"Color de fábrica":"Цвет по умолчанию",
+"Otro color":"Другой цвет",
+"Color":"Цвет",
+"Grosor de la raya":"Толщина линии",
+"Tipo de raya":"Тип линии",
+"toque donde quiere ponerla":"коснитесь места, куда её поставить",
+"arrastre los cuadritos o la caja":"перетаскивайте квадратики или рамку",
+"arrastre los cuadritos o la figura":"перетаскивайте квадратики или фигуру",
+"Riesgo":"Риск",
+"Pasar a mi operación":"Перенести в мою сделку",
+"Usar en una operación":"Использовать в сделке",
+"Escriba su cartera para calcular cuánto poner.":"Введите ваш баланс, чтобы рассчитать, сколько вложить.",
+"Revise la entrada y el stop.":"Проверьте вход и стоп.",
+"arriesga más de lo que gana":"риск больше возможной прибыли",
+"lo liquidan antes del stop":"вас ликвидируют до стопа",
+"el #% de lo que pone":"#% от вложенной суммы",
+"el #% de su cartera":"#% от вашего баланса",
+"# semana":"# неделя",
+"# mes":"# месяц",
+"# velas":"# свечей",
+"# vela":"# свеча",
+"Listo: la entrada, el stop y el objetivo pasaron a su operación.":"Готово: вход, стоп и цель перенесены в вашу сделку.",
+"Listo: la entrada, el stop y el objetivo pasaron a una operación nueva.":"Готово: вход, стоп и цель перенесены в новую сделку.",
+"Ver la gráfica":"Показать график",
+"Está poniendo $# y su cartera es $#: está poniendo más de lo que dijo que tiene.":"Вы вкладываете $#, а ваш баланс — $#: это больше, чем вы указали.",
+"Lo que pone ($#) es más que toda su cartera ($#). Ese stop está demasiado cerca para este riesgo.":"Маржа ($#) больше всего вашего баланса ($#). Этот стоп слишком близко для такого риска.",
+
 "Dejar compra programada":"Запланировать покупку",
 "Dejar venta programada":"Запланировать продажу",
 "Cuando llegue, paga $# por # @":"Когда цена дойдёт, вы заплатите $# за # @",
@@ -39983,6 +41579,51 @@ DIC.ru={
 };
 /* УКРАЇНСЬКА · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.uk={
+"Línea horizontal":"Горизонтальна лінія",
+"Línea vertical":"Вертикальна лінія",
+"Rayo":"Промінь",
+"Flecha":"Стрілка",
+"Rectángulo":"Прямокутник",
+"Fibonacci":"Фібоначчі",
+"Más":"Ще",
+"Más herramientas":"Інші інструменти",
+"Velas":"Свічки",
+"Posición":"Позиція",
+"Colores de las velas":"Кольори свічок",
+"Vela que sube":"Свічка росту",
+"Vela que baja":"Свічка падіння",
+"Estilos listos":"Готові стилі",
+"Clásico":"Класика",
+"TradingView":"TradingView",
+"Azul y naranja":"Синій і помаранчевий",
+"Blanco y gris":"Білий і сірий",
+"Color de fábrica":"Колір за замовчуванням",
+"Otro color":"Інший колір",
+"Color":"Колір",
+"Grosor de la raya":"Товщина лінії",
+"Tipo de raya":"Тип лінії",
+"toque donde quiere ponerla":"торкніться місця, куди її поставити",
+"arrastre los cuadritos o la caja":"перетягуйте квадратики або рамку",
+"arrastre los cuadritos o la figura":"перетягуйте квадратики або фігуру",
+"Riesgo":"Ризик",
+"Pasar a mi operación":"Перенести в мою угоду",
+"Usar en una operación":"Використати в угоді",
+"Escriba su cartera para calcular cuánto poner.":"Введіть ваш баланс, щоб розрахувати, скільки вкласти.",
+"Revise la entrada y el stop.":"Перевірте вхід і стоп.",
+"arriesga más de lo que gana":"ризик більший за можливий прибуток",
+"lo liquidan antes del stop":"вас ліквідують до стопа",
+"el #% de lo que pone":"#% від вкладеної суми",
+"el #% de su cartera":"#% від вашого балансу",
+"# semana":"# тиждень",
+"# mes":"# місяць",
+"# velas":"# свічок",
+"# vela":"# свічка",
+"Listo: la entrada, el stop y el objetivo pasaron a su operación.":"Готово: вхід, стоп і ціль перенесено до вашої угоди.",
+"Listo: la entrada, el stop y el objetivo pasaron a una operación nueva.":"Готово: вхід, стоп і ціль перенесено до нової угоди.",
+"Ver la gráfica":"Показати графік",
+"Está poniendo $# y su cartera es $#: está poniendo más de lo que dijo que tiene.":"Ви вкладаєте $#, а ваш баланс — $#: це більше, ніж ви вказали.",
+"Lo que pone ($#) es más que toda su cartera ($#). Ese stop está demasiado cerca para este riesgo.":"Маржа ($#) більша за весь ваш баланс ($#). Цей стоп занадто близько для такого ризику.",
+
 "Dejar compra programada":"Запланувати купівлю",
 "Dejar venta programada":"Запланувати продаж",
 "Cuando llegue, paga $# por # @":"Коли ціна дійде, ви заплатите $# за # @",
@@ -42465,6 +44106,51 @@ DIC.uk={
 };
 /* BAHASA INDONESIA · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.id={
+"Línea horizontal":"Garis horizontal",
+"Línea vertical":"Garis vertikal",
+"Rayo":"Sinar",
+"Flecha":"Panah",
+"Rectángulo":"Persegi panjang",
+"Fibonacci":"Fibonacci",
+"Más":"Lainnya",
+"Más herramientas":"Alat lainnya",
+"Velas":"Candle",
+"Posición":"Posisi",
+"Colores de las velas":"Warna candle",
+"Vela que sube":"Candle naik",
+"Vela que baja":"Candle turun",
+"Estilos listos":"Gaya siap pakai",
+"Clásico":"Klasik",
+"TradingView":"TradingView",
+"Azul y naranja":"Biru dan oranye",
+"Blanco y gris":"Putih dan abu-abu",
+"Color de fábrica":"Warna bawaan",
+"Otro color":"Warna lain",
+"Color":"Warna",
+"Grosor de la raya":"Ketebalan garis",
+"Tipo de raya":"Jenis garis",
+"toque donde quiere ponerla":"ketuk di tempat yang diinginkan",
+"arrastre los cuadritos o la caja":"seret kotak kecil atau kotaknya",
+"arrastre los cuadritos o la figura":"seret kotak kecil atau bentuknya",
+"Riesgo":"Risiko",
+"Pasar a mi operación":"Pindahkan ke transaksi saya",
+"Usar en una operación":"Gunakan di transaksi",
+"Escriba su cartera para calcular cuánto poner.":"Tulis saldo Anda untuk menghitung berapa yang perlu ditaruh.",
+"Revise la entrada y el stop.":"Periksa harga masuk dan stop.",
+"arriesga más de lo que gana":"risikonya lebih besar daripada keuntungannya",
+"lo liquidan antes del stop":"Anda terlikuidasi sebelum stop",
+"el #% de lo que pone":"#% dari yang Anda taruh",
+"el #% de su cartera":"#% dari saldo Anda",
+"# semana":"# minggu",
+"# mes":"# bulan",
+"# velas":"# candle",
+"# vela":"# candle",
+"Listo: la entrada, el stop y el objetivo pasaron a su operación.":"Selesai: harga masuk, stop, dan target sudah masuk ke transaksi Anda.",
+"Listo: la entrada, el stop y el objetivo pasaron a una operación nueva.":"Selesai: harga masuk, stop, dan target sudah masuk ke transaksi baru.",
+"Ver la gráfica":"Lihat grafik",
+"Está poniendo $# y su cartera es $#: está poniendo más de lo que dijo que tiene.":"Anda menaruh $# dan saldo Anda $#: itu lebih dari yang Anda katakan Anda miliki.",
+"Lo que pone ($#) es más que toda su cartera ($#). Ese stop está demasiado cerca para este riesgo.":"Margin ($#) lebih besar dari seluruh saldo Anda ($#). Stop itu terlalu dekat untuk risiko ini.",
+
 "Dejar compra programada":"Jadwalkan pembelian",
 "Dejar venta programada":"Jadwalkan penjualan",
 "Cuando llegue, paga $# por # @":"Saat harganya tercapai, Anda membayar $# untuk # @",
@@ -44947,6 +46633,51 @@ DIC.id={
 };
 /* TIẾNG VIỆT · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.vi={
+"Línea horizontal":"Đường ngang",
+"Línea vertical":"Đường dọc",
+"Rayo":"Tia",
+"Flecha":"Mũi tên",
+"Rectángulo":"Hình chữ nhật",
+"Fibonacci":"Fibonacci",
+"Más":"Thêm",
+"Más herramientas":"Thêm công cụ",
+"Velas":"Nến",
+"Posición":"Vị thế",
+"Colores de las velas":"Màu nến",
+"Vela que sube":"Nến tăng",
+"Vela que baja":"Nến giảm",
+"Estilos listos":"Kiểu có sẵn",
+"Clásico":"Cổ điển",
+"TradingView":"TradingView",
+"Azul y naranja":"Xanh dương và cam",
+"Blanco y gris":"Trắng và xám",
+"Color de fábrica":"Màu mặc định",
+"Otro color":"Màu khác",
+"Color":"Màu",
+"Grosor de la raya":"Độ dày nét",
+"Tipo de raya":"Kiểu nét",
+"toque donde quiere ponerla":"chạm vào nơi bạn muốn đặt",
+"arrastre los cuadritos o la caja":"kéo các ô vuông hoặc hộp",
+"arrastre los cuadritos o la figura":"kéo các ô vuông hoặc hình",
+"Riesgo":"Rủi ro",
+"Pasar a mi operación":"Chuyển sang lệnh của tôi",
+"Usar en una operación":"Dùng trong một lệnh",
+"Escriba su cartera para calcular cuánto poner.":"Nhập số dư của bạn để tính cần bỏ bao nhiêu.",
+"Revise la entrada y el stop.":"Hãy kiểm tra giá vào và stop.",
+"arriesga más de lo que gana":"rủi ro lớn hơn lợi nhuận",
+"lo liquidan antes del stop":"bạn bị thanh lý trước khi chạm stop",
+"el #% de lo que pone":"#% số tiền bạn bỏ vào",
+"el #% de su cartera":"#% số dư của bạn",
+"# semana":"# tuần",
+"# mes":"# tháng",
+"# velas":"# nến",
+"# vela":"# nến",
+"Listo: la entrada, el stop y el objetivo pasaron a su operación.":"Xong: giá vào, stop và mục tiêu đã chuyển sang lệnh của bạn.",
+"Listo: la entrada, el stop y el objetivo pasaron a una operación nueva.":"Xong: giá vào, stop và mục tiêu đã chuyển sang một lệnh mới.",
+"Ver la gráfica":"Xem biểu đồ",
+"Está poniendo $# y su cartera es $#: está poniendo más de lo que dijo que tiene.":"Bạn đang bỏ vào $# trong khi số dư của bạn là $#: nhiều hơn số bạn nói là mình có.",
+"Lo que pone ($#) es más que toda su cartera ($#). Ese stop está demasiado cerca para este riesgo.":"Ký quỹ ($#) lớn hơn toàn bộ số dư của bạn ($#). Stop loss đó quá gần so với mức rủi ro này.",
+
 "Dejar compra programada":"Hẹn lệnh mua",
 "Dejar venta programada":"Hẹn lệnh bán",
 "Cuando llegue, paga $# por # @":"Khi giá chạm mức này, bạn trả $# cho # @",
@@ -47429,6 +49160,51 @@ DIC.vi={
 };
 /* हिन्दी · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.hi={
+"Línea horizontal":"क्षैतिज रेखा",
+"Línea vertical":"ऊर्ध्वाधर रेखा",
+"Rayo":"किरण",
+"Flecha":"तीर",
+"Rectángulo":"आयत",
+"Fibonacci":"फिबोनाची",
+"Más":"और",
+"Más herramientas":"और टूल",
+"Velas":"कैंडल",
+"Posición":"पोज़िशन",
+"Colores de las velas":"कैंडल के रंग",
+"Vela que sube":"बढ़ती कैंडल",
+"Vela que baja":"गिरती कैंडल",
+"Estilos listos":"तैयार स्टाइल",
+"Clásico":"क्लासिक",
+"TradingView":"TradingView",
+"Azul y naranja":"नीला और नारंगी",
+"Blanco y gris":"सफ़ेद और धूसर",
+"Color de fábrica":"डिफ़ॉल्ट रंग",
+"Otro color":"अन्य रंग",
+"Color":"रंग",
+"Grosor de la raya":"रेखा की मोटाई",
+"Tipo de raya":"रेखा का प्रकार",
+"toque donde quiere ponerla":"जहाँ रखना चाहते हैं वहाँ टैप करें",
+"arrastre los cuadritos o la caja":"चौकोर या बॉक्स को खींचें",
+"arrastre los cuadritos o la figura":"चौकोर या आकृति को खींचें",
+"Riesgo":"जोखिम",
+"Pasar a mi operación":"मेरे ट्रेड में डालें",
+"Usar en una operación":"किसी ट्रेड में उपयोग करें",
+"Escriba su cartera para calcular cuánto poner.":"कितना लगाना है यह जानने के लिए अपना बैलेंस लिखें।",
+"Revise la entrada y el stop.":"एंट्री और स्टॉप जाँचें।",
+"arriesga más de lo que gana":"जोखिम कमाई से ज़्यादा है",
+"lo liquidan antes del stop":"स्टॉप से पहले ही लिक्विडेशन हो जाएगा",
+"el #% de lo que pone":"लगाई गई रकम का #%",
+"el #% de su cartera":"आपके बैलेंस का #%",
+"# semana":"# सप्ताह",
+"# mes":"# महीना",
+"# velas":"# कैंडल",
+"# vela":"# कैंडल",
+"Listo: la entrada, el stop y el objetivo pasaron a su operación.":"हो गया: एंट्री, स्टॉप और टारगेट आपके ट्रेड में आ गए।",
+"Listo: la entrada, el stop y el objetivo pasaron a una operación nueva.":"हो गया: एंट्री, स्टॉप और टारगेट एक नए ट्रेड में आ गए।",
+"Ver la gráfica":"चार्ट देखें",
+"Está poniendo $# y su cartera es $#: está poniendo más de lo que dijo que tiene.":"आप $# लगा रहे हैं और आपका बैलेंस $# है: यह आपके बताए बैलेंस से ज़्यादा है।",
+"Lo que pone ($#) es más que toda su cartera ($#). Ese stop está demasiado cerca para este riesgo.":"मार्जिन ($#) आपके पूरे बैलेंस ($#) से ज़्यादा है. इस जोखिम के लिए यह स्टॉप बहुत पास है.",
+
 "Dejar compra programada":"खरीद शेड्यूल करें",
 "Dejar venta programada":"बिक्री शेड्यूल करें",
 "Cuando llegue, paga $# por # @":"कीमत पहुँचने पर आप $# देंगे, # @ के लिए",
@@ -49911,6 +51687,51 @@ DIC.hi={
 };
 /* 日本語 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ja={
+"Línea horizontal":"水平線",
+"Línea vertical":"垂直線",
+"Rayo":"レイ",
+"Flecha":"矢印",
+"Rectángulo":"長方形",
+"Fibonacci":"フィボナッチ",
+"Más":"その他",
+"Más herramientas":"その他のツール",
+"Velas":"ローソク足",
+"Posición":"ポジション",
+"Colores de las velas":"ローソク足の色",
+"Vela que sube":"上昇ローソク足",
+"Vela que baja":"下降ローソク足",
+"Estilos listos":"おすすめスタイル",
+"Clásico":"クラシック",
+"TradingView":"TradingView",
+"Azul y naranja":"青とオレンジ",
+"Blanco y gris":"白とグレー",
+"Color de fábrica":"初期の色",
+"Otro color":"ほかの色",
+"Color":"色",
+"Grosor de la raya":"線の太さ",
+"Tipo de raya":"線の種類",
+"toque donde quiere ponerla":"置きたい場所をタップ",
+"arrastre los cuadritos o la caja":"四角いハンドルかボックスをドラッグ",
+"arrastre los cuadritos o la figura":"四角いハンドルか図形をドラッグ",
+"Riesgo":"リスク",
+"Pasar a mi operación":"自分の取引に反映",
+"Usar en una operación":"取引で使う",
+"Escriba su cartera para calcular cuánto poner.":"いくら入れるか計算するため、残高を入力してください。",
+"Revise la entrada y el stop.":"エントリーとストップを確認してください。",
+"arriesga más de lo que gana":"リスクが利益を上回っています",
+"lo liquidan antes del stop":"ストップより先に強制清算されます",
+"el #% de lo que pone":"投入額の#%",
+"el #% de su cartera":"残高の#%",
+"# semana":"#週間",
+"# mes":"#か月",
+"# velas":"#本のローソク足",
+"# vela":"#本のローソク足",
+"Listo: la entrada, el stop y el objetivo pasaron a su operación.":"完了：エントリー・ストップ・目標があなたの取引に反映されました。",
+"Listo: la entrada, el stop y el objetivo pasaron a una operación nueva.":"完了：エントリー・ストップ・目標が新しい取引に反映されました。",
+"Ver la gráfica":"チャートを見る",
+"Está poniendo $# y su cartera es $#: está poniendo más de lo que dijo que tiene.":"投入額は $# ですが、残高は $# です。申告した残高を超えています。",
+"Lo que pone ($#) es más que toda su cartera ($#). Ese stop está demasiado cerca para este riesgo.":"証拠金（$#）が残高全体（$#）を超えています。このリスクに対してストップが近すぎます。",
+
 "Dejar compra programada":"購入を予約する",
 "Dejar venta programada":"売却を予約する",
 "Cuando llegue, paga $# por # @":"価格に達したら、$# を支払って # @ を購入",
@@ -52393,6 +54214,51 @@ DIC.ja={
 };
 /* 한국어 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ko={
+"Línea horizontal":"수평선",
+"Línea vertical":"수직선",
+"Rayo":"레이",
+"Flecha":"화살표",
+"Rectángulo":"사각형",
+"Fibonacci":"피보나치",
+"Más":"더보기",
+"Más herramientas":"더 많은 도구",
+"Velas":"캔들",
+"Posición":"포지션",
+"Colores de las velas":"캔들 색상",
+"Vela que sube":"상승 캔들",
+"Vela que baja":"하락 캔들",
+"Estilos listos":"기본 스타일",
+"Clásico":"클래식",
+"TradingView":"TradingView",
+"Azul y naranja":"파랑과 주황",
+"Blanco y gris":"흰색과 회색",
+"Color de fábrica":"기본 색상",
+"Otro color":"다른 색상",
+"Color":"색상",
+"Grosor de la raya":"선 두께",
+"Tipo de raya":"선 종류",
+"toque donde quiere ponerla":"놓을 위치를 누르세요",
+"arrastre los cuadritos o la caja":"네모 핸들이나 상자를 끌어 보세요",
+"arrastre los cuadritos o la figura":"네모 핸들이나 도형을 끌어 보세요",
+"Riesgo":"리스크",
+"Pasar a mi operación":"내 거래로 보내기",
+"Usar en una operación":"거래에 사용",
+"Escriba su cartera para calcular cuánto poner.":"얼마를 넣을지 계산하려면 잔고를 입력하세요.",
+"Revise la entrada y el stop.":"진입가와 스톱을 확인하세요.",
+"arriesga más de lo que gana":"위험이 수익보다 큽니다",
+"lo liquidan antes del stop":"스톱보다 먼저 청산됩니다",
+"el #% de lo que pone":"투입 금액의 #%",
+"el #% de su cartera":"잔고의 #%",
+"# semana":"#주",
+"# mes":"#개월",
+"# velas":"#개 캔들",
+"# vela":"#개 캔들",
+"Listo: la entrada, el stop y el objetivo pasaron a su operación.":"완료: 진입가, 스톱, 목표가 거래로 넘어갔습니다.",
+"Listo: la entrada, el stop y el objetivo pasaron a una operación nueva.":"완료: 진입가, 스톱, 목표가 새 거래로 넘어갔습니다.",
+"Ver la gráfica":"차트 보기",
+"Está poniendo $# y su cartera es $#: está poniendo más de lo que dijo que tiene.":"$#를 넣으려 하지만 잔고는 $#입니다. 말씀하신 금액보다 많이 넣는 것입니다.",
+"Lo que pone ($#) es más que toda su cartera ($#). Ese stop está demasiado cerca para este riesgo.":"증거금($#)이 전체 잔고($#)보다 큽니다. 이 리스크에 비해 손절가가 너무 가깝습니다.",
+
 "Dejar compra programada":"매수 예약하기",
 "Dejar venta programada":"매도 예약하기",
 "Cuando llegue, paga $# por # @":"가격에 도달하면 $#를 내고 # @를 매수합니다",
@@ -54875,6 +56741,51 @@ DIC.ko={
 };
 /* 中文（简体） · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.zh={
+"Línea horizontal":"水平线",
+"Línea vertical":"垂直线",
+"Rayo":"射线",
+"Flecha":"箭头",
+"Rectángulo":"矩形",
+"Fibonacci":"斐波那契",
+"Más":"更多",
+"Más herramientas":"更多工具",
+"Velas":"K线",
+"Posición":"仓位",
+"Colores de las velas":"K线颜色",
+"Vela que sube":"上涨K线",
+"Vela que baja":"下跌K线",
+"Estilos listos":"现成样式",
+"Clásico":"经典",
+"TradingView":"TradingView",
+"Azul y naranja":"蓝与橙",
+"Blanco y gris":"白与灰",
+"Color de fábrica":"默认颜色",
+"Otro color":"其他颜色",
+"Color":"颜色",
+"Grosor de la raya":"线条粗细",
+"Tipo de raya":"线条样式",
+"toque donde quiere ponerla":"点按想要放置的位置",
+"arrastre los cuadritos o la caja":"拖动小方块或整个框",
+"arrastre los cuadritos o la figura":"拖动小方块或整个图形",
+"Riesgo":"风险",
+"Pasar a mi operación":"带入我的交易",
+"Usar en una operación":"用于一笔交易",
+"Escriba su cartera para calcular cuánto poner.":"请填写您的余额，以计算该投入多少。",
+"Revise la entrada y el stop.":"请检查入场价和止损。",
+"arriesga más de lo que gana":"风险大于收益",
+"lo liquidan antes del stop":"会在止损前被强平",
+"el #% de lo que pone":"投入金额的#%",
+"el #% de su cartera":"占您余额的#%",
+"# semana":"#周",
+"# mes":"#个月",
+"# velas":"#根K线",
+"# vela":"#根K线",
+"Listo: la entrada, el stop y el objetivo pasaron a su operación.":"完成：入场价、止损和目标已带入您的交易。",
+"Listo: la entrada, el stop y el objetivo pasaron a una operación nueva.":"完成：入场价、止损和目标已带入新的交易。",
+"Ver la gráfica":"查看图表",
+"Está poniendo $# y su cartera es $#: está poniendo más de lo que dijo que tiene.":"您要投入 $#，但余额只有 $#：超出了您所填的金额。",
+"Lo que pone ($#) es más que toda su cartera ($#). Ese stop está demasiado cerca para este riesgo.":"保证金（$#）超过了您的全部余额（$#）。对于这个风险比例，止损设得太近了。",
+
 "Dejar compra programada":"设置预约买入",
 "Dejar venta programada":"设置预约卖出",
 "Cuando llegue, paga $# por # @":"到价后，支付 $#，买入 # @",
