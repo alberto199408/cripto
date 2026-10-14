@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="63">
+<meta name="v" content="64">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -3595,14 +3595,14 @@ function traerPrecios(silencioso, quieto, soloOtras){
     guardar(); PRE.cargando=false; pintarPulso();
     /* v51 · los precios llegaron: se mira el stop ANTES de repintar (este camino antes solo repintaba) */
     alEntrarPrecios();
-    if(!quieto) repintar(); else pedirRefresco();
+    if(!quieto && !escribiendoEnSpot()) repintar(); else pedirRefresco();
     if(!silencioso) aviso("Precios al día · "+plural(n,"moneda","monedas")+" desde "+(primera||ultima)+
       (faltan.length?" · sin precio: "+faltan.join(", "):"."));
   }).catch(function(e){
     if(PRE.gen!==gen) return;
     PRE.cargando=false; PRE.fallo=String(e&&e.message||e);
     if(casa!=="BINANCE") PRE.vivo=false;
-    pintarPulso(); if(!quieto) repintar();
+    pintarPulso(); if(!quieto && !escribiendoEnSpot()) repintar();
     if(!silencioso) aviso("Ninguna fuente de precios respondió. Puede escribirlos a mano "+
       "desde Ajustes.", true);
   });
@@ -3658,6 +3658,15 @@ function programarPrecios(){
    parpadear todo), se buscan los números marcados y solo se cambian ellos.
    ===================================================================== */
 var REF={ pedido:false, ultimo:0 };
+/* v64 · si en la computadora está escribiendo en el formulario de Spot (que vive en la página),
+   al llegar los precios no se repinta la pantalla: se perdía lo escrito. Los números se ponen al día igual. */
+function escribiendoEnSpot(){
+  try{
+    var P=document.getElementById("spPanel");
+    if(!P || P.closest("#veloIn")) return false;
+    return ["spM","spP","spC","spK","spN"].some(function(id){ var e=document.getElementById(id); return !!(e&&e.value); });
+  }catch(e){ return false; }
+}
 function pedirRefresco(){
   if(REF.pedido) return;
   REF.pedido=true;
@@ -3876,6 +3885,7 @@ function refrescarVivos(){
   TIC={};
   try{ pintarPulso(); }catch(e){}
   try{ refrescarGrafica(); }catch(e){}
+  try{ vivoPanelSpot(); }catch(e){}       /* v64 · el formulario de Spot abierto sigue al precio */
   /* v51 · vigilarCierres() y vigilarAlertas() ya NO se llaman desde aquí: se llaman
      desde alEntrarPrecios(), que corre con CADA precio nuevo, venga por el camino que venga. */
 }
@@ -7341,6 +7351,79 @@ function pintarSpot(){
 /* ---------------------------------------------------------------------
    El panel de registrar: siempre a la vista, no en una ventana
    --------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------
+   v64 · UN PRECIO QUE NO ES EL DE AHORA ES UNA ORDEN PROGRAMADA (como en cualquier casa de cambio)
+   Antes, escribir «precio por moneda $0,05» con la moneda en $0,12 anotaba la compra como HECHA
+   y salía «+140%», una ganancia que no existe. Ahora, si el precio escrito se aparta del de
+   ahora y la fecha es la de hoy, el formulario deja una ORDEN que espera en «Órdenes» (no toca
+   lo que puso, lo que vale, la ganancia ni el dinero hasta que el precio llegue). Sin preguntas:
+     · compra más BAJO → «compra si baja»  · compra más ALTO → «compra si sube»
+     · venta más ALTO  → take profit       · venta más BAJO → stop loss
+   Para anotar algo que YA pasó se pone la fecha de ese día: con otra fecha se anota tal cual.
+   Hasta el 1 % de diferencia se toma como el precio de ahora (la casa y este programa nunca
+   ven el mismo precio al centavo): así una compra de verdad no se vuelve orden por error.
+   --------------------------------------------------------------------- */
+var ORDEN_TOLERANCIA=1;      /* % */
+function ordenSpot(venta, sym, p, fecha){
+  if(!sym || esEstable(sym) || !(p>0)) return null;
+  var pr=precioVigente(sym);                            /* sin precio fresco no se puede saber: se anota */
+  if(pr==null || !(pr>0)) return null;
+  if(fecha && fecha!==hoy()) return null;               /* otro día: ya pasó, se anota tal cual */
+  var dif=(p-pr)/pr*100;
+  if(Math.abs(dif)<ORDEN_TOLERANCIA) return null;       /* es el precio de ahora */
+  return {venta:!!venta, sym:String(sym).toUpperCase(), p:p, pr:pr, dif:dif, dir:dif>0?"sube":"baja"};
+}
+/* deja la orden esperando en «Órdenes» (BD.ordenes) */
+function dejarOrdenSpot(Y, c, k, nota, casa){
+  var sym=Y.sym, ref=precioVigente(sym);
+  if(ref==null){ aviso("Todavía no hay precio en vivo de "+sym+". Espere unos segundos y vuelva a intentarlo.",true); return false; }
+  var dir = Y.p>ref ? "sube" : "baja";
+  var o={id:idNuevo(), sym:sym, dir:dir, precio:Y.p, cant:c, com:(k>0?k:0), ref:ref,
+         creada:ahora(), mod:ahoraReal(), casa:casa||casaGlobal()};
+  if(nota) o.nota=nota;
+  var gasto=Math.round(c*Y.p*100)/100;
+  if(!Y.venta){
+    var libre=dineroLibreParaCompras();
+    if(gasto+(+o.com||0)>libre+0.005){ aviso("No le alcanza: tiene "+usd(Math.max(0,libre))+" libres en spot",true); return false; }
+    o.lado="compra"; o.usd=gasto;
+  }
+  BD.ordenes=BD.ordenes||[];
+  BD.ordenes.push(o);
+  guardar();
+  try{ var vi=document.getElementById("veloIn"); if(vi && vi.firstChild) cerrar(); }catch(e){}
+  SP.casa=casaGlobal();
+  if(esTel()) SPOT_PEST="ord";                 /* en el teléfono se ve la orden recién dejada */
+  repintar(); conectarVivo();
+  pedirPermisoAvisos();
+  try{ alEntrarPrecios(); }catch(x){}
+  try{ vibrarOk(); }catch(x){}
+  aviso(Y.venta
+    ? (dir==="sube" ? "Take profit programado: venta de "+cant(c)+" "+sym+" cuando suba a "+precio(Y.p)+"."
+                    : "Stop loss programado: venta de "+cant(c)+" "+sym+" cuando baje a "+precio(Y.p)+".")
+    : (dir==="baja" ? "Compra programada de "+usd(gasto+(+o.com||0))+" en "+sym+" cuando baje a "+precio(Y.p)+"."
+                    : "Compra programada de "+usd(gasto+(+o.com||0))+" en "+sym+" cuando suba a "+precio(Y.p)+"."));
+  return true;
+}
+/* las frases del formulario cuando lo escrito es una orden (cada una entera, para que se traduzca) */
+function frasesOrdenSpot(Y){
+  var v=Y.venta, sube=Y.dir==="sube";
+  return {
+    ahora: 'Ahora '+esc(Y.sym)+' está en '+precio(Y.pr)+': falta que '+(sube?'suba':'baje')+' '+pctS(Math.abs(Y.dif),2)+'.',
+    nada: v ? 'Mientras tanto no gana ni pierde nada y sus monedas no se tocan.'
+            : 'Mientras tanto no gana ni pierde nada y su dinero no se toca.',
+    fecha: v ? '¿Ya la vendió? Ponga la fecha del día en que fue y se anota como hecha.'
+             : '¿Ya la compró? Ponga la fecha del día en que fue y se anota como hecha.'
+  };
+}
+/* con cada precio nuevo, el formulario abierto se pone al día */
+function vivoPanelSpot(){
+  if(!SP.sym || !document.getElementById("spR")) return;
+  var pr=precioDe(SP.sym);
+  if(pr===SP._prVista) return;
+  SP._prVista=pr;
+  recPanel();
+}
+
 function panelRegistro(enHoja){
   var esV=SP.tipo==="venta";
   var e = SP.sym ? estadoDe(SP.sym) : null;
@@ -7874,9 +7957,28 @@ function engancharPanel(c){
   if(ok) ok.onclick=guardarMovimiento;
   recPanel();
 }
+/* ¿lo que está escrito es una orden que espera? (y el botón de abajo dice lo que de verdad va a pasar) */
+function ordenDelForm(){
+  var venta=SP.tipo==="venta";
+  function v(id){ var e=document.getElementById(id); return e?e.value:""; }
+  var Y=ordenSpot(venta, SP.sym, num(v("spP")), v("spF"));
+  if(Y && venta && !(estadoDe(SP.sym).cantidad>0)) Y=null;     /* sin monedas: ya sale el otro aviso */
+  var ok=document.getElementById("spOk");
+  if(ok){
+    var t = Y ? (venta?"Dejar venta programada":"Dejar compra programada")
+              : (venta?"Registrar venta":"Registrar compra");
+    if(ok._t!==t){ ok._t=t; ok.textContent=t; }
+  }
+  return Y;
+}
 function recPanel(){
   var r=document.getElementById("spR");
   if(!r) return;
+  SP._prVista = SP.sym ? precioDe(SP.sym) : null;
+  var Y=ordenDelForm();                    /* v64 · ¿lo escrito es una orden que espera? */
+  var espera=!!Y;
+  /* se escribe solo si cambió: con cada precio nuevo no se vuelve a traducir lo mismo */
+  function poner(cls, html){ r.className=cls; if(r._h!==html){ r._h=html; r.innerHTML=html; } }
   function g(id){ var e=document.getElementById(id); return e?num(e.value):null; }
   var c=g("spC"), p=g("spP"), k=kSpotForm(null), m=g("spM");
   var esV0=SP.tipo==="venta";
@@ -7887,26 +7989,32 @@ function recPanel(){
     if(a) a.textContent = rec!=null?usd(rec):"—";
     if(b){ b.textContent = g!=null?((g>=0?"+":"−")+usd(g).replace("-","")):"—"; b.className="v "+cl(g); }
     if(d) d.textContent = q!=null?cant(q):"—";
+    /* v64 · si la venta espera, esas tres cifras son «si se cumple», no algo que ya pasó */
+    [a,b,d].forEach(function(el,i){
+      var s=el&&el.parentNode&&el.parentNode.querySelector(".s"); if(!s) return;
+      var t = espera ? "si se cumple" : (i===0?"en dólares":i===1?"contra su promedio":(SP.sym||"monedas"));
+      if(s._t!==t){ s._t=t; s.textContent=t; }
+    });
   }
   if(!SP.sym){
-    r.className="nota"; cajitas(null,null,null);
-    r.innerHTML = esV0 ? "Elija la moneda que va a vender." : "Elija la moneda y escriba cuántos dólares.";
+    poner("nota", esV0 ? "Elija la moneda que va a vender." : "Elija la moneda y escriba cuántos dólares.");
+    cajitas(null,null,null);
     return;
   }
   if(esV0){
     var ev=estadoDe(SP.sym);
     if(!(ev.cantidad>0)){
-      r.className="nota mal"; cajitas(null,null,null);
-      r.innerHTML="<b>No tiene "+esc(SP.sym)+" para vender.</b> Solo se puede vender lo que ha registrado como comprado.";
+      cajitas(null,null,null);
+      poner("nota mal", "<b>No tiene "+esc(SP.sym)+" para vender.</b> Solo se puede vender lo que ha registrado como comprado.");
       return;
     }
   }
   if(c==null||p==null){
-    r.className="nota"; cajitas(null,null,null);
+    cajitas(null,null,null);
     /* frases enteras, sin negritas en medio: así cada una se traduce de una pieza */
-    r.innerHTML = esV0
+    poner("nota", esV0
       ? "Escriba cuántas monedas vende (o toque 25%, 50%, 75%, TODO) y el precio."
-      : "Escriba el monto en dólares y el precio: la cantidad sale sola.";
+      : "Escriba el monto en dólares y el precio: la cantidad sale sola.");
     return;
   }
   var avisos=[], esV=SP.tipo==="venta";
@@ -7917,12 +8025,14 @@ function recPanel(){
   var tot = esV ? c*p-k : c*p+k;
   /* cada dato en su pieza (v38): antes era una sola tira con el nombre de la
      casa y negritas en medio, y no había forma de traducirla */
-  var txt='<b>'+(esV?"Recibe ":"Paga ")+usd(tot)+" por "+cant(c)+" "+esc(SP.sym)+'</b>'+
+  var txt='<b>'+(espera ? (esV?"Cuando llegue, recibe ":"Cuando llegue, paga ") : (esV?"Recibe ":"Paga "))+
+            usd(tot)+" por "+cant(c)+" "+esc(SP.sym)+'</b>'+
           '<span'+(SP.casa==="OTRA"?'':' translate="no"')+'> · '+esc(nombreCasa(SP.casa))+'</span>'+
           (k>0?'<span> · comisión '+usd(k)+'</span>'+
             (Kc&&num(Kc.value)==null?'<span> (el '+pctCorto(tasaSpot(SP.casa))+' de lo que '+(esV?'vende':'compra')+')</span>':''):'');
   var pr=precioDe(SP.sym);
-  if(!esV&&pr!=null&&p>0){
+  /* con la orden esperando, «ahora está en … (+140%)» no va: no ha ganado nada */
+  if(!esV&&!espera&&pr!=null&&p>0){
     var d=(pr-p)/p*100;
     txt+='<span> · ahora '+esc(SP.sym)+' está en '+precio(pr)+'</span> <b class="'+cl(d)+'">('+pct(d,1)+')</b>';
   }
@@ -7942,19 +8052,30 @@ function recPanel(){
                         : '<span> · vende toda su posición</span>');
     }
   } else {
-    var D=efectivoDet();
-    if(tot>D.total+1e-9 && D.total>0)
-      avisos.push("Le quedan "+usd(D.total)+" de USDT: va a quedar en negativo");
-    var ee=estadoDe(SP.sym);
-    if(ee.cantidad>0&&ee.promedio!=null){
-      var nuevo=(ee.costo+tot)/(ee.cantidad+c);
-      txt+='<span> · su promedio pasa de '+precio(ee.promedio)+' a '+precio(nuevo)+'</span>';
+    if(espera){
+      /* una compra que espera se paga con el dinero libre de spot (lo ya comprometido en otras órdenes no cuenta) */
+      var libre=dineroLibreParaCompras();
+      if(tot>libre+0.005) avisos.push("No le alcanza: tiene "+usd(Math.max(0,libre))+" libres en spot");
+    } else {
+      var D=efectivoDet();
+      if(tot>D.total+1e-9 && D.total>0)
+        avisos.push("Le quedan "+usd(D.total)+" de USDT: va a quedar en negativo");
+      var ee=estadoDe(SP.sym);
+      if(ee.cantidad>0&&ee.promedio!=null){
+        var nuevo=(ee.costo+tot)/(ee.cantidad+c);
+        txt+='<span> · su promedio pasa de '+precio(ee.promedio)+' a '+precio(nuevo)+'</span>';
+      }
     }
   }
-  r.className = avisos.length ? "nota ojo" : "nota";
-  r.innerHTML = avisos.length
-    ? ("<b>OJO:</b> "+avisos.map(function(a){ return '<span>'+esc(a)+'</span>'; }).join('<span> · </span>')+"<br>"+txt)
-    : txt;
+  if(espera){
+    var F=frasesOrdenSpot(Y);
+    txt+='<br><span>'+F.ahora+'</span> <span>'+F.nada+'</span>'+
+         '<br><span class="mut">'+F.fecha+'</span>';
+  }
+  poner(avisos.length ? "nota ojo" : "nota",
+    avisos.length
+      ? ("<b>OJO:</b> "+avisos.map(function(a){ return '<span>'+esc(a)+'</span>'; }).join('<span> · </span>')+"<br>"+txt)
+      : txt);
 }
 function guardarMovimiento(){
   function g(id){ var e=document.getElementById(id); return e?num(e.value):null; }
@@ -7988,6 +8109,10 @@ function guardarMovimiento(){
       aviso("No puede vender "+cant(c)+" "+SP.sym+": tiene "+cant(e.cantidad)+".",true); return;
     }
   }
+  /* v64 · un precio que no es el de ahora NO se anota como compra/venta hecha: queda en «Órdenes»
+     y no toca nada hasta que el precio llegue */
+  var Y=ordenSpot(SP.tipo==="venta", SP.sym, p, f);
+  if(Y){ dejarOrdenSpot(Y, c, k, n, SP.casa); return; }
   var nuevo={id:idNuevo(), sym:String(SP.sym).toUpperCase(), tipo:SP.tipo, cant:c, precio:p,
                com:k, fecha:f, nota:n, casa:SP.casa, mod:ahoraReal()};
   /* v40 · ¿le alcanza? Si en spot no tiene anotado el dinero para esta compra,
@@ -8115,13 +8240,19 @@ function venderMoneda(sym){
       gel.textContent = g!=null?((g>=0?"+":"−")+usd(g).replace("-","")):"—";
       gel.className="v "+cl(g);
       var r=M.querySelector("#vR");
+      /* v64 · un precio que no es el de ahora es una orden que espera (take profit o stop loss) */
+      var Yv=p!=null ? ordenSpot(true, sym, p, M.querySelector("#vF").value) : null;
+      var bOk=M.querySelector("#vOk"), tOk=Yv?"Dejar venta programada":"Registrar venta";
+      if(bOk && bOk._t!==tOk){ bOk._t=tOk; bOk.textContent=tOk; }
       if(p==null){ r.textContent="Escriba el precio de venta."; return; }
       var queda=e.cantidad-c;
-      r.innerHTML="Recibe <b>"+usd(c*p-k)+"</b> · "+
+      r.innerHTML=(Yv?"Cuando llegue, recibe ":"Recibe ")+"<b>"+usd(c*p-k)+"</b> · "+
         (g>=0?"gana <b class='up'>":"pierde <b class='dn'>")+usd(Math.abs(g))+
         "</b> frente a su promedio de "+precio(e.promedio)+
         (queda>1e-12?" · le quedan <b>"+cant(queda)+" "+esc(sym)+"</b>"
-                    :" · <b>vende toda su posición</b>");
+                    :" · <b>vende toda su posición</b>")+
+        (Yv ? (function(){ var F=frasesOrdenSpot(Yv);
+                return "<br><span>"+F.ahora+"</span> <span>"+F.nada+"</span><br><span class=\"mut\">"+F.fecha+"</span>"; })() : "");
       M.querySelectorAll("[data-rp]").forEach(function(b){
         b.className = Math.abs((+b.getAttribute("data-rp"))-(e.cantidad>0?c/e.cantidad*100:0))<0.6
           ? "b sm ac" : "b sm";
@@ -8144,6 +8275,7 @@ function venderMoneda(sym){
       return kk;
     }
     ["#vPr","#vK"].forEach(function(id){ M.querySelector(id).addEventListener("input", rec); });
+    M.querySelector("#vF").addEventListener("change", rec);
     (M.querySelector("#vCa")||{addEventListener:function(){}}).addEventListener("change", rec);
     rec();
     M.querySelector("#vOk").onclick=function(){
@@ -8152,6 +8284,8 @@ function venderMoneda(sym){
       if(p==null||p<=0){ aviso("Escriba el precio de venta.",true); return; }
       if(c>e.cantidad+1e-9){ aviso("No puede vender más de lo que tiene.",true); return; }
       var ca=(M.querySelector("#vCa")||{}).value||casaGlobal();
+      var Yo=ordenSpot(true, sym, p, M.querySelector("#vF").value||hoy());
+      if(Yo){ dejarOrdenSpot(Yo, c, k, "", ca); return; }      /* v64 · queda esperando en «Órdenes» */
       BD.ops.push({id:idNuevo(), sym:String(sym).toUpperCase(), tipo:"venta", cant:c, precio:p,
         com:k, fecha:M.querySelector("#vF").value||hoy(), nota:"", casa:ca, mod:ahoraReal()});
       guardar(); cerrar(); repintar();
@@ -11442,15 +11576,15 @@ function vigilarCierres(){
     BD.ordenes=BD.ordenes.filter(function(x){ return quitar.indexOf(x)<0; });
     if(esCompra){
       /* compra programada: se hace al precio puesto, si en spot hay el dinero */
-      if(!(+o.com>0)) o.com=comSpot(casaGlobal(), c*o.precio);
+      if(!(+o.com>0)) o.com=comSpot(o.casa||casaGlobal(), c*o.precio);
       var coste=c*o.precio+(+o.com||0), hay=efectivoDet0().total;
       if(!(c>0) || coste>hay+0.005){
         hechas.push({tipo:"spot", texto:"La compra programada de "+o.sym+" no se hizo: no había dinero suficiente en spot", bueno:false});
         return;
       }
       BD.ops.push({id:idNuevo(), sym:o.sym, tipo:"compra", cant:c, precio:o.precio, com:+o.com||0,
-        fecha:hoy(), nota:"compra programada · se cumplió a las "+horaYa(),
-        casa:casaGlobal(), auto:true, mod:ahoraReal()});
+        fecha:hoy(), nota:(o.nota?o.nota+" · ":"")+"compra programada · se cumplió a las "+horaYa(),
+        casa:o.casa||casaGlobal(), auto:true, mod:ahoraReal()});
       hechas.push({tipo:"spot", texto:tr("Se compraron "+cant(c)+" "+o.sym+" a "+precio(o.precio)+" (compra programada)."), bueno:true});
       return;
     }
@@ -11459,10 +11593,10 @@ function vigilarCierres(){
       return;
     }
     var prom=e.promedio||0;
-    if(!(+o.com>0)) o.com=comSpot(casaGlobal(), c*o.precio);
+    if(!(+o.com>0)) o.com=comSpot(o.casa||casaGlobal(), c*o.precio);
     BD.ops.push({id:idNuevo(), sym:o.sym, tipo:"venta", cant:c, precio:o.precio, com:+o.com||0,
-      fecha:hoy(), nota:etq+" · se cumplió a las "+horaYa(),
-      casa:casaGlobal(), auto:true, mod:ahoraReal()});
+      fecha:hoy(), nota:(o.nota?o.nota+" · ":"")+etq+" · se cumplió a las "+horaYa(),
+      casa:o.casa||casaGlobal(), auto:true, mod:ahoraReal()});
     /* lo que sobre de otras ventas de esta moneda no puede pasar de lo que queda */
     var queda=Math.max(0, e.cantidad-c);
     BD.ordenes.slice().forEach(function(x){
@@ -18934,6 +19068,19 @@ function engancharIdioma(box){
    Se respeta el orden de los huecos tal como salen en español.
    ===================================================================== */
 DIC.en={
+"Dejar compra programada":"Place scheduled buy",
+"Dejar venta programada":"Place scheduled sell",
+"Cuando llegue, paga $# por # @":"When it gets there, you pay $# for # @",
+"Cuando llegue, recibe $# por # @":"When it gets there, you receive $# for # @",
+"Cuando llegue, recibe":"When it gets there, you receive",
+"Ahora @ está en $#: falta que baje #%.":"@ is now at $#: it still has to fall #%.",
+"Ahora @ está en $#: falta que suba #%.":"@ is now at $#: it still has to rise #%.",
+"Mientras tanto no gana ni pierde nada y sus monedas no se tocan.":"Meanwhile it neither gains nor loses anything and your coins are untouched.",
+"Mientras tanto no gana ni pierde nada y su dinero no se toca.":"Meanwhile it neither gains nor loses anything and your money is untouched.",
+"¿Ya la vendió? Ponga la fecha del día en que fue y se anota como hecha.":"Already sold it? Enter the date it happened and it is recorded as done.",
+"¿Ya la compró? Ponga la fecha del día en que fue y se anota como hecha.":"Already bought it? Enter the date it happened and it is recorded as done.",
+"si se cumple":"if it happens",
+
 "días desde":"days since",
 
 "Lo que tiene ahora":"What you have now",
@@ -21124,6 +21271,19 @@ DIC.en={
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
+"Dejar compra programada":"Deixar compra programada",
+"Dejar venta programada":"Deixar venda programada",
+"Cuando llegue, paga $# por # @":"Quando chegar lá, você paga $# por # @",
+"Cuando llegue, recibe $# por # @":"Quando chegar lá, você recebe $# por # @",
+"Cuando llegue, recibe":"Quando chegar lá, você recebe",
+"Ahora @ está en $#: falta que baje #%.":"Agora @ está em $#: ainda falta cair #%.",
+"Ahora @ está en $#: falta que suba #%.":"Agora @ está em $#: ainda falta subir #%.",
+"Mientras tanto no gana ni pierde nada y sus monedas no se tocan.":"Enquanto isso não ganha nem perde nada e suas moedas não são mexidas.",
+"Mientras tanto no gana ni pierde nada y su dinero no se toca.":"Enquanto isso não ganha nem perde nada e seu dinheiro não é mexido.",
+"¿Ya la vendió? Ponga la fecha del día en que fue y se anota como hecha.":"Já vendeu? Ponha a data do dia em que foi e ela é anotada como feita.",
+"¿Ya la compró? Ponga la fecha del día en que fue y se anota como hecha.":"Já comprou? Ponha a data do dia em que foi e ela é anotada como feita.",
+"si se cumple":"se se cumprir",
+
 "días desde":"dias desde",
 
 "Lo que tiene ahora":"O que você tem agora",
@@ -23307,6 +23467,19 @@ DIC.pt={
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
+"Dejar compra programada":"Programmer l'achat",
+"Dejar venta programada":"Programmer la vente",
+"Cuando llegue, paga $# por # @":"Une fois atteint, vous payez $# pour # @",
+"Cuando llegue, recibe $# por # @":"Une fois atteint, vous recevez $# pour # @",
+"Cuando llegue, recibe":"Une fois atteint, vous recevez",
+"Ahora @ está en $#: falta que baje #%.":"@ est maintenant à $# : il doit encore baisser de #%.",
+"Ahora @ está en $#: falta que suba #%.":"@ est maintenant à $# : il doit encore monter de #%.",
+"Mientras tanto no gana ni pierde nada y sus monedas no se tocan.":"Entre-temps, rien n'est gagné ni perdu et vos pièces ne sont pas touchées.",
+"Mientras tanto no gana ni pierde nada y su dinero no se toca.":"Entre-temps, rien n'est gagné ni perdu et votre argent n'est pas touché.",
+"¿Ya la vendió? Ponga la fecha del día en que fue y se anota como hecha.":"Déjà vendu ? Mettez la date du jour où c'est arrivé et elle sera notée comme faite.",
+"¿Ya la compró? Ponga la fecha del día en que fue y se anota como hecha.":"Déjà acheté ? Mettez la date du jour où c'est arrivé et il sera noté comme fait.",
+"si se cumple":"si c'est atteint",
+
 "días desde":"jours depuis le",
 
 "Lo que tiene ahora":"Ce que vous avez maintenant",
@@ -25490,6 +25663,19 @@ DIC.fr={
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
+"Dejar compra programada":"Kauf vormerken",
+"Dejar venta programada":"Verkauf vormerken",
+"Cuando llegue, paga $# por # @":"Sobald erreicht, zahlen Sie $# für # @",
+"Cuando llegue, recibe $# por # @":"Sobald erreicht, erhalten Sie $# für # @",
+"Cuando llegue, recibe":"Sobald erreicht, erhalten Sie",
+"Ahora @ está en $#: falta que baje #%.":"@ steht jetzt bei $#: Es muss noch um #% fallen.",
+"Ahora @ está en $#: falta que suba #%.":"@ steht jetzt bei $#: Es muss noch um #% steigen.",
+"Mientras tanto no gana ni pierde nada y sus monedas no se tocan.":"Bis dahin gewinnt oder verliert nichts, und Ihre Coins bleiben unberührt.",
+"Mientras tanto no gana ni pierde nada y su dinero no se toca.":"Bis dahin gewinnt oder verliert nichts, und Ihr Geld bleibt unberührt.",
+"¿Ya la vendió? Ponga la fecha del día en que fue y se anota como hecha.":"Schon verkauft? Geben Sie das Datum ein, an dem es war, dann wird es als erledigt eingetragen.",
+"¿Ya la compró? Ponga la fecha del día en que fue y se anota como hecha.":"Schon gekauft? Geben Sie das Datum ein, an dem es war, dann wird es als erledigt eingetragen.",
+"si se cumple":"falls erreicht",
+
 "días desde":"Tage seit",
 
 "Lo que tiene ahora":"Was Sie jetzt haben",
@@ -27673,6 +27859,19 @@ DIC.de={
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
+"Dejar compra programada":"Programma l'acquisto",
+"Dejar venta programada":"Programma la vendita",
+"Cuando llegue, paga $# por # @":"Quando arriva, paga $# per # @",
+"Cuando llegue, recibe $# por # @":"Quando arriva, riceve $# per # @",
+"Cuando llegue, recibe":"Quando arriva, riceve",
+"Ahora @ está en $#: falta que baje #%.":"Ora @ è a $#: deve ancora scendere del #%.",
+"Ahora @ está en $#: falta que suba #%.":"Ora @ è a $#: deve ancora salire del #%.",
+"Mientras tanto no gana ni pierde nada y sus monedas no se tocan.":"Nel frattempo non guadagna né perde nulla e le sue monete non vengono toccate.",
+"Mientras tanto no gana ni pierde nada y su dinero no se toca.":"Nel frattempo non guadagna né perde nulla e il suo denaro non viene toccato.",
+"¿Ya la vendió? Ponga la fecha del día en que fue y se anota como hecha.":"Già venduta? Metta la data del giorno in cui è avvenuta e verrà registrata come fatta.",
+"¿Ya la compró? Ponga la fecha del día en que fue y se anota como hecha.":"Già comprata? Metta la data del giorno in cui è avvenuta e verrà registrata come fatta.",
+"si se cumple":"se si realizza",
+
 "días desde":"giorni dal",
 
 "Lo que tiene ahora":"Quello che ha ora",
@@ -29856,6 +30055,19 @@ DIC.it={
 };
 /* NEDERLANDS · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.nl={
+"Dejar compra programada":"Aankoop plannen",
+"Dejar venta programada":"Verkoop plannen",
+"Cuando llegue, paga $# por # @":"Zodra de prijs er is, betaalt u $# voor # @",
+"Cuando llegue, recibe $# por # @":"Zodra de prijs er is, ontvangt u $# voor # @",
+"Cuando llegue, recibe":"Zodra de prijs er is, ontvangt u",
+"Ahora @ está en $#: falta que baje #%.":"@ staat nu op $#: de prijs moet nog #% dalen.",
+"Ahora @ está en $#: falta que suba #%.":"@ staat nu op $#: de prijs moet nog #% stijgen.",
+"Mientras tanto no gana ni pierde nada y sus monedas no se tocan.":"Ondertussen wint of verliest u niets en blijven uw munten onaangeroerd.",
+"Mientras tanto no gana ni pierde nada y su dinero no se toca.":"Ondertussen wint of verliest u niets en blijft uw geld onaangeroerd.",
+"¿Ya la vendió? Ponga la fecha del día en que fue y se anota como hecha.":"Al verkocht? Vul de datum in waarop het gebeurde en het wordt als uitgevoerd vastgelegd.",
+"¿Ya la compró? Ponga la fecha del día en que fue y se anota como hecha.":"Al gekocht? Vul de datum in waarop het gebeurde en het wordt als uitgevoerd vastgelegd.",
+"si se cumple":"als het gebeurt",
+
 "días desde":"dagen sinds",
 
 "Lo que tiene ahora":"Wat u nu heeft",
@@ -32325,6 +32537,19 @@ DIC.nl={
 };
 /* POLSKI · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.pl={
+"Dejar compra programada":"Zaplanuj zakup",
+"Dejar venta programada":"Zaplanuj sprzedaż",
+"Cuando llegue, paga $# por # @":"Gdy cena dotrze, zapłaci Pan $# za # @",
+"Cuando llegue, recibe $# por # @":"Gdy cena dotrze, otrzyma Pan $# za # @",
+"Cuando llegue, recibe":"Gdy cena dotrze, otrzyma Pan",
+"Ahora @ está en $#: falta que baje #%.":"@ kosztuje teraz $#: musi jeszcze spaść o #%.",
+"Ahora @ está en $#: falta que suba #%.":"@ kosztuje teraz $#: musi jeszcze wzrosnąć o #%.",
+"Mientras tanto no gana ni pierde nada y sus monedas no se tocan.":"W międzyczasie nic nie zyskuje ani nie traci, a Pana monety są nietknięte.",
+"Mientras tanto no gana ni pierde nada y su dinero no se toca.":"W międzyczasie nic nie zyskuje ani nie traci, a Pana pieniądze są nietknięte.",
+"¿Ya la vendió? Ponga la fecha del día en que fue y se anota como hecha.":"Już sprzedane? Proszę wpisać datę, kiedy to było, a zostanie zapisane jako wykonane.",
+"¿Ya la compró? Ponga la fecha del día en que fue y se anota como hecha.":"Już kupione? Proszę wpisać datę, kiedy to było, a zostanie zapisane jako wykonane.",
+"si se cumple":"jeśli się spełni",
+
 "días desde":"dni od",
 
 "Lo que tiene ahora":"Ile ma Pan teraz",
@@ -34794,6 +35019,19 @@ DIC.pl={
 };
 /* TÜRKÇE · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.tr={
+"Dejar compra programada":"Alımı programla",
+"Dejar venta programada":"Satışı programla",
+"Cuando llegue, paga $# por # @":"Fiyat gelince $# ödersiniz — # @",
+"Cuando llegue, recibe $# por # @":"Fiyat gelince $# alırsınız — # @ karşılığında",
+"Cuando llegue, recibe":"Fiyat gelince alırsınız:",
+"Ahora @ está en $#: falta que baje #%.":"@ şu an $#: daha %# düşmesi gerekiyor.",
+"Ahora @ está en $#: falta que suba #%.":"@ şu an $#: daha %# yükselmesi gerekiyor.",
+"Mientras tanto no gana ni pierde nada y sus monedas no se tocan.":"Bu arada ne kazanır ne kaybedersiniz; coinlerinize dokunulmaz.",
+"Mientras tanto no gana ni pierde nada y su dinero no se toca.":"Bu arada ne kazanır ne kaybedersiniz; paranıza dokunulmaz.",
+"¿Ya la vendió? Ponga la fecha del día en que fue y se anota como hecha.":"Zaten sattınız mı? Olduğu günün tarihini girin, yapılmış olarak kaydedilir.",
+"¿Ya la compró? Ponga la fecha del día en que fue y se anota como hecha.":"Zaten aldınız mı? Olduğu günün tarihini girin, yapılmış olarak kaydedilir.",
+"si se cumple":"gerçekleşirse",
+
 "días desde":"şu tarihten beri:",
 
 "Lo que tiene ahora":"Şu an elinizdeki",
@@ -37263,6 +37501,19 @@ DIC.tr={
 };
 /* РУССКИЙ · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ru={
+"Dejar compra programada":"Запланировать покупку",
+"Dejar venta programada":"Запланировать продажу",
+"Cuando llegue, paga $# por # @":"Когда цена дойдёт, вы заплатите $# за # @",
+"Cuando llegue, recibe $# por # @":"Когда цена дойдёт, вы получите $# за # @",
+"Cuando llegue, recibe":"Когда цена дойдёт, вы получите",
+"Ahora @ está en $#: falta que baje #%.":"@ сейчас на $#: осталось упасть на #%.",
+"Ahora @ está en $#: falta que suba #%.":"@ сейчас на $#: осталось вырасти на #%.",
+"Mientras tanto no gana ni pierde nada y sus monedas no se tocan.":"Пока ничего не выигрывается и не теряется, ваши монеты не тронуты.",
+"Mientras tanto no gana ni pierde nada y su dinero no se toca.":"Пока ничего не выигрывается и не теряется, ваши деньги не тронуты.",
+"¿Ya la vendió? Ponga la fecha del día en que fue y se anota como hecha.":"Уже продали? Укажите дату, когда это было, и операция запишется как выполненная.",
+"¿Ya la compró? Ponga la fecha del día en que fue y se anota como hecha.":"Уже купили? Укажите дату, когда это было, и операция запишется как выполненная.",
+"si se cumple":"если сработает",
+
 "días desde":"дн. с",
 
 "Lo que tiene ahora":"Что у вас сейчас",
@@ -39732,6 +39983,19 @@ DIC.ru={
 };
 /* УКРАЇНСЬКА · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.uk={
+"Dejar compra programada":"Запланувати купівлю",
+"Dejar venta programada":"Запланувати продаж",
+"Cuando llegue, paga $# por # @":"Коли ціна дійде, ви заплатите $# за # @",
+"Cuando llegue, recibe $# por # @":"Коли ціна дійде, ви отримаєте $# за # @",
+"Cuando llegue, recibe":"Коли ціна дійде, ви отримаєте",
+"Ahora @ está en $#: falta que baje #%.":"@ зараз на $#: ще має впасти на #%.",
+"Ahora @ está en $#: falta que suba #%.":"@ зараз на $#: ще має зрости на #%.",
+"Mientras tanto no gana ni pierde nada y sus monedas no se tocan.":"Поки що нічого не виграється й не втрачається, ваші монети не чіпають.",
+"Mientras tanto no gana ni pierde nada y su dinero no se toca.":"Поки що нічого не виграється й не втрачається, ваші гроші не чіпають.",
+"¿Ya la vendió? Ponga la fecha del día en que fue y se anota como hecha.":"Уже продали? Вкажіть дату, коли це було, і операцію буде записано як виконану.",
+"¿Ya la compró? Ponga la fecha del día en que fue y se anota como hecha.":"Уже купили? Вкажіть дату, коли це було, і операцію буде записано як виконану.",
+"si se cumple":"якщо спрацює",
+
 "días desde":"дн. з",
 
 "Lo que tiene ahora":"Що у вас зараз",
@@ -42201,6 +42465,19 @@ DIC.uk={
 };
 /* BAHASA INDONESIA · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.id={
+"Dejar compra programada":"Jadwalkan pembelian",
+"Dejar venta programada":"Jadwalkan penjualan",
+"Cuando llegue, paga $# por # @":"Saat harganya tercapai, Anda membayar $# untuk # @",
+"Cuando llegue, recibe $# por # @":"Saat harganya tercapai, Anda menerima $# untuk # @",
+"Cuando llegue, recibe":"Saat harganya tercapai, Anda menerima",
+"Ahora @ está en $#: falta que baje #%.":"@ sekarang di $#: masih perlu turun #%.",
+"Ahora @ está en $#: falta que suba #%.":"@ sekarang di $#: masih perlu naik #%.",
+"Mientras tanto no gana ni pierde nada y sus monedas no se tocan.":"Sementara itu tidak untung maupun rugi, dan koin Anda tidak disentuh.",
+"Mientras tanto no gana ni pierde nada y su dinero no se toca.":"Sementara itu tidak untung maupun rugi, dan uang Anda tidak disentuh.",
+"¿Ya la vendió? Ponga la fecha del día en que fue y se anota como hecha.":"Sudah dijual? Isi tanggal kejadiannya dan akan dicatat sebagai selesai.",
+"¿Ya la compró? Ponga la fecha del día en que fue y se anota como hecha.":"Sudah dibeli? Isi tanggal kejadiannya dan akan dicatat sebagai selesai.",
+"si se cumple":"jika terpenuhi",
+
 "días desde":"hari sejak",
 
 "Lo que tiene ahora":"Yang Anda punya sekarang",
@@ -44670,6 +44947,19 @@ DIC.id={
 };
 /* TIẾNG VIỆT · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.vi={
+"Dejar compra programada":"Hẹn lệnh mua",
+"Dejar venta programada":"Hẹn lệnh bán",
+"Cuando llegue, paga $# por # @":"Khi giá chạm mức này, bạn trả $# cho # @",
+"Cuando llegue, recibe $# por # @":"Khi giá chạm mức này, bạn nhận $# cho # @",
+"Cuando llegue, recibe":"Khi giá chạm mức này, bạn nhận",
+"Ahora @ está en $#: falta que baje #%.":"@ hiện ở $#: còn phải giảm #%.",
+"Ahora @ está en $#: falta que suba #%.":"@ hiện ở $#: còn phải tăng #%.",
+"Mientras tanto no gana ni pierde nada y sus monedas no se tocan.":"Trong lúc chờ, không lãi cũng không lỗ và coin của bạn không bị động đến.",
+"Mientras tanto no gana ni pierde nada y su dinero no se toca.":"Trong lúc chờ, không lãi cũng không lỗ và tiền của bạn không bị động đến.",
+"¿Ya la vendió? Ponga la fecha del día en que fue y se anota como hecha.":"Đã bán rồi? Đặt ngày hôm đó và nó sẽ được ghi là đã thực hiện.",
+"¿Ya la compró? Ponga la fecha del día en que fue y se anota como hecha.":"Đã mua rồi? Đặt ngày hôm đó và nó sẽ được ghi là đã thực hiện.",
+"si se cumple":"nếu khớp lệnh",
+
 "días desde":"ngày kể từ",
 
 "Lo que tiene ahora":"Số bạn đang có",
@@ -47139,6 +47429,19 @@ DIC.vi={
 };
 /* हिन्दी · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.hi={
+"Dejar compra programada":"खरीद शेड्यूल करें",
+"Dejar venta programada":"बिक्री शेड्यूल करें",
+"Cuando llegue, paga $# por # @":"कीमत पहुँचने पर आप $# देंगे, # @ के लिए",
+"Cuando llegue, recibe $# por # @":"कीमत पहुँचने पर आपको $# मिलेंगे, # @ के बदले",
+"Cuando llegue, recibe":"कीमत पहुँचने पर आपको मिलेंगे",
+"Ahora @ está en $#: falta que baje #%.":"@ अभी $# पर है: अभी #% गिरना बाकी है।",
+"Ahora @ está en $#: falta que suba #%.":"@ अभी $# पर है: अभी #% बढ़ना बाकी है।",
+"Mientras tanto no gana ni pierde nada y sus monedas no se tocan.":"तब तक न कुछ कमाई होती है न नुकसान, और आपके सिक्कों को छुआ नहीं जाता।",
+"Mientras tanto no gana ni pierde nada y su dinero no se toca.":"तब तक न कुछ कमाई होती है न नुकसान, और आपके पैसे को छुआ नहीं जाता।",
+"¿Ya la vendió? Ponga la fecha del día en que fue y se anota como hecha.":"क्या पहले ही बेच चुके हैं? जिस दिन हुआ उसकी तारीख डालें, तो वह पूरी हुई के रूप में दर्ज होगी।",
+"¿Ya la compró? Ponga la fecha del día en que fue y se anota como hecha.":"क्या पहले ही खरीद चुके हैं? जिस दिन हुआ उसकी तारीख डालें, तो वह पूरी हुई के रूप में दर्ज होगी।",
+"si se cumple":"अगर पूरा हुआ",
+
 "días desde":"दिन, तब से:",
 
 "Lo que tiene ahora":"अभी आपके पास",
@@ -49608,6 +49911,19 @@ DIC.hi={
 };
 /* 日本語 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ja={
+"Dejar compra programada":"購入を予約する",
+"Dejar venta programada":"売却を予約する",
+"Cuando llegue, paga $# por # @":"価格に達したら、$# を支払って # @ を購入",
+"Cuando llegue, recibe $# por # @":"価格に達したら、$# を受け取ります（# @ を売却）",
+"Cuando llegue, recibe":"価格に達したら受け取り:",
+"Ahora @ está en $#: falta que baje #%.":"@ は現在 $#：あと #% 下がる必要があります。",
+"Ahora @ está en $#: falta que suba #%.":"@ は現在 $#：あと #% 上がる必要があります。",
+"Mientras tanto no gana ni pierde nada y sus monedas no se tocan.":"それまでは損益は出ず、コインにも手を付けません。",
+"Mientras tanto no gana ni pierde nada y su dinero no se toca.":"それまでは損益は出ず、資金にも手を付けません。",
+"¿Ya la vendió? Ponga la fecha del día en que fue y se anota como hecha.":"すでに売りましたか？ 実行した日の日付を入れると、約定済みとして記録されます。",
+"¿Ya la compró? Ponga la fecha del día en que fue y se anota como hecha.":"すでに買いましたか？ 実行した日の日付を入れると、約定済みとして記録されます。",
+"si se cumple":"成立した場合",
+
 "días desde":"日経過・開始:",
 
 "Lo que tiene ahora":"現在の残高",
@@ -52077,6 +52393,19 @@ DIC.ja={
 };
 /* 한국어 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ko={
+"Dejar compra programada":"매수 예약하기",
+"Dejar venta programada":"매도 예약하기",
+"Cuando llegue, paga $# por # @":"가격에 도달하면 $#를 내고 # @를 매수합니다",
+"Cuando llegue, recibe $# por # @":"가격에 도달하면 $#를 받고 # @를 매도합니다",
+"Cuando llegue, recibe":"가격에 도달하면 받는 금액:",
+"Ahora @ está en $#: falta que baje #%.":"@ 현재 $#: 아직 #% 더 떨어져야 합니다.",
+"Ahora @ está en $#: falta que suba #%.":"@ 현재 $#: 아직 #% 더 올라야 합니다.",
+"Mientras tanto no gana ni pierde nada y sus monedas no se tocan.":"그동안은 이익도 손실도 없고 코인에는 손대지 않습니다.",
+"Mientras tanto no gana ni pierde nada y su dinero no se toca.":"그동안은 이익도 손실도 없고 자금에는 손대지 않습니다.",
+"¿Ya la vendió? Ponga la fecha del día en que fue y se anota como hecha.":"이미 매도하셨나요? 거래한 날짜를 넣으면 체결된 것으로 기록됩니다.",
+"¿Ya la compró? Ponga la fecha del día en que fue y se anota como hecha.":"이미 매수하셨나요? 거래한 날짜를 넣으면 체결된 것으로 기록됩니다.",
+"si se cumple":"체결되면",
+
 "días desde":"일 경과 · 시작:",
 
 "Lo que tiene ahora":"지금 가진 금액",
@@ -54546,6 +54875,19 @@ DIC.ko={
 };
 /* 中文（简体） · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.zh={
+"Dejar compra programada":"设置预约买入",
+"Dejar venta programada":"设置预约卖出",
+"Cuando llegue, paga $# por # @":"到价后，支付 $#，买入 # @",
+"Cuando llegue, recibe $# por # @":"到价后，收到 $#，卖出 # @",
+"Cuando llegue, recibe":"到价后，收到",
+"Ahora @ está en $#: falta que baje #%.":"@ 现价 $#：还需下跌 #%。",
+"Ahora @ está en $#: falta que suba #%.":"@ 现价 $#：还需上涨 #%。",
+"Mientras tanto no gana ni pierde nada y sus monedas no se tocan.":"在此期间不赚不亏，您的币也不会被动用。",
+"Mientras tanto no gana ni pierde nada y su dinero no se toca.":"在此期间不赚不亏，您的资金也不会被动用。",
+"¿Ya la vendió? Ponga la fecha del día en que fue y se anota como hecha.":"已经卖出了吗？填上当时的日期，就会记为已完成。",
+"¿Ya la compró? Ponga la fecha del día en que fue y se anota como hecha.":"已经买入了吗？填上当时的日期，就会记为已完成。",
+"si se cumple":"若成交",
+
 "días desde":"天，自",
 
 "Lo que tiene ahora":"您现在有",
