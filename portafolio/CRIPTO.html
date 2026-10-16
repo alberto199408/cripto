@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="70">
+<meta name="v" content="71">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -3943,7 +3943,7 @@ html.grafGrande #aviso{z-index:9650}
 /* reproduciendo: se encoge a ▶/pausa, velocidad y ✕, y se vuelve casi transparente: no estorba mientras se practica */
 .graf .rpBarra.rpMini{opacity:.7}
 .graf .rpBarra.rpMini:hover,.graf .rpBarra.rpMini:active,.graf .rpBarra.rpMini:focus-within{opacity:1}
-.graf .rpBarra.rpMini .rpTij,.graf .rpBarra.rpMini .rpExt{display:none}
+.graf .rpBarra.rpMini .rpExt{display:none}                 /* v71 · la tijera se queda: se puede volver a cortar sin pausar (la referencia) */
 .graf .rpFila{display:flex;align-items:center;gap:2px}
 .graf .rpB{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:5px;min-width:30px;height:30px;padding:0 6px;border-radius:8px;
   border:1px solid transparent;background:transparent;color:var(--tx);font:inherit;font-size:12px;font-weight:700;cursor:pointer;line-height:1}
@@ -3972,11 +3972,24 @@ html.grafGrande #aviso{z-index:9650}
 /* las tijeras: la raya de corte y lo que queda a su derecha (lo que todavía «no pasó») */
 .graf .rpCorte{position:absolute;top:0;bottom:var(--txh,0px);width:0;z-index:6;pointer-events:none;border-left:1.5px dashed color-mix(in srgb,var(--tx) 70%,transparent)}
 .graf .rpCorte[hidden]{display:none}
-.graf .rpCorte::after{content:"";position:absolute;left:0;top:0;bottom:0;width:100vw;background:color-mix(in srgb,var(--b0) 58%,transparent)}
-.graf .rpCorte i{position:absolute;left:-12px;top:6px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--b2);color:var(--tx);border:1px solid var(--t3);z-index:1}
+.graf .rpCorte::after{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--rpw,100vw);background:color-mix(in srgb,var(--b0) 80%,transparent)}
+.graf .rpCorte i{position:absolute;left:-12px;top:46%;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--b2);color:var(--tx);border:1px solid var(--t3);z-index:1}
 .graf .rpCorte i svg{width:14px;height:14px}
 .graf.rpElige .gzona{cursor:crosshair}
 /* mientras se repite, la etiqueta «REPETICIÓN» y la barra dejan claro que NO es el mercado de ahora: sin marcos de color */
+
+/* v71 · la fecha y hora de la vela de corte, abajo en el eje del tiempo (la referencia) */
+.graf .rpCorte .rpCf{position:absolute;top:100%;left:0;transform:translateX(-50%);margin-top:2px;padding:2px 6px;border-radius:5px;background:var(--tx);color:var(--b0);
+  font-size:10.5px;font-weight:800;line-height:1.35;white-space:nowrap;font-variant-numeric:tabular-nums;z-index:2}
+.graf .rpCorte .rpCf:empty{display:none}
+/* v71 · la ✕ pregunta antes de salir, dentro de la misma barra */
+.graf .rpBarra.rpPreg .rpFila{display:none}
+.graf .rpQ{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px;padding:2px 4px 1px;font-size:12px;font-weight:700;color:var(--tx)}
+.graf .rpQ span{flex:1 1 100%;text-align:center;padding:2px 6px 3px;line-height:1.3}
+.graf .rpQ[hidden]{display:none}
+.graf .rpQ .rpB{border-color:var(--ln);padding:0 10px}
+.graf .rpQ .rpB.rpSi{background:var(--b3);border-color:var(--t3)}
+.graf .rpBarra.rpPreg ~ .rpInfo,.graf .rpBarra.rpPreg .rpInfo,.graf .rpBarra.rpPreg .rpVels{display:none}
 
 /*V69CSS>>*/
 /*<<V70CSS*/
@@ -4008,6 +4021,37 @@ html.grafGrande #aviso{z-index:9650}
 .gpieg:empty{display:none}
 
 /*V70CSS>>*/
+/*<<V71CSS*/
+/* v71 · el botón «Practicar» arriba del todo en Backtesting (con el color de la pantalla, sin competir con «+ Nueva operación de prueba») */
+.btPract71{display:flex;align-items:center;gap:12px;width:100%;min-height:58px;margin:0 0 14px;padding:9px 14px;border-radius:16px;
+  border:1.5px solid var(--vac,var(--ac));background:color-mix(in srgb,var(--vac,var(--ac)) 14%,var(--b1));color:var(--tx);font:inherit;text-align:left;cursor:pointer;
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--vac,var(--ac)) 10%,transparent),0 6px 18px color-mix(in srgb,var(--vac,var(--ac)) 18%,transparent)}
+.btPract71:hover{background:color-mix(in srgb,var(--vac,var(--ac)) 22%,var(--b1))}
+.btPract71:active{transform:translateY(1px)}
+.btPract71 .pIc{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--vac,var(--ac));color:var(--vacTx,var(--acTx,#fff))}
+.btPract71 .pIc svg{width:20px;height:20px}
+.btPract71 .pTx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.btPract71 .pTx b{font-size:16px;font-weight:800;letter-spacing:.01em}
+.btPract71 .pTx small{font-size:12.5px;color:var(--t2);font-weight:600;line-height:1.25}
+.btPract71 .pFl{flex:none;font-size:26px;line-height:1;color:var(--vac,var(--ac));font-weight:700}
+/* la hoja de práctica: la gráfica ocupa el sitio */
+.hoja.prac71 .hb{padding-top:4px}
+.hoja.prac71 #prG{min-height:200px}
+/* v71 · aviso «⚠ Ocultas: Stop, Objetivo · Colocar en la gráfica» en la gráfica de una operación (arriba a la izquierda, en ámbar = atención) */
+.graf .opLin71{position:absolute;left:8px;top:8px;z-index:8;display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;max-width:calc(100% - var(--ax,0px) - 16px);
+  padding:6px 7px 6px 10px;border-radius:11px;border:1.5px solid #FFB020;background:color-mix(in srgb,var(--b2) 95%,transparent);
+  box-shadow:0 6px 18px rgba(0,0,0,.45);font-size:12px;font-weight:700;color:var(--tx);box-sizing:border-box}
+.graf .opLin71 .t{min-width:0;line-height:1.3}
+.graf .opLin71 .t::before{content:"⚠ ";color:#FFB020}
+.graf .opLin71 button{flex:none;height:30px;padding:0 10px;border-radius:8px;border:1px solid #FFB020;background:color-mix(in srgb,#FFB020 20%,var(--b1));
+  color:var(--tx);font:inherit;font-size:12px;font-weight:800;cursor:pointer}
+@media (pointer:coarse){ .graf .opLin71 button{height:34px} }
+/* el mismo aviso dentro de Ajustes → Escalas y líneas */
+.ajLin71{margin:6px 0 10px;padding:9px 11px;border-radius:10px;border:1.5px solid #FFB020;background:color-mix(in srgb,#FFB020 10%,transparent)}
+.ajLin71[hidden]{display:none}
+.ajLin71 p{margin:0 0 8px;font-size:12.5px;line-height:1.4;color:var(--tx)}
+
+/*V71CSS>>*/
 
 /* pantalla ancha o teléfono acostado: el tiempo y las pestañas en la misma fila que el nombre de la moneda */
 @media (min-width:900px), (max-height:520px){
@@ -5956,10 +6000,24 @@ function colorVela(sube){
   var a=BD.ajustes||{}, c=sube?a.velaUp:a.velaDn;
   return colorOk(c) ? c : (sube?"var(--up)":"var(--dn)");
 }
+/* v71 · cada moneda recuerda el tiempo de velas en que la dejó (BD.ajustes.interMon); BD.ajustes.inter queda como el último usado, para las monedas nuevas */
+function interMon71(sym){
+  var A=BD.ajustes||{}, m=A.interMon, k=String(sym||"").toUpperCase();
+  return (m && k && MS_INTER[m[k]]) ? m[k] : null;
+}
+function guardarInter71(sym, v){
+  if(!MS_INTER[v]) return;
+  var A=BD.ajustes||(BD.ajustes={}), k=String(sym||"").toUpperCase();
+  A.inter=v;
+  if(k){ if(!A.interMon || typeof A.interMon!=="object") A.interMon={}; A.interMon[k]=v; }
+  guardar();
+}
 function montarGrafica(cont, op){
   if(!cont) return;
-  var inter0=op.inter||BD.ajustes.inter||"15m";
+  var inter0=op.inter||interMon71(op.sym)||BD.ajustes.inter||"15m";
   if(!MS_INTER[inter0]) inter0="15m";
+  if(op.inter && MS_INTER[op.inter] && interMon71(op.sym)!==op.inter) guardarInter71(op.sym, op.inter);      /* al pasar de moneda dentro de la gráfica se conserva el tiempo (como la referencia) */
+  else if(op.sym && !interMon71(op.sym)){ var A71=BD.ajustes||(BD.ajustes={}); if(!A71.interMon || typeof A71.interMon!=="object") A71.interMon={}; A71.interMon[String(op.sym).toUpperCase()]=inter0; guardar(); }      /* la primera vez que se abre una moneda, se queda con el tiempo en que se ve */
   var estado={ cont:cont, op:op, inter:inter0,
                velas:null, min:0, max:1, cargando:false, ultimoPintado:0,
                herr:null, crea:null, sel:null, regla:null, mapa:{}, pop:null };
@@ -6032,7 +6090,7 @@ function montarGrafica(cont, op){
   function elegirInter(v){
     if(!MS_INTER[v] || v===estado.inter) return;
     estado.inter=v;
-    BD.ajustes.inter=v; guardar();
+    guardarInter71(estado.op&&estado.op.sym, v);        /* v71 */
     estado.fin=null;
     cargarVelas();
     estado.sincRueda();
@@ -6046,12 +6104,18 @@ function montarGrafica(cont, op){
       [].forEach.call(wl.children, function(x, k){ x.classList.toggle("on", k===idx); });
     }
     if(Math.abs(wl.scrollTop-idx*h)>1 && !estado.ruedaMano){
+      estado._prog71=Date.now();                       /* v71 · este movimiento lo hace la app, no Luis */
       if(suave && wl.scrollTo) wl.scrollTo({top:idx*h, behavior:"smooth"}); else wl.scrollTop=idx*h;
     }
   };
+  /* v71 · ¿está Luis tocando la ruedita ahora (dedo, ratón o teclado), o lo acaba de hacer hace menos de 0,9 s (el empuje que sigue al soltar)? */
+  function usuarioRueda71(){ return !!estado.ruedaDown71 || (Date.now()-(estado.ruedaT71||0))<900; }
+  function marcarRueda71(abajo){ estado.ruedaT71=Date.now(); if(abajo!==undefined) estado.ruedaDown71=abajo; }
   function pasoRueda(d){
+    marcarRueda71();
     var h=altoItem(); if(!h) return;
     var i=Math.max(0, Math.min(INTERVALOS.length-1, Math.round(wl.scrollTop/h)+d));
+    estado.ruedaIdx71=i;       /* paso: la cifra a la que va manda */
     estado.ruedaMano=true;
     if(wl.scrollTo) wl.scrollTo({top:i*h, behavior:"smooth"}); else wl.scrollTop=i*h;
     clearTimeout(tmrW); tmrW=setTimeout(asentarRueda, 160);
@@ -6059,11 +6123,32 @@ function montarGrafica(cont, op){
   function asentarRueda(){
     estado.ruedaMano=false;
     var h=altoItem(); if(!h) return;
+    if(!usuarioRueda71() && estado.ruedaIdx71==null){ estado.sincRueda(); return; }          /* v71 · la ruedita se movió sola (el navegador la manda al principio al ampliar, reducir o cambiar el tamaño): NO es elegir «1 min» */
+    if(estado.ruedaIdx71!=null){ var ix=estado.ruedaIdx71; estado.ruedaIdx71=null; elegirInter(INTERVALOS[Math.max(0,Math.min(INTERVALOS.length-1,ix))][0]); return; }      /* tocó una cifra o dio un paso: manda esa, no el desplazamiento */
     var i=Math.max(0, Math.min(INTERVALOS.length-1, Math.round(wl.scrollTop/h)));
     elegirInter(INTERVALOS[i][0]);
   }
   if(wl){
+    /* v71 · lo que haga el dedo, el ratón o el teclado sobre la ruedita es lo ÚNICO que puede cambiar el tiempo */
+    wl.addEventListener("touchstart", function(){ marcarRueda71(true); }, {passive:true, capture:true});
+    wl.addEventListener("touchend", function(){ marcarRueda71(false); }, {passive:true, capture:true});
+    wl.addEventListener("touchcancel", function(){ marcarRueda71(false); }, {passive:true, capture:true});
+    wl.addEventListener("pointerdown", function(ev){
+      if(ev.pointerType==="touch"){ marcarRueda71(true); return; }
+      marcarRueda71(true);
+      var suelta=function(){ window.removeEventListener("pointerup", suelta, true); window.removeEventListener("pointercancel", suelta, true); marcarRueda71(false); };
+      window.addEventListener("pointerup", suelta, true); window.addEventListener("pointercancel", suelta, true);
+    }, true);
+    wl.addEventListener("wheel", function(){ marcarRueda71(); }, {passive:true, capture:true});
+    wl.addEventListener("keydown", function(){ marcarRueda71(); }, true);
+    wl.addEventListener("click", function(){ marcarRueda71(); }, true);
     wl.addEventListener("scroll", function(){
+      if(!usuarioRueda71()){                                         /* se movió sola: se devuelve a su sitio y no se toca el tiempo */
+        if(Date.now()-(estado._prog71||0)<900) return;                 /* la está moviendo la propia app */
+        clearTimeout(estado._rs71); estado._rs71=setTimeout(function(){ if(!usuarioRueda71()) estado.sincRueda(); }, 40);
+        return;
+      }
+      estado.ruedaT71=Date.now();
       estado.ruedaMano=true;
       clearTimeout(tmrW); tmrW=setTimeout(asentarRueda, 130);
     }, {passive:true});
@@ -6085,6 +6170,7 @@ function montarGrafica(cont, op){
       var b=ev.target.closest(".gwi"); if(!b) return;
       ev.stopPropagation();
       var h=altoItem(), i=[].indexOf.call(wl.children, b);
+      estado.ruedaIdx71=i;       /* toque: la cifra tocada manda */
       estado.ruedaMano=true;
       if(wl.scrollTo) wl.scrollTo({top:i*h, behavior:"smooth"}); else wl.scrollTop=i*h;
       clearTimeout(tmrW); tmrW=setTimeout(asentarRueda, 160);
@@ -6318,8 +6404,8 @@ function montarGrafica(cont, op){
         cargarAntes(estado);
       }
     };
-    window.addEventListener("pointerup", soltarDedo);
-    window.addEventListener("pointercancel", soltarDedo);
+    window.addEventListener("pointerup", soltarDedo, true);           /* v71 · en captura: aunque un botón de encima detenga el evento, el dedo se da por levantado */
+    window.addEventListener("pointercancel", soltarDedo, true);
   }
 
   if(typeof enganchaIndicadores==="function") enganchaIndicadores(estado);
@@ -8767,6 +8853,10 @@ function patCtx(V){
   return {V:V, n:n, last:last, atr:atr, pr:pr};
 }
 function patClamp(x,a,b){ return Math.max(a, Math.min(b, x)); }
+/* v71 · BANDERA Y BANDERÍN — las dos medidas que deciden si una consolidación cuelga de verdad del mástil (TODO en este único lugar):
+   huecoVelas / huecoFrac : la figura tiene que empezar como mucho a 3 velas (o al 30 % del ancho del mástil, lo que sea mayor) de la punta del mástil.
+   devuelveMax            : la consolidación no puede devolver más de la mitad (50 %) de lo que recorrió el mástil. */
+var PAT_BAN71={huecoVelas:3, huecoFrac:0.3, devuelveMax:0.5};
 function patLinea(x1,y1,x2,y2){
   if(x2<x1){ var tx=x1,ty=y1; x1=x2; y1=y2; x2=tx; y2=ty; }
   var b=(x2-x1)>1e-9 ? (y2-y1)/(x2-x1) : 0;
@@ -8867,7 +8957,25 @@ function patClasificarPar(C, A, B, ids, sinMast){
   var tend=patTendenciaPrevia(C,xL,Math.max(15,Math.round(span*1.5)));
   var mast=patMastil(C,xL,span,hmax);
   var id=null, nota=[];
-  var penR=(mast && mast.h>=2*hmax && span<=1.7*Math.max(mast.w,6) && (mast.h/Math.max(1,mast.w))>=0.7*C.atr);
+  /* v71 · bandera / banderín SOLO si la figura nace pegada a la punta del mástil y devuelve como mucho la mitad de lo que subió (o bajó) el mástil
+     (Luis, 16 oct 14:09-14:11, con fotos de AVAX 1 h y 1 min: «para ti esto es un banderín… ¿cómo le detecta?»).
+     La bandera y el banderín son una PAUSA corta que empieza justo donde termina el tirón (Murphy, Edwards-Magee, Bulkowski: «sin mástil no
+     hay bandera»; el trapo cuelga de la punta del mástil). Si la consolidación empieza muchas velas después, o se come más de la mitad del
+     mástil, ya no es una pausa: es una corrección, y se lee como canal o cuña (que es lo que de verdad es). Las dos medidas, en PAT_BAN71. */
+  var banOk71=true;
+  if(mast){
+    var anchoM71=Math.max(1,(mast.fin||0)-(mast.ini||0)), altoM71=Math.abs((mast.p1||0)-(mast.p0||0));
+    if(xL-(mast.fin||0)>Math.max(PAT_BAN71.huecoVelas, Math.round(PAT_BAN71.huecoFrac*anchoM71))) banOk71=false;
+    if(banOk71 && altoM71>0){
+      var k071=Math.max(0,Math.ceil(mast.fin||0)), k171=Math.min(C.last,Math.floor(xE)), ext71=null, kq;
+      for(kq=k071;kq<=k171;kq++){
+        if(mast.dir>0){ if(ext71===null || C.V[kq].b<ext71) ext71=C.V[kq].b; }
+        else { if(ext71===null || C.V[kq].h>ext71) ext71=C.V[kq].h; }
+      }
+      if(ext71!==null && (mast.dir>0 ? (mast.p1-ext71) : (ext71-mast.p1))/altoM71>PAT_BAN71.devuelveMax) banOk71=false;
+    }
+  }
+  var penR=(banOk71 && mast && mast.h>=2*hmax && span<=1.7*Math.max(mast.w,6) && (mast.h/Math.max(1,mast.w))>=0.7*C.atr);
   /* la misma zona puede leerse de dos formas (canal bajista = bandera alcista; cuña descendente = banderín alcista):
      sin mástil (sinMast) se lee como canal/cuña; con mástil, como bandera/banderín; el buscador entrega las dos */
   function elegir(pen){
@@ -19974,6 +20082,7 @@ function cruz67Enganchar(E, zona){
   var lp=null, oculta=null;
   zona.addEventListener("pointerdown", function(ev){
     if(ev.pointerType==="mouse" || E.herr || E.crea) return;
+    if(E.rp && E.rp.eligiendo) return;          /* v71 · con las tijeras, el dedo corre la gráfica: no sale la cruz */
     if(ev.target.closest && ev.target.closest(NO)) return;
     if(oculta){ clearTimeout(oculta); oculta=null; }
     if(E.cz67) cruz67Quitar(E);
@@ -22189,6 +22298,7 @@ function ajustesVentana68(E){
       var op=(E&&E.op)||{}, lin=LINEAS_AJ.filter(function(x){ return x[0]!=="mar" || (op.marcas && op.marcas.length); });
       h+=t68("Líneas de la gráfica");
       lin.forEach(function(x){ h+=fsw68(x[1], 'data-alin="'+x[0]+'"', linVer(x[0]), "", x[2]); });
+      h+=(typeof ajLineas71==="function") ? ajLineas71(E) : "";          /* v71 */
       h+=ajFaltas70(E);        /* v70 · justo debajo de las líneas de la operación; solo en la gráfica de una operación */
       h+=t68("Etiquetas y líneas de precio");     /* v68 · puntos 68 y 69: apagadas de fábrica (gráfica clara y concisa) */
       h+=fsw68("Máximo y mínimo del tramo", "data-agmm", !!a.gMM, "Los precios más alto y más bajo de lo que se ve, con su línea y su etiqueta.");
@@ -22411,18 +22521,22 @@ function ruedaMon68(E){
   function sincronizar(){
     var h=alto(); if(!h) return;
     var i=lista.indexOf(actual); if(i<0) i=0;
-    if(Math.abs(wl.scrollTop-i*h)>1 && !mano) wl.scrollTop=i*h;
+    if(Math.abs(wl.scrollTop-i*h)>1 && !mano){ w._prog71=Date.now(); wl.scrollTop=i*h; }      /* v71 · lo mueve la app */
   }
+  function usr71(){ return !!w._down71 || (Date.now()-(w._t71||0))<900; }      /* v71 · ¿la está moviendo Luis? */
   function ir(i, suave){
     var h=alto(); if(!h) return;
     i=Math.max(0, Math.min(lista.length-1, i));
+    w._idx71=i; w._t71=Date.now();          /* v71 · la moneda elegida a propósito manda */
     mano=true;
     if(suave && wl.scrollTo) wl.scrollTo({top:i*h, behavior:"smooth"}); else wl.scrollTop=i*h;
     clearTimeout(tmr); tmr=setTimeout(asentar, suave ? 170 : 40);
   }
   function asentar(){
     mano=false;
-    var s=lista[indice()];
+    var ix71=(w._idx71!=null) ? w._idx71 : null; w._idx71=null;
+    if(ix71==null && !usr71()){ sincronizar(); return; }          /* v71 · se movió sola (el navegador la manda al principio): NO se cambia de moneda */
+    var s=lista[ix71!=null ? ix71 : indice()];
     if(s && s!==actual) cambiar(s);
   }
   function cambiar(s){
@@ -22443,7 +22557,18 @@ function ruedaMon68(E){
     if(foco){ var nl=cont.querySelector(".gcwl"); if(nl) try{ nl.focus({preventScroll:true}); }catch(e4){ nl.focus(); } }
     if(N && ampl) requestAnimationFrame(function(){ dibujar(N); });
   }
+  /* v71 · la rueda de monedas: solo el dedo, el ratón o el teclado la mueven de verdad */
+  wl.addEventListener("touchstart", function(){ w._down71=true; w._t71=Date.now(); }, {passive:true, capture:true});
+  wl.addEventListener("touchend", function(){ w._down71=false; w._t71=Date.now(); }, {passive:true, capture:true});
+  wl.addEventListener("touchcancel", function(){ w._down71=false; w._t71=Date.now(); }, {passive:true, capture:true});
+  wl.addEventListener("pointerdown", function(ev){ w._t71=Date.now(); if(ev.pointerType==="touch"){ w._down71=true; return; }
+    w._down71=true; var su=function(){ window.removeEventListener("pointerup", su, true); window.removeEventListener("pointercancel", su, true); w._down71=false; w._t71=Date.now(); };
+    window.addEventListener("pointerup", su, true); window.addEventListener("pointercancel", su, true); }, true);
+  wl.addEventListener("wheel", function(){ w._t71=Date.now(); }, {passive:true, capture:true});
+  wl.addEventListener("keydown", function(){ w._t71=Date.now(); }, true);
   wl.addEventListener("scroll", function(){
+    if(!usr71()){ if(Date.now()-(w._prog71||0)<900) return; clearTimeout(w._rs71); w._rs71=setTimeout(function(){ if(!usr71()) sincronizar(); }, 40); return; }
+    w._t71=Date.now();
     mano=true; clearTimeout(tmr); tmr=setTimeout(asentar, 130);
   }, {passive:true});
   /* con el ratón, una vuelta de la rueda es UN paso */
@@ -22744,7 +22869,7 @@ itemsGrafica68=function(E, pt, enPanel){
    =================================================================== */
 var RP69={activo:false, barra:false, eligiendo:false, play:false, vel:4, T:null, sym:"", id:0, tm:null,
           tmH:null, huerfano:0, fin:false};
-var RP_VELS69=[0.1,0.3,0.5,0.7,1,3,5,7,10];       /* velas por segundo, como en la referencia */
+var RP_VELS69=[0.1,0.2,0.3,0.5,1,3,5,7,10];       /* velas por segundo, como en la referencia (v71: 0,2x en lugar de 0,7x, revisado en la cuenta de Luis) */
 var RP_TOPE_ATRAS69=8000;                         /* velas hacia atrás del cursor, igual que el tope normal */
 (function(){
   var S='viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"';
@@ -22783,6 +22908,7 @@ function precioRP69(E, sym){
   return precioDe(sym);
 }
 function rpEsForm69(E){
+  if(E && E.op && E.op.practica && E.cont) return true;        /* v71 · la pantalla «Practicar» de Backtesting */
   return !!(E && E.op && !E.op.soloVer && E.cont && E.cont.id==="fuGraf" && typeof FU!=="undefined" && FU.amb==="back");
 }
 function rpFecha69(E, t, corta){
@@ -22932,7 +23058,7 @@ function rpReset69(){
 function rpDescartar69(){
   var R=RP69; if(!R.activo && !R.barra) return;
   R.huerfano=Date.now(); R.play=false; clearTimeout(R.tm); clearTimeout(R.tmH);
-  R.tmH=setTimeout(function(){ if(R.huerfano && Date.now()-R.huerfano>=2400) rpReset69(); }, 2500);
+  R.tmH=setTimeout(function(){ if(R.huerfano && !R.pausa71 && Date.now()-R.huerfano>=2400) rpReset69(); }, 2500);     /* v71 · pausa71: se está eligiendo otra moneda para practicar */
 }
 /* lo que la gráfica calculó mirando velas que el cursor dejó atrás (historia de patrones, patrones de vela) se olvida:
    si no, al retroceder quedarían figuras hechas con velas «del futuro» */
@@ -22949,6 +23075,7 @@ function rpAbrir69(E){
   if(E.herr){ E.herr=null; E.crea=null; }
   cerrarPops(E);
   rpPintar69(E);
+  if(E._rpRayaIni) E._rpRayaIni();                 /* v71 */
 }
 function rpIdxDeX69(E, clientX){
   var z=E.cont.querySelector(".gzona"), r=z.getBoundingClientRect(), v=E.velas;
@@ -23034,6 +23161,8 @@ function rpSalir69(E){
   E.fin=null; E.cargando=false;
   rpPintar69(E);
   var cc=E.cont.querySelector(".rpCorte"); if(cc) cc.hidden=true;
+  var bq=E.cont.querySelector(".rpBarra"); if(bq){ bq.classList.remove("rpPreg"); var qq=bq.querySelector(".rpQ"); if(qq) qq.hidden=true; }
+  E._rpX=null;
   if(estaba){
     E.velas=null;
     if(typeof E.cargarVelas69==="function") E.cargarVelas69(); else dibujar(E);
@@ -23070,6 +23199,9 @@ function rpMontarUI69(E){
       '<button type="button" data-rp="vel" class="rpB rpVel" title="'+esc(tr("Velocidad"))+'" aria-label="'+esc(tr("Velocidad"))+'">1x</button>'+
       '<button type="button" data-rp="salir" class="rpB rpI rpSal" title="'+esc(tr("Salir de la repetición y volver al tiempo real"))+'" aria-label="'+esc(tr("Salir de la repetición y volver al tiempo real"))+'">'+ICG.rp_x+'</button>'+
     '</div>'+
+    '<div class="rpQ" hidden><span>'+esc(tr("¿Salir de la práctica?"))+'</span>'+
+      '<button type="button" data-rp="sigue" class="rpB">'+esc(tr("Seguir"))+'</button>'+
+      '<button type="button" data-rp="sale" class="rpB rpSi">'+esc(tr("Sí, salir"))+'</button></div>'+
     '<div class="rpVels" hidden>'+RP_VELS69.map(function(x, i){ return '<button type="button" data-rpv="'+i+'">'+String(x).replace(".", sepDecimal())+'x</button>'; }).join("")+'</div>'+
     '<div class="rpInfo" translate="no" hidden></div>';
   ["pointerdown","pointerup","click","dblclick","touchstart"].forEach(function(n){ bar.addEventListener(n, parar); });
@@ -23078,16 +23210,21 @@ function rpMontarUI69(E){
     if(vb){ rpVelocidad69(E, +vb.getAttribute("data-rpv")); return; }
     var t=ev.target.closest ? ev.target.closest("[data-rp]") : null; if(!t || t.disabled) return;
     var k=t.getAttribute("data-rp"), RR=E.rp; if(!RR) return;
-    if(k==="corte"){ RR.eligiendo=!RR.eligiendo; if(RR.play){ RR.play=false; clearTimeout(RR.tm); } var l0=bar.querySelector(".rpVels"); if(l0) l0.hidden=true; rpPintar69(E); }
+    if(k==="corte"){ RR.eligiendo=!RR.eligiendo; if(RR.play){ RR.play=false; clearTimeout(RR.tm); } var l0=bar.querySelector(".rpVels"); if(l0) l0.hidden=true; rpPintar69(E); if(RR.eligiendo && E._rpRayaIni) E._rpRayaIni(); }
     else if(k==="ant"){ if(RR.play){ RR.play=false; clearTimeout(RR.tm); } rpPaso69(E, -1); rpPintar69(E); }
     else if(k==="sig"){ if(RR.play){ RR.play=false; clearTimeout(RR.tm); } rpPaso69(E, 1); rpPintar69(E); }
     else if(k==="play"){ RR.eligiendo=false; rpPlay69(E); }
     else if(k==="vel"){ var l=bar.querySelector(".rpVels"); if(l){ l.hidden=!l.hidden; rpPintar69(E); } }
-    else if(k==="salir"){ rpSalir69(E); }
+    else if(k==="salir"){                                  /* v71 · practicando, la ✕ pregunta antes (la referencia: «Leave current replay?») */
+      if(RR.activo){ if(RR.play){ RR.play=false; clearTimeout(RR.tm); } var q0=bar.querySelector(".rpQ"); if(q0){ q0.hidden=false; bar.classList.add("rpPreg"); } rpPintar69(E); }
+      else rpSalir69(E);
+    }
+    else if(k==="sigue"){ var q1=bar.querySelector(".rpQ"); if(q1) q1.hidden=true; bar.classList.remove("rpPreg"); }
+    else if(k==="sale"){ var q2=bar.querySelector(".rpQ"); if(q2) q2.hidden=true; bar.classList.remove("rpPreg"); rpSalir69(E); }
   });
   zona.appendChild(bar);
   var corte=document.createElement("div");
-  corte.className="rpCorte"; corte.hidden=true; corte.innerHTML='<i>'+ICG.rp_tij+'</i>';
+  corte.className="rpCorte"; corte.hidden=true; corte.innerHTML='<i>'+ICG.rp_tij+'</i><b class="rpCf" translate="no"></b>';     /* v71 · abajo, en el eje del tiempo, la fecha y hora de esa vela (la referencia) */
   zona.appendChild(corte);
 
   /* las tijeras, como en la referencia: la raya con las tijeras SIGUE al ratón (también mientras se arrastra); un clic suelto elige esa vela.
@@ -23097,25 +23234,45 @@ function rpMontarUI69(E){
     var r=zona.getBoundingClientRect();
     if(clientX-r.left>(E.anchoV||1e9) || clientX<r.left){ corte.hidden=true; return; }       /* la columna de precios no se corta */
     var i=rpIdxDeX69(E, clientX); if(i<0){ corte.hidden=true; return; }
-    var i0=(E.fin||0)-(E.cuantas||0);
-    corte.style.left=((i-i0+0.5)*(E.per||1)).toFixed(1)+"px";
+    var i0=(E.fin||0)-(E.cuantas||0), px=(i-i0+0.5)*(E.per||1);
+    corte.style.left=px.toFixed(1)+"px";
+    corte.style.setProperty("--rpw", Math.max(0, (E.anchoV||r.width)-px).toFixed(1)+"px");     /* v71 · lo apagado llega hasta la columna de precios, no la tapa */
+    var cf=corte.querySelector(".rpCf"), vv=E.velas;
+    if(cf){ var tx=(vv && vv[i]) ? rpFecha69(E, vv[i].t, true) : ""; if(cf.textContent!==tx) cf.textContent=tx; }
     corte.hidden=false;
   }
   E._rpRaya=function(){ rayaEn(E._rpX); };                 /* cuando la gráfica se redibuja (arrastre, zoom), la raya vuelve a su vela */
+  /* v71 · en el teléfono la raya también se ve: al entrar a elegir sale a un poco más de la mitad, y sigue al dedo mientras se desliza.
+     Lo de su derecha (lo que se va a ocultar) queda apagado, como en la referencia (Luis, 16 oct 14:22). */
+  E._rpRayaIni=function(){
+    var RR=E.rp; if(!RR || !RR.eligiendo) return;
+    var r=zona.getBoundingClientRect(), fino=false;
+    try{ fino=window.matchMedia && window.matchMedia("(pointer:fine)").matches; }catch(e0){}
+    if(E._rpX==null || E._rpX<r.left || E._rpX>r.left+(E.anchoV||r.width)){
+      if(fino) return;                                     /* con ratón, la raya aparece al pasar por encima */
+      E._rpX=r.left+(E.anchoV||r.width)*0.62;
+    }
+    rayaEn(E._rpX);
+  };
   zona.addEventListener("pointermove", function(ev){
-    if(ev.pointerType!=="mouse") return;
+    if(ev.pointerType!=="mouse" && !(ev.buttons || ev.pressure)) return;     /* el dedo: solo mientras está apoyado */
     if(!E.rp || !E.rp.eligiendo){ E._rpX=null; if(!corte.hidden) corte.hidden=true; return; }
+    if(E.pinch || (E.dedos && E.dedos.n>1)) return;
     E._rpX=ev.clientX;
     rayaEn(ev.clientX);
   });
-  zona.addEventListener("pointerleave", function(ev){ if(ev.pointerType==="mouse" && ev.buttons) return; E._rpX=null; corte.hidden=true; });
+  zona.addEventListener("pointerleave", function(ev){
+    if(ev.pointerType!=="mouse") return;                  /* v71 · al levantar el dedo la raya se queda donde estaba */
+    if(ev.buttons) return; E._rpX=null; corte.hidden=true;
+  });
   zona.addEventListener("pointerdown", function(ev){
     var RR=E.rp; if(!RR || !RR.eligiendo) return;
     if(ev.pointerType==="mouse" && ev.button!==0) return;
     if(ev.target.closest && ev.target.closest("button,.rpBarra,.gpop,.gsel,.gm,.ln .tir,.ln .et,.gzoom,.gahora")) return;
     if(E.pinch || (E.dedos && E.dedos.n>1)) return;
     var x0=ev.clientX, y0=ev.clientY, t0=Date.now(), id=ev.pointerId;
-    function fin(){ window.removeEventListener("pointerup", up); window.removeEventListener("pointercancel", fin); }
+    if(ev.pointerType!=="mouse"){ E._rpX=ev.clientX; rayaEn(ev.clientX); }          /* v71 · la raya va donde se apoya el dedo */
+    function fin(){ window.removeEventListener("pointerup", up, true); window.removeEventListener("pointercancel", fin, true); }
     function up(e){
       fin();
       if(e.pointerId!==id || !E.rp || !E.rp.eligiendo) return;
@@ -23128,8 +23285,8 @@ function rpMontarUI69(E){
       rayaEn(e.clientX);
       rpElegir69(E, i);
     }
-    window.addEventListener("pointerup", up);
-    window.addEventListener("pointercancel", fin);
+    window.addEventListener("pointerup", up, true);
+    window.addEventListener("pointercancel", fin, true);
   }, true);
 
   if(!window._rp69Teclas){
@@ -23197,7 +23354,11 @@ function engancha69(E){
   try{
     if(!rpEsForm69(E)){ E.rp=null; return; }
     var sym=String(E.op.sym||"").toUpperCase(), R=RP69;
-    if(R.sym!==sym){ rpReset69(); R=RP69; R.sym=sym; }          /* otra moneda: se empieza de cero */
+    if(R.sym!==sym){
+      if(E.op.practica && (R.activo || R.barra)){                /* v71 · Practicar: otra moneda sigue en el MISMO momento del pasado (la referencia) */
+        R.sym=sym; R.id++; R.play=false; clearTimeout(R.tm); R.fin=false; R.huerfano=0; clearTimeout(R.tmH);
+      } else { rpReset69(); R=RP69; R.sym=sym; }                 /* otra moneda: se empieza de cero */
+    }
     if(R.huerfano){ R.huerfano=0; clearTimeout(R.tmH); }          /* la gráfica solo se volvió a armar */
     E.rp=R;
     rpMontarUI69(E);
@@ -23470,6 +23631,189 @@ function ajFaltas70(E){
 }
 
 /*V70CAJA>>*/
+/*<<V71*/
+/* ===================================================================
+   v71 · PRACTICAR CON VELAS PASADAS — desde el INICIO de Backtesting
+   Luis (16 oct, 14:06 y 14:15): «La opción de practicar o de retroceder las velas para estudiar o practicar deben estar al inicio.
+   Es totalmente algo absurdo que esté dentro de nueva operación»; «estamos en el backtest, ahí mismo debería indicarte dónde está
+   para practicar»; «debe haber alguna opción donde pueda cambiar las criptomonedas que él desee ahí mismo, sin estar saliendo».
+   · Un botón «Practicar» arriba del todo en Backtesting abre la gráfica (ampliada en el teléfono) con la repetición YA abierta:
+     la raya con tijeras está puesta, se desliza para retroceder y un toque elige la vela.
+   · La moneda se cambia ahí mismo: con la ruedita de monedas de la gráfica o con «Cambiar» (la lista con buscador de siempre).
+     Si ya se está practicando, la otra moneda abre en el MISMO momento del pasado (como la referencia).
+   · Es solo para estudiar: no se toca el dinero de las pruebas ni el de verdad.
+   =================================================================== */
+function practicaSym71(){
+  var A=BD.ajustes||{}, s=A.practSym;
+  if(!s && typeof FU!=="undefined" && FU.sym) s=FU.sym;
+  if(!s){ try{ s=favsLista67()[0]; }catch(e){} }
+  return String(s||"BTC").toUpperCase();
+}
+function botonPractica71(){
+  return '<button type="button" class="btPract71" id="btPract71" onclick="abrirPractica71()">'+
+    '<span class="pIc">'+ICG.rp_rep+'</span>'+
+    '<span class="pTx"><b>'+esc(tr("Practicar"))+'</b><small>'+esc(tr("Retroceder las velas y estudiar el pasado"))+'</small></span>'+
+    '<span class="pFl" aria-hidden="true">›</span></button>';
+}
+function abrirPractica71(sym){
+  sym=String(sym||practicaSym71()).toUpperCase();
+  if(typeof RP69!=="undefined") RP69.pausa71=false;
+  var M0=null;
+  function titulo(s){
+    var nom=""; try{ nom=nombreDe(s); }catch(e){}
+    return esc(tr("Practicar"))+' · <span translate="no">'+esc(s)+'</span>'+
+      (nom && String(nom).toUpperCase()!==s ? ' <span class="mut" translate="no" style="font-weight:600;font-size:13px">'+esc(nom)+'</span>' : '');
+  }
+  abrir('<div class="hoja ancha prac71"><div class="hh"><h3>'+titulo(sym)+'</h3><button class="x" data-cerrar>×</button></div>'+
+    '<div class="hb"><div id="prG"></div></div>'+
+    '<div class="hf"><button class="b" data-cerrar>'+esc(tr("Cerrar"))+'</button>'+
+    '<button class="b" id="prCambia">'+esc(tr("Cambiar moneda"))+'</button></div></div>',
+  function(M){
+    M0=M;
+    montar(sym);
+    var cb=M.querySelector("#prCambia");
+    if(cb) cb.onclick=function(){
+      if(typeof elegirMoneda!=="function") return;
+      /* la lista de siempre, con buscador. Mientras se busca, la práctica NO se borra: al elegir, sigue en esa moneda y en el mismo momento */
+      var actual=String((GRAF && GRAF.op && GRAF.op.sym) || sym).toUpperCase();
+      RP69.pausa71=true;
+      elegirMoneda("", function(s){ abrirPractica71(s); }, function(){ abrirPractica71(actual); });
+    };
+  },
+  function(){ GRAF=null; if(typeof rpDescartar69==="function") rpDescartar69(); MIRANDO=""; });
+
+  function montar(s){
+    var g=M0 && M0.querySelector("#prG"); if(!g) return;
+    MIRANDO=s;
+    montarGrafica(g, {sym:s, soloVer:true, practica:true, rueda:true, pie:function(){ return ""; },
+      alCambiar:function(s2){ recordar(s2); var h3=M0.querySelector(".hh h3"); if(h3) h3.innerHTML=titulo(String(s2).toUpperCase()); }});
+    recordar(s);
+    var E=GRAF;
+    /* en el teléfono la práctica es a pantalla completa; y la repetición se abre sola en cuanto llegan las velas */
+    if(E && typeof esTel==="function" && esTel()){ var a=E.cont && E.cont.querySelector(".gamp"); if(a && !E.grande) try{ a.click(); }catch(e1){} }
+    abrirRp(E, 0);
+  }
+  function abrirRp(E, n){
+    if(!E || GRAF!==E || !E.rp) return;
+    if(E.rp.barra || E.rp.activo) return;
+    if(!E.velas || !E.velas.length){ if(n<60) setTimeout(function(){ abrirRp(E, n+1); }, 150); return; }
+    rpAbrir69(E);
+  }
+  function recordar(s){ var A=BD.ajustes||(BD.ajustes={}); s=String(s).toUpperCase(); if(A.practSym!==s){ A.practSym=s; guardar(); } }
+}
+
+/* ===================================================================
+   v71 · LAS LÍNEAS DE UNA OPERACIÓN NO SE PIERDEN SIN AVISO (Luis, 16 oct 14:17)
+   «Si le borro… debería salir algún mensaje… imagínate, elimine y ahora queda desnudo. ¿Y ahora cómo le ubico?
+    O al menos que tenga una opción que diga colocar en la gráfica y ahí sí automáticamente aparece dónde es tu punto
+    de origen, cuándo se ejecutó, la hora y fecha, el stop loss, todo eso.»
+   Las rayas de Entrada / Stop / Objetivo / Liquidación se apagan en Ajustes → Escalas y líneas (vale para todas las gráficas).
+   · En la gráfica de una operación, si alguna de SUS líneas está apagada, sale un aviso pequeño abajo a la izquierda:
+     «Ocultas: Stop, Objetivo · [Colocar en la gráfica]».
+   · «Colocar en la gráfica» vuelve a encender esas líneas (y el precio de hoy), pone la escala automática (para que el stop y el
+     objetivo quepan) y lleva la vista a la vela donde se ejecutó la operación; un aviso dice fecha y hora, entrada, stop y objetivo.
+   · En Ajustes → Escalas y líneas, al apagar Entrada, Stop u Objetivo con una operación en pantalla, sale el aviso de lo que pasa
+     y el mismo botón para volver a ponerlas.
+   =================================================================== */
+var LIN71_NOM={ent:"Entrada", sl:"Stop", tp:"Objetivo", liq:"Liquidación"};
+/* las líneas que ESTA operación dibuja (las que tienen precio) */
+function opLin71(E){
+  if(!E || !E.op || typeof E.op.valores!=="function" || !E.op.caja) return [];
+  var v={}; try{ v=E.op.valores()||{}; }catch(e){ v={}; }
+  var L=[];
+  if(v.entrada>0) L.push("ent");
+  if(v.sl>0) L.push("sl");
+  if(v.tp>0) L.push("tp");
+  if(v.liq>0) L.push("liq");
+  return L;
+}
+function opLinOcultas71(E){ return opLin71(E).filter(function(k){ return !linVer(k); }); }
+function chipLineas71(E){
+  var z=E && E.cont && E.cont.querySelector(".gzona"); if(!z) return;
+  var L=opLinOcultas71(E), c=z.querySelector(".opLin71");
+  if(!L.length){ if(c) c.parentNode.removeChild(c); return; }
+  if(!c){
+    c=document.createElement("div"); c.className="opLin71";
+    c.innerHTML='<span class="t"></span><button type="button">'+esc(tr("Colocar en la gráfica"))+'</button>';
+    ["pointerdown","click","dblclick"].forEach(function(n){ c.addEventListener(n, function(ev){ ev.stopPropagation(); }); });
+    c.querySelector("button").addEventListener("click", function(ev){ ev.stopPropagation(); colocarLineas71(GRAF && GRAF.cont===E.cont ? GRAF : E); });
+    z.appendChild(c);
+  }
+  var tx=tr("Ocultas")+": "+L.map(function(k){ return tr(LIN71_NOM[k]); }).join(", ");
+  var t=c.querySelector(".t"); if(t && t.textContent!==tx) t.textContent=tx;
+}
+function colocarLineas71(E){
+  if(!E || !E.op) return;
+  var g=BD.ajustes.gLin||(BD.ajustes.gLin={});
+  ["ent","sl","tp","liq","hoy"].forEach(function(k){ delete g[k]; });
+  tocar(BD.ajustes); guardar();
+  if(E.yMan) E.yMan=null;                                        /* escala automática: el stop y el objetivo entran en pantalla */
+  var cj=null; try{ cj=E.op.caja ? E.op.caja() : null; }catch(e0){ cj=null; }
+  var v=E.velas, txt="";
+  if(cj && cj.a && v && v.length && typeof velaIni70==="function"){
+    var i=velaIni70(E, cj.a, cj.p0), n=v.length, cu=E.cuantas||VENTANA;
+    if(i>=0){
+      /* que se vean la vela de entrada y lo que vino después: si cabe todo, la vista va al final; si no, la entrada queda a la izquierda */
+      if(n-i > cu*0.85) E.fin=limitarFin(E, Math.round(i+cu*0.8));
+      else E.fin=null;
+    }
+    try{ txt=tr("Entró")+" "+fechaHora71(cj.a); }catch(e1){}
+  }
+  var val={}; try{ val=E.op.valores()||{}; }catch(e2){}
+  var p=[];
+  if(txt) p.push(txt);
+  if(val.entrada>0) p.push(tr("Entrada")+" "+precio(val.entrada));
+  if(val.sl>0) p.push(tr("Stop")+" "+precio(val.sl));
+  if(val.tp>0) p.push(tr("Objetivo")+" "+precio(val.tp));
+  dibujar(E);
+  try{ if(typeof pintarPie==="function") pintarPie(E); }catch(e3){}
+  aviso(esc(p.join(" · ")));
+}
+function fechaHora71(a){
+  var d=new Date(a.t), loc;
+  try{ loc=(typeof localeNumeros==="function") ? localeNumeros() : undefined; }catch(e){ loc=undefined; }
+  var s=d.toLocaleDateString(loc, {day:"numeric", month:"short", year:"numeric"});
+  if(a.ex) s+=" · "+P(d.getHours())+":"+P(d.getMinutes());
+  return s;
+}
+/* Ajustes → Escalas y líneas: el aviso y el botón, solo si la gráfica es de una operación */
+function ajLineas71(E){
+  var L=opLin71(E); if(!L.length) return "";
+  var oc=opLinOcultas71(E);
+  return '<div class="ajLin71" data-oplin71="'+L.join(",")+'"'+(oc.length?'':' hidden')+'>'+
+    '<p>'+esc(tr("Ojo: con estas líneas apagadas no se ve en la gráfica dónde está la entrada, el stop o el objetivo de esta operación. La operación sigue igual."))+'</p>'+
+    '<button type="button" class="b sm" data-colocar71="1">'+esc(tr("Colocar en la gráfica"))+'</button></div>';
+}
+(function(){
+  if(window._lin71) return; window._lin71=true;
+  /* el botón de Ajustes: enciende los interruptores de esas líneas (así «Cancelar» y «Ok» siguen funcionando como siempre) */
+  document.addEventListener("click", function(ev){
+    var b=ev.target && ev.target.closest ? ev.target.closest("[data-colocar71]") : null; if(!b) return;
+    var caja=b.closest(".ajLin71"), pan=caja ? (caja.closest(".v68aj, .v68w, .hoja, body")||document) : document;
+    ["ent","sl","tp","liq","hoy"].forEach(function(k){
+      var i=pan.querySelector('input[data-alin="'+k+'"]');
+      if(i && !i.checked){ i.checked=true; i.dispatchEvent(new Event("change", {bubbles:true})); }
+    });
+    if(caja) caja.hidden=true;
+    if(typeof GRAF!=="undefined" && GRAF && GRAF.yMan){ GRAF.yMan=null; dibujar(GRAF); }
+  }, true);
+  /* al apagar Entrada, Stop u Objetivo, el aviso aparece en el momento */
+  document.addEventListener("change", function(ev){
+    var t=ev.target; if(!t || !t.hasAttribute || !t.hasAttribute("data-alin")) return;
+    var pan=t.closest(".v68aj, .v68w, .hoja")||document, caja=pan.querySelector(".ajLin71"); if(!caja) return;
+    var L=(caja.getAttribute("data-oplin71")||"").split(",").filter(Boolean);
+    var alguna=L.some(function(k){ var i=pan.querySelector('input[data-alin="'+k+'"]'); return i && !i.checked; });
+    caja.hidden=!alguna;
+  }, true);
+})();
+var _dibujar71=dibujar;
+dibujar=function(E){
+  var r=_dibujar71.apply(this, arguments);
+  try{ if(E && E.cont) chipLineas71(E); }catch(e){ if(window.console) console.error(e); }
+  return r;
+};
+
+/*V71>>*/
 function calcularEscala(estado){
   var op=estado.op, v=velasVisibles(estado), val=op.valores?op.valores():{};
   var pr=precioRP69(estado, op.sym);
@@ -29930,6 +30274,7 @@ function pintarAmbito(k){
   if(!FU.fecha) FU.fecha=hoy();
   var F=carteraFut(A.lista), T=F.tot;
   var h=alertaPrecios(k);
+  if(k==="back" && typeof botonPractica71==="function") h+=botonPractica71();      /* v71 · «Practicar», lo primero de Backtesting */
 
   /* ---- franja de riesgo ---- */
   var vacioFut = !A.lista.length;
@@ -37507,7 +37852,11 @@ function aplicarCopia(d){
         BD.alertas=Array.isArray(d.alertas)?d.alertas:[];
         BD.borrados=Array.isArray(d.borrados)?d.borrados:[];
         if(Array.isArray(d.histDia)) BD.histDia=juntarHistDia(BD.histDia, d.histDia);
+        var ant71=BD.ajustes||{};
         BD.ajustes=Object.assign({}, BD.ajustes, d.ajustes||{}, {git:tk});
+        /* v71 · el tiempo de las velas es de ESTE equipo: lo que trae la copia no lo pisa */
+        if(ant71.inter) BD.ajustes.inter=ant71.inter;
+        BD.ajustes.interMon=Object.assign({}, (d.ajustes||{}).interMon||{}, ant71.interMon||{});
         if(d.tema) BD.tema=Object.assign({}, BD.tema, d.tema);
         ordenarDatosViejos();
         /* lo que vuelve de la copia tiene que MANDAR sobre el otro equipo */
@@ -42341,6 +42690,15 @@ DIC.en={
 "Cuánto le falta para entrar":"How far to entry",
 "En una orden programada: lo que le falta al precio para llegar a la entrada.":"On a scheduled order: how much the price still has to move to reach the entry.",
 "Apagadas, la gráfica gana altura. La entrada, el stop, el objetivo y lo que pone se ven siempre.":"When they are off, the chart gets taller. Entry, stop, target and how much you put in are always shown.",
+"¿Salir de la práctica?":"Leave the practice?",
+"Seguir":"Stay",
+"Practicar":"Practice",
+"Retroceder las velas y estudiar el pasado":"Rewind the candles and study the past",
+"Cambiar moneda":"Change coin",
+"Colocar en la gráfica":"Show on chart",
+"Ocultas":"Hidden",
+"Ojo: con estas líneas apagadas no se ve en la gráfica dónde está la entrada, el stop o el objetivo de esta operación. La operación sigue igual.":"Note: with these lines turned off, the chart doesn't show where this trade's entry, stop or target are. The trade itself doesn't change.",
+"Sí, salir":"Yes, leave",
 
 "Línea horizontal":"Horizontal line",
 "Línea vertical":"Vertical line",
@@ -47921,6 +48279,15 @@ DIC.pt={
 "Cuánto le falta para entrar":"Quanto falta para entrar",
 "En una orden programada: lo que le falta al precio para llegar a la entrada.":"Em uma ordem programada: quanto falta para o preço chegar à entrada.",
 "Apagadas, la gráfica gana altura. La entrada, el stop, el objetivo y lo que pone se ven siempre.":"Desligadas, o gráfico ganha altura. A entrada, o stop, o alvo e quanto você coloca sempre aparecem.",
+"¿Salir de la práctica?":"Sair da prática?",
+"Seguir":"Continuar",
+"Practicar":"Praticar",
+"Retroceder las velas y estudiar el pasado":"Voltar as velas e estudar o passado",
+"Cambiar moneda":"Trocar moeda",
+"Colocar en la gráfica":"Colocar no gráfico",
+"Ocultas":"Ocultas",
+"Ojo: con estas líneas apagadas no se ve en la gráfica dónde está la entrada, el stop o el objetivo de esta operación. La operación sigue igual.":"Atenção: com estas linhas desligadas, o gráfico não mostra onde estão a entrada, o stop ou o alvo desta operação. A operação continua igual.",
+"Sí, salir":"Sim, sair",
 
 "Línea horizontal":"Linha horizontal",
 "Línea vertical":"Linha vertical",
@@ -53494,6 +53861,15 @@ DIC.fr={
 "Cuánto le falta para entrar":"Combien il reste pour entrer",
 "En una orden programada: lo que le falta al precio para llegar a la entrada.":"Sur un ordre programmé : ce qui manque au prix pour atteindre l'entrée.",
 "Apagadas, la gráfica gana altura. La entrada, el stop, el objetivo y lo que pone se ven siempre.":"Désactivées, le graphique gagne en hauteur. L'entrée, le stop, l'objectif et la mise sont toujours affichés.",
+"¿Salir de la práctica?":"Quitter l'entraînement ?",
+"Seguir":"Rester",
+"Practicar":"S'entraîner",
+"Retroceder las velas y estudiar el pasado":"Revenir en arrière sur les bougies et étudier le passé",
+"Cambiar moneda":"Changer de crypto",
+"Colocar en la gráfica":"Afficher sur le graphique",
+"Ocultas":"Masquées",
+"Ojo: con estas líneas apagadas no se ve en la gráfica dónde está la entrada, el stop o el objetivo de esta operación. La operación sigue igual.":"Attention : avec ces lignes désactivées, le graphique ne montre pas où se trouvent l'entrée, le stop ou l'objectif de cette position. La position reste la même.",
+"Sí, salir":"Oui, quitter",
 
 "Línea horizontal":"Ligne horizontale",
 "Línea vertical":"Ligne verticale",
@@ -59067,6 +59443,15 @@ DIC.de={
 "Cuánto le falta para entrar":"Wie weit bis zum Einstieg",
 "En una orden programada: lo que le falta al precio para llegar a la entrada.":"Bei einer geplanten Order: wie viel dem Kurs noch bis zum Einstieg fehlt.",
 "Apagadas, la gráfica gana altura. La entrada, el stop, el objetivo y lo que pone se ven siempre.":"Ausgeschaltet wird der Chart höher. Einstieg, Stopp, Ziel und Einsatz werden immer angezeigt.",
+"¿Salir de la práctica?":"Übung beenden?",
+"Seguir":"Bleiben",
+"Practicar":"Üben",
+"Retroceder las velas y estudiar el pasado":"Kerzen zurückspulen und die Vergangenheit studieren",
+"Cambiar moneda":"Coin wechseln",
+"Colocar en la gráfica":"Im Chart anzeigen",
+"Ocultas":"Ausgeblendet",
+"Ojo: con estas líneas apagadas no se ve en la gráfica dónde está la entrada, el stop o el objetivo de esta operación. La operación sigue igual.":"Achtung: Mit diesen ausgeschalteten Linien zeigt der Chart nicht, wo Einstieg, Stop oder Ziel dieses Trades liegen. Der Trade selbst bleibt unverändert.",
+"Sí, salir":"Ja, beenden",
 
 "Línea horizontal":"Horizontale Linie",
 "Línea vertical":"Vertikale Linie",
@@ -64640,6 +65025,15 @@ DIC.it={
 "Cuánto le falta para entrar":"Quanto manca per entrare",
 "En una orden programada: lo que le falta al precio para llegar a la entrada.":"In un ordine programmato: quanto manca al prezzo per raggiungere l'ingresso.",
 "Apagadas, la gráfica gana altura. La entrada, el stop, el objetivo y lo que pone se ven siempre.":"Disattivate, il grafico guadagna altezza. Ingresso, stop, obiettivo e quanto si mette sono sempre visibili.",
+"¿Salir de la práctica?":"Uscire dalla pratica?",
+"Seguir":"Resta",
+"Practicar":"Esercitati",
+"Retroceder las velas y estudiar el pasado":"Riavvolgi le candele e studia il passato",
+"Cambiar moneda":"Cambia moneta",
+"Colocar en la gráfica":"Mostra sul grafico",
+"Ocultas":"Nascoste",
+"Ojo: con estas líneas apagadas no se ve en la gráfica dónde está la entrada, el stop o el objetivo de esta operación. La operación sigue igual.":"Attenzione: con queste linee spente il grafico non mostra dove sono l'entrata, lo stop o l'obiettivo di questa operazione. L'operazione resta uguale.",
+"Sí, salir":"Sì, esci",
 
 "Línea horizontal":"Linea orizzontale",
 "Línea vertical":"Linea verticale",
@@ -70207,6 +70601,15 @@ DIC.nl={
 "Cuánto le falta para entrar":"Hoeveel er nog tot de instap is",
 "En una orden programada: lo que le falta al precio para llegar a la entrada.":"Bij een geplande order: hoeveel de prijs nog moet bewegen om de instap te bereiken.",
 "Apagadas, la gráfica gana altura. La entrada, el stop, el objetivo y lo que pone se ven siempre.":"Uitgeschakeld wordt de grafiek hoger. Instap, stop, doel en je inleg zie je altijd.",
+"¿Salir de la práctica?":"Oefening verlaten?",
+"Seguir":"Blijven",
+"Practicar":"Oefenen",
+"Retroceder las velas y estudiar el pasado":"Spoel de kaarsen terug en bestudeer het verleden",
+"Cambiar moneda":"Munt wisselen",
+"Colocar en la gráfica":"Op de grafiek zetten",
+"Ocultas":"Verborgen",
+"Ojo: con estas líneas apagadas no se ve en la gráfica dónde está la entrada, el stop o el objetivo de esta operación. La operación sigue igual.":"Let op: met deze lijnen uit toont de grafiek niet waar de instap, de stop of het doel van deze positie liggen. De positie zelf blijft gelijk.",
+"Sí, salir":"Ja, verlaten",
 
 "Línea horizontal":"Horizontale lijn",
 "Línea vertical":"Verticale lijn",
@@ -76060,6 +76463,15 @@ DIC.pl={
 "Cuánto le falta para entrar":"Ile brakuje do wejścia",
 "En una orden programada: lo que le falta al precio para llegar a la entrada.":"W zleceniu zaplanowanym: ile brakuje cenie, by dotrzeć do wejścia.",
 "Apagadas, la gráfica gana altura. La entrada, el stop, el objetivo y lo que pone se ven siempre.":"Po wyłączeniu wykres zyskuje wysokość. Wejście, stop, cel i wpłacona kwota są zawsze widoczne.",
+"¿Salir de la práctica?":"Zakończyć ćwiczenie?",
+"Seguir":"Zostań",
+"Practicar":"Ćwicz",
+"Retroceder las velas y estudiar el pasado":"Cofnij świece i przeanalizuj przeszłość",
+"Cambiar moneda":"Zmień monetę",
+"Colocar en la gráfica":"Pokaż na wykresie",
+"Ocultas":"Ukryte",
+"Ojo: con estas líneas apagadas no se ve en la gráfica dónde está la entrada, el stop o el objetivo de esta operación. La operación sigue igual.":"Uwaga: przy wyłączonych liniach wykres nie pokazuje, gdzie jest wejście, stop lub cel tej pozycji. Sama pozycja się nie zmienia.",
+"Sí, salir":"Tak, zakończ",
 
 "Línea horizontal":"Linia pozioma",
 "Línea vertical":"Linia pionowa",
@@ -81913,6 +82325,15 @@ DIC.tr={
 "Cuánto le falta para entrar":"Girişe ne kadar kaldı",
 "En una orden programada: lo que le falta al precio para llegar a la entrada.":"Programlı emirde: fiyatın girişe ulaşması için kalan miktar.",
 "Apagadas, la gráfica gana altura. La entrada, el stop, el objetivo y lo que pone se ven siempre.":"Kapalıyken grafik yükseklik kazanır. Giriş, stop, hedef ve yatırılan tutar her zaman görünür.",
+"¿Salir de la práctica?":"Pratikten çıkılsın mı?",
+"Seguir":"Devam et",
+"Practicar":"Pratik yap",
+"Retroceder las velas y estudiar el pasado":"Mumları geri sar ve geçmişi incele",
+"Cambiar moneda":"Coini değiştir",
+"Colocar en la gráfica":"Grafiğe yerleştir",
+"Ocultas":"Gizli",
+"Ojo: con estas líneas apagadas no se ve en la gráfica dónde está la entrada, el stop o el objetivo de esta operación. La operación sigue igual.":"Dikkat: Bu çizgiler kapalıyken grafik bu işlemin girişini, stopunu veya hedefini göstermez. İşlemin kendisi değişmez.",
+"Sí, salir":"Evet, çık",
 
 "Línea horizontal":"Yatay çizgi",
 "Línea vertical":"Dikey çizgi",
@@ -87766,6 +88187,15 @@ DIC.ru={
 "Cuánto le falta para entrar":"Сколько осталось до входа",
 "En una orden programada: lo que le falta al precio para llegar a la entrada.":"В отложенном ордере: сколько осталось цене, чтобы дойти до входа.",
 "Apagadas, la gráfica gana altura. La entrada, el stop, el objetivo y lo que pone se ven siempre.":"Когда они выключены, график становится выше. Вход, стоп, цель и вложенная сумма видны всегда.",
+"¿Salir de la práctica?":"Выйти из тренировки?",
+"Seguir":"Остаться",
+"Practicar":"Тренировка",
+"Retroceder las velas y estudiar el pasado":"Отмотайте свечи назад и изучите прошлое",
+"Cambiar moneda":"Сменить монету",
+"Colocar en la gráfica":"Показать на графике",
+"Ocultas":"Скрыты",
+"Ojo: con estas líneas apagadas no se ve en la gráfica dónde está la entrada, el stop o el objetivo de esta operación. La operación sigue igual.":"Внимание: при выключенных линиях на графике не видно, где вход, стоп или цель этой сделки. Сама сделка не меняется.",
+"Sí, salir":"Да, выйти",
 
 "Línea horizontal":"Горизонтальная линия",
 "Línea vertical":"Вертикальная линия",
@@ -93619,6 +94049,15 @@ DIC.uk={
 "Cuánto le falta para entrar":"Скільки залишилось до входу",
 "En una orden programada: lo que le falta al precio para llegar a la entrada.":"У відкладеному ордері: скільки залишилось ціні, щоб дійти до входу.",
 "Apagadas, la gráfica gana altura. La entrada, el stop, el objetivo y lo que pone se ven siempre.":"Коли їх вимкнено, графік стає вищим. Вхід, стоп, ціль і вкладена сума видно завжди.",
+"¿Salir de la práctica?":"Вийти з тренування?",
+"Seguir":"Залишитися",
+"Practicar":"Тренування",
+"Retroceder las velas y estudiar el pasado":"Відмотайте свічки назад і вивчіть минуле",
+"Cambiar moneda":"Змінити монету",
+"Colocar en la gráfica":"Показати на графіку",
+"Ocultas":"Приховано",
+"Ojo: con estas líneas apagadas no se ve en la gráfica dónde está la entrada, el stop o el objetivo de esta operación. La operación sigue igual.":"Увага: з вимкненими лініями на графіку не видно, де вхід, стоп або ціль цієї угоди. Сама угода не змінюється.",
+"Sí, salir":"Так, вийти",
 
 "Línea horizontal":"Горизонтальна лінія",
 "Línea vertical":"Вертикальна лінія",
@@ -99472,6 +99911,15 @@ DIC.id={
 "Cuánto le falta para entrar":"Berapa lagi untuk masuk",
 "En una orden programada: lo que le falta al precio para llegar a la entrada.":"Pada order terjadwal: berapa lagi yang harus ditempuh harga untuk mencapai entri.",
 "Apagadas, la gráfica gana altura. La entrada, el stop, el objetivo y lo que pone se ven siempre.":"Jika dimatikan, grafik menjadi lebih tinggi. Entri, stop, target, dan dana yang dipakai selalu tampil.",
+"¿Salir de la práctica?":"Keluar dari latihan?",
+"Seguir":"Tetap",
+"Practicar":"Latihan",
+"Retroceder las velas y estudiar el pasado":"Mundurkan lilin dan pelajari masa lalu",
+"Cambiar moneda":"Ganti koin",
+"Colocar en la gráfica":"Tampilkan di grafik",
+"Ocultas":"Disembunyikan",
+"Ojo: con estas líneas apagadas no se ve en la gráfica dónde está la entrada, el stop o el objetivo de esta operación. La operación sigue igual.":"Perhatian: dengan garis ini dimatikan, grafik tidak menunjukkan di mana entry, stop, atau target posisi ini. Posisinya sendiri tidak berubah.",
+"Sí, salir":"Ya, keluar",
 
 "Línea horizontal":"Garis horizontal",
 "Línea vertical":"Garis vertikal",
@@ -105325,6 +105773,15 @@ DIC.vi={
 "Cuánto le falta para entrar":"Còn bao xa để vào lệnh",
 "En una orden programada: lo que le falta al precio para llegar a la entrada.":"Với lệnh hẹn giờ: giá còn phải đi bao nhiêu để tới điểm vào.",
 "Apagadas, la gráfica gana altura. La entrada, el stop, el objetivo y lo que pone se ven siempre.":"Khi tắt, biểu đồ cao hơn. Điểm vào, dừng lỗ, mục tiêu và số tiền bỏ vào luôn hiển thị.",
+"¿Salir de la práctica?":"Thoát khỏi luyện tập?",
+"Seguir":"Ở lại",
+"Practicar":"Luyện tập",
+"Retroceder las velas y estudiar el pasado":"Tua lại nến và nghiên cứu quá khứ",
+"Cambiar moneda":"Đổi đồng coin",
+"Colocar en la gráfica":"Đặt lên biểu đồ",
+"Ocultas":"Đang ẩn",
+"Ojo: con estas líneas apagadas no se ve en la gráfica dónde está la entrada, el stop o el objetivo de esta operación. La operación sigue igual.":"Lưu ý: khi tắt các đường này, biểu đồ không cho thấy điểm vào, stop hay mục tiêu của lệnh này. Bản thân lệnh không thay đổi.",
+"Sí, salir":"Có, thoát",
 
 "Línea horizontal":"Đường ngang",
 "Línea vertical":"Đường dọc",
@@ -111178,6 +111635,15 @@ DIC.hi={
 "Cuánto le falta para entrar":"एंट्री तक कितना बाकी",
 "En una orden programada: lo que le falta al precio para llegar a la entrada.":"प्रोग्राम किए गए ऑर्डर में: एंट्री तक पहुँचने के लिए कीमत को अभी कितना चलना है।",
 "Apagadas, la gráfica gana altura. La entrada, el stop, el objetivo y lo que pone se ven siempre.":"बंद करने पर चार्ट ऊँचा हो जाता है। एंट्री, स्टॉप, लक्ष्य और लगाई गई रकम हमेशा दिखती हैं।",
+"¿Salir de la práctica?":"अभ्यास से बाहर निकलें?",
+"Seguir":"जारी रखें",
+"Practicar":"अभ्यास",
+"Retroceder las velas y estudiar el pasado":"कैंडल्स को पीछे ले जाएँ और पिछला समय समझें",
+"Cambiar moneda":"कॉइन बदलें",
+"Colocar en la gráfica":"चार्ट पर दिखाएँ",
+"Ocultas":"छिपी हुई",
+"Ojo: con estas líneas apagadas no se ve en la gráfica dónde está la entrada, el stop o el objetivo de esta operación. La operación sigue igual.":"ध्यान दें: ये रेखाएँ बंद होने पर चार्ट पर इस ट्रेड की एंट्री, स्टॉप या टारगेट नहीं दिखते। ट्रेड खुद वैसा ही रहता है।",
+"Sí, salir":"हाँ, बाहर निकलें",
 
 "Línea horizontal":"क्षैतिज रेखा",
 "Línea vertical":"ऊर्ध्वाधर रेखा",
@@ -117031,6 +117497,15 @@ DIC.ja={
 "Cuánto le falta para entrar":"エントリーまであとどれくらいか",
 "En una orden programada: lo que le falta al precio para llegar a la entrada.":"予約注文の場合：価格がエントリーに届くまでに、あと何％動く必要があるか。",
 "Apagadas, la gráfica gana altura. La entrada, el stop, el objetivo y lo que pone se ven siempre.":"オフにするとチャートが高くなります。エントリー、ストップ、目標、投入額は常に表示されます。",
+"¿Salir de la práctica?":"練習を終了しますか？",
+"Seguir":"続ける",
+"Practicar":"練習",
+"Retroceder las velas y estudiar el pasado":"ローソク足を巻き戻して過去を学ぶ",
+"Cambiar moneda":"銘柄を変更",
+"Colocar en la gráfica":"チャートに表示",
+"Ocultas":"非表示",
+"Ojo: con estas líneas apagadas no se ve en la gráfica dónde está la entrada, el stop o el objetivo de esta operación. La operación sigue igual.":"注意：これらの線をオフにすると、この取引のエントリー・ストップ・目標がチャートに表示されません。取引そのものは変わりません。",
+"Sí, salir":"はい、終了",
 
 "Línea horizontal":"水平線",
 "Línea vertical":"垂直線",
@@ -122884,6 +123359,15 @@ DIC.ko={
 "Cuánto le falta para entrar":"진입까지 남은 거리",
 "En una orden programada: lo que le falta al precio para llegar a la entrada.":"예약 주문에서: 가격이 진입가에 닿기까지 남은 비율입니다.",
 "Apagadas, la gráfica gana altura. La entrada, el stop, el objetivo y lo que pone se ven siempre.":"끄면 차트가 더 높아집니다. 진입, 스톱, 목표, 넣은 금액은 항상 표시됩니다.",
+"¿Salir de la práctica?":"연습을 종료할까요?",
+"Seguir":"계속",
+"Practicar":"연습",
+"Retroceder las velas y estudiar el pasado":"캔들을 되감아 과거를 공부하기",
+"Cambiar moneda":"코인 변경",
+"Colocar en la gráfica":"차트에 표시",
+"Ocultas":"숨김",
+"Ojo: con estas líneas apagadas no se ve en la gráfica dónde está la entrada, el stop o el objetivo de esta operación. La operación sigue igual.":"주의: 이 선들을 끄면 차트에서 이 거래의 진입, 스톱, 목표 위치가 보이지 않습니다. 거래 자체는 그대로입니다.",
+"Sí, salir":"네, 종료",
 
 "Línea horizontal":"수평선",
 "Línea vertical":"수직선",
@@ -128737,6 +129221,15 @@ DIC.zh={
 "Cuánto le falta para entrar":"距入场还差多少",
 "En una orden programada: lo que le falta al precio para llegar a la entrada.":"预约订单：价格还需变动多少才能到达入场价。",
 "Apagadas, la gráfica gana altura. La entrada, el stop, el objetivo y lo que pone se ven siempre.":"关闭后图表会更高。入场价、止损、目标和投入金额始终显示。",
+"¿Salir de la práctica?":"退出练习？",
+"Seguir":"继续",
+"Practicar":"练习",
+"Retroceder las velas y estudiar el pasado":"回放K线，研究过去的走势",
+"Cambiar moneda":"更换币种",
+"Colocar en la gráfica":"显示在图表上",
+"Ocultas":"已隐藏",
+"Ojo: con estas líneas apagadas no se ve en la gráfica dónde está la entrada, el stop o el objetivo de esta operación. La operación sigue igual.":"注意：关闭这些线后，图表上看不到这笔交易的入场、止损或目标位置。交易本身不变。",
+"Sí, salir":"是，退出",
 
 "Línea horizontal":"水平线",
 "Línea vertical":"垂直线",
