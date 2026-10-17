@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="74">
+<meta name="v" content="75">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -4225,6 +4225,38 @@ html .graf .gwh::after{background:var(--hl74);opacity:.7}
 @media (max-width:480px){ .graf.conHerr .gfte73{visibility:hidden} }
 
 /*V74CSS>>*/
+/*<<V75CSS*/
+/* v75 · pto 66: la línea de aviso de la caja (p. ej. «⚠ Lo liquidan antes del stop · con 9x sí trabaja») ya no se corta */
+.graf .gposp .gp-lin span{white-space:normal;overflow:visible;text-overflow:clip}
+/* v75 · pto 66: la confirmación con tres botones (Abrir ahora · Programar · Cancelar) cabe en el teléfono */
+.gp-cb.tres75{flex-wrap:wrap}
+.gp-cb.tres75 .gp-prog75{white-space:nowrap}
+/* v75 · pto 65: los rótulos de la caja Largo / Corto (la relación pegada al objetivo; forma; color propio) */
+.gtag.pz{display:inline-flex;align-items:center;gap:0;white-space:nowrap}
+.gtag.pz .pp75{font-style:normal;font-weight:600;opacity:.92;margin-left:0}
+.gtag.pz s.rr75{text-decoration:none;font-weight:800;margin-left:6px;padding:1px 6px;border-radius:5px;background:var(--b1);color:var(--tx);
+  letter-spacing:0;box-shadow:0 0 0 1px color-mix(in srgb,var(--tx) 18%,transparent)}
+.gtag.pz.solo75{padding:0;background:none!important}
+.gtag.pz.solo75 s.rr75{margin-left:0}
+.gtag.pz.zc74{background:var(--zc74);color:var(--zi75)}
+.gtag.pz.txt75{background:none!important;padding:0 2px;text-shadow:0 0 3px var(--b0),0 0 6px var(--b0)}
+.gtag.pz.txt75.ptp{color:var(--upTx)} .gtag.pz.txt75.psl{color:var(--dnTx)}
+.gtag.pz.txt75.zc74{color:var(--zc74)}
+.gtag.pz.txt75 s.rr75{background:none;box-shadow:none;color:var(--t2);padding:0 0 0 2px}
+/* v75 · pto 62: «Personas con mis indicadores» (solo con la cuenta de Luis) */
+.p75{margin-top:16px;padding-top:14px;border-top:1px solid var(--ln)}
+.p75t{font-size:15px;margin:0 0 4px}
+.p75n{font-size:12.5px;line-height:1.5;margin:4px 0 10px}
+.p75f{display:flex;gap:8px;align-items:center}
+.p75f input{flex:1 1 auto;min-width:0}
+.p75e{font-size:12.5px;color:var(--dnTx);margin:8px 0}
+.p75l{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.p75l li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid var(--ln);border-radius:10px;background:var(--b1)}
+.p75l li span{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#p75Grupo .p75{margin-top:0;padding-top:0;border-top:0}
+#p75Grupo .p75t{display:none}
+
+/*V75CSS>>*/
 
 /* pantalla ancha o teléfono acostado: el tiempo y las pestañas en la misma fila que el nombre de la moneda */
 @media (min-width:900px), (max-height:520px){
@@ -6639,7 +6671,7 @@ function tDeX(estado, x, pegar){
    v65 · EL MOTOR DE LOS DIBUJOS
    --------------------------------------------------------------------- */
 function idTrazo(){ return "z"+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
-function simTrazos(E){ return String(E.op.sym).toUpperCase(); }
+function simTrazos(E){ return (typeof dibClave75==="function") ? dibClave75(E) : String(E.op.sym).toUpperCase(); }      /* v75 · pto 63 */
 /* los dibujos de esta moneda (los de la v63 no traían id ni tipo: eran líneas) */
 function listaTrazos(E){
   var L=TRAZOS[simTrazos(E)]||[];
@@ -7170,16 +7202,16 @@ function dibujoDe(E, z, sel, W, H, previa){
       }
     }
   }
-  else if(T==="pos"){
+  else if(T==="pos"){      /* v75 · pto 65 */
     var x1p=X(z.t1), x2p=X(z.t2), yE=Y(z.p), yS=Y(z.sl), yT=Y(z.tp), xm=(x1p+x2p)/2;
     var largo=(z.lado!=="SHORT");
     var wB=Math.max(1,x2p-x1p);
     R.svg+='<rect x="'+x1p.toFixed(1)+'" y="'+Math.min(yE,yT).toFixed(1)+'" width="'+wB.toFixed(1)+'" height="'+Math.abs(yT-yE).toFixed(1)+
-           '" fill="var(--up)" fill-opacity=".20"/>'+
+           '" fill="'+cajCol75("tp")+'" fill-opacity=".20"/>'+
            '<rect x="'+x1p.toFixed(1)+'" y="'+Math.min(yE,yS).toFixed(1)+'" width="'+wB.toFixed(1)+'" height="'+Math.abs(yS-yE).toFixed(1)+
-           '" fill="var(--dn)" fill-opacity=".20"/>'+
-           '<line x1="'+x1p.toFixed(1)+'" y1="'+yT.toFixed(1)+'" x2="'+x2p.toFixed(1)+'" y2="'+yT.toFixed(1)+'" stroke="var(--up)" stroke-width="1.6"/>'+
-           '<line x1="'+x1p.toFixed(1)+'" y1="'+yS.toFixed(1)+'" x2="'+x2p.toFixed(1)+'" y2="'+yS.toFixed(1)+'" stroke="var(--dn)" stroke-width="1.6"/>'+
+           '" fill="'+cajCol75("sl")+'" fill-opacity=".20"/>'+
+           '<line x1="'+x1p.toFixed(1)+'" y1="'+yT.toFixed(1)+'" x2="'+x2p.toFixed(1)+'" y2="'+yT.toFixed(1)+'" stroke="'+cajCol75("tp")+'" stroke-width="1.6"/>'+
+           '<line x1="'+x1p.toFixed(1)+'" y1="'+yS.toFixed(1)+'" x2="'+x2p.toFixed(1)+'" y2="'+yS.toFixed(1)+'" stroke="'+cajCol75("sl")+'" stroke-width="1.6"/>'+
            '<line x1="'+x1p.toFixed(1)+'" y1="'+yE.toFixed(1)+'" x2="'+x2p.toFixed(1)+'" y2="'+yE.toFixed(1)+'" stroke="#F5C542" stroke-width="2"/>';
     /* las etiquetas: dentro de cada zona, con su porcentaje; en el centro, la relación */
     var pcTp=(z.tp-z.p)/z.p*100, pcSl=(z.sl-z.p)/z.p*100;
@@ -13164,11 +13196,27 @@ function patMedidaLineas(V, f){
   var sr=0, cr=0; for(k=Math.max(0,Math.floor(x0)); k<=Math.min(n-1,Math.floor(x1)); k++){ sr+=V[k].h-V[k].b; cr++; }
   var tol= cr ? 0.3*sr/cr : 0, loF=1e300, hiF=-1e300;
   for(k=Math.max(0,Math.floor(x0)); k<=Math.min(n-1,Math.floor(x1)); k++){ if(V[k].b<loF) loF=V[k].b; if(V[k].h>hiF) hiF=V[k].h; }
+  /* v75 · pto 61 (Luis 17 oct 13:14: el canal «se rompe» por UNA vela que cerró apenas fuera, el precio vuelve adentro y nace otro canal
+     encima): la ruptura se CONFIRMA como dice Murphy («regla de los dos días»: dos cierres seguidos más allá de la línea; «la violación de
+     un solo día no cuenta», Análisis técnico, PDF pág. 98) o con UN cierre muy fuera (un filtro de precio: PAT73.rupt.grande × el rango
+     medio de las velas de la figura). Un cierre fuera que la vela siguiente no confirma es una RUPTURA FALSA: la figura sigue (sus
+     líneas se alargan) y la falsa queda anotada (M.falsas) para marcarla. Bulkowski, con su ejemplo de ruptura falsa: la línea «tiene que
+     ser rediseñada» y la figura sigue (Enciclopedia, «La ampliación de las cuñas, ascendente», pág. 86-87).
+     PAT73.rupt.modo: "dos" (v75) · "uno" (hasta la v74: el primer cierre fuera ya era ruptura). Medición: doc75/v75-medicion-rupturas.md */
+  var RU=(typeof PAT73!=="undefined" && PAT73.rupt) ? PAT73.rupt : {modo:"uno"}, falsas=[], pend=null;
+  var tolG= cr ? (RU.grande!=null ? RU.grande : 1)*sr/cr : 0;
   for(k=kA; k<n && k<=kA+hor; k++){
-    if(V[k].c>Ls(k)+tol){ xr=k; up=1; break; }
-    if(V[k].c<Li(k)-tol){ xr=k; up=-1; break; }
+    var sU=V[k].c>Ls(k)+tol, sD=V[k].c<Li(k)-tol;
+    if(!sU && !sD) continue;
+    var sg=sU ? 1 : -1;
+    if(RU.modo!=="dos"){ xr=k; up=sg; break; }
+    if(sg>0 ? V[k].c>Ls(k)+tolG : V[k].c<Li(k)-tolG){ xr=k; up=sg; break; }                       /* un cierre muy fuera: vale solo */
+    if(k+1>=n){ pend={i:k, dir:sg}; break; }                                                       /* falta la vela que lo confirme */
+    if(sg>0 ? V[k+1].c>Ls(k+1)+tol : V[k+1].c<Li(k+1)-tol){ xr=k+1; up=sg; break; }                /* dos cierres seguidos fuera */
+    falsas.push({i:k, dir:sg});                                                                    /* volvió: ruptura falsa, la figura sigue */
   }
-  var M={lin:true, reg:R.reg, id:f.id, H:H, Ls:Ls, Li:Li, x0:x0, ini:null, pole:null, xr:xr, fin:null, pr:null, tgt:null, xt:null, estado:"espera", dir:R.d, n:n, hor:hor};
+  var M={lin:true, reg:R.reg, id:f.id, H:H, Ls:Ls, Li:Li, x0:x0, ini:null, pole:null, xr:xr, fin:null, pr:null, tgt:null, xt:null, estado:"espera", dir:R.d, n:n, hor:hor,
+         falsas:falsas, pend:pend};
   if(R.reg==="canal"){ M.emp=Math.abs(Ls(x1)-Ls(x0))/H; M.t=R.t; }                /* v68 · cuántos anchos de canal sube (o baja) a lo largo de la figura: la «inclinación» que avisa */
   if(R.reg==="mastil" && f.mast){ M.ini={i:f.mast.ini, p:f.mast.p0}; M.pole={i:f.mast.fin, p:f.mast.p1}; }
   /* hacia dónde se mide: la bandera, hacia donde apunta; la cuña, hacia donde rompa; etc. */
@@ -16256,7 +16304,17 @@ var PAT73={
        con la tabla medida en OTRAS series (BTC para ADA; ADA y BTC 1d/1h para BTC 4 h), 1 a la vez y 15 % mínimo: en ADA igual (34
        anticipadas contra 35), en BTC 4 h algo mejor (59 contra 53); lo que se ve cambia igual. No mejora en las dos → sin tabla
        («aceptar un filtro solo si mejora con datos que no se usaron para armarlo»: https://www.stockdataanalytics.com/blog/imperfect-chart-patterns-1/). */
-  verForma:{ extra:true, fant:1, cruce:false, max:null, pMin:0 },
+  /* v75 · pto 61 · encima: una figura de DOS LÍNEAS no entra encima de otra de su MISMA familia que ya se ve sobre el mismo tramo
+     (se pisan más de encimaMin de la más corta), y una fantasma que revive no vuelve encima. Luis (17 oct 13:14): «se forma otro canal,
+     pudiendo respetarse sobre el primero». Medido (doc75/v75-medicion-rupturas.md, 8 series): las horas con dos figuras de la misma
+     familia encimadas bajan del 8-29 % a 0-6 %, sin perder anticipación. */
+  verForma:{ extra:true, fant:1, cruce:false, max:null, pMin:0, encima:true, encimaMin:0.25 },
+  /* v75 · pto 61 · la ruptura de las figuras de dos líneas (pat_med.js, patMedidaLineas): modo "dos" = se confirma con DOS cierres
+     seguidos fuera de la línea (Murphy, «regla de los dos días», Análisis técnico PDF pág. 98) o con UN cierre más allá de «grande» ×
+     el rango medio de las velas de la figura (filtro de precio, Murphy pág. 97); un cierre fuera que la vela siguiente no confirma es
+     una ruptura falsa (se marca si marcar≠false) y la figura sigue. modo "uno" = como hasta la v74. Medido: «grande» 1 y solo dos
+     cierres dan casi lo mismo (1 deja entrar una vela antes en los movimientos fuertes). */
+  rupt:{ modo:"dos", grande:1.0, marcar:true },
   /* v74 · pto 59 · a igualdad de estado, en pantalla van primero estas familias: las que la referencia detecta solo (dobles, triples,
      HCH, cuñas, triángulo, rectángulo, banderas, banderines, taza: https://www.la referencia.com/support/solutions/43000706927-all-chart-patterns/)
      más el canal y el ensanchamiento, que Luis pidió (ptos 38 y 44). Lo que ya se ve no se quita por esto. */
@@ -21764,7 +21822,8 @@ enganchaPanelPos=function(E, pn){
     if(ev.target.closest("[data-ps]")){ if(z) usarPosicionEnSpot68(E, z); return; }
     var c=ev.target.closest("[data-pc]");
     if(c){
-      if(c.getAttribute("data-pc")==="si" && z) abrirDesdeCaja(E, z);
+      var pc75=c.getAttribute("data-pc");      /* v75 · pto 66 */
+      if((pc75==="si" || pc75==="prog") && z) abrirDesdeCaja(E, z, pc75);
       else E.confOp=null;
       pintarPanelPos(E); return;
     }
@@ -23090,7 +23149,7 @@ function sel68Abrir(s){
    Cada cambio se ve al instante en la gráfica; «Cancelar» lo devuelve todo, «Ok» lo deja. Lo mismo que antes guardaba el panel
    de Ajustes (BD.ajustes: gTipo, gGrid, gDec, gEsc, gInv, gLey, gLin, velaUp/Dn/Bu/Bd/Mu/Md, velaPrev): ahora está todo aquí, en un solo lugar.
    =================================================================== */
-var AJ68_CLAVES=["gTipo","gGrid","gDec","gEsc","gInv","gLey","gLin","gMM","gCD","velaUp","velaDn","velaBu","velaBd","velaMu","velaMd","velaPrev","qBloq","opFalta","zEtQue","zEtDonde","zEtSl","zEtTp","resalte","msgTodos","cruzDedo"];      /* v74 · ptos 52, 56, 57 y 40 */
+var AJ68_CLAVES=["gTipo","gGrid","gDec","gEsc","gInv","gLey","gLin","gMM","gCD","velaUp","velaDn","velaBu","velaBd","velaMu","velaMd","velaPrev","qBloq","opFalta","zEtQue","zEtDonde","zEtSl","zEtTp","resalte","msgTodos","cruzDedo","dibComp","zEtRR","zEtForma"];      /* v74 · ptos 52, 56, 57 y 40 */
 var AJ68_TAB="simbolo";
 var AJ68_IC={
   simbolo:'<path d="M7 3.5v3M7 17.5v3M5 6.5h4v11H5zM17 2.5v4M17 14.5v5M15 6.5h4v8h-4z"/>',
@@ -23185,7 +23244,7 @@ function ajustesVentana68(E){
       h+=ajFaltas70(E);        /* v70 · justo debajo de las líneas de la operación; solo en la gráfica de una operación */
       h+=t68("Etiquetas y líneas de precio");     /* v68 · puntos 68 y 69: apagadas de fábrica (gráfica clara y concisa) */
       h+=fsw68("Máximo y mínimo del tramo", "data-agmm", !!a.gMM, "Los precios más alto y más bajo de lo que se ve, con su línea y su etiqueta.");
-      h+=fsw68("Cuenta atrás de la vela", "data-agcd", !!a.gCD, "Lo que falta para que cierre la vela de ahora, bajo la etiqueta del precio.");
+      h+=fsw68("Cuenta atrás de la vela", "data-agcd", a.gCD!==false,      /* v75 · pto 64 */ "Lo que falta para que cierre la vela de ahora, bajo la etiqueta del precio.");
       return h;
     }},
     {id:"lienzo", nom:"Lienzo", ic:AJ68_IC.lienzo, html:function(){
@@ -23193,6 +23252,7 @@ function ajustesVentana68(E){
       h+=fsw68("Cuadrícula", "data-agrid", (a.gGrid!==false), "Las líneas tenues de fondo detrás de las velas.");
       h+=t68("Dibujos");
       h+=fsw68("Quitar siempre los dibujos bloqueados", "data-aqb", !!a.qBloq, "Al usar «Quitar objetos» también se van los dibujos con candado.");
+      h+=fsw68("Compartir los dibujos entre Spot, Futuros y Backtesting", "data-adib", !!a.dibComp, "Apagado: cada pantalla tiene sus propios dibujos.");      /* v75 · pto 63 */
       h+=fsw68("Dibujar con la cruz", "data-acruz", a.cruzDedo!==false, "En el teléfono: un dedo mueve solo la cruz y un toque pone el punto; dos dedos mueven la gráfica.");      /* v74 · pto 40 */
       h+=f68("Color de lo elegido", selAj68("data-ares", [["","Neutro (blanco pálido)"],["tema","Color del tema"]], (a.resalte==="tema")?"tema":""));      /* v74 · pto 57 */
       h+=t68("Mensajes");      /* v74 · pto 56 */
@@ -23248,6 +23308,7 @@ function ajustesVentana68(E){
       if(t.hasAttribute("data-agcd")){ BD.ajustes.gCD=!!t.checked; aplicar(); return; }
       if(t.hasAttribute("data-afal")){ var gf=BD.ajustes.opFalta||(BD.ajustes.opFalta={}); gf[t.getAttribute("data-afal")]=!!t.checked; aplicar(); return; }
       if(t.hasAttribute("data-aqb")){ BD.ajustes.qBloq=!!t.checked; guarda(); return; }
+      if(t.hasAttribute("data-adib")){ BD.ajustes.dibComp=!!t.checked; if(t.checked) dibJuntar75(); else dibSeparar75(); aplicar(); return; }      /* v75 · pto 63 */
       if(t.hasAttribute("data-ares")){ if(t.value) BD.ajustes.resalte=t.value; else delete BD.ajustes.resalte; aplicar(); return; }      /* v74 · pto 57 */
       if(t.hasAttribute("data-acruz")){ BD.ajustes.cruzDedo=!!t.checked; guarda(); return; }      /* v74 · pto 40 */
       if(t.hasAttribute("data-amsg")){ BD.ajustes.msgTodos=!!t.checked; guarda(); return; }      /* v74 · pto 56 */
@@ -23643,7 +23704,8 @@ function mmLineas68(E, v){
 /* ------------------------------ CUENTA ATRÁS DE LA VELA ------------------------------ */
 function ahora68(){ try{ return ahoraReal(); }catch(e){ return Date.now(); } }
 function finVela68(E){
-  var V=E.velas; if(!V || !V.length || V[0].linea) return 0;      /* sin velas de verdad (puntos de respaldo) la cuenta no significa nada */
+  var V=E.velas; if(!V || !V.length || V[0].linea) return 0;
+  if(E.rp && E.rp.activo) return 0;      /* v75 · pto 64b: en la repetición no hay vela viva */      /* sin velas de verdad (puntos de respaldo) la cuenta no significa nada */
   var t=V[V.length-1].t, ms=MS_INTER[E.inter]||msInter(E), ahora=ahora68(), fin;
   if(E.inter==="1M"){ var d=new Date(t); fin=Date.UTC(d.getUTCFullYear(), d.getUTCMonth()+1, 1); while(fin<=ahora){ var d2=new Date(fin); fin=Date.UTC(d2.getUTCFullYear(), d2.getUTCMonth()+1, 1); } return fin; }
   fin=t+ms; if(fin<=ahora && ms>0) fin+=Math.ceil((ahora-fin+1)/ms)*ms;
@@ -23660,7 +23722,7 @@ function txtCuenta68(ms){
 function cuenta68(E){
   var c=E && E.cont; if(!c) return;
   var L=c.querySelector(".glineas"), viejo=L && L.querySelector(".gcd68");
-  if(!L || !ajusteG68("gCD")){ if(viejo && viejo.parentNode) viejo.parentNode.removeChild(viejo); return; }
+  if(!L || !gCD75()){ if(viejo && viejo.parentNode) viejo.parentNode.removeChild(viejo); return; }
   var em=L.querySelector(".ln.ahora .et em"); if(!em){ if(viejo && viejo.parentNode) viejo.parentNode.removeChild(viejo); return; }
   if(viejo && viejo.parentNode) viejo.parentNode.removeChild(viejo);       /* se vuelve a poner cada vez: así sigue a la etiqueta del precio */
   var fin=finVela68(E); if(!fin){ if(viejo && viejo.parentNode) viejo.parentNode.removeChild(viejo); return; }
@@ -23691,11 +23753,11 @@ function cuenta68(E){
 /* cada segundo: se vuelve a calcular y a colocar (la etiqueta del precio se mueve con cada precio nuevo y, al cerrar la vela, la cuenta empieza otra vez) */
 setInterval(function(){
   try{
-    if(!ajusteG68("gCD") || typeof GRAF==="undefined" || !GRAF || !GRAF.cont || !document.body.contains(GRAF.cont)) return;
+    if(!gCD75() || typeof GRAF==="undefined" || !GRAF || !GRAF.cont || !document.body.contains(GRAF.cont)) return;
     if(!GRAF.arrastrando) cuenta68(GRAF);
   }catch(e){}
 }, 1000);
-(function(){ var r=refrescarGrafica; refrescarGrafica=function(){ var x=r.apply(this,arguments); try{ if(ajusteG68("gCD") && GRAF) cuenta68(GRAF); }catch(e){} return x; }; })();
+(function(){ var r=refrescarGrafica; refrescarGrafica=function(){ var x=r.apply(this,arguments); try{ if(gCD75() && GRAF) cuenta68(GRAF); }catch(e){} return x; }; })();
 
 /* ------------------------------ PINTAR ------------------------------ */
 var _dibujar68e=dibujar;
@@ -25950,6 +26012,14 @@ function patVerSel74(E, ctx, res){
     /* VF.cruce: una nueva en formación que EMPIEZA dentro de una figura que ya se ve no entra (primero en llegar, primero servido:
        «Avoid Overlap» de Trendoscope, https://www.la referencia.com/script/WZ8B1FIW-Auto-Chart-Patterns-Trendoscope/) */
     var dentro=function(f){ if(!VF.cruce) return false; return Object.keys(quedan).some(function(u){ var g=porUid[u]; return g && g!==f && !g.muerta74 && f.x0>=g.x0 && f.x0<=g.x1; }); };
+    /* v75 · pto 61 (Luis 17 oct: «se forma otro canal, pudiendo respetarse sobre el primero»): una figura de DOS LÍNEAS (canal, cuña,
+       triángulo, rectángulo, ensanchamiento, bandera, banderín) no entra encima de otra de SU MISMA FAMILIA que ya se ve sobre el mismo
+       tramo (se pisan más de VF.encimaMin de la más corta): nunca dos canales encimados (PAT73.verForma.encima) */
+    var famDe=function(f){ var F=(typeof PAT_FAM_DE!=="undefined") ? PAT_FAM_DE[f.id] : null; return F ? F.id : f.id; };
+    var dosLin=function(f){ return typeof PAT_MED_LIN!=="undefined" && !!PAT_MED_LIN[f.id]; };
+    var encima=function(f){ if(!VF.encima || !dosLin(f)) return false; var fa=famDe(f), mn=(VF.encimaMin!=null) ? VF.encimaMin : 0.25;
+      return Object.keys(quedan).some(function(u){ var g=porUid[u]; if(!g || g===f || g.muerta74 || famDe(g)!==fa) return false;
+        var ov=Math.min(f.x1,g.x1)-Math.max(f.x0,g.x0), ln=Math.min(f.x1-f.x0, g.x1-g.x0); return ln>0 && ov>mn*ln; }); };
     var apta=function(f){ return f.forming && !f.muerta74 && pDe(f)>=pMin && !dentro(f); };
     /* a igualdad de estado, primero las figuras CLÁSICAS (PAT73.verClasicas): con «Detectar todos» las de siempre no quedan sin lugar
        por figuras raras (medido: la cuña que se abre de ADA de abr-may 2025 y el canal alcista de jun-ago 2026 —pto 38— estaban en
@@ -25960,11 +26030,12 @@ function patVerSel74(E, ctx, res){
     vis.filter(function(f){ return !quedan[f.uid74] && !f.muerta74 && (!f.forming || apta(f)); })      /* una fantasma nunca entra nueva: solo sigue la que ya se veía */
       .sort(function(a,b){ return rango(b)-rango(a) || clas(b)-clas(a) || (a.forming && b.forming ? pDe(b)-pDe(a) : 0) || (Math.max(b.x1, b.xFin||0)-Math.max(a.x1, a.xFin||0)) || ((b.cal||0)-(a.cal||0)); })
       .forEach(function(f){
+        if(encima(f)) return;                                                                        /* v75 · pto 61 */
         if(f.forming){ if(nV<K && nF<maxF){ quedan[f.uid74]=1; nV++; nF++; } return; }
         if(viva(f)){ if(nV<K){ quedan[f.uid74]=1; nV++; } } else if(nR<K){ quedan[f.uid74]=1; nR++; } });
     /* anticipar (lo que más pidió Luis): si hay alguna figura formándose y ninguna en pantalla, la mejor entra aunque ya haya K vivas */
     if(!nF && VF.extra!==false && maxF>0){
-      var fc=vis.filter(function(f){ return apta(f) && !quedan[f.uid74]; }).sort(function(a,b){ return rango(b)-rango(a) || clas(b)-clas(a) || pDe(b)-pDe(a) || (b.x1-a.x1) || ((b.cal||0)-(a.cal||0)); })[0];
+      var fc=vis.filter(function(f){ return apta(f) && !quedan[f.uid74] && !encima(f); }).sort(function(a,b){ return rango(b)-rango(a) || clas(b)-clas(a) || pDe(b)-pDe(a) || (b.x1-a.x1) || ((b.cal||0)-(a.cal||0)); })[0];
       if(fc) quedan[fc.uid74]=1;
     }
     /* las resueltas que se quedaron (las que se vieron vivas) también son K como mucho: se va primero la que se resolvió hace más */
@@ -25977,6 +26048,19 @@ function patVerSel74(E, ctx, res){
     var fMax=(VF.fant!=null) ? VF.fant : 2;
     Object.keys(quedan).map(function(u){ return porUid[u]; }).filter(function(f){ return f && f.muerta74; })
       .sort(function(a,b){ return fin(b)-fin(a); }).slice(fMax).forEach(function(f){ delete quedan[f.uid74]; });
+    /* v75 · pto 61: una fantasma que «revive» (vuelve a valer) encima de otra de su familia que ya está en pantalla no vuelve: si no,
+       quedan dos encimadas (medido: los triángulos de ADA 1 h, jun 2026) */
+    var pm=S.muertas||{};
+    if(VF.encima){
+      var mn2=(VF.encimaMin!=null) ? VF.encimaMin : 0.25;
+      Object.keys(quedan).forEach(function(u){
+        var f=porUid[u]; if(!f || f.muerta74 || !pm[u] || !dosLin(f)) return;
+        var fa=famDe(f);
+        if(Object.keys(quedan).some(function(v){ if(v===u) return false; var g=porUid[v]; if(!g || g.muerta74 || pm[v] || famDe(g)!==fa) return false;
+             var ov=Math.min(f.x1,g.x1)-Math.max(f.x0,g.x0), ln=Math.min(f.x1-f.x0, g.x1-g.x0); return ln>0 && ov>mn2*ln; })) delete quedan[u];
+      });
+    }
+    S.muertas={}; Object.keys(quedan).forEach(function(u){ var f=porUid[u]; if(f && f.muerta74) S.muertas[u]=1; });
     S.uids=quedan;
     var u2={}; Object.keys(quedan).forEach(function(u){ var f=porUid[u]; if(f) u2[u]={id:f.id, x0:f.x0, x1:f.x1}; }); S.ult=u2;
   }
@@ -26450,6 +26534,608 @@ function cruzToque74(E, ev){
 }
 
 /*V74>>*/
+/*<<V75*/
+/* ===================================================================
+   v75 · pto 63 (Luis 17 oct 13:56): «Abro esta criptomoneda en Futuros… y ahora estoy en Backtesting, pero es lo mismo: lo que ya
+   tracé en Futuros me sale en Backtesting. ¿No se sobreentiende que es de forma independiente Spot, Futuros y Backtesting?»
+   Antes los dibujos se guardaban SOLO por moneda (TRAZOS["BAT"]): la misma lista salía en todas las pantallas.
+   Ahora se guardan por pantalla y moneda: TRAZOS["spot:BAT"], TRAZOS["fut:BAT"], TRAZOS["back:BAT"]. Resumen abre la misma ficha de
+   la moneda que Spot: comparte con Spot.
+   · Lo que ya estaba dibujado NO se pierde: la primera vez, la lista vieja se copia a las tres pantallas y desde ahí cada una va
+     por su lado.
+   · Ajustes de la gráfica › Lienzo › «Compartir los dibujos entre Spot, Futuros y Backtesting» (apagado de fábrica): con eso
+     vuelve a ser UNA lista por moneda (se juntan las tres, sin repetir); al apagarlo, cada pantalla se lleva una copia.
+   Clave del ajuste: BD.ajustes.dibComp (true = compartidos).
+   =================================================================== */
+function dibAmbs75(){ return ["spot","fut","back"]; }
+function dibComp75(){ return !!((typeof BD!=="undefined" && BD.ajustes) ? BD.ajustes.dibComp : false); }
+/* de qué pantalla es una gráfica: Practicar y Backtesting → back; Futuros → fut; lo demás (Resumen, Spot, Alertas) → spot */
+function dibAmb75(E){
+  if(!E || !E.op) return "spot";
+  if(E.op.practica) return "back";
+  if(E.amb75) return E.amb75;
+  var v=(typeof vista!=="undefined") ? vista : "spot";
+  E.amb75=(v==="fut" || v==="back") ? v : "spot";
+  return E.amb75;
+}
+/* la lista vieja (o la compartida) se copia a cada pantalla que todavía no tiene la suya, y se borra */
+function dibMigrar75(s){
+  if(typeof TRAZOS==="undefined" || !TRAZOS[s]) return false;
+  var L=TRAZOS[s];
+  dibAmbs75().forEach(function(a){ var k=a+":"+s; if(!TRAZOS[k]) TRAZOS[k]=JSON.parse(JSON.stringify(L)); });
+  delete TRAZOS[s];
+  try{ guardarTrazos(); }catch(e){}
+  return true;
+}
+function dibClave75(E){
+  var s=String(E && E.op ? E.op.sym : "").toUpperCase();
+  if(dibComp75()) return s;
+  if(TRAZOS[s]) dibMigrar75(s);
+  return dibAmb75(E)+":"+s;
+}
+/* encender «compartir»: las tres listas de cada moneda se juntan en una (sin repetir el mismo dibujo) */
+function dibJuntar75(){
+  var vistos={};
+  Object.keys(TRAZOS).forEach(function(k){
+    var m=k.match(/^(spot|fut|back):(.+)$/); if(!m) return;
+    var s=m[2], L=TRAZOS[s]||(TRAZOS[s]=[]); if(!vistos[s]){ vistos[s]={}; L.forEach(function(z){ vistos[s][z.id]=1; }); }
+    (TRAZOS[k]||[]).forEach(function(z){ if(!vistos[s][z.id]){ vistos[s][z.id]=1; L.push(z); } });
+    delete TRAZOS[k];
+  });
+  try{ guardarTrazos(); }catch(e){}
+}
+/* apagar «compartir»: cada pantalla se lleva una copia de la lista de cada moneda */
+function dibSeparar75(){
+  Object.keys(TRAZOS).forEach(function(k){ if(!/:/.test(k)) dibMigrar75(k); });
+}
+
+/* ===================================================================
+   v75 · pto 64 (Luis 17 oct 13:56): «Donde dice HOY… en la referencia sabe salir el tiempo, cuánto falta para que se cierre esa vela…
+   que se agregue en todas: Spot, Futuros, Backtesting y Resumen, todo lo que es gráficas.»
+   La cuenta atrás ya existía desde la v68 (Ajustes de la gráfica › «Cuenta atrás de la vela»), pero venía APAGADA de fábrica.
+   Ahora viene ENCENDIDA (se apaga ahí mismo). En la repetición no sale: ahí no hay una vela «viva».
+   Clave: BD.ajustes.gCD (solo «false» la apaga).
+   =================================================================== */
+function gCD75(){ return ((typeof BD!=="undefined" && BD.ajustes) ? BD.ajustes.gCD : undefined)!==false; }
+
+/* ===================================================================
+   v75 · pto 66 (Luis 17 oct 14:06, 2 fotos de XRP 4 h en Futuros): «Si pongo la opción abrir operación, por lógica automáticamente se
+   ejecuta la operación, pero no pasa eso… me sale "Queda programada: entra cuando el precio llegue a $1,3003"… Anteriormente no me
+   pasó esto.»
+   Causa: la entrada de la caja queda fija en el precio que había cuando se dibujó. Si al tocar «Abrir operación» el precio ya se movió
+   (más de 0,05 %), y en un corto la entrada quedó ARRIBA del precio (en un largo, abajo), la app la tomaba como orden límite.
+   Ahora «Abrir operación» abre YA, al precio de ahora, con el stop y el objetivo donde él los puso (las cuentas, rehechas con ese
+   precio). Si la entrada de la caja quedó lejos del precio, la confirmación ofrece además «Programar a $…» (entra cuando el precio
+   llegue a la línea de entrada). Si el precio ya pasó el stop o el objetivo, lo dice y solo deja programar.
+
+   v75 · pto 49 en Backtesting (Luis 13:58 y 14:06: «tanto para Spot, Futuros y Backtest»): «Abrir operación» (un solo botón, sin los dos
+   «Usar en una operación») también en la gráfica de una moneda de Backtesting y en Practicar:
+   · Backtesting: se anota en la prueba activa, como en Futuros.
+   · Practicar (la repetición): se anota en la prueba activa con la FECHA y el PRECIO de la vela de la repetición, y se sigue con las
+     velas que van saliendo: se cierra SOLA cuando una vela toca el stop, el objetivo o la liquidación (si una misma vela toca el stop y
+     el objetivo, se cuenta el stop: no se sabe cuál fue primero), con la fecha de esa vela. Al salir de la repetición, la que sigue
+     abierta se cierra al último precio que se vio. El cierre automático de siempre (con el precio de HOY) no la toca.
+     Si no hay una prueba creada, lo dice.
+   =================================================================== */
+function precioAhora75(E){
+  try{ var s=E.op.sym; var p=(typeof precioRP69==="function") ? precioRP69(E, s) : precioDe(s); return (p>0) ? p : null; }catch(e){ return null; }
+}
+/* con el precio de ahora como entrada, ¿el stop y el objetivo quedan del lado bueno? */
+function ahoraValido75(z, pr){
+  if(!(pr>0)) return false;
+  if(z.lado==="SHORT") return z.sl>pr && (!(z.tp>0) || z.tp<pr);
+  return z.sl<pr && (!(z.tp>0) || z.tp>pr);
+}
+/* ¿tiene sentido dejarla programada en la línea de entrada? (corto: entrada arriba del precio; largo: abajo) */
+function progValido75(z, pr){ var e=redondearPrecio(z.p); if(!(pr>0) || !(e>0)) return false; if(Math.abs(e-pr)/pr*100<0.05) return false; return z.lado==="SHORT" ? e>pr : e<pr; }
+function z2_75(n){ return (n<10?"0":"")+n; }
+function fechaLocal75(t){ var d=new Date(t); return d.getFullYear()+"-"+z2_75(d.getMonth()+1)+"-"+z2_75(d.getDate()); }
+function horaLocal75(t){ var d=new Date(t); return z2_75(d.getHours())+":"+z2_75(d.getMinutes()); }
+
+/* la confirmación: lo que se va a abrir, dicho corto; «Abrir operación» = YA, al precio de ahora */
+textoPanelAbrir68=function(E, z, D){
+  var lado=(z.lado==="SHORT"), pr=precioAhora75(E), e=redondearPrecio(z.p);
+  var cerca=!(pr>0) || Math.abs(e-pr)/pr*100<0.05;
+  var okYa= cerca || ahoraValido75(z, pr), okProg= !cerca && progValido75(z, pr);
+  var zA= (cerca || !okYa) ? z : Object.assign({}, z, {p:pr}), DA= (zA===z) ? D : datosPos(E, zA), R=DA.R;
+  var eA= (zA===z) ? e : redondearPrecio(pr);
+  var l1=tr(lado?"Corto":"Largo")+" · "+esc(E.op.sym);
+  var l2=tr("Entra a")+" <b>"+precio(eA)+"</b>"+((zA===z)?"":" ("+esc(tr("precio de ahora"))+")")+" · "+tr("pone")+" <b>"+usdF(R.margen)+"</b> "+tr("con")+" "+R.apal+"x";
+  var l3=tr("Stop")+" <b>"+precio(redondearPrecio(z.sl))+"</b> (−"+usdF(R.perdidaSL)+") · "+tr("Objetivo")+" <b>"+precio(redondearPrecio(z.tp))+"</b>"+(R.ganTp!=null?" (+"+usdF(R.ganTp)+")":"");
+  var l4= okYa ? tr("Se abre ahora.") : tr("El precio ya pasó el stop o el objetivo: solo se puede dejar programada.");
+  var bt='';
+  if(okYa) bt+='<button type="button" class="b gp-abrir" data-pc="si">'+esc(tr("Abrir operación"))+'</button>';
+  if(okProg) bt+='<button type="button" class="b sm gp-prog75" data-pc="prog">'+esc(tr("Programar a"))+' '+precio(e)+'</button>';
+  bt+='<button type="button" class="b sm gh" data-pc="no">'+esc(tr("Cancelar"))+'</button>';
+  if(okProg) l4+=' <span class="mut">'+esc(tr("O programarla: entra cuando el precio llegue a"))+' '+precio(e)+'.</span>';
+  return '<div class="gp-ct">'+l1+'</div><div class="gp-cl">'+l2+'</div><div class="gp-cl">'+l3+'</div><div class="gp-cl mut">'+l4+'</div>'+
+    '<div class="gp-cb'+(okProg?' tres75':'')+'">'+bt+'</div>';
+};
+abrirDesdeCaja=function(E, z, modo){
+  var op=E.op; if(typeof op.abrirPosicion!=="function") return;
+  E.confOp=null;
+  var pr=precioAhora75(E), ent=redondearPrecio(z.p), ya="no";
+  if(modo!=="prog"){ var cerca=!(pr>0) || Math.abs(ent-pr)/pr*100<0.05; if(!cerca && ahoraValido75(z, pr)) ent=redondearPrecio(pr); ya="si"; }
+  op.abrirPosicion({sym:op.sym, lado:z.lado, entrada:ent, sl:redondearPrecio(z.sl), tp:redondearPrecio(z.tp),
+    apal:(z.apal>=1 ? Math.round(z.apal) : null), cartera:(z.cartera>0?+z.cartera:null), riesgo:(z.riesgo>0?+z.riesgo:null), id:z.id,
+    cfg:cfgPos(E,z), ya:ya});
+};
+
+/* ---- 49 · también en Backtesting y en Practicar ---- */
+abrirPos74Ok=function(op){
+  if(!op || typeof op.abrirPosicion==="function" || typeof op.usarPosicion==="function") return false;
+  if(typeof op.lado==="function") return false;                                       /* la gráfica de una operación hecha */
+  if(op.etiquetas && op.etiquetas.entrada==="PROMEDIO") return false;                  /* Spot */
+  if(op.practica) return true;                                                         /* Practicar (v75) */
+  return (typeof vista!=="undefined" && (vista==="fut" || vista==="back"));
+};
+abrirPos74=function(E, d){
+  if(!E || !E.op) return;
+  var prac=!!E.op.practica, k=(prac || (typeof vista!=="undefined" && vista==="back")) ? "back" : "fut";
+  var A=ambito(k);
+  if(k==="back" && !A.prueba){ aviso(esc(tr("Para anotar operaciones en Backtesting, primero cree una prueba.")), true); return; }
+  var ant=JSON.parse(JSON.stringify(FU||{})), nuevo0=A.nuevo, hecho=null, kz=String(d.sym||E.op.sym).toUpperCase(), kd=simTrazos(E);
+  var tRp=(prac && E.rp && E.rp.activo && E.velas && E.velas.length) ? E.velas[E.velas.length-1].t : null;
+  limpiarFU(k);
+  FU.sym=kz; FU.modo="riesgo"; FU.slModo="precio"; FU.lado=d.lado;
+  FU.entrada=paraCasillaPrecio(d.entrada); FU.sl=paraCasillaPrecio(d.sl); FU.tp=paraCasillaPrecio(d.tp);
+  if(d.apal) FU.apal=String(d.apal);
+  FU.ya=d.ya||null; FU._ov={cartera:d.cartera, riesgo:d.riesgo};
+  if(tRp!=null){ FU.fecha=fechaLocal75(tRp); FU.ya=(d.ya==="no") ? "no" : "si"; }
+  function despues(o){
+    if(prac){                            /* Practicar: la gráfica se queda (y la caja también, para ver el stop y el objetivo) */
+      var tx;
+      if(tRp!=null){                     /* en la repetición: se sigue con las velas que van saliendo */
+        o.rp75={t:tRp, chk:tRp, inter:E.inter, ult:{t:tRp, c:+o.entrada}};
+        if(o.hora==="" || o.hora==null) o.hora=horaLocal75(tRp);
+        tocar(o);
+        tx=tr("Práctica")+" · N° "+(o.n||"")+" "+kz+" · "+(o.estado==="programada"
+          ? tr("entra cuando una vela llegue a")+" "+precio(+o.entrada)+"."
+          : tr("abierta a")+" "+precio(+o.entrada)+". "+tr("Se cierra sola en el stop o el objetivo mientras avanza la repetición."));
+      } else tx=tr("Backtesting")+" · N° "+(o.n||"")+" "+kz+" · "+tr(o.estado==="programada" ? "programada." : "abierta.");
+      setTimeout(function(){ aviso(esc(tx), false); try{ dibujar(E); }catch(e){} }, 0);
+      return;
+    }
+    try{ if(TRAZOS[kd]){ TRAZOS[kd]=TRAZOS[kd].filter(function(z){ return z.id!==d.id; }); if(!TRAZOS[kd].length) delete TRAZOS[kd]; guardarTrazos(); } }catch(e){}
+    var grande=!!(E && E.grande);
+    setTimeout(function(){
+      try{ if(E && E.grande) ampliarGrafica(E); }catch(e1){}
+      try{ verOperacion(o.id, k); }catch(e2){ if(window.console) console.error(e2); }
+      if(grande) setTimeout(function(){ try{ var a=document.querySelector("#opGraf .gamp"); if(a && GRAF && !GRAF.grande) a.click(); }catch(e3){} }, 350);
+    }, 30);
+  }
+  A.nuevo=function(o){ A.nuevo=nuevo0; hecho=o; var r=nuevo0.apply(this, arguments); despues(o); return r; };
+  /* en Practicar, la lista de Backtesting de abajo se repinta al salir (repintarla ahora volvería a armar la gráfica del formulario,
+     que se quedaría con la repetición) */
+  if(prac){ A.pinta=function(){ RP75.pintar=true; }; }
+  try{ guardarOperacion(A); }catch(er){ A.nuevo=nuevo0; FU=ant; throw er; }
+  FU._ov=undefined;
+  var pend=!!document.getElementById("cqDep");
+  if(pend){ try{ veloArriba68(); }catch(e3){} }
+  if(!hecho && !pend){ A.nuevo=nuevo0; FU=ant; }
+  else if(hecho && (prac || (ant.amb && ant.amb!==k))){ FU=ant; FU._ov=undefined; }     /* el formulario (de la otra pantalla o de Backtesting) queda como estaba */
+  if(prac && E.cont && document.body.contains(E.cont)) GRAF=E;
+};
+var RP75={pintar:false};
+/* la lista de Backtesting: ahora si no hay una práctica abierta; si la hay, al cerrarla */
+function pintarBack75(){
+  if(typeof vista==="undefined" || vista!=="back") return;
+  if(document.querySelector(".prac71")){ RP75.pintar=true; return; }
+  RP75.pintar=false; try{ pintarBack(); }catch(e){}
+}
+
+/* ---- Practicar: las operaciones de práctica se cierran con las velas de la repetición ---- */
+function tocaVela75(f, v){
+  var sl=(f.sl!=null&&f.sl!=="")?+f.sl:null, tp=(f.tp!=null&&f.tp!=="")?+f.tp:null, ap=+f.apal||1, en=+f.entrada||0;
+  var lq=(en>0&&ap>1) ? (f.lado==="SHORT" ? en*(1+1/ap) : en*(1-1/ap)) : null;
+  if(f.lado==="SHORT"){
+    if(sl && v.h>=sl && (lq==null || sl<lq)) return {p:sl, q:"stop"};
+    if(lq!=null && v.h>=lq) return {p:lq, q:"liq"};
+    if(tp && v.b<=tp) return {p:tp, q:"objetivo"};
+  } else {
+    if(sl && v.b<=sl && (lq==null || sl>lq)) return {p:sl, q:"stop"};
+    if(lq!=null && v.b<=lq) return {p:lq, q:"liq"};
+    if(tp && v.h>=tp) return {p:tp, q:"objetivo"};
+  }
+  return null;
+}
+function cerrarPractica75(f, p, q, t){
+  f.salida=p; f.estado="cerrada"; f.cierre=fechaLocal75(t); f.horaCierre=horaLocal75(t); f.pct=null; f.auto=q;
+  try{ var em=estadoOp(f); if(f.comPct==null && f.comFija==null && em.comPct!=null) f.comPct=em.comPct; f.com=em.comTr; }catch(e){}
+  tocar(f);
+}
+function rp75Revisar(E){
+  if(!E || !E.op || !E.rp || !E.rp.activo || !E.velas || !E.velas.length || typeof BD==="undefined") return;
+  var sym=String(E.op.sym).toUpperCase(), V=E.velas, tU=V[V.length-1].t, dichos=[];
+  (BD.back||[]).forEach(function(f){
+    if(!f.rp75 || (f.estado!=="abierta" && f.estado!=="programada") || String(f.sym).toUpperCase()!==sym) return;
+    for(var i=0;i<V.length;i++){
+      var v=V[i]; if(v.t<=f.rp75.chk) continue;
+      f.rp75.chk=v.t; f.rp75.ult={t:v.t, c:v.c};
+      if(f.estado==="programada"){       /* programada: entra cuando una vela llega a la entrada (desde la vela siguiente cuenta el stop) */
+        var ent=+f.entrada||0, llego=(f.lado==="SHORT") ? v.h>=ent : v.b<=ent;
+        if(llego){ f.estado="abierta"; f.fechaEntrada=fechaLocal75(v.t); f.horaEntrada=horaLocal75(v.t); f.rp75.ult={t:v.t, c:ent}; tocar(f);
+          dichos.push(tr("Práctica")+" · N° "+(f.n||"")+" "+f.sym+" · "+tr("entró")+" ("+precio(ent)+")"); }
+        continue;
+      }
+      var to=tocaVela75(f, v);
+      if(to){
+        cerrarPractica75(f, to.p, to.q, v.t);
+        var st=estadoOp(f), g=Math.abs(st.gan);
+        dichos.push(tr("Práctica")+" · N° "+(f.n||"")+" "+f.sym+" · "+tr(to.q==="objetivo" ? "llegó al objetivo" : (to.q==="liq" ? "se liquidó" : "tocó el stop"))+
+          " ("+precio(to.p)+"): "+(st.gan>=0 ? tr("ganó")+" " : tr("perdió")+" ")+usdF(g));
+        break;
+      }
+    }
+  });
+  if(dichos.length){ try{ guardar(); }catch(e){} pintarBack75(); aviso('<b>'+esc(tr("Se hizo solo"))+':</b> '+esc(dichos.join(" · ")), false); }
+}
+/* al salir de la repetición, las que siguen abiertas se cierran al último precio que se vio */
+function rp75CerrarAbiertas(){
+  if(typeof BD==="undefined") return;
+  var n=0, q=0;
+  (BD.back||[]).forEach(function(f){
+    if(!f.rp75 || !f.rp75.ult) return;
+    if(f.estado==="abierta"){ cerrarPractica75(f, f.rp75.ult.c, "practica", f.rp75.ult.t); n++; }
+    else if(f.estado==="programada"){ f.rp75.fuera=1; q++; }
+  });
+  if(q) BD.back=BD.back.filter(function(f){ return !(f.rp75 && f.rp75.fuera); });   /* la programada de práctica que nunca entró no queda colgada */
+  if(n || q){ try{ guardar(); }catch(e){} pintarBack75();
+    aviso(esc(tr("Al salir de la repetición, las operaciones de práctica abiertas se cerraron al último precio que se vio, y las programadas que no entraron se quitaron.")), false); }
+}
+(function(){
+  if(typeof rpPaso69==="function"){ var p0=rpPaso69; rpPaso69=function(E, dir){ var r=p0.apply(this, arguments); try{ if(r && dir>0) rp75Revisar(E); }catch(e){} return r; }; }
+  if(typeof rpDescartar69==="function"){ var d0=rpDescartar69; rpDescartar69=function(){ var r=d0.apply(this, arguments);
+    setTimeout(function(){ if(RP75.pintar) pintarBack75(); }, 400); setTimeout(function(){ if(RP75.pintar) pintarBack75(); }, 2900); return r; }; }
+  if(typeof rpReset69==="function"){ var r0=rpReset69; rpReset69=function(){ try{ if(RP69 && RP69.activo) rp75CerrarAbiertas(); }catch(e){} return r0.apply(this, arguments); }; }
+})();
+/* Con Practicar abierto (una hoja encima de Backtesting), si algo vuelve a pintar la pantalla de Backtesting de abajo (un cierre
+   automático, una operación nueva), la gráfica del formulario de abajo se volvía a armar: se quedaba con la gráfica «activa» (GRAF) y
+   se enganchaba a la repetición. Visto en la PC (en el teléfono el formulario va en su propia hoja). Ahora la de abajo se arma sin
+   repetición y la de Practicar sigue siendo la activa. */
+(function(){
+  function practicaAbierta75(){ var g=(typeof GRAF!=="undefined") ? GRAF : null; return !!(g && g.op && g.op.practica && g.cont && document.body.contains(g.cont) && document.querySelector(".prac71")); }
+  if(typeof rpEsForm69==="function"){ var f0=rpEsForm69; rpEsForm69=function(E){
+    if(E && E.op && !E.op.practica && E.cont && E.cont.id==="fuGraf" && document.querySelector(".prac71")) return false;
+    return f0.apply(this, arguments); }; }
+  if(typeof montarGrafica==="function"){ var m0=montarGrafica; montarGrafica=function(cont, op){
+    var g0=practicaAbierta75() ? GRAF : null;
+    var r=m0.apply(this, arguments);
+    try{ if(g0 && !(op && op.practica) && GRAF!==g0 && !(cont && cont.closest && cont.closest(".prac71"))) GRAF=g0; }catch(e){}
+    return r; }; }
+})();
+/* Spot (Luis 14:06: «tanto para Spot, Futuros y Backtest»): «Comprar en spot» lleva al formulario de compra con el precio de AHORA
+   (a mercado) y el monto que sale del riesgo con ese precio; el stop y el objetivo de la caja no cambian. */
+(function(){
+  if(typeof usarPosicionEnSpot68!=="function") return;
+  var s0=usarPosicionEnSpot68;
+  usarPosicionEnSpot68=function(E, z){
+    try{
+      var pr=precioAhora75(E), e=redondearPrecio(z.p);
+      if(pr>0 && Math.abs(e-pr)/pr*100>=0.05 && ahoraValido75(z, pr)) z=Object.assign({}, z, {p:pr});
+    }catch(e1){}
+    return s0.call(this, E, z);
+  };
+})();
+/* lo que «va ganando» una operación de práctica abierta se cuenta con el último precio de la repetición, no con el de hoy */
+(function(){
+  if(typeof estadoOp!=="function") return;
+  var eo0=estadoOp;
+  estadoOp=function(f){
+    if(f && f.rp75 && f.estado==="abierta" && f.rp75.ult && typeof precioDe==="function"){
+      var p0=precioDe, c=+f.rp75.ult.c, s=String(f.sym).toUpperCase();
+      precioDe=function(x){ return String(x).toUpperCase()===s ? c : p0.apply(this, arguments); };
+      try{ return eo0.apply(this, arguments); } finally { precioDe=p0; }
+    }
+    return eo0.apply(this, arguments);
+  };
+})();
+
+/* ===================================================================
+   v75 · pto 65 (Luis 17 oct 13:58, foto de BAT 1 h con la caja CORTO; reabre el 52): «Algo que te pedí y no has hecho en la anterior
+   corrección… los números 10,16, 4,33, 44,04 deben estar al lado derecho… que no se interfiera con el precio del stop loss ni el
+   precio del take profit… este 4,33… estorba… opción configurable… long o short… si quiero borrar las cápsulas, si quiero mover al
+   lado izquierdo, derecha, al centro… o si quiero quitar todo eso.»
+   UN SOLO LUGAR para los rótulos del stop y del objetivo (la caja Largo / Corto, larga y corta, y las franjas de una operación del 52):
+   Ajustes de la gráfica › Escalas y líneas › «Stop y objetivo: rótulos»
+   · El rótulo dice: % y precio · solo % · solo precio · no mostrarlo                       (zEtQue,   de fábrica % y precio)
+   · La relación (el 4,33): junto al objetivo · en la línea de entrada · no mostrarla     (zEtRR,    de fábrica junto al objetivo)
+   · Forma (la caja): cápsula · solo texto                                                 (zEtForma, de fábrica cápsula)
+   · Dónde va: izquierda · centro · derecha · junto a la escala                            (zEtDonde, de fábrica DERECHA)
+   · Colores del stop y del objetivo (la franja, la caja y su rótulo)                      (zEtSl / zEtTp)
+   De fábrica: a la derecha de la caja, por dentro (los precios del stop y del objetivo van por fuera, a la derecha: no se tapan) y
+   la relación sale de la línea de entrada y va pegada al rótulo del objetivo. Si el rótulo no cabe a lo ancho de la caja, se acorta
+   (primero sin el nombre, después solo el %).
+   =================================================================== */
+var ZET75={
+  rr:[["obj","Junto al objetivo"],["ent","En la línea de entrada"],["nada","No mostrarla"]],
+  forma:[["caps","Cápsula"],["texto","Solo texto"]]
+};
+ZET74.donde=[["izq","Izquierda"],["centro","Centro"],["der","Derecha"],["escala","Junto a la escala"]];
+ZET74.claves=["zEtQue","zEtDonde","zEtSl","zEtTp","zEtRR","zEtForma"];
+zEt74=function(){
+  var a=(typeof BD!=="undefined" && BD.ajustes) ? BD.ajustes : {};
+  return {que:a.zEtQue||"ambos", donde:a.zEtDonde||"der", sl:colorOk(a.zEtSl)?a.zEtSl:null, tp:colorOk(a.zEtTp)?a.zEtTp:null,
+          rr:a.zEtRR||"obj", forma:a.zEtForma||"caps"};
+};
+/* las franjas de una operación: «junto a la escala» es su borde derecho */
+zEtCls74=function(k, E, CJ, nch){
+  var z=zEt74(), c="";
+  if(z.donde==="izq") c+=(typeof cjIzq70==="function") ? cjIzq70(E, CJ, nch+(z.que==="ambos"?11:0)) : "";
+  else c+=" zd74-"+(z.donde==="escala" ? "der" : z.donde);
+  if(z[k]) c+=" zc74";
+  return c;
+};
+ajZonas74=function(E){
+  if(!E || !E.op) return "";
+  var z=zEt74();
+  var h=t68("Stop y objetivo: rótulos");
+  h+=f68("El rótulo dice", selAj68('data-zet="zEtQue"', ZET74.que, z.que));
+  h+=f68("La relación (riesgo : beneficio)", selAj68('data-zet="zEtRR"', ZET75.rr, z.rr));
+  h+=f68("Forma", selAj68('data-zet="zEtForma"', ZET75.forma, z.forma), "En la caja Largo / Corto: cápsula de color o solo el texto.");
+  h+=f68("Dónde va el rótulo", selAj68('data-zet="zEtDonde"', ZET74.donde, z.donde));
+  h+=f68("Colores", '<span class="v68par">'+sq68("zEtSl", z.sl||"#F23645", "Stop")+sq68("zEtTp", z.tp||"#089981", "Objetivo")+'</span>'+
+    '<button type="button" class="v68rs" data-ar="zEtSl,zEtTp" title="'+esc(tr("Color de fábrica"))+'" aria-label="'+esc(tr("Color de fábrica"))+'">×</button>');
+  h+='<div class="v68nota">'+esc(tr("Vale para la caja Largo / Corto (largo y corto) y para las franjas de una operación."))+'</div>';
+  return h;
+};
+/* el color de la caja (la zona y su raya) */
+function cajCol75(k){ var z=zEt74(); return z[k] || (k==="tp" ? "var(--up)" : "var(--dn)"); }
+function tag75(cls, x, y, html, anclaX, anclaY, sty){
+  var tx = anclaX==="c" ? "-50%" : anclaX==="d" ? "-100%" : "0";
+  var ty = anclaY==="c" ? "-50%" : anclaY==="a" ? "-100%" : "0";
+  return '<div class="gtag '+cls+'" style="left:'+x.toFixed(1)+'px;top:'+y.toFixed(1)+'px;transform:translate('+tx+','+ty+')'+(sty||"")+'">'+html+'</div>';
+}
+posEtiquetas68=function(E, z, g){
+  var Z=zEt74(), W=g.W, H=g.H, x1=g.x1, wB=g.wB, x2=x1+wB, out="";
+  var rr=(g.D && g.D.rr!=null) ? fmtRR(g.D.rr) : null;
+  function largo(t){ return String(t||"").length; }
+  function una(k, nombre, pct, pr, yL, yE, conRR){
+    var arriba=(yL<yE), h=22, sep=10;
+    var vis=Math.min(W, x2)-Math.max(0, x1);
+    var lim=(Z.donde==="escala") ? Math.max(W*0.55, 60) : Math.max(vis-10, 44);
+    var prT=(pr>0 && typeof precioEt==="function") ? precioEt(pr) : "";
+    var vs;
+    if(Z.que==="nada") vs=[["","",""]];
+    else if(Z.que==="pct") vs=[[nombre,pct,""],["",pct,""]];
+    else if(Z.que==="precio") vs=[[nombre,"",prT],["","",prT]];
+    else vs=[[nombre,pct,prT],["",pct,prT],["",pct,""]];
+    var rrT=conRR ? ((wB>=300 ? tr("Relación")+" " : "")+rr) : "";
+    var el=vs[vs.length-1];
+    for(var i=0;i<vs.length;i++){
+      var w=16+(largo(vs[i][0])+(vs[i][0]?1:0)+largo(vs[i][1])+(vs[i][2]?largo(vs[i][2])+3:0))*6.3+(rrT?largo(rrT)*6.3+18:0);
+      if(w<=lim){ el=vs[i]; break; }
+    }
+    if(!el[1] && !el[2] && !rrT) return "";
+    var ok=arriba ? (yL-sep-h>=50) : (yL+sep+h<=H-46);     /* arriba, el sitio del nombre del mercado y de la barrita del dibujo; abajo, el de los botones + y − */
+    var yy, anc;
+    if(ok){ yy=arriba ? yL-sep : yL+sep; anc=arriba ? "a" : "n"; }
+    else { yy=arriba ? yL+sep : yL-sep; anc=arriba ? "n" : "a"; }     /* no cabe afuera: queda adentro, pegada a su raya */
+    var txt=(el[0] ? el[0]+" " : "")+(el[1] ? "<b>"+el[1]+"</b>" : "")+(el[2] ? (el[1] ? '<i class="pp75"> · ' : '<i class="pp75">')+esc(el[2])+"</i>" : "");
+    var html=(el[1]||el[2]) ? '<span class="pzT75">'+txt+'</span>' : "";
+    if(rrT) html+='<s class="rr75" title="'+esc(tr("Relación"))+'">'+esc(rrT)+'</s>';
+    var x, ax;
+    if(Z.donde==="izq"){ x=Math.max(4, x1+6); ax="i"; }
+    else if(Z.donde==="centro"){ x=(Math.max(0, x1)+Math.min(W, x2))/2; ax="c"; }
+    else if(Z.donde==="escala"){ x=W-8; ax="d"; }
+    else { x=Math.max(Math.min(x2, W)-6, 50); ax="d"; }          /* si la caja sigue detrás de la escala, el rótulo queda a la vista */
+    var col=Z[k], sty="";
+    if(col) sty=";--zc74:"+col+";--zi75:"+((typeof tintaPara==="function") ? tintaPara(col) : "#fff");
+    var cls="pz "+(k==="tp"?"ptp":"psl")+(Z.forma==="texto"?" txt75":"")+(col?" zc74":"")+(el[1]||el[2]?"":" solo75");
+    return tag75(cls, x, yy, html, ax, anc, sty);
+  }
+  out+=una("tp", "OBJETIVO", pctS(Math.abs(g.pcTp),2), z.tp, g.yT, g.yE, Z.rr==="obj" && rr!=null);
+  out+=una("sl", "STOP", pctS(Math.abs(g.pcSl),2), z.sl, g.yS, g.yE, false);
+  if(Z.rr==="ent" && Math.min(Math.abs(g.yT-g.yE), Math.abs(g.yS-g.yE))>=16 && rr!=null){
+    out+=tag("cen", g.xm, g.yE, (wB>=150 ? '<em class="'+(g.largo?"up":"dn")+'">'+(g.largo?"LARGO":"CORTO")+'</em>' : '')+
+      (wB>=300 ? '<u>Relación</u>' : '')+'<b>'+rr+'</b>', "c", "c");
+  }
+  return out;
+};
+
+/* ===================================================================
+   v75 · pto 62 (Luis 17 oct 13:47 y 13:50): DAR LOS INDICADORES PERSONALES A OTRAS PERSONAS, POR CORREO.
+   «Una opción en configuraciones donde yo pueda colocar el correo de algún usuario y así a él se le desbloquean también los nuevos
+   indicadores o los que quedamos de pago (el Konkorde…)… solo para mi cuenta… tú tienes que hacer alguna seguridad por sentido común…
+   ingreso el correo y automáticamente deberían aparecer los indicadores.»
+   · Ajustes › (la caja de la cuenta) › «Personas con mis indicadores»: SOLO se ve con la cuenta de Luis. Escribe un correo y «Dar
+     acceso»; la lista de correos con «Quitar».
+   · La lista vive en el SERVIDOR (la misma base de datos de Google —Firebase— que ya guarda las cuentas): indicadores/<correo>.
+     Las reglas del servidor (las pone Luis una vez, doc75/firebase-indicadores.md) dicen: solo la cuenta de Luis escribe; cada
+     persona lee únicamente SU propio correo. Google comprueba quién entró: no se puede fingir ser otro correo.
+   · La otra persona entra con su Google en su teléfono o su PC y, sin subir ningún archivo, le aparecen: los indicadores con su
+     NOMBRE ORIGINAL (Konkorde 2.0 (MarcosEmmiMFP)…) y los «de pago» que se agreguen a PERSONAL75.dePago. Sin internet sigue con lo
+     último que supo (hasta PERSONAL75.diasSinRed días); si Luis la quita, se le van en cuanto el teléfono vuelve a preguntar.
+   · Los dos de licencia NO comercial (Trend Speed Analyzer y Nadaraya-Watson, CC BY-NC-SA) NO se dan: solo Luis.
+   · Honesto: en esta app (una página web) el código de los indicadores va dentro del archivo; quien sepa programar podría encenderlos
+     a mano. La protección de verdad llega con la APK / el programa de PC: ahí el código se entrega solo a los de la lista.
+   Todo en un solo lugar: PERSONAL75 (aquí abajo).
+   =================================================================== */
+var PERSONAL75={
+  coleccion:"indicadores",          /* Firestore: indicadores/<correo en minúsculas> → {dio, fecha} */
+  dePago:[],                        /* ids de indicadores «de pago» (fuera de la versión que se reparte) que se abren a los invitados */
+  diasSinRed:30,                    /* sin poder preguntar, se sigue con lo último que se supo hasta estos días */
+  cadaMin:10,                       /* cada cuánto se vuelve a preguntar al servidor */
+  guardaLocal:"cripto-personal75"   /* este equipo: {h: huella del correo, ok, t} — sin el correo */
+};
+var P75={nivel:null, preguntando:false, ult:0, lista:null, error:""};
+function personal75Correo(){
+  var c="";
+  try{ c=(typeof CTA!=="undefined" && CTA.listo) ? (CTA.correo||"") : ((typeof ctaCfg==="function" && ctaCfg().correo) || ""); }catch(e){ c=""; }
+  return String(c||"").trim().toLowerCase();
+}
+function personal75Leer(){ try{ return JSON.parse(localStorage.getItem(PERSONAL75.guardaLocal)||"null"); }catch(e){ return null; } }
+function personal75Guardar(o){ try{ localStorage.setItem(PERSONAL75.guardaLocal, JSON.stringify(o)); }catch(e){} }
+/* ¿esta cuenta está en la lista de Luis? (lo último que se supo en este equipo) */
+function personal75Invitado(){
+  var c=personal75Correo(); if(!c) return false;
+  var g=personal75Leer(); if(!g || g.h!==personal74Hu(c)) return false;
+  if(!g.ok) return false;
+  return (Date.now()-(+g.t||0)) <= PERSONAL75.diasSinRed*864e5;
+}
+/* preguntar al servidor (con la cuenta abierta y con internet) */
+function personal75Preguntar(forzar){
+  var c=personal75Correo();
+  if(!c || P75.preguntando || typeof cargarFirebase!=="function" || typeof CTA==="undefined" || !CTA.u) return Promise.resolve(null);
+  if(!forzar && Date.now()-P75.ult < PERSONAL75.cadaMin*6e4) return Promise.resolve(null);
+  if(typeof navigator!=="undefined" && navigator.onLine===false) return Promise.resolve(null);
+  if(personal74Cuenta()) return Promise.resolve(null);                 /* Luis ya tiene todo */
+  P75.preguntando=true; P75.ult=Date.now();
+  return cargarFirebase().then(function(S){
+    return S.F.getDoc(S.F.doc(S.db, PERSONAL75.coleccion, c));
+  }).then(function(d){
+    var ok=!!(d && (typeof d.exists==="function" ? d.exists() : d.exists));
+    var antes=personal75Invitado();
+    personal75Guardar({h:personal74Hu(c), ok:ok, t:Date.now()});
+    P75.preguntando=false;
+    if(ok!==antes){ try{ personal74(); }catch(e){} if(ok) aviso(esc(tr("Se abrieron los indicadores que le dieron con su cuenta.")), false); }
+    return ok;
+  }).catch(function(e){
+    P75.preguntando=false;
+    /* «sin permiso» = el servidor dice que este correo NO está en la lista (o todavía no se pusieron las reglas): se apaga */
+    var cod=String((e && e.code) || "");
+    if(/permission/.test(cod)){ var antes=personal75Invitado(); personal75Guardar({h:personal74Hu(c), ok:false, t:Date.now()}); if(antes){ try{ personal74(); }catch(e2){} } }
+    return null;
+  });
+}
+/* el nivel: "dueno" (la cuenta de Luis o la llave de su PC) · "inv" (está en su lista) · "" (cualquier otra persona) */
+function personal75Nivel(){
+  var llave=(typeof IND_PERSONAL_TSA_NW!=="undefined" && IND_PERSONAL_TSA_NW);
+  if(personal74Cuenta() || llave) return "dueno";
+  if(personal75Invitado()) return "inv";
+  return "";
+}
+personal74=function(){
+  var nv=personal75Nivel(), si=!!nv;
+  if(nv!=="dueno") setTimeout(function(){ personal75Preguntar(false); }, 50);       /* cada tanto se pregunta al servidor (con su tope) */
+  if(nv===P75.nivel) return si;
+  if(typeof IND66==="undefined") return false;
+  if(!PERSONAL74_ANTES){
+    PERSONAL74_ANTES={};
+    Object.keys(PERSONAL74.nombres).concat(PERSONAL74.restringidos).concat(PERSONAL75.dePago).forEach(function(id){
+      var c=IND66[id]; if(c && !PERSONAL74_ANTES[id]) PERSONAL74_ANTES[id]={n:c.n, sn:c.sn, au:c.au, al:c.al, fuera:c.fuera, oculto:c.oculto};
+    });
+  }
+  Object.keys(PERSONAL74_ANTES).forEach(function(id){
+    var c=IND66[id], a=PERSONAL74_ANTES[id], o=PERSONAL74.nombres[id]; if(!c) return;
+    c.n=a.n; c.sn=a.sn; c.au=a.au; c.al=a.al; c.fuera=a.fuera; c.oculto=a.oculto;
+    if(!si) return;
+    if(o){ c.n=o[0]; c.sn=o[1]; c.au=o[2]; c.al=((a.al||"")+" "+a.n+" "+o[0]+" "+o[2]).trim(); }
+    var restr=PERSONAL74.restringidos.indexOf(id)>=0, pago=PERSONAL75.dePago.indexOf(id)>=0;
+    if((restr && nv==="dueno") || (pago && !restr)){ c.fuera=false; c.oculto=false; }      /* los no comerciales, solo Luis */
+  });
+  var antes=P75.nivel; P75.nivel=nv; PERSONAL74_ON=si;
+  if(antes!==null){ try{ if(typeof GRAF!=="undefined" && GRAF && GRAF.cont && document.body.contains(GRAF.cont)) dibujar(GRAF); }catch(e2){} }
+  return si;
+};
+
+/* ---------- la caja de Luis en Ajustes: «Personas con mis indicadores» ---------- */
+function personal75Lista(){
+  if(!personal74Cuenta() || typeof cargarFirebase!=="function" || !CTA.u) return Promise.resolve(null);
+  return cargarFirebase().then(function(S){ return S.F.getDocs(S.F.collection(S.db, PERSONAL75.coleccion)); }).then(function(q){
+    var L=[]; q.forEach(function(d){ var x=(typeof d.data==="function") ? d.data() : {}; L.push({c:d.id, f:x.fecha||""}); });
+    L.sort(function(a,b){ return a.c<b.c ? -1 : 1; });
+    P75.lista=L; P75.error=""; return L;
+  }).catch(function(e){ P75.error=String((e && e.code) || (e && e.message) || "error"); P75.lista=null; return null; });
+}
+function personal75Html(){
+  if(!personal74Cuenta() || typeof CTA==="undefined" || !CTA.u) return "";
+  var h='<div class="p75" id="p75Caja"><h3 class="p75t">'+esc(tr("Personas con mis indicadores"))+'</h3>'+
+    '<p class="mut p75n">'+esc(tr("Escriba el correo de Google de la persona. Al entrar con ese correo, en su teléfono o su PC, le aparecen los indicadores con su nombre original y los de pago. Los de licencia no comercial (Trend Speed Analyzer y Nadaraya-Watson) siguen siendo solo suyos."))+'</p>'+
+    '<div class="p75f"><input type="email" id="p75Correo" inputmode="email" autocomplete="off" spellcheck="false" placeholder="'+esc(tr("correo@gmail.com"))+'">'+
+    '<button type="button" class="b ac sm" id="p75Dar">'+esc(tr("Dar acceso"))+'</button></div>';
+  if(P75.error) h+='<p class="p75e">'+esc(/permission/.test(P75.error) ? tr("El servidor todavía no tiene las reglas para esto. Siga la guía «Indicadores por correo» (un solo paso en Firebase).") : tr("No se pudo leer la lista. Revise el internet."))+'</p>';
+  else if(P75.lista===null) h+='<p class="mut p75n">'+esc(tr("Cargando la lista…"))+'</p>';
+  else if(!P75.lista.length) h+='<p class="mut p75n">'+esc(tr("Todavía no le dio acceso a nadie."))+'</p>';
+  else h+='<ul class="p75l">'+P75.lista.map(function(x){ return '<li><span translate="no">'+esc(x.c)+'</span><button type="button" class="b sm gh" data-p75q="'+esc(x.c)+'">'+esc(tr("Quitar"))+'</button></li>'; }).join("")+'</ul>';
+  return h+'</div>';
+}
+function personal75Pintar(){
+  var v=document.getElementById("p75Caja"); if(!v) return;
+  var d=document.createElement("div"); d.innerHTML=personal75Html(); if(!d.firstChild) return;
+  v.parentNode.replaceChild(d.firstChild, v); personal75Enganchar();
+}
+function personal75Correcto(c){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c); }
+function personal75Enganchar(){
+  var box=document.getElementById("p75Caja"); if(!box) return;
+  var b=box.querySelector("#p75Dar"), inp=box.querySelector("#p75Correo");
+  if(b) b.onclick=function(){
+    var c=String(inp && inp.value || "").trim().toLowerCase();
+    if(!personal75Correcto(c)){ aviso(esc(tr("Escriba un correo válido.")), true); return; }
+    b.disabled=true;
+    cargarFirebase().then(function(S){ return S.F.setDoc(S.F.doc(S.db, PERSONAL75.coleccion, c), {dio:"dueno", fecha:(typeof hoy==="function" ? hoy() : "")}); })
+      .then(function(){ aviso(esc(tr("Listo: al entrar con ese correo le aparecen los indicadores."))+' <span translate="no">'+esc(c)+'</span>', false); return personal75Lista(); })
+      .catch(function(e){ aviso(esc(/permission/.test(String(e && e.code)) ? tr("El servidor no dejó guardar: faltan las reglas de la guía «Indicadores por correo».") : tr("No se pudo guardar. Revise el internet.")), true); })
+      .then(function(){ personal75Pintar(); });
+  };
+  [].slice.call(box.querySelectorAll("[data-p75q]")).forEach(function(q){
+    q.onclick=function(){
+      var c=q.getAttribute("data-p75q"); q.disabled=true;
+      cargarFirebase().then(function(S){ return S.F.deleteDoc(S.F.doc(S.db, PERSONAL75.coleccion, c)); })
+        .then(function(){ aviso(esc(tr("Quitado: ya no tiene los indicadores."))+' <span translate="no">'+esc(c)+'</span>', false); return personal75Lista(); })
+        .catch(function(){ aviso(esc(tr("No se pudo quitar. Revise el internet.")), true); })
+        .then(function(){ personal75Pintar(); });
+    };
+  });
+  if(P75.lista===null && !P75.error && !P75.cargando){ P75.cargando=true; personal75Lista().then(function(){ P75.cargando=false; personal75Pintar(); }); }
+}
+/* su propia caja en Ajustes (debajo de «Dónde se guarda su portafolio»), solo con la cuenta de Luis */
+function personal75Caja(){
+  var x=personal75Html(); if(!x) return "";
+  return '<div class="caja" id="p75Grupo"><h2><span class="ic">'+((typeof IC!=="undefined" && IC.persona) ? IC.persona : "")+'</span>'+esc(tr("Indicadores para otras personas"))+'</h2>'+
+    '<div class="cp">'+x+'</div></div>';
+}
+(function(){
+  if(typeof engancharDat==="function"){
+    var ed0=engancharDat;
+    engancharDat=function(box){ var r=ed0.apply(this, arguments); try{ personal75Enganchar(); }catch(e){} return r; };
+  }
+  /* la cuenta llegó (o se fue) con Ajustes abierto: la caja aparece o se va */
+  if(typeof pintarCuenta==="function"){
+    var pc0=pintarCuenta;
+    pintarCuenta=function(){
+      var r=pc0.apply(this, arguments);
+      try{
+        var debe=!!(personal74Cuenta() && typeof CTA!=="undefined" && CTA.u), hay=!!document.getElementById("p75Grupo");
+        if(typeof vista!=="undefined" && vista==="dat" && debe!==hay && typeof pintarDat==="function"){ var y=window.scrollY; pintarDat(); window.scrollTo(0, y); }
+      }catch(e){}
+      return r;
+    };
+  }
+  /* al volver el internet, se pregunta otra vez */
+  try{ window.addEventListener("online", function(){ personal75Preguntar(true); }); }catch(e){}
+})();
+setInterval(function(){ try{ personal74(); }catch(e){} }, PERSONAL75.cadaMin*6e4);
+
+/* ===================================================================
+   v75 · pto 61: la RUPTURA FALSA se marca en la figura (un cierre fuera de la línea que la vela siguiente no confirmó: el precio
+   volvió). La figura sigue, con sus líneas alargadas, en vez de darse por rota y que nazca otra encima. Se marcan las 2 últimas.
+   La regla y su medición: pat_med.js (patMedidaLineas, PAT73.rupt) y doc75/v75-medicion-rupturas.md.
+   =================================================================== */
+(function(){
+  if(typeof patMedidaLineasSvg!=="function") return;
+  var o0=patMedidaLineasSvg;
+  patMedidaLineasSvg=function(E, f, M, ctx, col, op, w, evitar){
+    var r=o0.apply(this, arguments);
+    try{
+      var RU=(typeof PAT73!=="undefined" && PAT73.rupt) ? PAT73.rupt : {};
+      if(r && M && M.falsas && M.falsas.length && E && E.velas && RU.marcar!==false){
+        var V=E.velas, s="", txt=esc(tr("ruptura falsa"));
+        M.falsas.slice(-2).forEach(function(q){
+          var v=V[q.i]; if(!v) return; var x=ctx.X(q.i); if(!(x>=0 && x<=ctx.W)) return;
+          var yl=ctx.Y(q.dir>0 ? M.Ls(q.i) : M.Li(q.i)), yv=ctx.Y(q.dir>0 ? v.h : v.b);
+          var y=(q.dir>0) ? Math.min(yl, yv)-7 : Math.max(yl, yv)+13;
+          s+='<circle cx="'+x.toFixed(1)+'" cy="'+ctx.Y(v.c).toFixed(1)+'" r="2.6" fill="none" stroke="'+col+'" stroke-width="1.3"/>'+
+             '<text class="pf75" x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" text-anchor="middle" font-size="9.5" font-weight="700" fill="'+col+'" opacity=".9">'+txt+'</text>';
+        });
+        r.svg=(r.svg||"")+s;
+      }
+    }catch(e){}
+    return r;
+  };
+})();
+
+/*V75>>*/
 function calcularEscala(estado){
   var op=estado.op, v=velasVisibles(estado), val=op.valores?op.valores():{};
   var pr=precioRP69(estado, op.sym);
@@ -33813,7 +34499,7 @@ function montarGraf(A){
       if(d.apal) FU.apal=String(d.apal);
       FU.ya=null;
       /* la caja ya cumplió su trabajo: sus tres líneas son ahora las de la operación */
-      var kz=String(FU.sym).toUpperCase();
+      var kz=(typeof GRAF!=="undefined" && GRAF && GRAF.op) ? simTrazos(GRAF) : String(FU.sym).toUpperCase();      /* v75 · pto 63c */
       if(TRAZOS[kz]){ TRAZOS[kz]=TRAZOS[kz].filter(function(z){ return z.id!==d.id; }); if(!TRAZOS[kz].length) delete TRAZOS[kz]; guardarTrazos(); }
       var g0=document.getElementById("fuGraf");
       var enHoja=!!(g0 && g0.closest && g0.closest("#veloIn"));
@@ -33823,11 +34509,11 @@ function montarGraf(A){
     /* v68 · «Abrir operación»: la operación se registra ahí mismo con lo de la caja. Si algo no cuadra, el formulario queda como estaba. */
     abrirPosicion:function(d){
       var ant={modo:FU.modo, lado:FU.lado, entrada:FU.entrada, sl:FU.sl, tp:FU.tp, apal:FU.apal, ya:FU.ya, slModo:FU.slModo, ov:FU._ov};
-      var kz=String(FU.sym).toUpperCase(), nuevo0=A.nuevo, t0=Date.now(), hecho=false;
+      var kz=(typeof GRAF!=="undefined" && GRAF && GRAF.op) ? simTrazos(GRAF) : String(FU.sym).toUpperCase(), nuevo0=A.nuevo, t0=Date.now(), hecho=false;      /* v75 · pto 63b */
       FU.modo="riesgo"; FU.slModo="precio"; FU.lado=d.lado;
       FU.entrada=paraCasillaPrecio(d.entrada); FU.sl=paraCasillaPrecio(d.sl); FU.tp=paraCasillaPrecio(d.tp);
       if(d.apal) FU.apal=String(d.apal);
-      FU.ya=null; FU._ov={cartera:d.cartera, riesgo:d.riesgo};
+      FU.ya=d.ya||null; FU._ov={cartera:d.cartera, riesgo:d.riesgo};      /* v75 · pto 66b: «Abrir operación» = ya; «Programar» = no */
       /* cuando la operación de verdad se anota (puede ser después de contestar «¿con qué dinero?») la caja ya cumplió: sale de la gráfica */
       A.nuevo=function(o){
         A.nuevo=nuevo0; hecho=true;
@@ -34424,7 +35110,7 @@ function vigilarCierres(){
          Esto pasa siempre. --- */
   [["fut",BD.fut],["back",BD.back]].forEach(function(par){
     (par[1]||[]).forEach(function(f){
-      if(f.estado!=="programada"||!f.sym) return;
+      if(f.estado!=="programada"||!f.sym||f.rp75) return;      /* v75 · pto 49c */
       var ent=+f.entrada||0; if(!(ent>0)) return;
       var pr=precioVigente(f.sym); if(pr==null) return;
       /* en un corto se espera que el precio SUBA a la entrada; en un largo, que BAJE */
@@ -34455,7 +35141,7 @@ function vigilarCierres(){
   /* --- futuros y pruebas: cierre automático (siempre encendido) --- */
   [["fut",BD.fut],["back",BD.back]].forEach(function(par){
     (par[1]||[]).forEach(function(f){ try{
-      if(f.estado!=="abierta"||!f.sym) return;
+      if(f.estado!=="abierta"||!f.sym||f.rp75) return;      /* v75 · pto 49d */
       var pr=precioVigente(f.sym); if(pr==null) return;
       var sl=(f.sl!=null&&f.sl!=="")?+f.sl:null, tp=(f.tp!=null&&f.tp!=="")?+f.tp:null;
       var toco=null;
@@ -35709,6 +36395,7 @@ function montarFichaGraf(f, e){
     faltas70:true,                                   /* v70 · sus frases «le falta…» se activan en Ajustes */
     pie:function(){ return dichoOperacion(e); }
   });
+  if(typeof abrirGrande74==="function" && !RUEDA68.cambiando74) abrirGrande74(GRAF);      /* v75 · pto 60 */
 }
 /* =====================================================================
    22c · EL BLOQUEO — que nadie más vea su dinero
@@ -39977,6 +40664,7 @@ function pintarDat(){
     panelIdioma()+      /* 1 · si no lo entiende, lo demás da igual     */
     panelLlave()+       /* 2 · quién puede ver su portafolio            */
     cGuardado+          /* 3 · su cuenta, la nube, los respaldos        */
+    ((typeof personal75Caja==="function") ? personal75Caja() : "")+      /* v75 · pto 62 */
     cPrecios+           /* 4 · lo que toca todos los días               */
     panelPrograma()+licenciasCaja()+    /* 5 · la versión y traer la nueva              */
     cColores+           /* 6 · gusto                                    */
@@ -45449,6 +46137,52 @@ DIC.en={
 "Neutro (blanco pálido)":"Neutral (soft white)",
 "Color del tema":"Theme color",
 "no se completó":"didn’t complete",
+"El precio ya pasó el stop o el objetivo: solo se puede dejar programada.":"The price has already passed the stop or the target: it can only be scheduled.",
+"Programar a":"Schedule at",
+"O programarla: entra cuando el precio llegue a":"Or schedule it: it enters when the price reaches",
+"Para anotar operaciones en Backtesting, primero cree una prueba.":"To record trades in Backtesting, first create a test.",
+"Práctica":"Practice",
+"entra cuando una vela llegue a":"it enters when a candle reaches",
+"abierta a":"opened at",
+"Se cierra sola en el stop o el objetivo mientras avanza la repetición.":"It closes by itself at the stop or the target as the replay moves forward.",
+"programada.":"scheduled.",
+"abierta.":"opened.",
+"llegó al objetivo":"reached the target",
+"se liquidó":"was liquidated",
+"tocó el stop":"hit the stop",
+"perdió":"lost",
+"Se hizo solo":"Done automatically",
+"entró":"entered",
+"Al salir de la repetición, las operaciones de práctica abiertas se cerraron al último precio que se vio, y las programadas que no entraron se quitaron.":"On leaving the replay, open practice trades were closed at the last price shown, and scheduled ones that never entered were removed.",
+"Compartir los dibujos entre Spot, Futuros y Backtesting":"Share drawings between Spot, Futures and Backtesting",
+"Apagado: cada pantalla tiene sus propios dibujos.":"Off: each screen has its own drawings.",
+"Stop y objetivo: rótulos":"Stop and target: labels",
+"La relación (riesgo : beneficio)":"The ratio (risk : reward)",
+"Forma":"Style",
+"En la caja Largo / Corto: cápsula de color o solo el texto.":"In the Long / Short box: a colored capsule or just the text.",
+"Vale para la caja Largo / Corto (largo y corto) y para las franjas de una operación.":"Applies to the Long / Short box (long and short) and to a trade's bands.",
+"Junto al objetivo":"Next to the target",
+"En la línea de entrada":"On the entry line",
+"No mostrarla":"Don't show it",
+"Cápsula":"Capsule",
+"Solo texto":"Text only",
+"Junto a la escala":"Next to the scale",
+"Indicadores para otras personas":"Indicators for other people",
+"Personas con mis indicadores":"People with my indicators",
+"Escriba el correo de Google de la persona. Al entrar con ese correo, en su teléfono o su PC, le aparecen los indicadores con su nombre original y los de pago. Los de licencia no comercial (Trend Speed Analyzer y Nadaraya-Watson) siguen siendo solo suyos.":"Type the person's Google email. When they sign in with that email, on their phone or PC, the indicators appear with their original names, plus the paid ones. The non-commercial-license ones (Trend Speed Analyzer and Nadaraya-Watson) remain yours only.",
+"Dar acceso":"Give access",
+"El servidor todavía no tiene las reglas para esto. Siga la guía «Indicadores por correo» (un solo paso en Firebase).":"The server doesn't have the rules for this yet. Follow the \"Indicators by email\" guide (a single step in Firebase).",
+"No se pudo leer la lista. Revise el internet.":"Couldn't read the list. Check your internet.",
+"Cargando la lista…":"Loading the list…",
+"Todavía no le dio acceso a nadie.":"You haven't given access to anyone yet.",
+"Escriba un correo válido.":"Type a valid email.",
+"Listo: al entrar con ese correo le aparecen los indicadores.":"Done: when they sign in with that email, the indicators appear.",
+"El servidor no dejó guardar: faltan las reglas de la guía «Indicadores por correo».":"The server didn't allow saving: the rules from the \"Indicators by email\" guide are missing.",
+"No se pudo guardar. Revise el internet.":"Couldn't save. Check your internet.",
+"Quitado: ya no tiene los indicadores.":"Removed: they no longer have the indicators.",
+"No se pudo quitar. Revise el internet.":"Couldn't remove. Check your internet.",
+"Se abrieron los indicadores que le dieron con su cuenta.":"The indicators shared with your account are now unlocked.",
+"ruptura falsa":"false breakout",
 
 "Línea horizontal":"Horizontal line",
 "Línea vertical":"Vertical line",
@@ -51129,6 +51863,52 @@ DIC.pt={
 "Neutro (blanco pálido)":"Neutro (branco suave)",
 "Color del tema":"Cor do tema",
 "no se completó":"não se completou",
+"El precio ya pasó el stop o el objetivo: solo se puede dejar programada.":"O preço já passou do stop ou do alvo: só pode ficar programada.",
+"Programar a":"Programar a",
+"O programarla: entra cuando el precio llegue a":"Ou programá-la: entra quando o preço chegar a",
+"Para anotar operaciones en Backtesting, primero cree una prueba.":"Para registrar operações no Backtesting, primeiro crie um teste.",
+"Práctica":"Prática",
+"entra cuando una vela llegue a":"entra quando uma vela chegar a",
+"abierta a":"aberta a",
+"Se cierra sola en el stop o el objetivo mientras avanza la repetición.":"Fecha sozinha no stop ou no alvo enquanto a repetição avança.",
+"programada.":"programada.",
+"abierta.":"aberta.",
+"llegó al objetivo":"chegou ao alvo",
+"se liquidó":"foi liquidada",
+"tocó el stop":"tocou o stop",
+"perdió":"perdeu",
+"Se hizo solo":"Feito automaticamente",
+"entró":"entrou",
+"Al salir de la repetición, las operaciones de práctica abiertas se cerraron al último precio que se vio, y las programadas que no entraron se quitaron.":"Ao sair da repetição, as operações de prática abertas foram fechadas no último preço visto, e as programadas que não entraram foram removidas.",
+"Compartir los dibujos entre Spot, Futuros y Backtesting":"Compartilhar os desenhos entre Spot, Futuros e Backtesting",
+"Apagado: cada pantalla tiene sus propios dibujos.":"Desligado: cada tela tem seus próprios desenhos.",
+"Stop y objetivo: rótulos":"Stop e alvo: rótulos",
+"La relación (riesgo : beneficio)":"A relação (risco : retorno)",
+"Forma":"Forma",
+"En la caja Largo / Corto: cápsula de color o solo el texto.":"Na caixa Long / Short: cápsula colorida ou só o texto.",
+"Vale para la caja Largo / Corto (largo y corto) y para las franjas de una operación.":"Vale para a caixa Long / Short (long e short) e para as faixas de uma operação.",
+"Junto al objetivo":"Junto ao alvo",
+"En la línea de entrada":"Na linha de entrada",
+"No mostrarla":"Não mostrar",
+"Cápsula":"Cápsula",
+"Solo texto":"Só texto",
+"Junto a la escala":"Junto à escala",
+"Indicadores para otras personas":"Indicadores para outras pessoas",
+"Personas con mis indicadores":"Pessoas com meus indicadores",
+"Escriba el correo de Google de la persona. Al entrar con ese correo, en su teléfono o su PC, le aparecen los indicadores con su nombre original y los de pago. Los de licencia no comercial (Trend Speed Analyzer y Nadaraya-Watson) siguen siendo solo suyos.":"Escreva o e-mail do Google da pessoa. Ao entrar com esse e-mail, no telefone ou no PC, aparecem os indicadores com o nome original e os pagos. Os de licença não comercial (Trend Speed Analyzer e Nadaraya-Watson) continuam sendo só seus.",
+"Dar acceso":"Dar acesso",
+"El servidor todavía no tiene las reglas para esto. Siga la guía «Indicadores por correo» (un solo paso en Firebase).":"O servidor ainda não tem as regras para isto. Siga o guia «Indicadores por e-mail» (um único passo no Firebase).",
+"No se pudo leer la lista. Revise el internet.":"Não foi possível ler a lista. Verifique a internet.",
+"Cargando la lista…":"Carregando a lista…",
+"Todavía no le dio acceso a nadie.":"Você ainda não deu acesso a ninguém.",
+"Escriba un correo válido.":"Escreva um e-mail válido.",
+"Listo: al entrar con ese correo le aparecen los indicadores.":"Pronto: ao entrar com esse e-mail, os indicadores aparecem.",
+"El servidor no dejó guardar: faltan las reglas de la guía «Indicadores por correo».":"O servidor não deixou salvar: faltam as regras do guia «Indicadores por e-mail».",
+"No se pudo guardar. Revise el internet.":"Não foi possível salvar. Verifique a internet.",
+"Quitado: ya no tiene los indicadores.":"Removido: já não tem os indicadores.",
+"No se pudo quitar. Revise el internet.":"Não foi possível remover. Verifique a internet.",
+"Se abrieron los indicadores que le dieron con su cuenta.":"Os indicadores compartilhados com a sua conta foram liberados.",
+"ruptura falsa":"rompimento falso",
 
 "Línea horizontal":"Linha horizontal",
 "Línea vertical":"Linha vertical",
@@ -56802,6 +57582,52 @@ DIC.fr={
 "Neutro (blanco pálido)":"Neutre (blanc doux)",
 "Color del tema":"Couleur du thème",
 "no se completó":"ne s’est pas formée",
+"El precio ya pasó el stop o el objetivo: solo se puede dejar programada.":"Le prix a déjà dépassé le stop ou l'objectif : elle ne peut être que programmée.",
+"Programar a":"Programmer à",
+"O programarla: entra cuando el precio llegue a":"Ou la programmer : elle entre quand le prix atteint",
+"Para anotar operaciones en Backtesting, primero cree una prueba.":"Pour noter des opérations dans le Backtesting, créez d'abord un test.",
+"Práctica":"Entraînement",
+"entra cuando una vela llegue a":"elle entre quand une bougie atteint",
+"abierta a":"ouverte à",
+"Se cierra sola en el stop o el objetivo mientras avanza la repetición.":"Elle se ferme seule au stop ou à l'objectif pendant que la relecture avance.",
+"programada.":"programmée.",
+"abierta.":"ouverte.",
+"llegó al objetivo":"a atteint l'objectif",
+"se liquidó":"a été liquidée",
+"tocó el stop":"a touché le stop",
+"perdió":"a perdu",
+"Se hizo solo":"Fait automatiquement",
+"entró":"est entrée",
+"Al salir de la repetición, las operaciones de práctica abiertas se cerraron al último precio que se vio, y las programadas que no entraron se quitaron.":"En quittant la relecture, les opérations d'entraînement ouvertes ont été fermées au dernier prix affiché, et les programmées non entrées ont été retirées.",
+"Compartir los dibujos entre Spot, Futuros y Backtesting":"Partager les dessins entre Spot, Futures et Backtesting",
+"Apagado: cada pantalla tiene sus propios dibujos.":"Désactivé : chaque écran a ses propres dessins.",
+"Stop y objetivo: rótulos":"Stop et objectif : étiquettes",
+"La relación (riesgo : beneficio)":"Le ratio (risque : gain)",
+"Forma":"Forme",
+"En la caja Largo / Corto: cápsula de color o solo el texto.":"Dans la boîte Long / Short : capsule colorée ou texte seul.",
+"Vale para la caja Largo / Corto (largo y corto) y para las franjas de una operación.":"S'applique à la boîte Long / Short (long et short) et aux bandes d'une opération.",
+"Junto al objetivo":"À côté de l'objectif",
+"En la línea de entrada":"Sur la ligne d'entrée",
+"No mostrarla":"Ne pas l'afficher",
+"Cápsula":"Capsule",
+"Solo texto":"Texte seul",
+"Junto a la escala":"À côté de l'échelle",
+"Indicadores para otras personas":"Indicateurs pour d'autres personnes",
+"Personas con mis indicadores":"Personnes avec mes indicateurs",
+"Escriba el correo de Google de la persona. Al entrar con ese correo, en su teléfono o su PC, le aparecen los indicadores con su nombre original y los de pago. Los de licencia no comercial (Trend Speed Analyzer y Nadaraya-Watson) siguen siendo solo suyos.":"Saisissez l'e-mail Google de la personne. En se connectant avec cet e-mail, sur son téléphone ou son PC, elle voit les indicateurs avec leur nom d'origine et les payants. Ceux sous licence non commerciale (Trend Speed Analyzer et Nadaraya-Watson) restent à vous seul.",
+"Dar acceso":"Donner l'accès",
+"El servidor todavía no tiene las reglas para esto. Siga la guía «Indicadores por correo» (un solo paso en Firebase).":"Le serveur n'a pas encore les règles pour cela. Suivez le guide « Indicateurs par e-mail » (une seule étape dans Firebase).",
+"No se pudo leer la lista. Revise el internet.":"Impossible de lire la liste. Vérifiez votre connexion.",
+"Cargando la lista…":"Chargement de la liste…",
+"Todavía no le dio acceso a nadie.":"Vous n'avez encore donné l'accès à personne.",
+"Escriba un correo válido.":"Saisissez un e-mail valide.",
+"Listo: al entrar con ese correo le aparecen los indicadores.":"C'est fait : en se connectant avec cet e-mail, les indicateurs apparaissent.",
+"El servidor no dejó guardar: faltan las reglas de la guía «Indicadores por correo».":"Le serveur n'a pas permis d'enregistrer : il manque les règles du guide « Indicateurs par e-mail ».",
+"No se pudo guardar. Revise el internet.":"Impossible d'enregistrer. Vérifiez votre connexion.",
+"Quitado: ya no tiene los indicadores.":"Retiré : cette personne n'a plus les indicateurs.",
+"No se pudo quitar. Revise el internet.":"Impossible de retirer. Vérifiez votre connexion.",
+"Se abrieron los indicadores que le dieron con su cuenta.":"Les indicateurs partagés avec votre compte sont débloqués.",
+"ruptura falsa":"fausse cassure",
 
 "Línea horizontal":"Ligne horizontale",
 "Línea vertical":"Ligne verticale",
@@ -62475,6 +63301,52 @@ DIC.de={
 "Neutro (blanco pálido)":"Neutral (sanftes Weiß)",
 "Color del tema":"Designfarbe",
 "no se completó":"nicht vollendet",
+"El precio ya pasó el stop o el objetivo: solo se puede dejar programada.":"Der Kurs hat Stop oder Ziel schon überschritten: Sie kann nur geplant werden.",
+"Programar a":"Planen bei",
+"O programarla: entra cuando el precio llegue a":"Oder planen: Sie startet, wenn der Kurs erreicht",
+"Para anotar operaciones en Backtesting, primero cree una prueba.":"Um Trades im Backtesting zu erfassen, legen Sie zuerst einen Test an.",
+"Práctica":"Übung",
+"entra cuando una vela llegue a":"startet, wenn eine Kerze erreicht",
+"abierta a":"eröffnet bei",
+"Se cierra sola en el stop o el objetivo mientras avanza la repetición.":"Sie schließt sich beim Stop oder Ziel von selbst, während die Wiedergabe läuft.",
+"programada.":"geplant.",
+"abierta.":"eröffnet.",
+"llegó al objetivo":"hat das Ziel erreicht",
+"se liquidó":"wurde liquidiert",
+"tocó el stop":"hat den Stop erreicht",
+"perdió":"verlor",
+"Se hizo solo":"Automatisch erledigt",
+"entró":"eingestiegen",
+"Al salir de la repetición, las operaciones de práctica abiertas se cerraron al último precio que se vio, y las programadas que no entraron se quitaron.":"Beim Verlassen der Wiedergabe wurden offene Übungstrades zum zuletzt gezeigten Kurs geschlossen und nie ausgelöste geplante entfernt.",
+"Compartir los dibujos entre Spot, Futuros y Backtesting":"Zeichnungen zwischen Spot, Futures und Backtesting teilen",
+"Apagado: cada pantalla tiene sus propios dibujos.":"Aus: Jeder Bildschirm hat eigene Zeichnungen.",
+"Stop y objetivo: rótulos":"Stop und Ziel: Beschriftungen",
+"La relación (riesgo : beneficio)":"Das Verhältnis (Risiko : Gewinn)",
+"Forma":"Form",
+"En la caja Largo / Corto: cápsula de color o solo el texto.":"In der Long/Short-Box: farbige Kapsel oder nur Text.",
+"Vale para la caja Largo / Corto (largo y corto) y para las franjas de una operación.":"Gilt für die Long/Short-Box (Long und Short) und die Bänder eines Trades.",
+"Junto al objetivo":"Neben dem Ziel",
+"En la línea de entrada":"Auf der Einstiegslinie",
+"No mostrarla":"Nicht anzeigen",
+"Cápsula":"Kapsel",
+"Solo texto":"Nur Text",
+"Junto a la escala":"Neben der Skala",
+"Indicadores para otras personas":"Indikatoren für andere Personen",
+"Personas con mis indicadores":"Personen mit meinen Indikatoren",
+"Escriba el correo de Google de la persona. Al entrar con ese correo, en su teléfono o su PC, le aparecen los indicadores con su nombre original y los de pago. Los de licencia no comercial (Trend Speed Analyzer y Nadaraya-Watson) siguen siendo solo suyos.":"Geben Sie die Google-E-Mail der Person ein. Meldet sie sich damit auf Handy oder PC an, erscheinen die Indikatoren mit Originalnamen und die kostenpflichtigen. Die mit nichtkommerzieller Lizenz (Trend Speed Analyzer und Nadaraya-Watson) bleiben nur Ihre.",
+"Dar acceso":"Zugang geben",
+"El servidor todavía no tiene las reglas para esto. Siga la guía «Indicadores por correo» (un solo paso en Firebase).":"Der Server hat dafür noch keine Regeln. Folgen Sie der Anleitung „Indikatoren per E-Mail“ (ein einziger Schritt in Firebase).",
+"No se pudo leer la lista. Revise el internet.":"Die Liste konnte nicht gelesen werden. Prüfen Sie das Internet.",
+"Cargando la lista…":"Liste wird geladen…",
+"Todavía no le dio acceso a nadie.":"Sie haben noch niemandem Zugang gegeben.",
+"Escriba un correo válido.":"Geben Sie eine gültige E-Mail ein.",
+"Listo: al entrar con ese correo le aparecen los indicadores.":"Fertig: Bei der Anmeldung mit dieser E-Mail erscheinen die Indikatoren.",
+"El servidor no dejó guardar: faltan las reglas de la guía «Indicadores por correo».":"Der Server hat das Speichern nicht erlaubt: Es fehlen die Regeln aus der Anleitung „Indikatoren per E-Mail“.",
+"No se pudo guardar. Revise el internet.":"Speichern nicht möglich. Prüfen Sie das Internet.",
+"Quitado: ya no tiene los indicadores.":"Entfernt: Die Person hat die Indikatoren nicht mehr.",
+"No se pudo quitar. Revise el internet.":"Entfernen nicht möglich. Prüfen Sie das Internet.",
+"Se abrieron los indicadores que le dieron con su cuenta.":"Die mit Ihrem Konto geteilten Indikatoren sind freigeschaltet.",
+"ruptura falsa":"Fehlausbruch",
 
 "Línea horizontal":"Horizontale Linie",
 "Línea vertical":"Vertikale Linie",
@@ -68148,6 +69020,52 @@ DIC.it={
 "Neutro (blanco pálido)":"Neutro (bianco tenue)",
 "Color del tema":"Colore del tema",
 "no se completó":"non completato",
+"El precio ya pasó el stop o el objetivo: solo se puede dejar programada.":"Il prezzo ha già superato lo stop o l'obiettivo: si può solo programmare.",
+"Programar a":"Programma a",
+"O programarla: entra cuando el precio llegue a":"Oppure programmarla: entra quando il prezzo arriva a",
+"Para anotar operaciones en Backtesting, primero cree una prueba.":"Per registrare operazioni nel Backtesting, crea prima una prova.",
+"Práctica":"Pratica",
+"entra cuando una vela llegue a":"entra quando una candela arriva a",
+"abierta a":"aperta a",
+"Se cierra sola en el stop o el objetivo mientras avanza la repetición.":"Si chiude da sola allo stop o all'obiettivo mentre la riproduzione avanza.",
+"programada.":"programmata.",
+"abierta.":"aperta.",
+"llegó al objetivo":"ha raggiunto l'obiettivo",
+"se liquidó":"è stata liquidata",
+"tocó el stop":"ha toccato lo stop",
+"perdió":"ha perso",
+"Se hizo solo":"Fatto da solo",
+"entró":"è entrata",
+"Al salir de la repetición, las operaciones de práctica abiertas se cerraron al último precio que se vio, y las programadas que no entraron se quitaron.":"Uscendo dalla riproduzione, le operazioni di pratica aperte sono state chiuse all'ultimo prezzo visto e quelle programmate mai entrate sono state tolte.",
+"Compartir los dibujos entre Spot, Futuros y Backtesting":"Condividi i disegni tra Spot, Futures e Backtesting",
+"Apagado: cada pantalla tiene sus propios dibujos.":"Spento: ogni schermata ha i suoi disegni.",
+"Stop y objetivo: rótulos":"Stop e obiettivo: etichette",
+"La relación (riesgo : beneficio)":"Il rapporto (rischio : rendimento)",
+"Forma":"Forma",
+"En la caja Largo / Corto: cápsula de color o solo el texto.":"Nel riquadro Long / Short: capsula colorata o solo testo.",
+"Vale para la caja Largo / Corto (largo y corto) y para las franjas de una operación.":"Vale per il riquadro Long / Short (long e short) e per le fasce di un'operazione.",
+"Junto al objetivo":"Accanto all'obiettivo",
+"En la línea de entrada":"Sulla linea di entrata",
+"No mostrarla":"Non mostrarla",
+"Cápsula":"Capsula",
+"Solo texto":"Solo testo",
+"Junto a la escala":"Accanto alla scala",
+"Indicadores para otras personas":"Indicatori per altre persone",
+"Personas con mis indicadores":"Persone con i miei indicatori",
+"Escriba el correo de Google de la persona. Al entrar con ese correo, en su teléfono o su PC, le aparecen los indicadores con su nombre original y los de pago. Los de licencia no comercial (Trend Speed Analyzer y Nadaraya-Watson) siguen siendo solo suyos.":"Scrivi l'e-mail Google della persona. Entrando con quell'e-mail, sul telefono o sul PC, vedrà gli indicatori con il nome originale e quelli a pagamento. Quelli con licenza non commerciale (Trend Speed Analyzer e Nadaraya-Watson) restano solo tuoi.",
+"Dar acceso":"Dai accesso",
+"El servidor todavía no tiene las reglas para esto. Siga la guía «Indicadores por correo» (un solo paso en Firebase).":"Il server non ha ancora le regole per questo. Segui la guida «Indicatori per e-mail» (un solo passo in Firebase).",
+"No se pudo leer la lista. Revise el internet.":"Impossibile leggere l'elenco. Controlla internet.",
+"Cargando la lista…":"Caricamento dell'elenco…",
+"Todavía no le dio acceso a nadie.":"Non hai ancora dato accesso a nessuno.",
+"Escriba un correo válido.":"Scrivi un'e-mail valida.",
+"Listo: al entrar con ese correo le aparecen los indicadores.":"Fatto: entrando con quell'e-mail compaiono gli indicatori.",
+"El servidor no dejó guardar: faltan las reglas de la guía «Indicadores por correo».":"Il server non ha permesso di salvare: mancano le regole della guida «Indicatori per e-mail».",
+"No se pudo guardar. Revise el internet.":"Impossibile salvare. Controlla internet.",
+"Quitado: ya no tiene los indicadores.":"Tolto: non ha più gli indicatori.",
+"No se pudo quitar. Revise el internet.":"Impossibile togliere. Controlla internet.",
+"Se abrieron los indicadores que le dieron con su cuenta.":"Gli indicatori condivisi con il tuo account sono sbloccati.",
+"ruptura falsa":"falsa rottura",
 
 "Línea horizontal":"Linea orizzontale",
 "Línea vertical":"Linea verticale",
@@ -73815,6 +74733,52 @@ DIC.nl={
 "Neutro (blanco pálido)":"Neutraal (zacht wit)",
 "Color del tema":"Themakleur",
 "no se completó":"niet voltooid",
+"El precio ya pasó el stop o el objetivo: solo se puede dejar programada.":"De prijs is de stop of het doel al voorbij: ze kan alleen worden ingepland.",
+"Programar a":"Inplannen op",
+"O programarla: entra cuando el precio llegue a":"Of inplannen: ze start als de prijs bereikt",
+"Para anotar operaciones en Backtesting, primero cree una prueba.":"Maak eerst een test aan om trades in Backtesting te noteren.",
+"Práctica":"Oefening",
+"entra cuando una vela llegue a":"start als een kaars bereikt",
+"abierta a":"geopend op",
+"Se cierra sola en el stop o el objetivo mientras avanza la repetición.":"Ze sluit vanzelf op de stop of het doel terwijl de herhaling verdergaat.",
+"programada.":"ingepland.",
+"abierta.":"geopend.",
+"llegó al objetivo":"heeft het doel bereikt",
+"se liquidó":"is geliquideerd",
+"tocó el stop":"raakte de stop",
+"perdió":"verloor",
+"Se hizo solo":"Automatisch gedaan",
+"entró":"ingestapt",
+"Al salir de la repetición, las operaciones de práctica abiertas se cerraron al último precio que se vio, y las programadas que no entraron se quitaron.":"Bij het verlaten van de herhaling zijn open oefentrades gesloten op de laatst getoonde prijs en ingeplande die nooit startten verwijderd.",
+"Compartir los dibujos entre Spot, Futuros y Backtesting":"Tekeningen delen tussen Spot, Futures en Backtesting",
+"Apagado: cada pantalla tiene sus propios dibujos.":"Uit: elk scherm heeft eigen tekeningen.",
+"Stop y objetivo: rótulos":"Stop en doel: labels",
+"La relación (riesgo : beneficio)":"De verhouding (risico : winst)",
+"Forma":"Vorm",
+"En la caja Largo / Corto: cápsula de color o solo el texto.":"In het Long/Short-vak: gekleurde capsule of alleen tekst.",
+"Vale para la caja Largo / Corto (largo y corto) y para las franjas de una operación.":"Geldt voor het Long/Short-vak (long en short) en voor de banden van een trade.",
+"Junto al objetivo":"Naast het doel",
+"En la línea de entrada":"Op de instaplijn",
+"No mostrarla":"Niet tonen",
+"Cápsula":"Capsule",
+"Solo texto":"Alleen tekst",
+"Junto a la escala":"Naast de schaal",
+"Indicadores para otras personas":"Indicatoren voor andere mensen",
+"Personas con mis indicadores":"Mensen met mijn indicatoren",
+"Escriba el correo de Google de la persona. Al entrar con ese correo, en su teléfono o su PC, le aparecen los indicadores con su nombre original y los de pago. Los de licencia no comercial (Trend Speed Analyzer y Nadaraya-Watson) siguen siendo solo suyos.":"Typ het Google-e-mailadres van de persoon. Als die zich daarmee aanmeldt, op telefoon of pc, verschijnen de indicatoren met hun originele naam en de betaalde. Die met een niet-commerciële licentie (Trend Speed Analyzer en Nadaraya-Watson) blijven alleen van u.",
+"Dar acceso":"Toegang geven",
+"El servidor todavía no tiene las reglas para esto. Siga la guía «Indicadores por correo» (un solo paso en Firebase).":"De server heeft hier nog geen regels voor. Volg de gids „Indicatoren per e-mail” (één stap in Firebase).",
+"No se pudo leer la lista. Revise el internet.":"De lijst kon niet worden gelezen. Controleer het internet.",
+"Cargando la lista…":"Lijst laden…",
+"Todavía no le dio acceso a nadie.":"U hebt nog niemand toegang gegeven.",
+"Escriba un correo válido.":"Typ een geldig e-mailadres.",
+"Listo: al entrar con ese correo le aparecen los indicadores.":"Klaar: bij aanmelden met dat e-mailadres verschijnen de indicatoren.",
+"El servidor no dejó guardar: faltan las reglas de la guía «Indicadores por correo».":"De server stond opslaan niet toe: de regels uit de gids „Indicatoren per e-mail” ontbreken.",
+"No se pudo guardar. Revise el internet.":"Opslaan mislukt. Controleer het internet.",
+"Quitado: ya no tiene los indicadores.":"Verwijderd: deze persoon heeft de indicatoren niet meer.",
+"No se pudo quitar. Revise el internet.":"Verwijderen mislukt. Controleer het internet.",
+"Se abrieron los indicadores que le dieron con su cuenta.":"De indicatoren die met uw account zijn gedeeld, zijn ontgrendeld.",
+"ruptura falsa":"valse uitbraak",
 
 "Línea horizontal":"Horizontale lijn",
 "Línea vertical":"Verticale lijn",
@@ -79768,6 +80732,52 @@ DIC.pl={
 "Neutro (blanco pálido)":"Neutralny (jasna biel)",
 "Color del tema":"Kolor motywu",
 "no se completó":"nie ukończona",
+"El precio ya pasó el stop o el objetivo: solo se puede dejar programada.":"Cena minęła już stop lub cel: można ją tylko zaplanować.",
+"Programar a":"Zaplanuj po",
+"O programarla: entra cuando el precio llegue a":"Lub zaplanuj: wejdzie, gdy cena dojdzie do",
+"Para anotar operaciones en Backtesting, primero cree una prueba.":"Aby zapisywać transakcje w Backtestingu, najpierw utwórz test.",
+"Práctica":"Ćwiczenie",
+"entra cuando una vela llegue a":"wejdzie, gdy świeca dojdzie do",
+"abierta a":"otwarta po",
+"Se cierra sola en el stop o el objetivo mientras avanza la repetición.":"Zamknie się sama na stopie lub celu, gdy odtwarzanie idzie dalej.",
+"programada.":"zaplanowana.",
+"abierta.":"otwarta.",
+"llegó al objetivo":"osiągnęła cel",
+"se liquidó":"została zlikwidowana",
+"tocó el stop":"dotknęła stopa",
+"perdió":"straciła",
+"Se hizo solo":"Zrobione automatycznie",
+"entró":"weszła",
+"Al salir de la repetición, las operaciones de práctica abiertas se cerraron al último precio que se vio, y las programadas que no entraron se quitaron.":"Po wyjściu z odtwarzania otwarte transakcje ćwiczeniowe zamknięto po ostatniej widocznej cenie, a zaplanowane, które nie weszły, usunięto.",
+"Compartir los dibujos entre Spot, Futuros y Backtesting":"Udostępniaj rysunki między Spot, Futures i Backtesting",
+"Apagado: cada pantalla tiene sus propios dibujos.":"Wyłączone: każdy ekran ma własne rysunki.",
+"Stop y objetivo: rótulos":"Stop i cel: etykiety",
+"La relación (riesgo : beneficio)":"Stosunek (ryzyko : zysk)",
+"Forma":"Forma",
+"En la caja Largo / Corto: cápsula de color o solo el texto.":"W ramce Long / Short: kolorowa kapsuła albo sam tekst.",
+"Vale para la caja Largo / Corto (largo y corto) y para las franjas de una operación.":"Dotyczy ramki Long / Short (long i short) oraz pasów transakcji.",
+"Junto al objetivo":"Obok celu",
+"En la línea de entrada":"Na linii wejścia",
+"No mostrarla":"Nie pokazuj",
+"Cápsula":"Kapsuła",
+"Solo texto":"Sam tekst",
+"Junto a la escala":"Przy skali",
+"Indicadores para otras personas":"Wskaźniki dla innych osób",
+"Personas con mis indicadores":"Osoby z moimi wskaźnikami",
+"Escriba el correo de Google de la persona. Al entrar con ese correo, en su teléfono o su PC, le aparecen los indicadores con su nombre original y los de pago. Los de licencia no comercial (Trend Speed Analyzer y Nadaraya-Watson) siguen siendo solo suyos.":"Wpisz e-mail Google tej osoby. Gdy zaloguje się nim na telefonie lub PC, zobaczy wskaźniki z oryginalnymi nazwami i płatne. Te z licencją niekomercyjną (Trend Speed Analyzer i Nadaraya-Watson) zostają tylko Twoje.",
+"Dar acceso":"Daj dostęp",
+"El servidor todavía no tiene las reglas para esto. Siga la guía «Indicadores por correo» (un solo paso en Firebase).":"Serwer nie ma jeszcze reguł do tego. Skorzystaj z przewodnika „Wskaźniki przez e-mail” (jeden krok w Firebase).",
+"No se pudo leer la lista. Revise el internet.":"Nie udało się odczytać listy. Sprawdź internet.",
+"Cargando la lista…":"Wczytywanie listy…",
+"Todavía no le dio acceso a nadie.":"Nie dałeś jeszcze nikomu dostępu.",
+"Escriba un correo válido.":"Wpisz poprawny e-mail.",
+"Listo: al entrar con ese correo le aparecen los indicadores.":"Gotowe: po zalogowaniu tym e-mailem pojawią się wskaźniki.",
+"El servidor no dejó guardar: faltan las reglas de la guía «Indicadores por correo».":"Serwer nie pozwolił zapisać: brakuje reguł z przewodnika „Wskaźniki przez e-mail”.",
+"No se pudo guardar. Revise el internet.":"Nie udało się zapisać. Sprawdź internet.",
+"Quitado: ya no tiene los indicadores.":"Usunięto: ta osoba nie ma już wskaźników.",
+"No se pudo quitar. Revise el internet.":"Nie udało się usunąć. Sprawdź internet.",
+"Se abrieron los indicadores que le dieron con su cuenta.":"Wskaźniki udostępnione Twojemu kontu są odblokowane.",
+"ruptura falsa":"fałszywe wybicie",
 
 "Línea horizontal":"Linia pozioma",
 "Línea vertical":"Linia pionowa",
@@ -85721,6 +86731,52 @@ DIC.tr={
 "Neutro (blanco pálido)":"Nötr (soluk beyaz)",
 "Color del tema":"Tema rengi",
 "no se completó":"tamamlanmadı",
+"El precio ya pasó el stop o el objetivo: solo se puede dejar programada.":"Fiyat stopu veya hedefi zaten geçti: yalnızca planlanabilir.",
+"Programar a":"Şuradan planla",
+"O programarla: entra cuando el precio llegue a":"Ya da planlayın: fiyat şuraya gelince açılır",
+"Para anotar operaciones en Backtesting, primero cree una prueba.":"Backtesting'de işlem kaydetmek için önce bir test oluşturun.",
+"Práctica":"Alıştırma",
+"entra cuando una vela llegue a":"bir mum şuraya gelince açılır",
+"abierta a":"şuradan açıldı",
+"Se cierra sola en el stop o el objetivo mientras avanza la repetición.":"Tekrar ilerledikçe stopta veya hedefte kendiliğinden kapanır.",
+"programada.":"planlandı.",
+"abierta.":"açıldı.",
+"llegó al objetivo":"hedefe ulaştı",
+"se liquidó":"likide oldu",
+"tocó el stop":"stopa değdi",
+"perdió":"kaybetti",
+"Se hizo solo":"Otomatik yapıldı",
+"entró":"girdi",
+"Al salir de la repetición, las operaciones de práctica abiertas se cerraron al último precio que se vio, y las programadas que no entraron se quitaron.":"Tekrardan çıkınca açık alıştırma işlemleri son görülen fiyattan kapatıldı, girmeyen planlı işlemler kaldırıldı.",
+"Compartir los dibujos entre Spot, Futuros y Backtesting":"Çizimleri Spot, Vadeli ve Backtesting arasında paylaş",
+"Apagado: cada pantalla tiene sus propios dibujos.":"Kapalı: her ekranın kendi çizimleri var.",
+"Stop y objetivo: rótulos":"Stop ve hedef: etiketler",
+"La relación (riesgo : beneficio)":"Oran (risk : kazanç)",
+"Forma":"Biçim",
+"En la caja Largo / Corto: cápsula de color o solo el texto.":"Long / Short kutusunda: renkli kapsül veya yalnızca metin.",
+"Vale para la caja Largo / Corto (largo y corto) y para las franjas de una operación.":"Long / Short kutusu (long ve short) ve bir işlemin bantları için geçerlidir.",
+"Junto al objetivo":"Hedefin yanında",
+"En la línea de entrada":"Giriş çizgisinde",
+"No mostrarla":"Gösterme",
+"Cápsula":"Kapsül",
+"Solo texto":"Yalnızca metin",
+"Junto a la escala":"Ölçeğin yanında",
+"Indicadores para otras personas":"Diğer kişiler için göstergeler",
+"Personas con mis indicadores":"Göstergelerime sahip kişiler",
+"Escriba el correo de Google de la persona. Al entrar con ese correo, en su teléfono o su PC, le aparecen los indicadores con su nombre original y los de pago. Los de licencia no comercial (Trend Speed Analyzer y Nadaraya-Watson) siguen siendo solo suyos.":"Kişinin Google e-postasını yazın. Bu e-postayla telefonunda veya bilgisayarında giriş yaptığında göstergeler orijinal adlarıyla ve ücretli olanlar görünür. Ticari olmayan lisanslılar (Trend Speed Analyzer ve Nadaraya-Watson) yalnızca sizde kalır.",
+"Dar acceso":"Erişim ver",
+"El servidor todavía no tiene las reglas para esto. Siga la guía «Indicadores por correo» (un solo paso en Firebase).":"Sunucuda bunun için henüz kurallar yok. «E-postayla göstergeler» rehberini izleyin (Firebase'de tek adım).",
+"No se pudo leer la lista. Revise el internet.":"Liste okunamadı. İnternetinizi kontrol edin.",
+"Cargando la lista…":"Liste yükleniyor…",
+"Todavía no le dio acceso a nadie.":"Henüz kimseye erişim vermediniz.",
+"Escriba un correo válido.":"Geçerli bir e-posta yazın.",
+"Listo: al entrar con ese correo le aparecen los indicadores.":"Tamam: bu e-postayla giriş yapınca göstergeler görünür.",
+"El servidor no dejó guardar: faltan las reglas de la guía «Indicadores por correo».":"Sunucu kaydetmeye izin vermedi: «E-postayla göstergeler» rehberindeki kurallar eksik.",
+"No se pudo guardar. Revise el internet.":"Kaydedilemedi. İnternetinizi kontrol edin.",
+"Quitado: ya no tiene los indicadores.":"Kaldırıldı: artık göstergelere sahip değil.",
+"No se pudo quitar. Revise el internet.":"Kaldırılamadı. İnternetinizi kontrol edin.",
+"Se abrieron los indicadores que le dieron con su cuenta.":"Hesabınızla paylaşılan göstergeler açıldı.",
+"ruptura falsa":"sahte kırılım",
 
 "Línea horizontal":"Yatay çizgi",
 "Línea vertical":"Dikey çizgi",
@@ -91674,6 +92730,52 @@ DIC.ru={
 "Neutro (blanco pálido)":"Нейтральный (бледно-белый)",
 "Color del tema":"Цвет темы",
 "no se completó":"не сформировалась",
+"El precio ya pasó el stop o el objetivo: solo se puede dejar programada.":"Цена уже прошла стоп или цель: её можно только запланировать.",
+"Programar a":"Запланировать по",
+"O programarla: entra cuando el precio llegue a":"Или запланировать: войдёт, когда цена дойдёт до",
+"Para anotar operaciones en Backtesting, primero cree una prueba.":"Чтобы записывать сделки в бэктестинге, сначала создайте тест.",
+"Práctica":"Практика",
+"entra cuando una vela llegue a":"войдёт, когда свеча дойдёт до",
+"abierta a":"открыта по",
+"Se cierra sola en el stop o el objetivo mientras avanza la repetición.":"Закроется сама по стопу или цели, пока идёт повтор.",
+"programada.":"запланирована.",
+"abierta.":"открыта.",
+"llegó al objetivo":"достигла цели",
+"se liquidó":"ликвидирована",
+"tocó el stop":"сработал стоп",
+"perdió":"потеряла",
+"Se hizo solo":"Сделано автоматически",
+"entró":"вошла",
+"Al salir de la repetición, las operaciones de práctica abiertas se cerraron al último precio que se vio, y las programadas que no entraron se quitaron.":"При выходе из повтора открытые учебные сделки закрыты по последней показанной цене, а невошедшие запланированные удалены.",
+"Compartir los dibujos entre Spot, Futuros y Backtesting":"Общие рисунки для Спота, Фьючерсов и Бэктестинга",
+"Apagado: cada pantalla tiene sus propios dibujos.":"Выкл.: у каждого экрана свои рисунки.",
+"Stop y objetivo: rótulos":"Стоп и цель: подписи",
+"La relación (riesgo : beneficio)":"Соотношение (риск : прибыль)",
+"Forma":"Вид",
+"En la caja Largo / Corto: cápsula de color o solo el texto.":"В блоке Лонг / Шорт: цветная плашка или только текст.",
+"Vale para la caja Largo / Corto (largo y corto) y para las franjas de una operación.":"Действует для блока Лонг / Шорт (лонг и шорт) и для полос сделки.",
+"Junto al objetivo":"Рядом с целью",
+"En la línea de entrada":"На линии входа",
+"No mostrarla":"Не показывать",
+"Cápsula":"Плашка",
+"Solo texto":"Только текст",
+"Junto a la escala":"У шкалы",
+"Indicadores para otras personas":"Индикаторы для других людей",
+"Personas con mis indicadores":"Люди с моими индикаторами",
+"Escriba el correo de Google de la persona. Al entrar con ese correo, en su teléfono o su PC, le aparecen los indicadores con su nombre original y los de pago. Los de licencia no comercial (Trend Speed Analyzer y Nadaraya-Watson) siguen siendo solo suyos.":"Введите Google-почту человека. Войдя с ней на телефоне или ПК, он увидит индикаторы с оригинальными названиями и платные. Индикаторы с некоммерческой лицензией (Trend Speed Analyzer и Nadaraya-Watson) остаются только вашими.",
+"Dar acceso":"Дать доступ",
+"El servidor todavía no tiene las reglas para esto. Siga la guía «Indicadores por correo» (un solo paso en Firebase).":"На сервере ещё нет правил для этого. Следуйте инструкции «Индикаторы по почте» (один шаг в Firebase).",
+"No se pudo leer la lista. Revise el internet.":"Не удалось прочитать список. Проверьте интернет.",
+"Cargando la lista…":"Загрузка списка…",
+"Todavía no le dio acceso a nadie.":"Вы ещё никому не дали доступ.",
+"Escriba un correo válido.":"Введите правильную почту.",
+"Listo: al entrar con ese correo le aparecen los indicadores.":"Готово: при входе с этой почтой появятся индикаторы.",
+"El servidor no dejó guardar: faltan las reglas de la guía «Indicadores por correo».":"Сервер не разрешил сохранить: нет правил из инструкции «Индикаторы по почте».",
+"No se pudo guardar. Revise el internet.":"Не удалось сохранить. Проверьте интернет.",
+"Quitado: ya no tiene los indicadores.":"Удалено: у человека больше нет индикаторов.",
+"No se pudo quitar. Revise el internet.":"Не удалось удалить. Проверьте интернет.",
+"Se abrieron los indicadores que le dieron con su cuenta.":"Индикаторы, открытые для вашего аккаунта, доступны.",
+"ruptura falsa":"ложный пробой",
 
 "Línea horizontal":"Горизонтальная линия",
 "Línea vertical":"Вертикальная линия",
@@ -97627,6 +98729,52 @@ DIC.uk={
 "Neutro (blanco pálido)":"Нейтральний (блідо-білий)",
 "Color del tema":"Колір теми",
 "no se completó":"не сформувалася",
+"El precio ya pasó el stop o el objetivo: solo se puede dejar programada.":"Ціна вже пройшла стоп або ціль: її можна лише запланувати.",
+"Programar a":"Запланувати за",
+"O programarla: entra cuando el precio llegue a":"Або запланувати: увійде, коли ціна дійде до",
+"Para anotar operaciones en Backtesting, primero cree una prueba.":"Щоб записувати угоди в бектестингу, спочатку створіть тест.",
+"Práctica":"Практика",
+"entra cuando una vela llegue a":"увійде, коли свічка дійде до",
+"abierta a":"відкрита за",
+"Se cierra sola en el stop o el objetivo mientras avanza la repetición.":"Закриється сама за стопом або ціллю, поки йде повтор.",
+"programada.":"запланована.",
+"abierta.":"відкрита.",
+"llegó al objetivo":"досягла цілі",
+"se liquidó":"ліквідована",
+"tocó el stop":"спрацював стоп",
+"perdió":"втратила",
+"Se hizo solo":"Зроблено автоматично",
+"entró":"увійшла",
+"Al salir de la repetición, las operaciones de práctica abiertas se cerraron al último precio que se vio, y las programadas que no entraron se quitaron.":"Під час виходу з повтору відкриті навчальні угоди закрито за останньою показаною ціною, а невідкриті заплановані видалено.",
+"Compartir los dibujos entre Spot, Futuros y Backtesting":"Спільні малюнки для Споту, Ф'ючерсів і Бектестингу",
+"Apagado: cada pantalla tiene sus propios dibujos.":"Вимк.: у кожного екрана свої малюнки.",
+"Stop y objetivo: rótulos":"Стоп і ціль: підписи",
+"La relación (riesgo : beneficio)":"Співвідношення (ризик : прибуток)",
+"Forma":"Вигляд",
+"En la caja Largo / Corto: cápsula de color o solo el texto.":"У блоці Лонг / Шорт: кольорова плашка або лише текст.",
+"Vale para la caja Largo / Corto (largo y corto) y para las franjas de una operación.":"Діє для блоку Лонг / Шорт (лонг і шорт) і для смуг угоди.",
+"Junto al objetivo":"Поруч із ціллю",
+"En la línea de entrada":"На лінії входу",
+"No mostrarla":"Не показувати",
+"Cápsula":"Плашка",
+"Solo texto":"Лише текст",
+"Junto a la escala":"Біля шкали",
+"Indicadores para otras personas":"Індикатори для інших людей",
+"Personas con mis indicadores":"Люди з моїми індикаторами",
+"Escriba el correo de Google de la persona. Al entrar con ese correo, en su teléfono o su PC, le aparecen los indicadores con su nombre original y los de pago. Los de licencia no comercial (Trend Speed Analyzer y Nadaraya-Watson) siguen siendo solo suyos.":"Введіть Google-пошту людини. Увійшовши з нею на телефоні чи ПК, вона побачить індикатори з оригінальними назвами та платні. Індикатори з некомерційною ліцензією (Trend Speed Analyzer і Nadaraya-Watson) лишаються тільки вашими.",
+"Dar acceso":"Надати доступ",
+"El servidor todavía no tiene las reglas para esto. Siga la guía «Indicadores por correo» (un solo paso en Firebase).":"На сервері ще немає правил для цього. Дотримуйтеся інструкції «Індикатори за поштою» (один крок у Firebase).",
+"No se pudo leer la lista. Revise el internet.":"Не вдалося прочитати список. Перевірте інтернет.",
+"Cargando la lista…":"Завантаження списку…",
+"Todavía no le dio acceso a nadie.":"Ви ще нікому не надали доступ.",
+"Escriba un correo válido.":"Введіть правильну пошту.",
+"Listo: al entrar con ese correo le aparecen los indicadores.":"Готово: під час входу з цією поштою з'являться індикатори.",
+"El servidor no dejó guardar: faltan las reglas de la guía «Indicadores por correo».":"Сервер не дозволив зберегти: бракує правил з інструкції «Індикатори за поштою».",
+"No se pudo guardar. Revise el internet.":"Не вдалося зберегти. Перевірте інтернет.",
+"Quitado: ya no tiene los indicadores.":"Видалено: у людини більше немає індикаторів.",
+"No se pudo quitar. Revise el internet.":"Не вдалося видалити. Перевірте інтернет.",
+"Se abrieron los indicadores que le dieron con su cuenta.":"Індикатори, відкриті для вашого акаунта, доступні.",
+"ruptura falsa":"хибний пробій",
 
 "Línea horizontal":"Горизонтальна лінія",
 "Línea vertical":"Вертикальна лінія",
@@ -103580,6 +104728,52 @@ DIC.id={
 "Neutro (blanco pálido)":"Netral (putih lembut)",
 "Color del tema":"Warna tema",
 "no se completó":"tidak terbentuk",
+"El precio ya pasó el stop o el objetivo: solo se puede dejar programada.":"Harga sudah melewati stop atau target: hanya bisa dijadwalkan.",
+"Programar a":"Jadwalkan di",
+"O programarla: entra cuando el precio llegue a":"Atau jadwalkan: masuk saat harga mencapai",
+"Para anotar operaciones en Backtesting, primero cree una prueba.":"Untuk mencatat transaksi di Backtesting, buat dulu sebuah uji.",
+"Práctica":"Latihan",
+"entra cuando una vela llegue a":"masuk saat sebuah lilin mencapai",
+"abierta a":"dibuka di",
+"Se cierra sola en el stop o el objetivo mientras avanza la repetición.":"Tertutup sendiri di stop atau target selama replay berjalan.",
+"programada.":"terjadwal.",
+"abierta.":"dibuka.",
+"llegó al objetivo":"mencapai target",
+"se liquidó":"terlikuidasi",
+"tocó el stop":"menyentuh stop",
+"perdió":"rugi",
+"Se hizo solo":"Dilakukan otomatis",
+"entró":"masuk",
+"Al salir de la repetición, las operaciones de práctica abiertas se cerraron al último precio que se vio, y las programadas que no entraron se quitaron.":"Saat keluar dari replay, transaksi latihan yang terbuka ditutup di harga terakhir yang terlihat, dan yang terjadwal tapi belum masuk dihapus.",
+"Compartir los dibujos entre Spot, Futuros y Backtesting":"Bagikan gambar antara Spot, Futures, dan Backtesting",
+"Apagado: cada pantalla tiene sus propios dibujos.":"Mati: setiap layar punya gambarnya sendiri.",
+"Stop y objetivo: rótulos":"Stop dan target: label",
+"La relación (riesgo : beneficio)":"Rasio (risiko : imbal hasil)",
+"Forma":"Bentuk",
+"En la caja Largo / Corto: cápsula de color o solo el texto.":"Di kotak Long / Short: kapsul berwarna atau teks saja.",
+"Vale para la caja Largo / Corto (largo y corto) y para las franjas de una operación.":"Berlaku untuk kotak Long / Short (long dan short) dan pita sebuah transaksi.",
+"Junto al objetivo":"Di samping target",
+"En la línea de entrada":"Di garis entry",
+"No mostrarla":"Jangan tampilkan",
+"Cápsula":"Kapsul",
+"Solo texto":"Teks saja",
+"Junto a la escala":"Di samping skala",
+"Indicadores para otras personas":"Indikator untuk orang lain",
+"Personas con mis indicadores":"Orang dengan indikator saya",
+"Escriba el correo de Google de la persona. Al entrar con ese correo, en su teléfono o su PC, le aparecen los indicadores con su nombre original y los de pago. Los de licencia no comercial (Trend Speed Analyzer y Nadaraya-Watson) siguen siendo solo suyos.":"Ketik email Google orang tersebut. Saat masuk dengan email itu, di ponsel atau PC-nya, indikator muncul dengan nama aslinya beserta yang berbayar. Yang berlisensi non-komersial (Trend Speed Analyzer dan Nadaraya-Watson) tetap hanya milik Anda.",
+"Dar acceso":"Beri akses",
+"El servidor todavía no tiene las reglas para esto. Siga la guía «Indicadores por correo» (un solo paso en Firebase).":"Server belum punya aturan untuk ini. Ikuti panduan «Indikator lewat email» (satu langkah di Firebase).",
+"No se pudo leer la lista. Revise el internet.":"Daftar tidak bisa dibaca. Periksa internet.",
+"Cargando la lista…":"Memuat daftar…",
+"Todavía no le dio acceso a nadie.":"Anda belum memberi akses kepada siapa pun.",
+"Escriba un correo válido.":"Ketik email yang valid.",
+"Listo: al entrar con ese correo le aparecen los indicadores.":"Selesai: saat masuk dengan email itu, indikator akan muncul.",
+"El servidor no dejó guardar: faltan las reglas de la guía «Indicadores por correo».":"Server tidak mengizinkan menyimpan: aturan dari panduan «Indikator lewat email» belum ada.",
+"No se pudo guardar. Revise el internet.":"Gagal menyimpan. Periksa internet.",
+"Quitado: ya no tiene los indicadores.":"Dihapus: orang itu tidak lagi punya indikatornya.",
+"No se pudo quitar. Revise el internet.":"Gagal menghapus. Periksa internet.",
+"Se abrieron los indicadores que le dieron con su cuenta.":"Indikator yang dibagikan ke akun Anda sudah terbuka.",
+"ruptura falsa":"breakout palsu",
 
 "Línea horizontal":"Garis horizontal",
 "Línea vertical":"Garis vertikal",
@@ -109533,6 +110727,52 @@ DIC.vi={
 "Neutro (blanco pálido)":"Trung tính (trắng nhạt)",
 "Color del tema":"Màu giao diện",
 "no se completó":"không hoàn thành",
+"El precio ya pasó el stop o el objetivo: solo se puede dejar programada.":"Giá đã vượt qua stop hoặc mục tiêu: chỉ có thể đặt lệnh chờ.",
+"Programar a":"Đặt chờ tại",
+"O programarla: entra cuando el precio llegue a":"Hoặc đặt chờ: vào lệnh khi giá chạm",
+"Para anotar operaciones en Backtesting, primero cree una prueba.":"Để ghi giao dịch trong Backtesting, hãy tạo một bài kiểm tra trước.",
+"Práctica":"Luyện tập",
+"entra cuando una vela llegue a":"vào lệnh khi một nến chạm",
+"abierta a":"mở tại",
+"Se cierra sola en el stop o el objetivo mientras avanza la repetición.":"Tự đóng ở stop hoặc mục tiêu khi phát lại tiếp diễn.",
+"programada.":"đã đặt chờ.",
+"abierta.":"đã mở.",
+"llegó al objetivo":"đã chạm mục tiêu",
+"se liquidó":"bị thanh lý",
+"tocó el stop":"chạm stop",
+"perdió":"lỗ",
+"Se hizo solo":"Tự động thực hiện",
+"entró":"đã vào lệnh",
+"Al salir de la repetición, las operaciones de práctica abiertas se cerraron al último precio que se vio, y las programadas que no entraron se quitaron.":"Khi thoát phát lại, các giao dịch luyện tập đang mở được đóng ở giá cuối cùng hiển thị, và các lệnh chờ chưa khớp bị xóa.",
+"Compartir los dibujos entre Spot, Futuros y Backtesting":"Dùng chung hình vẽ giữa Spot, Futures và Backtesting",
+"Apagado: cada pantalla tiene sus propios dibujos.":"Tắt: mỗi màn hình có hình vẽ riêng.",
+"Stop y objetivo: rótulos":"Stop và mục tiêu: nhãn",
+"La relación (riesgo : beneficio)":"Tỷ lệ (rủi ro : lợi nhuận)",
+"Forma":"Kiểu",
+"En la caja Largo / Corto: cápsula de color o solo el texto.":"Trong hộp Long / Short: viên nang màu hoặc chỉ chữ.",
+"Vale para la caja Largo / Corto (largo y corto) y para las franjas de una operación.":"Áp dụng cho hộp Long / Short (long và short) và các dải của một giao dịch.",
+"Junto al objetivo":"Cạnh mục tiêu",
+"En la línea de entrada":"Trên đường vào lệnh",
+"No mostrarla":"Không hiện",
+"Cápsula":"Viên nang",
+"Solo texto":"Chỉ chữ",
+"Junto a la escala":"Cạnh thang giá",
+"Indicadores para otras personas":"Chỉ báo cho người khác",
+"Personas con mis indicadores":"Người có chỉ báo của tôi",
+"Escriba el correo de Google de la persona. Al entrar con ese correo, en su teléfono o su PC, le aparecen los indicadores con su nombre original y los de pago. Los de licencia no comercial (Trend Speed Analyzer y Nadaraya-Watson) siguen siendo solo suyos.":"Nhập email Google của người đó. Khi họ đăng nhập bằng email đó trên điện thoại hoặc PC, các chỉ báo sẽ hiện với tên gốc cùng các chỉ báo trả phí. Các chỉ báo giấy phép phi thương mại (Trend Speed Analyzer và Nadaraya-Watson) vẫn chỉ của bạn.",
+"Dar acceso":"Cấp quyền",
+"El servidor todavía no tiene las reglas para esto. Siga la guía «Indicadores por correo» (un solo paso en Firebase).":"Máy chủ chưa có quy tắc cho việc này. Làm theo hướng dẫn «Chỉ báo qua email» (một bước trong Firebase).",
+"No se pudo leer la lista. Revise el internet.":"Không đọc được danh sách. Kiểm tra internet.",
+"Cargando la lista…":"Đang tải danh sách…",
+"Todavía no le dio acceso a nadie.":"Bạn chưa cấp quyền cho ai.",
+"Escriba un correo válido.":"Nhập email hợp lệ.",
+"Listo: al entrar con ese correo le aparecen los indicadores.":"Xong: khi đăng nhập bằng email đó, các chỉ báo sẽ hiện.",
+"El servidor no dejó guardar: faltan las reglas de la guía «Indicadores por correo».":"Máy chủ không cho lưu: thiếu các quy tắc trong hướng dẫn «Chỉ báo qua email».",
+"No se pudo guardar. Revise el internet.":"Không lưu được. Kiểm tra internet.",
+"Quitado: ya no tiene los indicadores.":"Đã gỡ: người này không còn các chỉ báo.",
+"No se pudo quitar. Revise el internet.":"Không gỡ được. Kiểm tra internet.",
+"Se abrieron los indicadores que le dieron con su cuenta.":"Các chỉ báo được chia sẻ cho tài khoản của bạn đã mở.",
+"ruptura falsa":"phá vỡ giả",
 
 "Línea horizontal":"Đường ngang",
 "Línea vertical":"Đường dọc",
@@ -115486,6 +116726,52 @@ DIC.hi={
 "Neutro (blanco pálido)":"तटस्थ (हल्का सफ़ेद)",
 "Color del tema":"थीम का रंग",
 "no se completó":"पूरा नहीं हुआ",
+"El precio ya pasó el stop o el objetivo: solo se puede dejar programada.":"कीमत पहले ही स्टॉप या लक्ष्य पार कर चुकी है: इसे केवल शेड्यूल किया जा सकता है।",
+"Programar a":"इस पर शेड्यूल करें",
+"O programarla: entra cuando el precio llegue a":"या शेड्यूल करें: कीमत यहाँ पहुँचने पर खुलेगी",
+"Para anotar operaciones en Backtesting, primero cree una prueba.":"बैकटेस्टिंग में ट्रेड दर्ज करने के लिए पहले एक टेस्ट बनाएँ।",
+"Práctica":"अभ्यास",
+"entra cuando una vela llegue a":"जब कोई कैंडल यहाँ पहुँचेगी तब खुलेगी",
+"abierta a":"इस पर खुला",
+"Se cierra sola en el stop o el objetivo mientras avanza la repetición.":"रीप्ले आगे बढ़ते हुए यह स्टॉप या लक्ष्य पर अपने आप बंद होगा।",
+"programada.":"शेड्यूल हुआ।",
+"abierta.":"खुला।",
+"llegó al objetivo":"लक्ष्य तक पहुँचा",
+"se liquidó":"लिक्विडेट हो गया",
+"tocó el stop":"स्टॉप छू गया",
+"perdió":"घाटा",
+"Se hizo solo":"अपने आप हुआ",
+"entró":"प्रवेश हुआ",
+"Al salir de la repetición, las operaciones de práctica abiertas se cerraron al último precio que se vio, y las programadas que no entraron se quitaron.":"रीप्ले से बाहर निकलने पर खुले अभ्यास ट्रेड आखिरी दिखी कीमत पर बंद हुए, और जो शेड्यूल ट्रेड नहीं खुले वे हटा दिए गए।",
+"Compartir los dibujos entre Spot, Futuros y Backtesting":"स्पॉट, फ्यूचर्स और बैकटेस्टिंग में ड्रॉइंग साझा करें",
+"Apagado: cada pantalla tiene sus propios dibujos.":"बंद: हर स्क्रीन की अपनी ड्रॉइंग होती है।",
+"Stop y objetivo: rótulos":"स्टॉप और लक्ष्य: लेबल",
+"La relación (riesgo : beneficio)":"अनुपात (जोखिम : लाभ)",
+"Forma":"रूप",
+"En la caja Largo / Corto: cápsula de color o solo el texto.":"लॉन्ग / शॉर्ट बॉक्स में: रंगीन कैप्सूल या सिर्फ़ टेक्स्ट।",
+"Vale para la caja Largo / Corto (largo y corto) y para las franjas de una operación.":"लॉन्ग / शॉर्ट बॉक्स (दोनों) और किसी ट्रेड की पट्टियों पर लागू।",
+"Junto al objetivo":"लक्ष्य के पास",
+"En la línea de entrada":"एंट्री लाइन पर",
+"No mostrarla":"न दिखाएँ",
+"Cápsula":"कैप्सूल",
+"Solo texto":"सिर्फ़ टेक्स्ट",
+"Junto a la escala":"स्केल के पास",
+"Indicadores para otras personas":"दूसरों के लिए इंडिकेटर",
+"Personas con mis indicadores":"मेरे इंडिकेटर वाले लोग",
+"Escriba el correo de Google de la persona. Al entrar con ese correo, en su teléfono o su PC, le aparecen los indicadores con su nombre original y los de pago. Los de licencia no comercial (Trend Speed Analyzer y Nadaraya-Watson) siguen siendo solo suyos.":"उस व्यक्ति का Google ईमेल लिखें। उस ईमेल से अपने फ़ोन या पीसी पर लॉग इन करने पर उसे इंडिकेटर अपने मूल नाम से और पेड वाले दिखेंगे। गैर-व्यावसायिक लाइसेंस वाले (Trend Speed Analyzer और Nadaraya-Watson) सिर्फ़ आपके रहेंगे।",
+"Dar acceso":"एक्सेस दें",
+"El servidor todavía no tiene las reglas para esto. Siga la guía «Indicadores por correo» (un solo paso en Firebase).":"सर्वर में अभी इसके नियम नहीं हैं। «ईमेल से इंडिकेटर» गाइड देखें (Firebase में एक ही कदम)।",
+"No se pudo leer la lista. Revise el internet.":"सूची नहीं पढ़ी जा सकी। इंटरनेट जाँचें।",
+"Cargando la lista…":"सूची लोड हो रही है…",
+"Todavía no le dio acceso a nadie.":"आपने अभी किसी को एक्सेस नहीं दिया है।",
+"Escriba un correo válido.":"एक सही ईमेल लिखें।",
+"Listo: al entrar con ese correo le aparecen los indicadores.":"हो गया: उस ईमेल से लॉग इन करने पर इंडिकेटर दिखेंगे।",
+"El servidor no dejó guardar: faltan las reglas de la guía «Indicadores por correo».":"सर्वर ने सेव नहीं करने दिया: «ईमेल से इंडिकेटर» गाइड के नियम नहीं हैं।",
+"No se pudo guardar. Revise el internet.":"सेव नहीं हो सका। इंटरनेट जाँचें।",
+"Quitado: ya no tiene los indicadores.":"हटाया गया: अब उसके पास इंडिकेटर नहीं हैं।",
+"No se pudo quitar. Revise el internet.":"हटाया नहीं जा सका। इंटरनेट जाँचें।",
+"Se abrieron los indicadores que le dieron con su cuenta.":"आपके खाते के साथ साझा किए गए इंडिकेटर खुल गए हैं।",
+"ruptura falsa":"झूठा ब्रेकआउट",
 
 "Línea horizontal":"क्षैतिज रेखा",
 "Línea vertical":"ऊर्ध्वाधर रेखा",
@@ -121439,6 +122725,52 @@ DIC.ja={
 "Neutro (blanco pálido)":"ニュートラル（淡い白）",
 "Color del tema":"テーマの色",
 "no se completó":"完成せず",
+"El precio ya pasó el stop o el objetivo: solo se puede dejar programada.":"価格はすでにストップか目標を超えています：予約注文にしかできません。",
+"Programar a":"予約価格",
+"O programarla: entra cuando el precio llegue a":"または予約：価格が次に達したらエントリー",
+"Para anotar operaciones en Backtesting, primero cree una prueba.":"バックテストに取引を記録するには、まずテストを作成してください。",
+"Práctica":"練習",
+"entra cuando una vela llegue a":"ローソク足が次に達したらエントリー",
+"abierta a":"エントリー価格",
+"Se cierra sola en el stop o el objetivo mientras avanza la repetición.":"リプレイが進むと、ストップか目標で自動的に決済されます。",
+"programada.":"予約済み。",
+"abierta.":"エントリー済み。",
+"llegó al objetivo":"目標に到達",
+"se liquidó":"ロスカットされた",
+"tocó el stop":"ストップに到達",
+"perdió":"損失",
+"Se hizo solo":"自動で実行",
+"entró":"エントリー",
+"Al salir de la repetición, las operaciones de práctica abiertas se cerraron al último precio que se vio, y las programadas que no entraron se quitaron.":"リプレイを終えたので、未決済の練習取引は最後に表示された価格で決済し、エントリーしなかった予約は削除しました。",
+"Compartir los dibujos entre Spot, Futuros y Backtesting":"スポット・先物・バックテストで描画を共有",
+"Apagado: cada pantalla tiene sus propios dibujos.":"オフ：画面ごとに別々の描画です。",
+"Stop y objetivo: rótulos":"ストップと目標：ラベル",
+"La relación (riesgo : beneficio)":"比率（リスク：リワード）",
+"Forma":"形",
+"En la caja Largo / Corto: cápsula de color o solo el texto.":"ロング／ショートのボックス：色付きカプセルか文字のみ。",
+"Vale para la caja Largo / Corto (largo y corto) y para las franjas de una operación.":"ロング／ショートのボックス（両方）と取引の帯に適用されます。",
+"Junto al objetivo":"目標の横",
+"En la línea de entrada":"エントリーライン上",
+"No mostrarla":"表示しない",
+"Cápsula":"カプセル",
+"Solo texto":"文字のみ",
+"Junto a la escala":"目盛りの横",
+"Indicadores para otras personas":"他の人へのインジケーター",
+"Personas con mis indicadores":"私のインジケーターを使える人",
+"Escriba el correo de Google de la persona. Al entrar con ese correo, en su teléfono o su PC, le aparecen los indicadores con su nombre original y los de pago. Los de licencia no comercial (Trend Speed Analyzer y Nadaraya-Watson) siguen siendo solo suyos.":"相手のGoogleメールを入力してください。そのメールでスマホやPCにログインすると、インジケーターが元の名前で表示され、有料のものも使えます。非商用ライセンスのもの（Trend Speed Analyzer と Nadaraya-Watson）はあなた専用のままです。",
+"Dar acceso":"アクセスを付与",
+"El servidor todavía no tiene las reglas para esto. Siga la guía «Indicadores por correo» (un solo paso en Firebase).":"サーバーにはまだこのためのルールがありません。「メールでインジケーター」の手順に従ってください（Firebaseで1ステップ）。",
+"No se pudo leer la lista. Revise el internet.":"リストを読み込めませんでした。インターネットを確認してください。",
+"Cargando la lista…":"リストを読み込み中…",
+"Todavía no le dio acceso a nadie.":"まだ誰にもアクセスを付与していません。",
+"Escriba un correo válido.":"正しいメールアドレスを入力してください。",
+"Listo: al entrar con ese correo le aparecen los indicadores.":"完了：そのメールでログインするとインジケーターが表示されます。",
+"El servidor no dejó guardar: faltan las reglas de la guía «Indicadores por correo».":"サーバーが保存を許可しませんでした：「メールでインジケーター」のルールがありません。",
+"No se pudo guardar. Revise el internet.":"保存できませんでした。インターネットを確認してください。",
+"Quitado: ya no tiene los indicadores.":"削除しました：もうインジケーターは使えません。",
+"No se pudo quitar. Revise el internet.":"削除できませんでした。インターネットを確認してください。",
+"Se abrieron los indicadores que le dieron con su cuenta.":"あなたのアカウントに共有されたインジケーターが使えるようになりました。",
+"ruptura falsa":"ダマシ",
 
 "Línea horizontal":"水平線",
 "Línea vertical":"垂直線",
@@ -127392,6 +128724,52 @@ DIC.ko={
 "Neutro (blanco pálido)":"중립 (연한 흰색)",
 "Color del tema":"테마 색상",
 "no se completó":"완성되지 않음",
+"El precio ya pasó el stop o el objetivo: solo se puede dejar programada.":"가격이 이미 스톱이나 목표를 지났습니다: 예약만 할 수 있습니다.",
+"Programar a":"예약 가격",
+"O programarla: entra cuando el precio llegue a":"또는 예약: 가격이 다음에 도달하면 진입",
+"Para anotar operaciones en Backtesting, primero cree una prueba.":"백테스팅에 거래를 기록하려면 먼저 테스트를 만드세요.",
+"Práctica":"연습",
+"entra cuando una vela llegue a":"캔들이 다음에 도달하면 진입",
+"abierta a":"진입 가격",
+"Se cierra sola en el stop o el objetivo mientras avanza la repetición.":"리플레이가 진행되면 스톱이나 목표에서 자동으로 청산됩니다.",
+"programada.":"예약됨.",
+"abierta.":"진입함.",
+"llegó al objetivo":"목표 도달",
+"se liquidó":"청산됨",
+"tocó el stop":"스톱 도달",
+"perdió":"손실",
+"Se hizo solo":"자동 실행됨",
+"entró":"진입",
+"Al salir de la repetición, las operaciones de práctica abiertas se cerraron al último precio que se vio, y las programadas que no entraron se quitaron.":"리플레이를 나가면서 열린 연습 거래는 마지막으로 보인 가격에 청산하고, 진입하지 않은 예약 거래는 삭제했습니다.",
+"Compartir los dibujos entre Spot, Futuros y Backtesting":"현물·선물·백테스팅 간 그림 공유",
+"Apagado: cada pantalla tiene sus propios dibujos.":"끔: 화면마다 그림이 따로 있습니다.",
+"Stop y objetivo: rótulos":"스톱과 목표: 라벨",
+"La relación (riesgo : beneficio)":"비율 (위험 : 보상)",
+"Forma":"모양",
+"En la caja Largo / Corto: cápsula de color o solo el texto.":"롱 / 숏 박스: 색 캡슐 또는 글자만.",
+"Vale para la caja Largo / Corto (largo y corto) y para las franjas de una operación.":"롱 / 숏 박스(롱·숏 모두)와 거래의 띠에 적용됩니다.",
+"Junto al objetivo":"목표 옆",
+"En la línea de entrada":"진입선 위",
+"No mostrarla":"표시 안 함",
+"Cápsula":"캡슐",
+"Solo texto":"글자만",
+"Junto a la escala":"눈금 옆",
+"Indicadores para otras personas":"다른 사람을 위한 지표",
+"Personas con mis indicadores":"내 지표를 가진 사람",
+"Escriba el correo de Google de la persona. Al entrar con ese correo, en su teléfono o su PC, le aparecen los indicadores con su nombre original y los de pago. Los de licencia no comercial (Trend Speed Analyzer y Nadaraya-Watson) siguen siendo solo suyos.":"상대의 Google 이메일을 입력하세요. 그 이메일로 휴대폰이나 PC에서 로그인하면 지표가 원래 이름으로, 유료 지표와 함께 나타납니다. 비상업 라이선스 지표(Trend Speed Analyzer, Nadaraya-Watson)는 계속 본인 전용입니다.",
+"Dar acceso":"접근 허용",
+"El servidor todavía no tiene las reglas para esto. Siga la guía «Indicadores por correo» (un solo paso en Firebase).":"서버에 아직 이 기능의 규칙이 없습니다. «이메일로 지표» 안내를 따르세요(Firebase에서 한 단계).",
+"No se pudo leer la lista. Revise el internet.":"목록을 읽지 못했습니다. 인터넷을 확인하세요.",
+"Cargando la lista…":"목록 불러오는 중…",
+"Todavía no le dio acceso a nadie.":"아직 아무에게도 접근을 허용하지 않았습니다.",
+"Escriba un correo válido.":"올바른 이메일을 입력하세요.",
+"Listo: al entrar con ese correo le aparecen los indicadores.":"완료: 그 이메일로 로그인하면 지표가 나타납니다.",
+"El servidor no dejó guardar: faltan las reglas de la guía «Indicadores por correo».":"서버가 저장을 허용하지 않았습니다: «이메일로 지표» 안내의 규칙이 없습니다.",
+"No se pudo guardar. Revise el internet.":"저장하지 못했습니다. 인터넷을 확인하세요.",
+"Quitado: ya no tiene los indicadores.":"삭제됨: 더 이상 지표를 갖지 않습니다.",
+"No se pudo quitar. Revise el internet.":"삭제하지 못했습니다. 인터넷을 확인하세요.",
+"Se abrieron los indicadores que le dieron con su cuenta.":"계정에 공유된 지표가 열렸습니다.",
+"ruptura falsa":"가짜 돌파",
 
 "Línea horizontal":"수평선",
 "Línea vertical":"수직선",
@@ -133345,6 +134723,52 @@ DIC.zh={
 "Neutro (blanco pálido)":"中性（淡白色）",
 "Color del tema":"主题颜色",
 "no se completó":"未完成",
+"El precio ya pasó el stop o el objetivo: solo se puede dejar programada.":"价格已越过止损或目标：只能设为挂单。",
+"Programar a":"挂单于",
+"O programarla: entra cuando el precio llegue a":"或设为挂单：价格到达时入场",
+"Para anotar operaciones en Backtesting, primero cree una prueba.":"要在回测中记录交易，请先创建一个测试。",
+"Práctica":"练习",
+"entra cuando una vela llegue a":"当一根K线到达时入场",
+"abierta a":"开仓于",
+"Se cierra sola en el stop o el objetivo mientras avanza la repetición.":"回放推进时，会在止损或目标处自动平仓。",
+"programada.":"已挂单。",
+"abierta.":"已开仓。",
+"llegó al objetivo":"到达目标",
+"se liquidó":"被强平",
+"tocó el stop":"触及止损",
+"perdió":"亏损",
+"Se hizo solo":"已自动执行",
+"entró":"已入场",
+"Al salir de la repetición, las operaciones de práctica abiertas se cerraron al último precio que se vio, y las programadas que no entraron se quitaron.":"退出回放时，未平仓的练习交易已按最后显示的价格平仓，未入场的挂单已删除。",
+"Compartir los dibujos entre Spot, Futuros y Backtesting":"在现货、合约和回测之间共享绘图",
+"Apagado: cada pantalla tiene sus propios dibujos.":"关闭：每个页面有各自的绘图。",
+"Stop y objetivo: rótulos":"止损与目标：标签",
+"La relación (riesgo : beneficio)":"比率（风险：收益）",
+"Forma":"样式",
+"En la caja Largo / Corto: cápsula de color o solo el texto.":"多空框中：彩色胶囊或仅文字。",
+"Vale para la caja Largo / Corto (largo y corto) y para las franjas de una operación.":"适用于多空框（多与空）以及交易的区间带。",
+"Junto al objetivo":"目标旁",
+"En la línea de entrada":"在入场线上",
+"No mostrarla":"不显示",
+"Cápsula":"胶囊",
+"Solo texto":"仅文字",
+"Junto a la escala":"靠近刻度",
+"Indicadores para otras personas":"给其他人的指标",
+"Personas con mis indicadores":"拥有我的指标的人",
+"Escriba el correo de Google de la persona. Al entrar con ese correo, en su teléfono o su PC, le aparecen los indicadores con su nombre original y los de pago. Los de licencia no comercial (Trend Speed Analyzer y Nadaraya-Watson) siguen siendo solo suyos.":"输入对方的 Google 邮箱。对方用该邮箱在手机或电脑上登录后，就会看到原名的指标以及付费指标。非商业许可的指标（Trend Speed Analyzer 和 Nadaraya-Watson）仍只属于您。",
+"Dar acceso":"授予权限",
+"El servidor todavía no tiene las reglas para esto. Siga la guía «Indicadores por correo» (un solo paso en Firebase).":"服务器还没有这项规则。请按照“通过邮箱共享指标”指南操作（在 Firebase 中只需一步）。",
+"No se pudo leer la lista. Revise el internet.":"无法读取列表，请检查网络。",
+"Cargando la lista…":"正在加载列表…",
+"Todavía no le dio acceso a nadie.":"您还没有给任何人授权。",
+"Escriba un correo válido.":"请输入有效的邮箱。",
+"Listo: al entrar con ese correo le aparecen los indicadores.":"完成：用该邮箱登录即可看到指标。",
+"El servidor no dejó guardar: faltan las reglas de la guía «Indicadores por correo».":"服务器不允许保存：缺少“通过邮箱共享指标”指南中的规则。",
+"No se pudo guardar. Revise el internet.":"无法保存，请检查网络。",
+"Quitado: ya no tiene los indicadores.":"已移除：对方不再拥有这些指标。",
+"No se pudo quitar. Revise el internet.":"无法移除，请检查网络。",
+"Se abrieron los indicadores que le dieron con su cuenta.":"与您账户共享的指标已解锁。",
+"ruptura falsa":"假突破",
 
 "Línea horizontal":"水平线",
 "Línea vertical":"垂直线",
