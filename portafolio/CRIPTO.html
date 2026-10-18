@@ -4301,6 +4301,31 @@ html .graf .gwh::after{background:var(--hl74);opacity:.7}
 .ye76b .b.on76{border-color:var(--tx);color:var(--tx);box-shadow:inset 0 0 0 1px var(--tx)}
 .ye76 .lote .lc.dest{border-color:var(--ln);background:var(--b0)}
 
+/* ===== v76 · SPOT (ptos 80, 81 y 86) ===== */
+/* 81 · la etiqueta SPOT de la cabecera: sobria, sin verde ni rojo */
+.graf .gcab .gsym .gchip.spot76{color:var(--t2);background:var(--b1);box-shadow:inset 0 0 0 1px var(--ln);letter-spacing:.1em;font-weight:800}
+/* 86 · Comprar / Vender: las cápsulas de siempre (verde / rojo), apagadas si no valen; las dos del mismo tamaño */
+.gp-lado button:disabled{opacity:.45;box-shadow:none;filter:saturate(.7);cursor:default;transform:none}
+.gp-lado button:disabled:hover{filter:saturate(.7)}
+.gp-cab.spotCV .gp-lado{display:flex;width:100%;gap:8px}
+.gp-cab.spotCV .gp-lado button{flex:1 1 0;min-width:0;justify-content:center;text-align:center;font-size:15px;min-height:42px}
+/* 80 · las compras de Spot: un circulito sobre la vela, sin raya; el detalle sale al tocarlo */
+.graf .gcompra{border-top:0!important;opacity:1;right:auto!important;width:0}
+.graf .gcompra:not(.desde){display:none}
+.graf .gcompra i{pointer-events:auto;cursor:pointer;top:-5.5px;left:-5.5px!important;right:auto!important;width:11px;height:11px;box-sizing:border-box;
+  border-radius:50%;background:var(--b0);border:2px solid var(--tx);z-index:4}
+.graf .gcompra i::after{content:"";position:absolute;inset:-12px;border-radius:50%}
+.graf .gcompra span{display:none!important}
+.graf .gcompra.ver span{display:block!important;position:absolute!important;left:0!important;right:auto!important;top:-12px!important;bottom:auto!important;transform:translate(-50%,-100%)!important;z-index:6;
+  padding:3px 9px;border-radius:8px;background:var(--b1)!important;color:var(--tx);box-shadow:0 0 0 1px var(--ln),0 4px 14px rgba(0,0,0,.35);
+  font-size:12px;font-weight:700;text-shadow:none;white-space:nowrap}
+.graf.grande .gposp .gp-cab.spotCV{display:block}
+.graf.grande .gposp .gp-cab.spotCV .gp-lado{width:100%}
+.graf.grande .gposp .gp-cab.spotCV .gp-lado button{min-height:40px;padding:6px 11px}
+/* pto 91/92 (zona angosta: operación recién abierta): si el rótulo del objetivo no cabe en la franja, la relación «2,4 : 1» se omite en vez de salirse por la izquierda */
+.gsom.z76z{container-type:inline-size}
+@container (max-width:132px){ .gsom.z76z b.z76 .rr76{display:none} }
+
 /*V76CSS>>*/
 
 /* pantalla ancha o teléfono acostado: el tiempo y las pestañas en la misma fila que el nombre de la moneda */
@@ -6821,7 +6846,7 @@ function nuevoTrazoUno(E, tipo, pt){
   d=Math.max(d, p*0.004);
   d=Math.min(d, p*0.4);
   var n=Math.max(8, Math.round((E.cuantas||VENTANA)*0.34));
-  return {id:idTrazo(), tipo:"pos", lado:largo?"LONG":"SHORT", t1:pt.t, t2:pt.t+n*ms, p:p,
+  return {id:idTrazo(), tipo:"pos", lado:largo?"LONG":"SHORT", t1:pt.t, t2:(typeof t2Caja76==="function" ? t2Caja76(E, pt.t, n, ms) : pt.t+n*ms), p:p,   /* v76 · pto 83 */
           sl:largo?p-d:p+d, tp:largo?p+2*d:p-2*d};
 }
 /* v66 · figuras de varios puntos: un toque, un punto. Se termina con «Listo», doble toque (en la línea continua),
@@ -7385,7 +7410,7 @@ var TXH=18;                    /* alto de la franja de fechas, abajo */
 var VEL_MIN=12;                /* lo más que se acerca: 12 velas */
 var VEL_TOPE=1000;             /* lo más que se aleja: 1.000 velas (las que trae la casa por vez) */
 var PX_VELA=5.4;               /* ancho de cada lugar por defecto (la vela y su aire) */
-var HUECO_INI=0.10, HUECO_MAX=0.70;     /* hueco a la derecha: de inicio 10 % de la pantalla, hasta 70 % */
+var HUECO_INI=0.10, HUECO_MAX=0.94;     /* hueco a la derecha: de inicio 10 % de la pantalla; v76 · pto 87: hasta 94 % (la última vela casi toca el borde izquierdo, como la referencia) */
 function anchoVelas(estado){
   var z=estado.cont?estado.cont.querySelector(".gzona"):null;
   var a=z?z.clientWidth:0;
@@ -21462,7 +21487,30 @@ function verGraficaMoneda67(sym, nombre, alElegir, alVolver, rot){
     var g=M.querySelector("#vgM");
     MIRANDO=sym0;
     try{
-      montarGrafica(g,{sym:sym, soloVer:true, pie:function(){ return ""; }, rueda:conRueda,
+      montarGrafica(g,{sym:sym, soloVer:true, pie:function(){ return ""; }, rueda:conRueda, mercado:(rot && rot.mercado) || undefined,      /* v76 · pto 88: la moneda a la que se pasa con la rueda desde una operación de Futuros sigue siendo PERPETUO */
+        /* v76 · pto 89 (Luis 18 oct 08:44): si esta gráfica se abrió con la rueda desde una OPERACIÓN y la rueda vuelve a la moneda de esa operación, se regresa a la operación (con su stop, objetivo y todo), no a una gráfica suelta de la misma moneda */
+        volverSi76:function(s, E0){
+          var S0=String(s).toUpperCase(), ampl0=!!(E0 && E0.grande);
+          if(rot && rot.origen && rot.origen.id){
+            if(S0!==rot.origen.sym) return false;
+            var o=rot.origen;
+            hecho=true; try{ E0.muerta=true; }catch(e){}
+            cerrar();
+            try{ verOperacion(o.id, o.amb); }catch(e2){ if(window.console) console.error(e2); }
+            if(ampl0 && GRAF && !GRAF.grande){ try{ ampliarGrafica(GRAF); }catch(e3){} }
+            return true;
+          }
+          /* una gráfica de SPOT sin operación detrás: si la rueda llega a una moneda que ya tiene en Spot, se abre su ficha (con su promedio y sus compras), no una gráfica pelada */
+          if(!alElegir && E0 && E0.op && E0.op.mercado==="spot" && typeof verMoneda==="function"){
+            var tiene=false; try{ var es=estadoDe(S0); tiene=!!(es && es.ops && es.ops.length); }catch(e4){}
+            if(!tiene) return false;
+            hecho=true; try{ E0.muerta=true; }catch(e5){}
+            cerrar(); verMoneda(S0);
+            if(ampl0 && GRAF && !GRAF.grande){ try{ ampliarGrafica(GRAF); }catch(e6){} }
+            return true;
+          }
+          return false;
+        },
         alCambiar:function(s){
           sym=s; sym0=String(s).toUpperCase();
           var h3=M.querySelector(".hh h3"); if(h3) h3.innerHTML=titulo(s, nombreDe(s));
@@ -21783,12 +21831,12 @@ function htmlPanelPos68(E, z, lado){
   }
   var usar=enForm ? "Pasar a mi operación" : "Usar en una operación";
   if(sp){
-    return '<div class="gp-cab conAbrir">'+
+    /* v76 · pto 81 y 86 (Luis 18 oct): en Spot NO hay Largo ni Corto: solo COMPRAR (verde) y VENDER (rojo), los dos del mismo tamaño y con los mismos colores que las cápsulas Largo / Corto de Futuros y Backtesting */
+    return '<div class="gp-cab conAbrir spotCV">'+
         '<div class="gp-lado" role="group">'+
-          '<button type="button" data-pl="LONG" class="'+(lado!=="SHORT"?"on ":"")+'v"><em>▲</em><span>Largo</span></button>'+
-          '<button type="button" data-pl="SHORT" class="'+(lado==="SHORT"?"on ":"")+'r"><em>▼</em><span>Corto</span></button>'+
+          '<button type="button" data-ps class="v" disabled><span>Comprar</span></button>'+
+          '<button type="button" data-pv class="r" disabled><span>Vender</span></button>'+
         '</div>'+
-        '<button type="button" class="b ac gp-abrir" data-ps disabled>Comprar en spot</button>'+
       '</div>'+
       '<div class="gp-grid">'+
         tarjeta("margen","Lo que compra","","Compra")+
@@ -21887,8 +21935,7 @@ pintarPanelPos=function(E){
     if(sp){
       ps=ps.filter(function(x){ return !/liquid/i.test(x); });
       h=ps.map(function(x){ return '<div class="avLin">'+x+'</div>'; }).join("");
-      if(z.lado==="SHORT"){ h='<div class="avLin">'+esc(tr("En spot no se vende en corto: use Largo."))+'</div>'+h; lin=tr("En spot no se vende en corto: use Largo."); alerta=true; }
-      else if(R.pasaCartera){ lin="⚠ "+tr("Pone más que toda su cartera"); alerta=true; }
+      if(R.pasaCartera){ lin="⚠ "+tr("Pone más que toda su cartera"); alerta=true; }
       else lin=tr("Relación")+" "+(D.rr!=null?fmtRR(D.rr):"—");
     }
     else if(R.liqAntes){ lin="⚠ "+tr("Lo liquidan antes del stop")+" · "+tr("con")+" "+Math.max(1,R.apalMax)+"x "+tr("sí trabaja"); alerta=true; }
@@ -21901,6 +21948,9 @@ pintarPanelPos=function(E){
   /* los botones solo valen con una caja y números buenos */
   var buenos=!!(z && R.ok && R.margen>0 && R.ladoBien!==false && !(sp && z.lado==="SHORT"));
   var ba=pn.querySelector("[data-pa],[data-ps]"); if(ba && ba.disabled===buenos) ba.disabled=!buenos;
+  /* v76 · «Vender» de Spot: vale si tiene la moneda (no depende de la caja) */
+  var bvv=pn.querySelector("[data-pv]");
+  if(bvv){ var tiene=false; try{ tiene=(estadoDe(sym).cantidad>0); }catch(e){} if(bvv.disabled===tiene) bvv.disabled=!tiene; }
   pn.querySelectorAll("[data-pu]").forEach(function(b){ var d=!z; if(b.disabled!==d) b.disabled=d; });
   /* la confirmación (flota sobre el panel: no cambia su tamaño) */
   var cf=pn.querySelector('[data-pn="conf"]');
@@ -21932,6 +21982,8 @@ enganchaPanelPos=function(E, pn){
     }
     if(ev.target.closest("[data-pa]")){ if(z){ E.confOp=z.id; pintarPanelPos(E); } return; }
     if(ev.target.closest("[data-ps]")){ if(z) usarPosicionEnSpot68(E, z); return; }
+    var bvt=ev.target.closest("[data-pv]");
+    if(bvt){ if(!bvt.disabled && typeof venderMoneda==="function"){ var sv=E.op.sym; try{ cerrar(); }catch(e){} venderMoneda(sv); } return; }
     var c=ev.target.closest("[data-pc]");
     if(c){
       var pc75=c.getAttribute("data-pc");      /* v75 · pto 66 */
@@ -23610,6 +23662,7 @@ function ruedaMon68(E){
     var ampl=!!E.grande, sitio=E.sitio;
     var foco=!!(document.activeElement && w.contains(document.activeElement));
     /* la ficha de una moneda que ya tiene lleva más cosas (tarjetas, compras): se rehace completa */
+    if(typeof E.op.volverSi76==="function" && E.op.volverSi76(s, E)){ cambiando=false; return; }      /* v76 · pto 89 */
     if(typeof E.op.cambiarMoneda==="function"){ RUEDA68.foco=foco; E.op.cambiarMoneda(s, E); return; }
     var op=Object.assign({}, E.op, {sym:s, inter:E.inter});
     E.muerta=true;
@@ -24583,16 +24636,40 @@ function velaIni70(E, a, p){
 }
 /* desde la vela siguiente a la de entrada: ¿qué nivel cruzó primero una vela? */
 function tocado70(v, desde, val, lado, ent){
-  var corto=(lado==="SHORT"), adv=[];
-  if(val.sl>0)  adv.push({k:"stop", p:val.sl});
-  if(val.liq>0) adv.push({k:"liq",  p:val.liq});
-  adv.sort(function(a,b){ return Math.abs(a.p-ent)-Math.abs(b.p-ent); });   /* el más cercano a la entrada, primero */
+  var corto=(lado==="SHORT");
   for(var i=Math.max(0,desde); i<v.length; i++){
     var x=v[i];
+    /* v76 · pto 91: el stop y el objetivo valen SOLO desde que se pusieron o movieron; una vela de antes se mira con el nivel que había entonces */
+    var lv=val.nv ? val.nv(i) : null, sl=lv ? lv.sl : val.sl, tp=lv ? lv.tp : val.tp, adv=[];
+    if(sl>0)  adv.push({k:"stop", p:sl});
+    if(val.liq>0) adv.push({k:"liq",  p:val.liq});
+    adv.sort(function(a,b){ return Math.abs(a.p-ent)-Math.abs(b.p-ent); });   /* el más cercano a la entrada, primero */
     for(var j=0;j<adv.length;j++) if(corto ? x.h>=adv[j].p : x.b<=adv[j].p) return {i:i, k:adv[j].k, p:adv[j].p};
-    if(val.tp>0 && (corto ? x.b<=val.tp : x.h>=val.tp)) return {i:i, k:"objetivo", p:val.tp};
+    if(tp>0 && (corto ? x.b<=tp : x.h>=tp)) return {i:i, k:"objetivo", p:tp};
   }
   return null;
+}
+/* v76 · pto 91 (Luis 18 oct 09:30: «yo ya le bajo el stop loss al precio de entrada y le detecta la vela de ayer, como si hubiese sido el que ha tocado el stop loss»):
+   qué stop y objetivo valían en cada vela. raw.hist = [{t, sl, tp}]: «hasta el instante t, el stop y el objetivo eran estos». Una vela que
+   terminó antes de un cambio usa lo de antes; la vela DONDE se movió no se sabe (la operación seguía abierta al moverlo: no se le miran stop ni objetivo);
+   las siguientes, lo de ahora. Lo que se arrastra en la pantalla (todavía sin soltar) cuenta como un cambio de este instante. */
+function nivelesDe70(raw, val, v, ms){
+  var H=(raw && raw.hist && raw.hist.length) ? raw.hist.slice() : [];
+  if(raw && raw.sl>0 && val){
+    var dsl=Math.abs((val.sl||0)-raw.sl)>raw.sl*1e-4, dtp=(raw.tp>0) && Math.abs((val.tp||0)-raw.tp)>raw.tp*1e-4;
+    if(dsl || dtp) H.push({t:Date.now(), sl:raw.sl, tp:raw.tp||0});
+  }
+  if(!H.length) return null;
+  return function(i){
+    var tc=v[i].t, te=tc+ms, sl=val.sl, tp=val.tp;
+    for(var k=H.length-1;k>=0;k--){
+      var h=H[k];
+      if(h.t>=te){ sl=h.sl; tp=h.tp; }
+      else if(h.t>tc) return {sl:0, tp:0};
+      else break;
+    }
+    return {sl:sl, tp:tp};
+  };
 }
 /* en el registro ya está cerrada: ¿por qué? */
 function motivo70(raw, val, lado){
@@ -24640,7 +24717,8 @@ function cajaDe70(E, op, val, lado){
     }
   }
   if(sigueAbierta && val && (val.sl>0 || val.tp>0 || val.liq>0)){
-    var t=tocado70(v, i0+1, val, lado, val.entrada>0?val.entrada:(raw.p0||0));
+    var vN=val; try{ var nv=nivelesDe70(raw, val, v, ms); if(nv){ vN=Object.assign({}, val, {nv:nv}); } }catch(e9){}
+    var t=tocado70(v, i0+1, vN, lado, val.entrada>0?val.entrada:(raw.p0||0));
     if(t){ i1=t.i; fin={k:t.k, p:t.p, i:t.i, reg:false}; }
   }
   var cu=E.cuantas, i0v=(E.fin||0)-cu;
@@ -24713,7 +24791,8 @@ function cajaDeOp70(f){
         : (f.fechaEntrada ? msFH70(f.fechaEntrada, f.horaEntrada) : msFH70(f.fecha, f.hora));
   if(!a) return null;
   var b = f.estado==="cerrada" ? msFH70(f.cierre||f.fechaEntrada||f.fecha, f.horaCierre) : null;
-  return {a:a, p0:+f.entrada||0, b:b, p1:(f.salida!=null && f.salida!=="") ? +f.salida : null, estado:f.estado, auto:f.auto||null};
+  return {a:a, p0:+f.entrada||0, b:b, p1:(f.salida!=null && f.salida!=="") ? +f.salida : null, estado:f.estado, auto:f.auto||null,
+          sl:(f.sl!=null && f.sl!=="") ? +f.sl : 0, tp:(f.tp!=null && f.tp!=="") ? +f.tp : 0, hist:f.nivHist76||null};   /* v76 · pto 91 */
 }
 /* Spot: el PROMEDIO nace en la primera compra de lo que tiene ahora (si vendió todo y volvió a comprar, desde esa compra) */
 function cajaSpot70(e){
@@ -25018,7 +25097,10 @@ function tarjetas73(f, e){
   viejos.forEach(function(x){ if(x.parentNode) x.parentNode.removeChild(x); });
   while(t.firstChild) pad.insertBefore(t.firstChild, n);
 }
-function aplicar73(E, f, e, campo, valor){
+function aplicar73(E, f, e, campo, valor, hist){
+  /* v76 · pto 91: el cambio de stop / objetivo queda anotado con su hora; «Deshacer» devuelve también lo anotado */
+  if(hist!==undefined){ if(hist && hist.length) f.nivHist76=hist; else delete f.nivHist76; }
+  else if(campo==='sl' || campo==='tp'){ try{ anotarNivel76(f, campo==='sl' ? valor : f.sl, campo==='tp' ? valor : f.tp); }catch(eh){} }
   if(valor==null) delete f[campo]; else f[campo]=valor;
   tocar(f); guardar();
   var nuevo=estadoOp(f); Object.keys(nuevo).forEach(function(k){ e[k]=nuevo[k]; });     /* «e» es el mismo objeto que usan la gráfica y el pie */
@@ -25043,12 +25125,13 @@ function mv73Soltar(E, f, e, amb){
   var campo=v.campo, p=redondearPrecio(v.p), ant=(f[campo]!=null && f[campo]!=="") ? +f[campo] : null;
   MV73.vivo=null;
   if(!(p>0) || (ant!=null && Math.abs(ant-p)<=Math.abs(p)*1e-9)){ try{ dibujar(E); }catch(er){} return; }
+  var h0=f.nivHist76 ? f.nivHist76.slice() : [];
   aplicar73(E, f, e, campo, p);
   var nom=tr(campo==="sl" ? "Stop" : "Objetivo");
   /* v76 · pto 68 (Luis 17 oct 16:17: «el tipo de mensaje… horrible… "Solo cambia lo anotado aquí…" no es nada claro»): una sola línea
      clara, «Objetivo movido a 0,211312 · Deshacer», sin la segunda frase */
   avisoDes73(tr(campo==="sl" ? "Stop movido a" : "Objetivo movido a")+" "+precioEt(p), "", function(){
-    aplicar73(E, f, e, campo, ant);
+    aplicar73(E, f, e, campo, ant, h0);
   });
 }
 
@@ -27424,27 +27507,24 @@ function patCruceDe76(E, f){ var C=E && E._cr76; if(!C || f.vela || f.uid74==nul
    2. El teléfono cierra la aplicación por su cuenta cuando está en segundo plano y necesita memoria: al volver, la página arranca
       de cero (la llave y la pantalla de inicio). Ahora:
       · la huella se pide SOLO al abrir de cero: si es la misma sesión (la página se recargó sin que usted la cerrara) no se pide
-        (sessionStorage); y si el teléfono la cerró solo y usted vuelve antes de «gracia» minutos, tampoco (Ajustes › Bloqueo);
+        (sessionStorage). (El plazo de «gracia» de la primera versión se quitó en el pto 82: cerrar todo siempre pide la huella.)
       · se vuelve a la MISMA pantalla y a la misma gráfica (moneda, intervalo, Practicar con su repetición en el mismo momento).
    Nada de esto viaja ni se sube: vive solo en este equipo.
    =================================================================== */
-var SESION76={ sesion:"cripto-sesion76", estado:"cripto-estado76", vivo:"cripto-vivo76", cada:5000, graciaFabrica:10, opc:[2,10,30,0] };
-function graciaMin76(){
-  var c=(typeof llaveCfg==="function") ? llaveCfg() : {};
-  var g=c.gracia76; if(g==null || !isFinite(g)) g=SESION76.graciaFabrica;
-  return Math.max(0, +g);
-}
+var SESION76={ sesion:"cripto-sesion76", estado:"cripto-estado76", cada:5000 };
+/* v76 · pto 82 (Luis 18 oct 07:15): «Cierro todo y ya no me pide la clave». Había un plazo de gracia (10 min) que dejaba pasar sin huella
+   una apertura de cero hecha poco después de «cerrar todo»: desde dentro de la página «el usuario cerró todo» y «el teléfono la cerró por
+   memoria» se ven igual, y Luis pidió que cerrar todo SIEMPRE pida la huella. Se quitó el plazo: solo la MISMA sesión (la página sigue
+   viva, minimizada o recargada) entra sin huella (sessionStorage); todo arranque de cero la pide. Los restos del plazo se borran al arrancar. */
+try{ localStorage.removeItem("cripto-vivo76"); localStorage.removeItem("cripto-estado76"); }catch(e){}
 function llaveAbierta76(){ return !(typeof llavePuesta==="function" && llavePuesta()) || (typeof LLV!=="undefined" && LLV.abierto); }
-/* ¿esta carga sigue la sesión de antes? (recarga sin cerrar la app, o el teléfono la cerró hace menos de «gracia» minutos) */
+/* ¿esta carga sigue la sesión de antes? solo si la página no se cerró (recarga o vuelta de segundo plano): sessionStorage muere al cerrar la app */
 function sesionSigue76(){
-  try{ if(sessionStorage.getItem(SESION76.sesion)) return true; }catch(e){}
-  var g=graciaMin76(); if(!g) return false;
-  try{ var t=+localStorage.getItem(SESION76.vivo)||0; return t>0 && (Date.now()-t)<g*60000; }catch(e2){ return false; }
+  try{ return !!sessionStorage.getItem(SESION76.sesion); }catch(e){ return false; }
 }
 function latido76(){
   if(!llaveAbierta76()) return;                                  /* con la pantalla tapada no se renueva nada */
   try{ sessionStorage.setItem(SESION76.sesion, "1"); }catch(e){}
-  try{ localStorage.setItem(SESION76.vivo, String(Date.now())); }catch(e2){}
 }
 /* qué se está viendo: la pantalla y, si hay una gráfica abierta en una hoja, cuál */
 function ctxActual76(){
@@ -27469,13 +27549,11 @@ function estadoGuardar76(){
   try{ s.ctx=ctxActual76(); }catch(e){ s.ctx=null; }
   var j=JSON.stringify(s);
   try{ sessionStorage.setItem(SESION76.estado, j); }catch(e1){}
-  try{ localStorage.setItem(SESION76.estado, j); }catch(e2){}
   latido76();
 }
 function estadoLeer76(){
   var j=null;
   try{ j=sessionStorage.getItem(SESION76.estado); }catch(e){}
-  if(!j){ try{ var l=localStorage.getItem(SESION76.estado); if(l){ var o=JSON.parse(l), g=graciaMin76(); if(g && o && (Date.now()-(+o.t||0))<g*60000) j=l; } }catch(e2){} }
   if(!j) return null;
   try{ return JSON.parse(j); }catch(e3){ return null; }
 }
@@ -27511,22 +27589,10 @@ function estadoRestaurar76(){
     else if(c.tipo==="form"){ setTimeout(function(){ ctxAjustar76(c); }, 900); }
   }catch(e){}
 }
-/* ---- la caja del Bloqueo (Ajustes): cuándo se vuelve a pedir si el teléfono cerró la app solo ---- */
-function llaveGraciaHTML76(){
-  var g=graciaMin76(), h='<div class="ll76"><div class="ll76t">'+esc(tr("Si el teléfono cerró la aplicación por su cuenta (para liberar memoria), no pedirla si vuelve antes de:"))+'</div><div class="ll76o">';
-  SESION76.opc.forEach(function(m){
-    var t= m ? m+" min" : tr("Pedirla siempre");
-    h+='<button type="button" class="b sm'+(g===m?' on':'')+'" data-ll76="'+m+'">'+esc(t)+'</button>';
-  });
-  return h+'</div><div class="mut ll76n">'+esc(tr("Mientras usted no cierre la aplicación del todo, no se vuelve a pedir: ni al cambiar de aplicación ni al llegar una versión nueva."))+'</div></div>';
-}
+/* ---- Ajustes › Bloqueo: ya no hay plazo que elegir (pto 82): cerrar la aplicación del todo siempre pide la huella ---- */
+function llaveGraciaHTML76(){ return ""; }
 (function(){
   try{
-    document.addEventListener("click", function(ev){
-      var b=ev.target && ev.target.closest ? ev.target.closest("[data-ll76]") : null; if(!b) return;
-      var c=llaveCfg(); c.gracia76=+b.getAttribute("data-ll76"); try{ tocar(BD.ajustes); }catch(e0){} try{ guardar(); }catch(e1){}
-      var box=b.closest(".ll76"); if(box) box.querySelectorAll("[data-ll76]").forEach(function(x){ x.classList.toggle("on", x===b); });
-    });
     document.addEventListener("visibilitychange", function(){ if(document.hidden) estadoGuardar76(); else latido76(); });
     window.addEventListener("pagehide", function(){ estadoGuardar76(); });
     document.addEventListener("freeze", function(){ estadoGuardar76(); });
@@ -27640,7 +27706,9 @@ function opOtraMoneda76(s, E, id, amb){
   cerrar();
   var nom=""; try{ nom=nombreDe(s); }catch(e){}
   RUEDA68.cambiando74=true;
-  try{ verGraficaMoneda67(s, nom, null, function(){ if(id) verOperacion(id, amb); }); } finally { RUEDA68.cambiando74=false; }
+  /* pto 88 (Luis 18 oct 08:38): desde una operación de FUTUROS (PERPETUO · BINANCE) la rueda pasaba a AVAX y la gráfica decía SPOT · BINANCE: el mercado dependía de la pantalla de fondo (Resumen = spot). Ahora la moneda nueva conserva el mercado de la gráfica de la que se viene. */
+  var mk=(E && E.op && (E.op.mercado==='perp' || E.op.mercado==='spot')) ? E.op.mercado : (amb==='fut' || amb==='back' ? 'perp' : null);
+  try{ verGraficaMoneda67(s, nom, null, function(){ if(id) verOperacion(id, amb); }, {mercado:mk||undefined, origen:(id ? {id:id, amb:amb, sym:String(E && E.op && E.op.sym || '').toUpperCase()} : null)}); } finally { RUEDA68.cambiando74=false; }
   if(ampl && GRAF && !GRAF.grande) ampliarGrafica(GRAF);
   try{
     var b=document.querySelector("#veloIn .vgF [data-cerrar]");
@@ -27649,14 +27717,40 @@ function opOtraMoneda76(s, E, id, amb){
 }
 /* ---- la ruedita en la gráfica del formulario (operación nueva): cambia la moneda del formulario; los precios (entrada, stop,
    objetivo) eran de la moneda anterior: la entrada pasa al precio de ahora de la nueva, y el stop y el objetivo se vuelven a poner ---- */
+/* pto 84 (Luis 18 oct 07:20: ROSE → SOL → ROSE y la caja de stop y objetivo había desaparecido): lo que se puso en el formulario de una
+   moneda (entrada, stop, objetivo y lado) se recuerda POR MONEDA mientras no se registre ni se cierre la operación; al volver a esa moneda
+   regresa tal cual, y una moneda sin nada empieza limpia (los precios de una moneda no valen para otra). Solo en memoria. */
+var FUMEM76={}, FUAMB76={}, FUCAMBIA76=false;
+/* pto 85 (Luis 18 oct 07:20: «la caja me apareció en toditas, spot, futuros o backtesting; son cosas diferentes y no deben mezclarse»): el
+   formulario de la operación nueva era UNO solo (FU) para Futuros y Backtesting: lo puesto en uno (entrada, stop, objetivo, lado…) salía en el
+   otro. Ahora cada pantalla tiene el suyo: al pasar de una a otra se guarda el de la que se deja y vuelve el de la otra (o uno limpio, con la
+   misma moneda que se está viendo). Solo en memoria, como el formulario de siempre. */
+function fuAmb76(k){
+  if(!FU || !k){ return; }
+  if(FU.amb===k) return;
+  var viejo=FU.amb, sym=FU.sym;
+  FUAMB76[viejo]=FU;
+  var nuevo=FUAMB76[k];
+  if(nuevo && nuevo.sym===sym){ nuevo.amb=k; FU=nuevo; }
+  else { FUCAMBIA76=true; try{ limpiarFU(k); } finally { FUCAMBIA76=false; } FU.sym=sym; }
+}
+function fuGuardar76(){ if(FU && FU.sym && (FU.sl || FU.tp)) FUMEM76[FU.amb+":"+FU.sym]={e:FU.entrada, sl:FU.sl, tp:FU.tp, lado:FU.lado}; }
+(function(){
+  if(typeof limpiarFU!=="function") return;
+  var l0=limpiarFU;
+  limpiarFU=function(){ if(!FUCAMBIA76){ FUMEM76={}; FUAMB76[arguments[0]]=null; } return l0.apply(this, arguments); };
+})();
 function formOtraMoneda76(s, E, A){
   var ampl=!!(E && E.grande);
+  fuGuardar76();
   FU.sym=String(s).toUpperCase(); MIRANDO=FU.sym;
   try{ conectarVivo(); traerPrecios(true); traerLogo(FU.sym); }catch(e){}
   var pr=null; try{ pr=precioRP69(null, FU.sym); }catch(e1){} if(pr==null){ try{ pr=precioDe(FU.sym); }catch(e2){} }
   FU.entrada= (pr!=null && pr>0) ? paraCasillaPrecio(pr) : "";
   if(FU.slModo==="precio") FU.sl="";
   FU.tp=""; FU.ya=null;
+  var mem=FUMEM76[FU.amb+":"+FU.sym];
+  if(mem){ FU.entrada=mem.e; FU.sl=mem.sl; FU.tp=mem.tp; if(mem.lado) FU.lado=mem.lado; }       /* pto 84: vuelve a lo que había puesto */
   if(E) E.muerta=true;
   var enHoja=!!(E && E.cont && (E.sitio && E.sitio.parentNode ? E.sitio.parentNode : E.cont).closest && (E.sitio && E.sitio.parentNode ? E.sitio.parentNode : E.cont).closest("#veloIn"));
   RUEDA68.cambiando74=true;
@@ -27705,7 +27799,18 @@ function aviso76Forma(){
    [de fábrica] · % y precio · solo precio · nada; la relación: junto al objetivo [de fábrica] · en la línea de entrada · no; forma:
    solo texto [de fábrica] · cápsula; dónde: derecha [de fábrica] · centro · izquierda · junto a la escala; colores).
    =================================================================== */
-var ZONA76={ minAlto:16, sep:8 };       /* la franja más baja que todavía lleva su rótulo (px) · aire entre el rótulo y los STOP / OBJ. */
+/* pto 83 (Luis 18 oct 07:20: «de la última vela, la que nace, sí tiene que dar un poco adentro, pero no totalmente infinito»): cuánto
+   se mete una caja en el hueco de la derecha, donde todavía no hay velas: el 10 % de las velas que se ven, y nunca menos de 4. UN solo lugar. */
+var ZONA76={ minAlto:16, sep:8, futuro:0.10, minFuturo:4 };
+function futuroVelas76(E){ return Math.max(ZONA76.minFuturo, Math.round(((E && E.cuantas) || 65)*ZONA76.futuro)); }
+/* el final de una caja Largo/Corto NUEVA: como siempre (un tercio de lo que se ve) pero sin pasar de la última vela + el hueco de arriba;
+   si se pone en el hueco (después de la última vela), solo ese hueco. Las cajas ya guardadas y lo que se arrastra no cambian. */
+function t2Caja76(E, t1, n, ms){
+  var V=E && E.velas, tU=(V && V.length) ? V[V.length-1].t : null, k=futuroVelas76(E);
+  if(tU==null) return t1+n*ms;
+  if(t1>=tU) return t1+k*ms;
+  return Math.max(t1+Math.min(n,4)*ms, Math.min(t1+n*ms, tU+k*ms));
+}       /* la franja más baja que todavía lleva su rótulo (px) · aire entre el rótulo y los STOP / OBJ. */
 /* lo de fábrica cambia (Luis eligió la 76-4): solo el %, solo texto. Una vez, se borra lo que quedó elegido con el diseño viejo
    (salvo los colores): si no, seguiría viendo «STOP A …» */
 zEt74=function(){
@@ -27766,7 +27871,12 @@ function xBorde76(E){
     try{
       if(r && r.vis && !r.oculta && !r.fin){
         var raw=op && op.caja ? op.caja() : null;
-        if(raw && raw.estado!=="cerrada") r.x1=Math.max(r.x1, xBorde76(E));
+        if(raw && raw.estado!=="cerrada"){
+          /* pto 83: hasta la vela de ahora + un poco (el hueco de la derecha), nunca hasta el borde si el hueco es enorme */
+          var cu=E.cuantas, nv=(E.velas||[]).length, i0v=(E.fin||0)-cu;
+          var xf=(cu>0 && nv) ? ((nv-1+futuroVelas76(E)-i0v+0.5)/cu*100) : 100;
+          r.x1=Math.max(r.x1, Math.min(xBorde76(E), xf));
+        }
       }
     }catch(e){}
     return r;
@@ -27831,6 +27941,203 @@ posEtiquetas68=function(E, z, g){
   }
   return out;
 };
+
+/* ===================================================================
+   v76 · SPOT: puntos 80, 81 y 86 (Luis, 18 oct 07:04 y 08:32)
+   81 · En Spot no existen Largo ni Corto: solo se COMPRA y se VENDE. La cabecera de la gráfica dice SPOT (sobria, sin verde ni rojo);
+        la herramienta de medir es solo de compra; una caja guardada como «corto» se pone de compra.
+   86 · «Comprar» (verde) y «Vender» (rojo): los mismos botones y colores de las cápsulas Largo / Corto de Futuros y Backtesting, del mismo tamaño
+        (el panel está en v68_graf.js, htmlPanelPos68).
+   80 · Las compras de la gráfica de Spot ya no son rayas con texto: son circulitos sobre la vela de cada compra; el detalle (fecha y monto) sale al tocar.
+        La raya PROMEDIO se queda. «Ajustes › Líneas › Mis compras» los apaga.
+   =================================================================== */
+/* una caja de compra: nunca «corto» en Spot */
+function spotSinCorto76(E){
+  if(!E || !E.op || typeof esSpot68!=="function" || !esSpot68(E)) return;
+  var cambio=false;
+  try{ listaTrazos(E).forEach(function(z){ if(z && z.tipo==="pos" && z.lado==="SHORT"){ voltearPos(z); cambio=true; } }); }catch(e){}
+  if(cambio){ try{ guardarTrazos(); }catch(e2){} }
+  if(E.herr==="corto") E.herr="largo";
+}
+/* la cabecera: «SPOT» en lugar de «▼ CORTO · 1x» */
+function spotRotulo76(E){
+  var c=E && E.cont; if(!c || typeof esSpot68!=="function" || !esSpot68(E)) return;
+  var gs=c.querySelector(".gsym"); if(!gs) return;
+  var v=gs.querySelector(".gchip"); if(v && !v.classList.contains("spot76")) v.remove();
+  if(!gs.querySelector(".gchip.spot76")){
+    var s=document.createElement("span"); s.className="gchip spot76"; s.textContent="SPOT"; s.setAttribute("translate","no");
+    gs.appendChild(s);
+  }
+}
+/* las compras: circulitos; al tocar uno sale su detalle (se recuerda por gráfica, así sigue puesto cuando llega un precio nuevo) */
+function comprasPuntos76(E){
+  var c=E && E.cont; if(!c) return;
+  var L=c.querySelectorAll(".gcompra"), zona=c.querySelector(".glineas"), zr=zona ? zona.getBoundingClientRect() : null;
+  for(var i=0;i<L.length;i++){
+    var el=L[i], sp=el.querySelector("span"), t=sp ? sp.textContent : "";
+    el.setAttribute("data-t", t);
+    var on=!!(E.cv76 && E.cv76===t);
+    el.classList.toggle("ver", on);
+    if(sp){
+      sp.style.marginLeft="";
+      if(on && zr){
+        var cd=el.querySelector("i"), rc=sp.getBoundingClientRect(), ri=cd ? cd.getBoundingClientRect() : null;
+        if(rc.width>0){
+          var cx=ri ? ri.left+ri.width/2 : rc.left+rc.width/2, izq=cx-rc.width/2, der=cx+rc.width/2, d=0;
+          if(izq<zr.left+6) d=zr.left+6-izq; else if(der>zr.right-6) d=zr.right-6-der;
+          if(d) sp.style.marginLeft=Math.round(d)+"px";
+        }
+      }
+    }
+  }
+}
+if(!window._spot76){
+  window._spot76=true;
+  document.addEventListener("click", function(ev){
+    var E=(typeof GRAF!=="undefined") ? GRAF : null; if(!E || !E.cont) return;
+    var p=ev.target && ev.target.closest ? ev.target.closest(".gcompra i") : null;
+    if(p && E.cont.contains(p)){
+      var t=p.parentNode.getAttribute("data-t")||"";
+      E.cv76=(E.cv76===t) ? null : t; comprasPuntos76(E); ev.stopPropagation(); return;
+    }
+    if(E.cv76 && E.cont.contains(ev.target)){ E.cv76=null; comprasPuntos76(E); }
+  }, true);
+}
+(function(){
+  var d0=dibujar;
+  dibujar=function(E){
+    try{ spotSinCorto76(E); }catch(e){}
+    var r=d0.apply(this, arguments);
+    try{ spotRotulo76(E); comprasPuntos76(E); }catch(e2){ if(window.console) console.error(e2); }
+    return r;
+  };
+  var eh=elegirHerramienta;
+  elegirHerramienta=function(E, h){ if(h==="corto" && typeof esSpot68==="function" && esSpot68(E)) h="largo"; return eh.call(this, E, h); };
+  var nt=nuevoTrazoUno;
+  nuevoTrazoUno=function(E, tipo, pt){ if(tipo==="corto" && typeof esSpot68==="function" && esSpot68(E)) tipo="largo"; return nt.call(this, E, tipo, pt); };
+  /* el panel «Dibujar» de Spot: una sola herramienta de caja, «Compra» */
+  var pp=pintarPanel;
+  pintarPanel=function(E, p, cual){
+    var r=pp.apply(this, arguments);
+    try{
+      if(cual==="dibujar" && typeof esSpot68==="function" && esSpot68(E)){
+        var cb=p.querySelector('[data-herr2="corto"]'); if(cb) cb.remove();
+        var lb=p.querySelector('[data-herr2="largo"] span'); if(lb) lb.textContent=tr("Compra");
+      }
+    }catch(e){}
+    return r;
+  };
+})();
+
+/* ===================================================================
+   v76 · PTO 90 (Luis 18 oct 08:49): «si el precio tocó el stop, ¿por qué sigue ejecutando la operación? Debió cerrar»
+   La gráfica (v70_caja.js, tocado70) mira las VELAS: si el máximo o el mínimo de una vela posterior a la de entrada cruza el stop, la
+   liquidación o el objetivo, corta la caja y dice «El precio tocó tu stop». El registro (vigilarCierres) solo compara el precio de AHORA:
+   una mecha que tocó el stop con la aplicación cerrada (o entre dos precios) nunca la veía y la operación seguía «en vivo».
+   Aquí se repasa: al abrir, al volver a la aplicación y cada minuto, se piden las velas desde la entrada y, con LA MISMA regla de la
+   gráfica (tocado70), se CIERRA en ese nivel lo que ya lo tocó, con la fecha y la hora de esa vela, y se avisa como los demás cierres.
+   No toca lo ya cerrado ni las programadas; un fallo de red no cambia nada.
+   =================================================================== */
+var REP76={ cada:60000, ult:0, ocupado:false, vel:{} };
+function intervaloRepaso76(desdeMs){
+  var edad=Date.now()-desdeMs;
+  if(edad<=8.5*864e5) return "15m";          /* 1.000 velas de 15 min = 10 días */
+  if(edad<=38*864e5) return "1h";
+  if(edad<=160*864e5) return "4h";
+  return "1d";
+}
+function velasRepaso76(sym, inter, desdeMs){
+  var k=sym+"|"+inter+"|"+Math.floor(desdeMs/36e5), c=REP76.vel[k];
+  if(c && Date.now()-c.t<50000) return Promise.resolve(c.d);
+  var pasos=[]; try{ pasos=planVelas73({op:{mercado:"perp"}}, inter); }catch(e){ pasos=[{casa:"BINANCE", tipo:"perp"},{casa:"BINANCE", tipo:"spot"}]; }
+  var i=0, ini=desdeMs-(MS_INTER[inter]||9e5);
+  function probar(){
+    var P0=pasos[i]; if(!P0) return Promise.resolve(null);
+    return pedirVelas73(P0.casa, P0.tipo, sym, inter, {lim:1000, ini:ini}).then(function(d){ REP76.vel[k]={t:Date.now(), d:d}; return d; }, function(){ i++; return probar(); });
+  }
+  return probar();
+}
+/* ¿qué tocó esta operación después de entrar? → {k:"stop"|"liq"|"objetivo", p, t(ms de la vela)} o null */
+function tocadoOp76(f, v, inter){
+  var a=null; try{ a=(typeof cajaDeOp70==="function") ? (cajaDeOp70(f)||{}).a : null; }catch(e){}
+  if(!a || !v || v.length<2) return null;
+  var E={velas:v, inter:inter, rp:null}, i0=velaIni70(E, a, +f.entrada||0);
+  if(i0<-1) return null;
+  var ap=+f.apal||1, en=+f.entrada||0;
+  var lq=(en>0 && ap>1) ? (f.lado==="SHORT" ? en*(1+1/ap) : en*(1-1/ap)) : 0;
+  var val={entrada:en, sl:(f.sl!=null && f.sl!=="")?+f.sl:0, tp:(f.tp!=null && f.tp!=="")?+f.tp:0, liq:lq};
+  if(!(val.sl>0 || val.tp>0 || val.liq>0)) return null;
+  try{ var nv=nivelesDe70(cajaDeOp70(f), val, v, MS_INTER[inter]||9e5); if(nv) val.nv=nv; }catch(e8){}      /* pto 91: cada stop vale desde que se puso */
+  var t=tocado70(v, i0+1, val, f.lado, en>0?en:0);
+  return t ? {k:t.k, p:t.p, t:v[t.i].t} : null;
+}
+function cerrarRepaso76(f, amb, t){
+  var d=new Date(t.t);
+  f.salida=t.p; f.estado="cerrada"; f.cierre=fechaDe(d); f.horaCierre=P(d.getHours())+":"+P(d.getMinutes()); f.pct=null; f.auto=t.k;
+  var em=estadoOp(f); if(f.comPct==null && f.comFija==null && em.comPct!=null) f.comPct=em.comPct;
+  f.com=em.comTr; tocar(f);
+  var st=estadoOp(f), q=(t.k==="liq")?"liq":(t.k==="stop"?"stop":"objetivo"), n=(f.n||"");
+  var cuando=" · "+tr("lo tocó el")+" "+fechaCorta(f.cierre)+" "+tr("a las")+" "+f.horaCierre;
+  var fr = q==="liq"
+    ? "La operación N° "+n+" de "+f.sym+" se liquidó en "+precio(t.p)+": perdió todo lo que puso ("+usdF(Math.abs(st.gan))+")."
+    : "La operación N° "+n+" de "+f.sym+" se cerró sola en "+(q==="stop"?"el stop":"el objetivo")+" ("+precio(t.p)+"): "+(st.gan>=0?"ganó ":"perdió ")+usdF(Math.abs(st.gan))+".";
+  return {tipo:amb, texto:(amb==="back"?tr("Backtesting")+" · ":"")+tr(fr)+cuando, bueno:st.gan>=0};
+}
+function repasarCierres76(forzar){
+  if(REP76.ocupado) return Promise.resolve(0);
+  if(!forzar && Date.now()-REP76.ult<REP76.cada-1000) return Promise.resolve(0);
+  REP76.ult=Date.now();
+  var lista=[];
+  [["fut",BD.fut],["back",BD.back]].forEach(function(par){ (par[1]||[]).forEach(function(f){
+    if(!f || f.estado!=="abierta" || !f.sym || !(+f.entrada>0)) return;
+    var a=null; try{ a=(cajaDeOp70(f)||{}).a; }catch(e){}
+    if(!a || a.t>Date.now()) return;
+    lista.push({f:f, amb:par[0], a:a});
+  }); });
+  if(!lista.length) return Promise.resolve(0);
+  REP76.ocupado=true;
+  var hechas=[];
+  var cadena=lista.reduce(function(pr, it){
+    return pr.then(function(){
+      var inter=intervaloRepaso76(it.a.t);
+      return velasRepaso76(String(it.f.sym).toUpperCase(), inter, it.a.t).then(function(v){
+        if(!v || it.f.estado!=="abierta") return;
+        var t=tocadoOp76(it.f, v, inter);
+        if(t){ try{ hechas.push(cerrarRepaso76(it.f, it.amb, t)); }catch(e){ if(window.console) console.error("repaso", it.f.id, e); } }
+      }).catch(function(){});
+    });
+  }, Promise.resolve());
+  return cadena.then(function(){
+    REP76.ocupado=false;
+    if(!hechas.length) return 0;
+    try{ guardar(); }catch(e){}
+    var txt=hechas.map(function(h){ return h.texto; }).join(" · ");
+    try{ avisarFuerte(tr(APP_NOMBRE), txt); } catch(e1){ try{ sonar(hechas.some(function(h){ return !h.bueno; })?"malo":"bueno"); }catch(e2){} }
+    try{ aviso("<b>"+esc(tr("Se hizo solo:"))+"</b> <span translate=\"no\">"+esc(txt)+"</span>", false); }catch(e3){}
+    try{ repintar(); }catch(e4){}
+    try{ if(typeof ctaDentro==="function" && ctaDentro()) subirACuenta(true); }catch(e5){}
+    return hechas.length;
+  }, function(){ REP76.ocupado=false; return 0; });
+}
+if(!window._rep76){
+  window._rep76=true;
+  setTimeout(function(){ try{ repasarCierres76(true); }catch(e){} }, 5000);
+  setInterval(function(){ if(!document.hidden){ try{ repasarCierres76(false); }catch(e){} } }, 30000);
+  document.addEventListener("visibilitychange", function(){ if(!document.hidden){ try{ repasarCierres76(true); }catch(e){} } });
+}
+
+/* v76 · pto 91: se anota cada cambio de stop / objetivo de una operación abierta, con su hora: «hasta ahora, el stop era este».
+   Lo usan la caja de la gráfica y el repaso de cierres (nivelesDe70). Mover el stop al precio de entrada ya no «toca» velas de antes. */
+function anotarNivel76(f, nsl, ntp){
+  if(!f || f.estado!=="abierta") return;
+  var num=function(x){ return (x!=null && x!=="") ? (+x||0) : 0; };
+  var a=num(f.sl), b=num(f.tp), c=num(nsl), d=num(ntp);
+  var igual=function(x,y){ return Math.abs(x-y)<=Math.abs(y)*1e-9+1e-12; };
+  if(igual(a,c) && igual(b,d)) return;
+  if(!f.nivHist76) f.nivHist76=[];
+  f.nivHist76.push({t:Date.now(), sl:a, tp:b});
+  if(f.nivHist76.length>200) f.nivHist76.shift();
+}
 
 /* ===================================================================
    v76 · pto 75 (Luis 17 oct 17:22: «una auditoría con unos 10 mil dólares, en spot, futuros y backtesting… compras, ventas,
@@ -34516,7 +34823,7 @@ function pintarAmbito(k){
       '<button class="b vd gr" onclick="nuevaPrueba()">+ Crear mi primera prueba</button>');
     return;
   }
-  FU.amb=k;
+  if(typeof fuAmb76==="function") fuAmb76(k); else FU.amb=k;      /* v76 · pto 85b */
   if(!FU.fecha) FU.fecha=hoy();
   var F=carteraFut(A.lista), T=F.tot;
   var h=alertaPrecios(k);
@@ -35163,7 +35470,7 @@ function tablaHistorial(F,k,T,sinTitulo){
    desde el botón grande de arriba: con una o con veinte abiertas, registrar es un toque. */
 function hojaNuevaOperacion(k){
   var A=ambito(k||FU.amb||"fut");
-  FU.amb=A.k;
+  if(typeof fuAmb76==="function") fuAmb76(A.k); else FU.amb=A.k;      /* v76 · pto 85a */
   abrir('<div class="hoja grande"><div class="hh"><span class="ic">'+IC.regla+'</span>'+
     '<h3>'+(A.k==="back"?"Nueva operación de prueba":"Nueva operación")+'</h3>'+
     '<button class="x" data-cerrar>×</button></div>'+
@@ -35858,6 +36165,7 @@ function editarOperacion(id, k){
       }
       f.n=n!=null?n:f.n;
       f.lado=d.lado; f.monto=d.monto; f.apal=d.apal; f.entrada=d.entrada;
+      try{ anotarNivel76(f, d.sl, d.tp); }catch(e91){}      /* v76 · pto 91 */
       f.sl=d.sl; f.tp=d.tp; f.salida=d.salida;
       var oq=comoQueda(d);
       if(oq.comFija!=null) f.comFija=oq.comFija; else { delete f.comFija; f.comPct=oq.comPct; }
