@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="77">
+<meta name="v" content="78">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -4325,6 +4325,47 @@ html .graf .gwh::after{background:var(--hl74);opacity:.7}
 /* pto 91/92 (zona angosta: operación recién abierta): si el rótulo del objetivo no cabe en la franja, la relación «2,4 : 1» se omite en vez de salirse por la izquierda */
 .gsom.z76z{container-type:inline-size}
 @container (max-width:132px){ .gsom.z76z b.z76 .rr76{display:none} }
+
+/* ===== v78 · ptos 94-98 ===== */
+/* 94 · las rayas del borrador (stop / objetivo del formulario) se agarran por su manija aunque la caja no deje tocar la raya */
+.graf.borr78 .ln.cjOp{pointer-events:auto}
+.fuLin78{display:flex;justify-content:flex-start;margin:8px 0 2px}
+.fuLin78[hidden]{display:none}
+/* 95 · 96 · 97 · la rueda de monedas a la izquierda y el botón de siempre a la derecha */
+.filaRn78{display:flex;align-items:stretch;gap:10px;margin:0 0 12px}
+.filaRn78 .rn78{--cwh:66px;--cwr:22px;position:relative;box-sizing:border-box;flex:0 0 47%;max-width:230px;height:var(--cwh);border-radius:14px;background:var(--b1);border:1px solid var(--ln);overflow:hidden}
+.filaRn78 .rn78 .gci{padding:0 8px;font-size:13px}
+.filaRn78 .rn78 .gci.on{font-size:15px}
+.filaRn78 .rn78 .gci .gcx{gap:6px;padding-right:20px}
+.filaRn78 .rn78 .gci .gcn{display:none}
+.filaRn78 .rn78 .gci .gcs{right:6px}
+.filaRn78>.btNueva{flex:1 1 0;min-width:0;width:auto;margin:0;height:66px;min-height:66px;padding:0 10px;line-height:1.15;white-space:normal;text-align:center;font-size:15px}
+.filaRn78>.btPract71{flex:1 1 0;min-width:0;width:auto;margin:0;height:66px;min-height:66px;padding:6px 10px;gap:8px}
+.filaRn78>.btPract71 .pTx small,.filaRn78>.btPract71 .pFl{display:none}
+@media (min-width:700px){ .filaRn78>.btPract71 .pTx small{display:block} }
+/* 98 · Comparar las pruebas: la estrategia de cada una y su rentabilidad */
+.cmp78 .nEs78{min-width:150px}
+.cmp78 .cEs78{display:flex;flex-direction:column;gap:2px;margin-top:4px}
+.cmp78 .eEs78{font-size:12px;color:var(--t2);font-weight:600;line-height:1.3}
+.cmp78 .eEs78 b{color:var(--tx);font-weight:700}
+.cmp78 .eEs78 i{font-style:normal;font-weight:700}
+.cmp78 .eEs78 i.up{color:var(--upTx)} .cmp78 .eEs78 i.dn{color:var(--dnTx)}
+.cmp78 .cEs78.sin,.cmp78 .eEs78.sin,.cmp78 .eEs78.sin b{color:var(--t3);font-style:italic;font-weight:600}
+.cmp78 .rent78 b{font-size:16px;font-weight:800}
+/* 98 · cuando la tabla de nueve columnas no cabe (teléfono, o la computadora con la ventana angosta), cada prueba pasa a ser una tarjeta:
+   antes se veían dos o tres columnas y el resto quedaba escondido */
+.cmp78 .env{container-type:inline-size;container-name:cmpc}
+@container cmpc (max-width:920px){
+  .cmp78 .env{overflow:visible}
+  .cmp78 table,.cmp78 tbody,.cmp78 tr,.cmp78 td{display:block;width:auto}
+  .cmp78 thead{display:none}
+  .cmp78 tbody tr{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:10px 14px;padding:12px 13px;margin:0 0 10px;border:1px solid var(--ln);border-radius:14px;background:var(--b1)}
+  .cmp78 tbody td{padding:0;border:0;text-align:left;min-width:0}
+  .cmp78 tbody td[data-l]::before{content:attr(data-l);display:block;margin-bottom:2px;font-size:10.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--t3)}
+  .cmp78 tbody td.nEs78{grid-column:1/-1;padding-bottom:8px;border-bottom:1px solid var(--ln)}
+  .cmp78 tbody td.nEs78>b{font-size:16px}
+  .cmp78 tbody td.rent78 b{font-size:20px}
+}
 
 /*V76CSS>>*/
 
@@ -27744,6 +27785,8 @@ function formOtraMoneda76(s, E, A){
   var ampl=!!(E && E.grande);
   fuGuardar76();
   FU.sym=String(s).toUpperCase(); MIRANDO=FU.sym;
+  FU.lin78=false; FU.t78=null;                        /* v78 · pto 94: la moneda nueva sale limpia (sin stop ni objetivo puestos) */
+  try{ sincRn78(FU.amb, FU.sym); }catch(e78){}        /* v78 · pto 95: la rueda de la pantalla muestra la misma moneda */
   try{ conectarVivo(); traerPrecios(true); traerLogo(FU.sym); }catch(e){}
   var pr=null; try{ pr=precioRP69(null, FU.sym); }catch(e1){} if(pr==null){ try{ pr=precioDe(FU.sym); }catch(e2){} }
   FU.entrada= (pr!=null && pr>0) ? paraCasillaPrecio(pr) : "";
@@ -27753,6 +27796,7 @@ function formOtraMoneda76(s, E, A){
   if(mem){ FU.entrada=mem.e; FU.sl=mem.sl; FU.tp=mem.tp; if(mem.lado) FU.lado=mem.lado; }       /* pto 84: vuelve a lo que había puesto */
   if(E) E.muerta=true;
   var enHoja=!!(E && E.cont && (E.sitio && E.sitio.parentNode ? E.sitio.parentNode : E.cont).closest && (E.sitio && E.sitio.parentNode ? E.sitio.parentNode : E.cont).closest("#veloIn"));
+  if(ampl) quitarGrande78(E);                          /* v78 · pto 94: la gráfica ampliada de la moneda de antes se quita (si no, quedaba pegada y se apilaba otra encima) */
   RUEDA68.cambiando74=true;
   try{ if(enHoja && A && A.k) hojaNuevaOperacion(A.k); else repintar(); } finally { RUEDA68.cambiando74=false; }
   if(ampl && GRAF && !GRAF.grande) ampliarGrafica(GRAF);
@@ -28349,6 +28393,335 @@ function hojaYaEntre76(f, k){
     if(/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable){ try{ a.blur(); }catch(e){} }
   }, true);
 })();
+
+/* ===================================================================
+   v78 · PTOS 94 y 95 (Luis 18 oct 13:47 y 13:50): «Nueva operación» en Futuros y en Backtesting
+   94 · «Entro en nueva operación, abro una moneda cualquiera y de una me sale el stop loss y el take profit, de izquierda a derecha, como
+        si fuera infinito, como si hubiese abierto una operación que nunca abrí; esos recuadros no los puedo ni eliminar; y si aplasto la X
+        me sale la anterior que había abierto, como pestañas.»
+        (a) la gráfica de una moneda recién abierta en «Nueva operación» sale LIMPIA: el stop y el objetivo solo salen cuando uno los pide
+            («＋ Poner stop y objetivo»), los escribe o los mueve; con «✕ Quitar stop y objetivo» se van;
+        (b) cuando están puestos, la franja NACE en la vela donde se pusieron y llega solo un poco más allá de la última vela (como la
+            caja de una operación, pto 83), ya no de borde a borde;
+        (c) con la gráfica ampliada, girar la rueda de monedas del formulario dejaba la gráfica vieja pegada a la pantalla y ponía otra
+            encima (4 cambios = 4 gráficas): cada ✕ quitaba una. Ahora, al ampliar una, cualquier otra ampliada de antes se quita.
+   95 · «Divides la mitad donde dice nueva operación: al lado izquierdo las criptomonedas con la rueda, y al lado nueva operación.»
+        (teléfono: Futuros y Backtesting). La moneda de la rueda es la que abre el formulario.
+   Futuros y Backtesting siguen separados: cada uno tiene su formulario (FU, pto 85) y su lista; aquí solo se usa el de la pantalla de ahora.
+   =================================================================== */
+
+/* ---- 94c · una sola gráfica ampliada a la vez ---- */
+function quitarGrande78(E){
+  try{
+    if(!E || !E.cont) return;
+    if(E.cont.parentNode===document.body) document.body.removeChild(E.cont);
+    if(E.sitio && E.sitio.parentNode) E.sitio.parentNode.removeChild(E.sitio);
+    E.sitio=null; E.grande=false;
+  }catch(e){}
+}
+/* quita toda gráfica ampliada que no sea la que se va a ampliar ahora */
+function barrerGrandes78(salvo){
+  try{
+    [].slice.call(document.body.children).forEach(function(n){
+      if(n!==salvo && n.classList && n.classList.contains("graf") && n.classList.contains("grande")) document.body.removeChild(n);
+    });
+  }catch(e){}
+}
+(function(){
+  if(typeof ampliarGrafica!=="function") return;
+  var a0=ampliarGrafica;
+  ampliarGrafica=function(E){
+    if(E && !E.grande) barrerGrandes78(E.cont);
+    return a0.apply(this, arguments);
+  };
+})();
+
+/* ---- 94a/b · el stop y el objetivo del borrador solo salen si uno los pide ---- */
+function lineasFU78(){
+  if(typeof FU==="undefined" || !FU) return false;
+  return !!(FU.lin78 || String(FU.sl==null?"":FU.sl).trim()!=="" || String(FU.tp==null?"":FU.tp).trim()!=="");
+}
+/* la franja del borrador nace en la vela donde se puso, y llega un poco más allá de la última (cajaDe70 + pto 83 en v76_caja.js) */
+function cajaFU78(){
+  var t=FU.t78;
+  /* en una repetición (retroceder las velas) «ahora» es la vela donde está el cursor: la franja nace ahí y no se esconde como «el futuro» */
+  try{
+    var E=GRAF;
+    if(E && E.cont && E.cont.id==="fuGraf" && E.rp && E.rp.activo && E.velas && E.velas.length) t=E.velas[E.velas.length-1].t;
+  }catch(e0){}
+  if(!t){ t=FU.t78=Date.now(); }
+  var e=(typeof num==="function") ? num(FU.entrada) : 0;
+  return {a:{t:t, ex:true}, p0:(e>0?e:0), b:null, p1:null, estado:"programada", sl:0, tp:0, hist:null};
+}
+/* las líneas del borrador se agarran como siempre (la caja, por lo demás, no deja tocar la raya) */
+(function(){
+  if(typeof dibujar!=="function") return;
+  var d0=dibujar;
+  dibujar=function(E){
+    var r=d0.apply(this, arguments);
+    try{ if(E && E.cont) E.cont.classList.toggle("borr78", !!(E.op && E.op.borrador78)); }catch(e){}
+    return r;
+  };
+})();
+function fuLin78Refrescar(){
+  var d=document.getElementById("fuLin78"); if(!d) return;
+  var on=lineasFU78(), act=d.getAttribute("data-on");
+  d.hidden=!verGraf();
+  if(act===(on?"1":"0") && d.firstChild) return;
+  d.setAttribute("data-on", on?"1":"0");
+  d.innerHTML=on
+    ? '<button type="button" class="b sm gh" data-lin78="quitar">✕ '+esc(tr("Quitar stop y objetivo"))+'</button>'
+    : '<button type="button" class="b sm" data-lin78="poner">＋ '+esc(tr("Poner stop y objetivo"))+'</button>';
+}
+function fuLin78Enganchar(c, A){
+  var d=c.querySelector("#fuLin78"); if(!d) return;
+  d.addEventListener("click", function(ev){
+    var b=ev.target.closest("[data-lin78]"); if(!b) return;
+    var q=b.getAttribute("data-lin78"), E=document.getElementById("fuE"), L=document.getElementById("fuSL"), T=document.getElementById("fuTP");
+    if(q==="quitar"){
+      FU.lin78=false; FU.t78=null; FU.sl=""; FU.tp="";
+      if(L) L.value=""; if(T) T.value="";
+    } else {
+      var pr=null; try{ pr=FU.sym ? precioDe(FU.sym) : null; }catch(e0){}
+      if(!(num(FU.entrada)>0)){
+        if(pr==null){ aviso("Todavía no hay precio de "+(FU.sym||"la moneda")+".", true); return; }
+        FU.entrada=paraCasillaPrecio(pr); if(E) E.value=FU.entrada;
+      }
+      var base=num(FU.entrada), corto=(FU.lado==="SHORT");
+      FU.lin78=true; FU.t78=Date.now();
+      if(!(num(FU.sl)>0)){ FU.sl=paraCasillaPrecio(corto ? base*1.02 : base*0.98); if(L) L.value=FU.sl; }
+      if(!(num(FU.tp)>0)){ FU.tp=paraCasillaPrecio(corto ? base*0.96 : base*1.04); if(T) T.value=FU.tp; }
+    }
+    try{ recLote(A); }catch(e1){}
+    try{ pintarLineas(A); }catch(e2){}
+    fuLin78Refrescar();
+  });
+  fuLin78Refrescar();
+}
+
+/* ---- 95 · 96 · 97 · la rueda de monedas junto al botón grande de cada pantalla ----
+   Spot «+ Registrar compra» · Futuros «+ Nueva operación» · Backtesting «+ Nueva operación de prueba» y «Practicar».
+   Cada pantalla tiene SU moneda (RN78.sym[pantalla]): lo que gira en una no pasa a las otras. Dentro de una pantalla, las ruedas
+   (Backtesting tiene dos: la de Practicar y la de la operación) siempre muestran la misma moneda. */
+var RN78={sym:{}, reg:{}};
+function sincRn78(k, s, salvo){
+  s=String(s||"").toUpperCase(); if(!k || !s) return;
+  RN78.sym[k]=s;
+  var L=(RN78.reg[k]||[]).filter(function(w){ return w.host && document.body.contains(w.host); });
+  RN78.reg[k]=L;
+  L.forEach(function(w){ if(w!==salvo) try{ w.fijar(s); }catch(e){} });
+}
+function monedaDe78(k){
+  var s=RN78.sym[k];
+  if(!s && k==="spot" && typeof SP!=="undefined") s=SP.sym;
+  if(!s && k!=="spot"){
+    try{ if(FU && FU.amb===k && FU.sym) s=FU.sym; }catch(e){}
+    try{ if(!s && FUAMB76[k] && FUAMB76[k].sym) s=FUAMB76[k].sym; }catch(e1){}
+    if(!s && k==="back"){ try{ s=BD.ajustes.practSym; }catch(e2){} }
+  }
+  return String(s||"").toUpperCase();
+}
+/* lo que hace cada botón con la moneda de la rueda */
+function accionNueva78(k, s){
+  try{ fuAmb76(k); }catch(e){}
+  monedaNueva78(s);
+  hojaNuevaOperacion(k);
+}
+function accionSpot78(s){
+  s=String(s||"").toUpperCase();
+  if(s){
+    try{ SP.sym=s; MIRANDO=s; traerPrecios(true); conectarVivo(); traerLogo(s); }catch(e){}
+  }
+  hojaRegistrarSpot();
+  try{
+    var pp=document.getElementById("spP");
+    if(s && pp && !pp.value && precioDe(s)!=null){ pp.value=paraCasillaPrecio(precioDe(s)); SP.modo="hoy"; recPanel(); }
+  }catch(e1){}
+}
+function graf78(k, s){
+  s=String(s||"").toUpperCase(); if(!s) return;
+  if(k==="spot") monedaGraf67(s);
+  else verGraficaMoneda67(s, nombreDe(s), null, null, {mercado:"perp"});
+}
+/* la moneda con que abre el formulario: lo mismo que hace la rueda dentro del formulario (formOtraMoneda76), sin rehacer la hoja */
+function monedaNueva78(s){
+  s=String(s||"").toUpperCase(); if(!s) return;
+  if(FU.sym===s) return;                          /* la misma: se conserva lo que ya había escrito */
+  try{ fuGuardar76(); }catch(e){}
+  FU.sym=s; MIRANDO=s; FU.lin78=false; FU.t78=null;
+  try{ conectarVivo(); traerPrecios(true); traerLogo(s); }catch(e1){}
+  var pr=null; try{ pr=precioRP69(null, s); }catch(e2){} if(pr==null){ try{ pr=precioDe(s); }catch(e3){} }
+  FU.entrada=(pr!=null && pr>0) ? paraCasillaPrecio(pr) : "";
+  FU.sl=""; FU.tp=""; FU.ya=null;
+  var mem=null; try{ mem=FUMEM76[FU.amb+":"+s]; }catch(e4){}
+  if(mem){ FU.entrada=mem.e; FU.sl=mem.sl; FU.tp=mem.tp; if(mem.lado) FU.lado=mem.lado; }
+}
+/* parte la fila: la rueda a la izquierda y el botón (el mismo de siempre, con sus colores) a la derecha */
+function fila78(k, btn, accion){
+  if(!btn || !btn.parentNode || btn.closest(".filaRn78")) return;
+  var fila=document.createElement("div"); fila.className="filaRn78 f"+k;
+  btn.parentNode.insertBefore(fila, btn);
+  var host=document.createElement("div"); host.className="gcw rn78"; host.setAttribute("data-rn78", k);
+  fila.appendChild(host); fila.appendChild(btn);
+  var W=rueda78(host, k);
+  btn.removeAttribute("onclick");
+  btn.onclick=function(){ accion(RN78.sym[k] || ""); };
+  return W;
+}
+function rueda78(host, k){
+  var lista=[], actual=monedaDe78(k), W={host:host}, tmr=null, acc=0, tW=0, mano=false, wl=null;
+  try{ lista=listaRueda68(actual); }catch(e){ lista=actual ? [actual] : []; }
+  if(!actual) actual=lista[0]||"";
+  RN78.sym[k]=actual;
+  (RN78.reg[k]||(RN78.reg[k]=[])).push(W);
+  function filas(){          /* solo se rehace la lista: la lupa de la esquina se queda */
+    var h='<div class="gcwl" tabindex="0" role="listbox" aria-label="'+esc(tr("Moneda"))+'">'+lista.map(function(s){ return filaRueda68(s, actual); }).join("")+'</div>';
+    var viejo=host.querySelector(".gcwl");
+    if(viejo){ var t=document.createElement("div"); t.innerHTML=h; host.replaceChild(t.firstChild, viejo); }
+    else host.insertAdjacentHTML("afterbegin", h);
+    wl=host.querySelector(".gcwl");
+  }
+  filas();
+  host.setAttribute("title", tr("Gire para elegir la moneda"));
+  function alto(){ return wl.firstChild ? wl.firstChild.offsetHeight : 0; }
+  function indice(){ var h=alto(); return h ? Math.max(0, Math.min(lista.length-1, Math.round(wl.scrollTop/h))) : 0; }
+  function poner(){
+    var h=alto(); if(!h) return;
+    var i=lista.indexOf(actual); if(i<0) i=0;
+    if(Math.abs(wl.scrollTop-i*h)>1 && !mano) wl.scrollTop=i*h;
+    [].forEach.call(wl.children, function(f, j){ f.classList.toggle("on", j===i); f.setAttribute("aria-selected", j===i ? "true" : "false"); });
+  }
+  function enRueda(s){            /* una de la lupa que no estaba en la rueda: se agrega arriba */
+    if(lista.indexOf(s)<0){ lista.unshift(s); var pos=wl.scrollTop; filas(); wl.scrollTop=pos; enganchar(); }
+  }
+  W.fijar=function(s){ s=String(s||"").toUpperCase(); if(!s || s===actual) return; actual=s; enRueda(s); mano=false; poner(); requestAnimationFrame(poner); };
+  function elegir(s){
+    s=String(s||"").toUpperCase(); if(!s || s===actual) return;
+    actual=s; enRueda(s);
+    try{ traerLogo(s); }catch(e){}
+    poner();
+    sincRn78(k, s, W);
+  }
+  function asentar(){ mano=false; var s=lista[indice()]; if(s && s!==actual) elegir(s); else poner(); }
+  function ir(i, suave){
+    var h=alto(); if(!h) return;
+    i=Math.max(0, Math.min(lista.length-1, i)); mano=true;
+    if(suave && wl.scrollTo) wl.scrollTo({top:i*h, behavior:"smooth"}); else wl.scrollTop=i*h;
+    clearTimeout(tmr); tmr=setTimeout(asentar, suave ? 170 : 40);
+  }
+  function enganchar(){
+    wl.addEventListener("scroll", function(){ mano=true; clearTimeout(tmr); tmr=setTimeout(asentar, 130); }, {passive:true});
+    wl.addEventListener("wheel", function(ev){
+      ev.preventDefault();
+      var ahora=Date.now(); if(ahora-tW>350) acc=0; tW=ahora; acc+=ev.deltaY;
+      if(Math.abs(acc)>=30){ ir(indice()+(acc>0?1:-1), true); acc=0; }
+    }, {passive:false});
+    wl.addEventListener("keydown", function(ev){
+      if(ev.key==="ArrowDown"||ev.key==="ArrowRight"){ ev.preventDefault(); ir(indice()+1, true); }
+      else if(ev.key==="ArrowUp"||ev.key==="ArrowLeft"){ ev.preventDefault(); ir(indice()-1, true); }
+    });
+    /* tocar otra moneda la elige; tocar la que está elegida abre su gráfica */
+    wl.addEventListener("click", function(ev){
+      var b=ev.target.closest(".gci"); if(!b) return;
+      ev.stopPropagation();
+      if(ev.target.closest("[data-fav]")){ try{ favsAlternar67(b.getAttribute("data-cs")); }catch(e){} return; }
+      if(b.classList.contains("on") && b.getAttribute("data-cs")===actual){ graf78(k, actual); return; }
+      ir([].indexOf.call(wl.children, b), true);
+    });
+    wl.addEventListener("pointerdown", function(ev){
+      if(ev.pointerType!=="mouse" || ev.button!==0) return;
+      if(ev.target.closest("[data-fav]")) return;
+      var y0=ev.clientY, s0=wl.scrollTop, mov=false;
+      function m(e){ var dy=e.clientY-y0; if(!mov && Math.abs(dy)<4) return; if(!mov){ mov=true; wl.style.scrollSnapType="none"; mano=true; } wl.scrollTop=s0-dy; }
+      function u(){
+        window.removeEventListener("pointermove", m); window.removeEventListener("pointerup", u); window.removeEventListener("pointercancel", u);
+        if(mov){ wl.style.scrollSnapType=""; var h=alto(); if(h && wl.scrollTo) wl.scrollTo({top:Math.round(wl.scrollTop/h)*h, behavior:"smooth"}); clearTimeout(tmr); tmr=setTimeout(asentar, 200); }
+      }
+      window.addEventListener("pointermove", m); window.addEventListener("pointerup", u); window.addEventListener("pointercancel", u);
+    });
+  }
+  enganchar();
+  /* la lupa de la rueda de las gráficas, con la moneda de aquí */
+  try{ buscaLupa74({op:{get sym(){ return actual; }}}, host, function(s){ elegir(s); var i=lista.indexOf(s); if(i>=0) ir(i, false); }); }catch(e3){}
+  requestAnimationFrame(function(){ poner(); setTimeout(poner, 60); });
+  return W;
+}
+/* las filas de cada pantalla (se arman después de pintarla) */
+function filasRn78(c, k){
+  if(!c) return;
+  if(k==="spot") fila78("spot", c.querySelector("#btRegSpot"), accionSpot78);
+  else {
+    fila78(k, c.querySelector("#btNuevaOp"), function(s){ accionNueva78(k, s); });
+    if(k==="back") fila78("back", c.querySelector("#btPract71"), function(s){ abrirPractica71(s || undefined); });
+  }
+}
+(function(){
+  if(typeof engancharAmbito==="function"){
+    var e0=engancharAmbito;
+    engancharAmbito=function(c, A){ var r=e0.apply(this, arguments); try{ filasRn78(c, A && A.k); }catch(e){ if(window.console) console.error(e); } return r; };
+  }
+  if(typeof engancharSpot==="function"){
+    var s0=engancharSpot;
+    engancharSpot=function(c){ var r=s0.apply(this, arguments); try{ filasRn78(c, "spot"); }catch(e){ if(window.console) console.error(e); } return r; };
+  }
+})();
+
+/* ---- 98 · «Comparar las pruebas»: qué estrategia usó cada una y cuánto rindió (Luis 18 oct 13:58: «¿qué estrategia ocupó? Tanto en la prueba 1
+   o en la otra prueba, para que pueda comparar cuál de las dos es más rentable») ----
+   La estrategia se anota en cada operación («Estrategia» del formulario): de cada prueba se juntan las que usó, con cuántas operaciones y lo que
+   dio cada una. Se ordena por rentabilidad (%), que sí se puede comparar entre una prueba de $30 y una de $10.000; el resultado en dinero sigue en la tabla. */
+function estrategias78(ops){
+  var G={}, orden=[];
+  (ops||[]).forEach(function(o){
+    var n=String((o && o.estr)||"").trim(), k=n.toLowerCase();
+    if(!G[k]){ G[k]={n:n, ops:[]}; orden.push(k); }
+    G[k].ops.push(o);
+  });
+  return orden.map(function(k){ var g=G[k], T=null; try{ T=carteraFut(g.ops).tot; }catch(e){}
+    return {n:g.n, cuantas:g.ops.length, gan:T ? T.gan : null}; })
+    .sort(function(a,b){ return (!a.n)-(!b.n) || b.cuantas-a.cuantas; });
+}
+compararPruebas=function(){
+  if(BD.pruebas.length<2){ aviso("Hacen falta al menos dos pruebas para compararlas.",true); return; }
+  var filas=BD.pruebas.map(function(p){
+    var ops=opsDePrueba(p.id), F=carteraFut(ops), T=F.tot, cart=carteraPrueba(p);
+    var rent=(p.capital>0) ? (cart-p.capital)/p.capital*100 : null;
+    return {p:p, T:T, cart:cart, rent:rent, estr:estrategias78(ops)};
+  }).sort(function(a,b){ return (b.rent==null?-1e9:b.rent)-(a.rent==null?-1e9:a.rent); });
+  var hayEstr=filas.some(function(x){ return x.estr.some(function(e){ return !!e.n; }); });
+  function chips(x){
+    if(!x.estr.length) return '<div class="cEs78 sin">'+esc(tr("Sin estrategia anotada"))+'</div>';
+    return '<div class="cEs78">'+x.estr.map(function(e){
+      var g=(e.gan==null) ? "" : ' <i class="'+(e.gan>0?"up":e.gan<0?"dn":"")+'">'+(e.gan>=0?"+":"−")+usdF(Math.abs(e.gan))+'</i>';
+      return '<span class="eEs78'+(e.n?"":" sin")+'"><b translate="no">'+esc(e.n||tr("Sin estrategia anotada"))+'</b> · '+esc(tr("Ops"))+' '+e.cuantas+g+'</span>';
+    }).join("")+'</div>';
+  }
+  abrir('<div class="hoja ancha cmp78"><div class="hh"><h3>Comparar las pruebas</h3>'+
+    '<button class="x" data-cerrar>×</button></div><div class="hb"><div class="env">'+
+    '<table><thead><tr><th><span class="cap">'+esc(tr("Prueba"))+' · '+esc(tr("Estrategia"))+'</span></th>'+
+    '<th><span class="cap">'+esc(tr("Rentabilidad"))+'</span></th>'+
+    '<th><span class="cap">Capital</span></th><th><span class="cap">Ops</span></th>'+
+    '<th><span class="cap">Acertadas</span></th><th><span class="cap">Cada op</span></th>'+
+    '<th><span class="cap">Factor</span></th><th><span class="cap">Comisiones</span></th>'+
+    '<th><span class="cap">Resultado</span></th></tr></thead><tbody>'+
+    filas.map(function(x){
+      function L(t){ return ' data-l="'+esc(tr(t))+'"'; }
+      return '<tr><td class="nEs78"><b>'+esc(x.p.nombre)+'</b>'+chips(x)+'</td>'+
+        '<td class="rent78 '+(x.rent==null?"":cl(x.rent))+'"'+L("Rentabilidad")+'><b>'+(x.rent==null?"—":(x.rent>=0?"+":"−")+Math.abs(x.rent).toFixed(1).replace(".",sepDecimal())+" %")+'</b></td>'+
+        '<td'+L("Capital")+'>'+usd(x.p.capital)+'<br><span class="mut">ahora '+usd(x.cart)+'</span></td>'+
+        '<td'+L("Ops")+'>'+x.T.n+'</td>'+
+        '<td'+L("Acertadas")+'>'+(x.T.aciertos!=null?x.T.aciertos.toFixed(0)+"%":"—")+'</td>'+
+        '<td'+L("Cada op")+' class="'+cl(x.T.esperanza)+'">'+pct(x.T.esperanza,1)+'</td>'+
+        '<td'+L("Factor")+'>'+(x.T.factor==null?"—":(x.T.factor===Infinity?"∞":x.T.factor.toFixed(2).replace(".",sepDecimal())))+'</td>'+
+        '<td'+L("Comisiones")+' class="dn">'+usdF(x.T.comision)+'</td>'+
+        '<td'+L("Resultado")+'><span class="'+(x.T.gan>0?"gpill p":x.T.gan<0?"gpill n":"gpill z")+'">'+
+        (x.T.gan>=0?"+":"−")+usdF(x.T.gan).replace("-","")+'</span></td></tr>';
+    }).join("")+'</tbody></table></div>'+
+    '<div class="nota">La que más arriba está es la más rentable (por %, que se puede comparar aunque una prueba tenga $30 y otra $10.000). Mire también el '+
+    '<b>factor</b>: si es menor que 1, esa estrategia pierde plata aunque acierte seguido.'+
+    (hayEstr ? '' : '<br>'+esc(tr("Anote la estrategia al registrar cada operación de prueba")))+'</div>'+
+    '</div><div class="hf"><button class="b" data-cerrar>Cerrar</button></div></div>');
+};
 
 /*V76>>*/
 function calcularEscala(estado){
@@ -34395,6 +34768,7 @@ function panelOperacion(A, enHoja){
     '<button type="button" class="b abreGraf" id="fuVerG">'+
       (verGraf()?"Ocultar la gráfica":"Ver gráfica · mover el stop y el objetivo con el dedo")+'</button>'+
     '<div id="fuGraf"'+(verGraf()?"":' hidden')+'></div>'+
+    '<div id="fuLin78" class="fuLin78"'+(verGraf()?"":' hidden')+'></div>'+        /* v78 · pto 94 */
     /* las tres casillas de precio y el resultado, todo dentro del mismo bloque */
     '<div class="opbloq">'+
       '<div class="campos dos">'+
@@ -35498,6 +35872,7 @@ function engancharFormulario(c, A){
   function volverAHoja(){ if(enHoja) hojaNuevaOperacion(A.k); }
   if(S) S.onclick=function(){
     elegirMoneda(FU.sym, function(s){
+      monedaNueva78(s); try{ sincRn78(FU.amb, s); }catch(e78d){}      /* v78 · pto 94: la moneda nueva sale limpia */
       FU.sym=s; MIRANDO=s;
       conectarVivo(); traerPrecios(true); traerLogo(s);
       if(!FU.entrada && precioDe(s)!=null) FU.entrada=paraCasillaPrecio(precioDe(s));
@@ -35609,6 +35984,7 @@ function engancharFormulario(c, A){
   };
   montarGraf(A);
   recLote(A);
+  try{ fuLin78Enganchar(c, A); }catch(e78){ if(window.console) console.error(e78); }      /* v78 · pto 94 */
 }
 function engancharAmbito(c, A){
   olvidarLote();                 /* la pantalla es nueva: nada que recordar */
@@ -35663,6 +36039,7 @@ function ponerVerGraf(v){
   BD.ajustes.verGraf=!!v; tocar(BD.ajustes); guardar();
   var g=document.getElementById("fuGraf"), b=document.getElementById("fuVerG");
   if(g) g.hidden=!v;
+  try{ var d78=document.getElementById("fuLin78"); if(d78) d78.hidden=!v; }catch(e78c){}      /* v78 · pto 94 */
   if(b) ponTexto(b, tr(v?"Ocultar la gráfica":"Ver gráfica · mover el stop y el objetivo con el dedo"));
   if(v){ try{ montarGraf(ambito(FU.amb||"fut")); }catch(e){} }
   else { GRAF=null; if(typeof rpDescartar69==="function") rpDescartar69(); if(g) g.innerHTML=""; }
@@ -35675,10 +36052,13 @@ function montarGraf(A){
     sym:FU.sym, mercado:"perp",      /* v73 · pto 37: Futuros y Backtesting = perpetuo */
     rueda:true, cambiarMoneda:function(s2,E2){ formOtraMoneda76(s2, E2, A); },      /* v76 · pto 69b */
     lado:function(){ return FU.lado; },
+    borrador78:true,      /* v78 · pto 94: las líneas del borrador (la franja nace donde se pusieron) */
+    caja:function(){ return (typeof lineasFU78==="function" && lineasFU78()) ? cajaFU78() : null; },
     apal:function(){ var c=cfgOp(A); return c&&c.apal; },
     /* las tres líneas existen desde el primer momento: si una casilla está vacía,
        se coloca cerca del precio de ahora para que usted pueda arrastrarla */
     valores:function(){
+      if(!lineasFU78()) return {};      /* v78 · pto 94: sin stop ni objetivo puestos, la gráfica sale limpia */
       var v=valoresFU(A), pr=precioRP69(null,FU.sym);
       if(pr==null) return v;
       var corto=FU.lado==="SHORT";
@@ -35776,6 +36156,7 @@ function montarGraf(A){
 /* al escribir en las casillas, las líneas de la gráfica se mueven solas */
 function pintarLineas(A){
   if(GRAF && GRAF.cont && document.body.contains(GRAF.cont)) dibujar(GRAF);
+  try{ fuLin78Refrescar(); }catch(e78b){}      /* v78 · pto 94 */
 }
 
 function guardarOperacion(A){
@@ -47485,6 +47866,12 @@ DIC.en={
 "En la prueba de Bulkowski gana el # % de las operaciones (salida al doble de la altura de la figura; acciones de EE.UU.)":"In Bulkowski's test it wins # % of trades (exit at twice the height of the pattern; US stocks)",
 "Tras un fallo simple, sube # % de media (Bulkowski, acciones de EE.UU.)":"After a single failure, it rises # % on average (Bulkowski, US stocks)",
 "Tras un fallo simple, baja # % de media (Bulkowski, acciones de EE.UU.)":"After a single failure, it falls # % on average (Bulkowski, US stocks)",
+"Poner stop y objetivo":"Set stop and target",
+"Quitar stop y objetivo":"Remove stop and target",
+"Gire para elegir la moneda":"Turn to choose the coin",
+"Rentabilidad":"Return",
+"Sin estrategia anotada":"No strategy noted",
+"Anote la estrategia al registrar cada operación de prueba":"Write down the strategy when you record each test trade",
 
 "Línea horizontal":"Horizontal line",
 "Línea vertical":"Vertical line",
@@ -53285,6 +53672,12 @@ DIC.pt={
 "En la prueba de Bulkowski gana el # % de las operaciones (salida al doble de la altura de la figura; acciones de EE.UU.)":"No teste de Bulkowski ganha # % das operações (saída ao dobro da altura do padrão; ações dos EUA)",
 "Tras un fallo simple, sube # % de media (Bulkowski, acciones de EE.UU.)":"Após uma falha simples, sobe # % em média (Bulkowski, ações dos EUA)",
 "Tras un fallo simple, baja # % de media (Bulkowski, acciones de EE.UU.)":"Após uma falha simples, cai # % em média (Bulkowski, ações dos EUA)",
+"Poner stop y objetivo":"Pôr stop e alvo",
+"Quitar stop y objetivo":"Tirar stop e alvo",
+"Gire para elegir la moneda":"Gire para escolher a moeda",
+"Rentabilidad":"Rentabilidade",
+"Sin estrategia anotada":"Sem estratégia anotada",
+"Anote la estrategia al registrar cada operación de prueba":"Anote a estratégia ao registrar cada operação de teste",
 
 "Línea horizontal":"Linha horizontal",
 "Línea vertical":"Linha vertical",
@@ -59078,6 +59471,12 @@ DIC.fr={
 "En la prueba de Bulkowski gana el # % de las operaciones (salida al doble de la altura de la figura; acciones de EE.UU.)":"Dans le test de Bulkowski, elle gagne # % des opérations (sortie au double de la hauteur de la figure ; actions américaines)",
 "Tras un fallo simple, sube # % de media (Bulkowski, acciones de EE.UU.)":"Après un échec simple, elle monte de # % en moyenne (Bulkowski, actions américaines)",
 "Tras un fallo simple, baja # % de media (Bulkowski, acciones de EE.UU.)":"Après un échec simple, elle baisse de # % en moyenne (Bulkowski, actions américaines)",
+"Poner stop y objetivo":"Placer stop et objectif",
+"Quitar stop y objetivo":"Retirer stop et objectif",
+"Gire para elegir la moneda":"Tournez pour choisir la crypto",
+"Rentabilidad":"Rendement",
+"Sin estrategia anotada":"Aucune stratégie notée",
+"Anote la estrategia al registrar cada operación de prueba":"Notez la stratégie en enregistrant chaque opération de test",
 
 "Línea horizontal":"Ligne horizontale",
 "Línea vertical":"Ligne verticale",
@@ -64871,6 +65270,12 @@ DIC.de={
 "En la prueba de Bulkowski gana el # % de las operaciones (salida al doble de la altura de la figura; acciones de EE.UU.)":"Im Test von Bulkowski gewinnt es # % der Trades (Ausstieg bei der doppelten Musterhöhe; US-Aktien)",
 "Tras un fallo simple, sube # % de media (Bulkowski, acciones de EE.UU.)":"Nach einem einfachen Scheitern steigt der Kurs im Schnitt um # % (Bulkowski, US-Aktien)",
 "Tras un fallo simple, baja # % de media (Bulkowski, acciones de EE.UU.)":"Nach einem einfachen Scheitern fällt der Kurs im Schnitt um # % (Bulkowski, US-Aktien)",
+"Poner stop y objetivo":"Stopp und Ziel setzen",
+"Quitar stop y objetivo":"Stopp und Ziel entfernen",
+"Gire para elegir la moneda":"Zum Auswählen der Münze drehen",
+"Rentabilidad":"Rendite",
+"Sin estrategia anotada":"Keine Strategie notiert",
+"Anote la estrategia al registrar cada operación de prueba":"Notieren Sie die Strategie beim Erfassen jedes Testtrades",
 
 "Línea horizontal":"Horizontale Linie",
 "Línea vertical":"Vertikale Linie",
@@ -70664,6 +71069,12 @@ DIC.it={
 "En la prueba de Bulkowski gana el # % de las operaciones (salida al doble de la altura de la figura; acciones de EE.UU.)":"Nel test di Bulkowski vince il # % delle operazioni (uscita al doppio dell'altezza della figura; azioni USA)",
 "Tras un fallo simple, sube # % de media (Bulkowski, acciones de EE.UU.)":"Dopo un fallimento semplice, sale del # % in media (Bulkowski, azioni USA)",
 "Tras un fallo simple, baja # % de media (Bulkowski, acciones de EE.UU.)":"Dopo un fallimento semplice, scende del # % in media (Bulkowski, azioni USA)",
+"Poner stop y objetivo":"Imposta stop e obiettivo",
+"Quitar stop y objetivo":"Rimuovi stop e obiettivo",
+"Gire para elegir la moneda":"Gira per scegliere la moneta",
+"Rentabilidad":"Rendimento",
+"Sin estrategia anotada":"Nessuna strategia annotata",
+"Anote la estrategia al registrar cada operación de prueba":"Annoti la strategia quando registra ogni operazione di prova",
 
 "Línea horizontal":"Linea orizzontale",
 "Línea vertical":"Linea verticale",
@@ -76451,6 +76862,12 @@ DIC.nl={
 "En la prueba de Bulkowski gana el # % de las operaciones (salida al doble de la altura de la figura; acciones de EE.UU.)":"In de test van Bulkowski wint het # % van de transacties (uitstap op tweemaal de hoogte van het patroon; Amerikaanse aandelen)",
 "Tras un fallo simple, sube # % de media (Bulkowski, acciones de EE.UU.)":"Na een enkelvoudige mislukking stijgt de koers gemiddeld # % (Bulkowski, Amerikaanse aandelen)",
 "Tras un fallo simple, baja # % de media (Bulkowski, acciones de EE.UU.)":"Na een enkelvoudige mislukking daalt de koers gemiddeld # % (Bulkowski, Amerikaanse aandelen)",
+"Poner stop y objetivo":"Stop en doel plaatsen",
+"Quitar stop y objetivo":"Stop en doel verwijderen",
+"Gire para elegir la moneda":"Draai om de munt te kiezen",
+"Rentabilidad":"Rendement",
+"Sin estrategia anotada":"Geen strategie genoteerd",
+"Anote la estrategia al registrar cada operación de prueba":"Noteer de strategie bij elke testtrade die u vastlegt",
 
 "Línea horizontal":"Horizontale lijn",
 "Línea vertical":"Verticale lijn",
@@ -82524,6 +82941,12 @@ DIC.pl={
 "En la prueba de Bulkowski gana el # % de las operaciones (salida al doble de la altura de la figura; acciones de EE.UU.)":"W teście Bulkowskiego wygrywa # % transakcji (wyjście na dwukrotności wysokości formacji; akcje z USA)",
 "Tras un fallo simple, sube # % de media (Bulkowski, acciones de EE.UU.)":"Po pojedynczym niepowodzeniu cena rośnie średnio o # % (Bulkowski, akcje z USA)",
 "Tras un fallo simple, baja # % de media (Bulkowski, acciones de EE.UU.)":"Po pojedynczym niepowodzeniu cena spada średnio o # % (Bulkowski, akcje z USA)",
+"Poner stop y objetivo":"Ustaw stop i cel",
+"Quitar stop y objetivo":"Usuń stop i cel",
+"Gire para elegir la moneda":"Przekręć, aby wybrać monetę",
+"Rentabilidad":"Zwrot",
+"Sin estrategia anotada":"Brak zapisanej strategii",
+"Anote la estrategia al registrar cada operación de prueba":"Zapisz strategię przy rejestrowaniu każdej transakcji testowej",
 
 "Línea horizontal":"Linia pozioma",
 "Línea vertical":"Linia pionowa",
@@ -88597,6 +89020,12 @@ DIC.tr={
 "En la prueba de Bulkowski gana el # % de las operaciones (salida al doble de la altura de la figura; acciones de EE.UU.)":"Bulkowski'nin testinde işlemlerin % # kadarını kazanır (çıkış, formasyon yüksekliğinin iki katında; ABD hisseleri)",
 "Tras un fallo simple, sube # % de media (Bulkowski, acciones de EE.UU.)":"Tekli başarısızlıktan sonra ortalama % # yükselir (Bulkowski, ABD hisseleri)",
 "Tras un fallo simple, baja # % de media (Bulkowski, acciones de EE.UU.)":"Tekli başarısızlıktan sonra ortalama % # düşer (Bulkowski, ABD hisseleri)",
+"Poner stop y objetivo":"Stop ve hedef koy",
+"Quitar stop y objetivo":"Stop ve hedefi kaldır",
+"Gire para elegir la moneda":"Parayı seçmek için çevirin",
+"Rentabilidad":"Getiri",
+"Sin estrategia anotada":"Strateji not edilmemiş",
+"Anote la estrategia al registrar cada operación de prueba":"Her test işlemini kaydederken stratejiyi not edin",
 
 "Línea horizontal":"Yatay çizgi",
 "Línea vertical":"Dikey çizgi",
@@ -94670,6 +95099,12 @@ DIC.ru={
 "En la prueba de Bulkowski gana el # % de las operaciones (salida al doble de la altura de la figura; acciones de EE.UU.)":"В тесте Bulkowski выигрывает # % сделок (выход на удвоенной высоте фигуры; акции США)",
 "Tras un fallo simple, sube # % de media (Bulkowski, acciones de EE.UU.)":"После простого провала цена в среднем растёт на # % (Bulkowski, акции США)",
 "Tras un fallo simple, baja # % de media (Bulkowski, acciones de EE.UU.)":"После простого провала цена в среднем падает на # % (Bulkowski, акции США)",
+"Poner stop y objetivo":"Поставить стоп и цель",
+"Quitar stop y objetivo":"Убрать стоп и цель",
+"Gire para elegir la moneda":"Прокрутите, чтобы выбрать монету",
+"Rentabilidad":"Доходность",
+"Sin estrategia anotada":"Стратегия не указана",
+"Anote la estrategia al registrar cada operación de prueba":"Записывайте стратегию при каждой тестовой сделке",
 
 "Línea horizontal":"Горизонтальная линия",
 "Línea vertical":"Вертикальная линия",
@@ -100743,6 +101178,12 @@ DIC.uk={
 "En la prueba de Bulkowski gana el # % de las operaciones (salida al doble de la altura de la figura; acciones de EE.UU.)":"У тесті Bulkowski виграє # % угод (вихід на подвоєній висоті фігури; акції США)",
 "Tras un fallo simple, sube # % de media (Bulkowski, acciones de EE.UU.)":"Після простого провалу ціна в середньому зростає на # % (Bulkowski, акції США)",
 "Tras un fallo simple, baja # % de media (Bulkowski, acciones de EE.UU.)":"Після простого провалу ціна в середньому падає на # % (Bulkowski, акції США)",
+"Poner stop y objetivo":"Поставити стоп і ціль",
+"Quitar stop y objetivo":"Прибрати стоп і ціль",
+"Gire para elegir la moneda":"Прокрутіть, щоб вибрати монету",
+"Rentabilidad":"Дохідність",
+"Sin estrategia anotada":"Стратегію не вказано",
+"Anote la estrategia al registrar cada operación de prueba":"Записуйте стратегію під час кожної тестової операції",
 
 "Línea horizontal":"Горизонтальна лінія",
 "Línea vertical":"Вертикальна лінія",
@@ -106816,6 +107257,12 @@ DIC.id={
 "En la prueba de Bulkowski gana el # % de las operaciones (salida al doble de la altura de la figura; acciones de EE.UU.)":"Dalam pengujian Bulkowski, # % transaksi menang (keluar di dua kali tinggi pola; saham AS)",
 "Tras un fallo simple, sube # % de media (Bulkowski, acciones de EE.UU.)":"Setelah kegagalan tunggal, harga naik rata-rata # % (Bulkowski, saham AS)",
 "Tras un fallo simple, baja # % de media (Bulkowski, acciones de EE.UU.)":"Setelah kegagalan tunggal, harga turun rata-rata # % (Bulkowski, saham AS)",
+"Poner stop y objetivo":"Pasang stop dan target",
+"Quitar stop y objetivo":"Hapus stop dan target",
+"Gire para elegir la moneda":"Putar untuk memilih koin",
+"Rentabilidad":"Imbal hasil",
+"Sin estrategia anotada":"Belum ada strategi dicatat",
+"Anote la estrategia al registrar cada operación de prueba":"Catat strategi saat mencatat setiap transaksi uji",
 
 "Línea horizontal":"Garis horizontal",
 "Línea vertical":"Garis vertikal",
@@ -112889,6 +113336,12 @@ DIC.vi={
 "En la prueba de Bulkowski gana el # % de las operaciones (salida al doble de la altura de la figura; acciones de EE.UU.)":"Trong thử nghiệm của Bulkowski, thắng # % số lệnh (thoát ở mức gấp đôi chiều cao mô hình; cổ phiếu Mỹ)",
 "Tras un fallo simple, sube # % de media (Bulkowski, acciones de EE.UU.)":"Sau một thất bại đơn, giá tăng trung bình # % (Bulkowski, cổ phiếu Mỹ)",
 "Tras un fallo simple, baja # % de media (Bulkowski, acciones de EE.UU.)":"Sau một thất bại đơn, giá giảm trung bình # % (Bulkowski, cổ phiếu Mỹ)",
+"Poner stop y objetivo":"Đặt dừng lỗ và mục tiêu",
+"Quitar stop y objetivo":"Bỏ dừng lỗ và mục tiêu",
+"Gire para elegir la moneda":"Xoay để chọn coin",
+"Rentabilidad":"Lợi suất",
+"Sin estrategia anotada":"Chưa ghi chiến lược",
+"Anote la estrategia al registrar cada operación de prueba":"Hãy ghi chiến lược khi ghi mỗi lệnh thử",
 
 "Línea horizontal":"Đường ngang",
 "Línea vertical":"Đường dọc",
@@ -118962,6 +119415,12 @@ DIC.hi={
 "En la prueba de Bulkowski gana el # % de las operaciones (salida al doble de la altura de la figura; acciones de EE.UU.)":"Bulkowski के परीक्षण में यह # % ट्रेड जीतता है (निकास पैटर्न की ऊँचाई के दोगुने पर; अमेरिकी शेयर)",
 "Tras un fallo simple, sube # % de media (Bulkowski, acciones de EE.UU.)":"एकल विफलता के बाद औसतन # % चढ़ता है (Bulkowski, अमेरिकी शेयर)",
 "Tras un fallo simple, baja # % de media (Bulkowski, acciones de EE.UU.)":"एकल विफलता के बाद औसतन # % गिरता है (Bulkowski, अमेरिकी शेयर)",
+"Poner stop y objetivo":"स्टॉप और लक्ष्य लगाएँ",
+"Quitar stop y objetivo":"स्टॉप और लक्ष्य हटाएँ",
+"Gire para elegir la moneda":"सिक्का चुनने के लिए घुमाएँ",
+"Rentabilidad":"रिटर्न",
+"Sin estrategia anotada":"कोई रणनीति दर्ज नहीं",
+"Anote la estrategia al registrar cada operación de prueba":"हर टेस्ट ट्रेड दर्ज करते समय रणनीति लिखें",
 
 "Línea horizontal":"क्षैतिज रेखा",
 "Línea vertical":"ऊर्ध्वाधर रेखा",
@@ -125035,6 +125494,12 @@ DIC.ja={
 "En la prueba de Bulkowski gana el # % de las operaciones (salida al doble de la altura de la figura; acciones de EE.UU.)":"Bulkowskiのテストでは、取引の # %で勝ちます（パターンの高さの2倍で手仕舞い、米国株）",
 "Tras un fallo simple, sube # % de media (Bulkowski, acciones de EE.UU.)":"単一の失敗の後は平均で # %上昇します（Bulkowski、米国株）",
 "Tras un fallo simple, baja # % de media (Bulkowski, acciones de EE.UU.)":"単一の失敗の後は平均で # %下落します（Bulkowski、米国株）",
+"Poner stop y objetivo":"ストップと目標を置く",
+"Quitar stop y objetivo":"ストップと目標を外す",
+"Gire para elegir la moneda":"回して通貨を選ぶ",
+"Rentabilidad":"収益率",
+"Sin estrategia anotada":"戦略の記録なし",
+"Anote la estrategia al registrar cada operación de prueba":"テスト取引を記録するときに戦略を書き留めてください",
 
 "Línea horizontal":"水平線",
 "Línea vertical":"垂直線",
@@ -131108,6 +131573,12 @@ DIC.ko={
 "En la prueba de Bulkowski gana el # % de las operaciones (salida al doble de la altura de la figura; acciones de EE.UU.)":"Bulkowski의 테스트에서는 거래의 # %에서 이깁니다(패턴 높이의 두 배에서 청산, 미국 주식)",
 "Tras un fallo simple, sube # % de media (Bulkowski, acciones de EE.UU.)":"단일 실패 후 평균 # % 상승합니다(Bulkowski, 미국 주식)",
 "Tras un fallo simple, baja # % de media (Bulkowski, acciones de EE.UU.)":"단일 실패 후 평균 # % 하락합니다(Bulkowski, 미국 주식)",
+"Poner stop y objetivo":"스톱과 목표 놓기",
+"Quitar stop y objetivo":"스톱과 목표 지우기",
+"Gire para elegir la moneda":"돌려서 코인 선택",
+"Rentabilidad":"수익률",
+"Sin estrategia anotada":"기록된 전략 없음",
+"Anote la estrategia al registrar cada operación de prueba":"테스트 거래를 기록할 때 전략을 적어 두세요",
 
 "Línea horizontal":"수평선",
 "Línea vertical":"수직선",
@@ -137181,6 +137652,12 @@ DIC.zh={
 "En la prueba de Bulkowski gana el # % de las operaciones (salida al doble de la altura de la figura; acciones de EE.UU.)":"在Bulkowski的测试中，盈利交易占 # %（在形态高度的两倍处离场；美国股票）",
 "Tras un fallo simple, sube # % de media (Bulkowski, acciones de EE.UU.)":"单次失败后平均上涨 # %（Bulkowski，美国股票）",
 "Tras un fallo simple, baja # % de media (Bulkowski, acciones de EE.UU.)":"单次失败后平均下跌 # %（Bulkowski，美国股票）",
+"Poner stop y objetivo":"设置止损和目标",
+"Quitar stop y objetivo":"移除止损和目标",
+"Gire para elegir la moneda":"滚动选择币种",
+"Rentabilidad":"收益率",
+"Sin estrategia anotada":"未记录策略",
+"Anote la estrategia al registrar cada operación de prueba":"记录每笔测试交易时请写下策略",
 
 "Línea horizontal":"水平线",
 "Línea vertical":"垂直线",
