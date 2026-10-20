@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="79">
+<meta name="v" content="80">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -4807,6 +4807,232 @@ html .graf .gcab .gcw:not(.card79) .gcwl{padding:0 0 calc(var(--cwh) - 2px - var
 html .graf .gcab .gcw:not(.card79) .gci{scroll-snap-align:start}
 html .graf .glineas .ln .et b{position:absolute;right:0;bottom:calc(100% - 3px);width:var(--ax);box-sizing:border-box;padding:0 0 0 3px;margin:0;
   font-size:8px;line-height:9px;letter-spacing:.02em;-webkit-text-stroke:0;text-align:left;color:var(--lc);border:0;background:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* v80 · §138: la ★ de las filas que no son favoritas se ve más tenue (vacía), y sigue en su sitio */
+html .filaRn78 .rn78.card79 .gci:not(.on) .gcs:not(.on){opacity:.5}
+/* v80 · §139: tira «Para operar» al abrir «+ Nueva operación» (gráfica limpia) */
+.graf .tira80{display:flex;align-items:center;gap:10px;flex:none;margin:8px 12px 10px;padding:9px 10px 9px 12px;border-radius:14px;background:var(--b2,#1b2130);
+  border:1px solid color-mix(in srgb,var(--tx,#fff) 14%,transparent);box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.graf .tira80 .t80t{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px;font-size:12.5px;line-height:1.3;color:var(--t2,#b8c0d4)}
+.graf .tira80 .t80t b{color:var(--tx,#fff);font-size:13px}
+.graf .tira80 .t80b{flex:none;min-height:40px;padding:0 14px;font-size:13px;font-weight:800;white-space:normal;line-height:1.15;max-width:46%}
+.graf .tira80 .t80x{flex:none;width:30px;height:30px;border-radius:50%;border:1px solid color-mix(in srgb,var(--tx,#fff) 18%,transparent);background:transparent;color:var(--t2,#b8c0d4);font:600 15px system-ui;cursor:pointer;padding:0}
+@media (max-height:520px){ .graf .tira80{display:none} }
+
+/* ===================================================================
+   v80 · OPERACIONES EN LA GRÁFICA (§134/135/137) — v80_ops.js
+   =================================================================== */
+/* «Líneas finas»: sin caja de color; rayas finas (objetivo y stop a trazos, entrada punteada) desde la vela de entrada */
+.graf.opl80 .gsom.cjOp{background:none!important;box-shadow:none!important;opacity:1}
+.graf.opl80 .ln.cjOp.tp::before,.graf.opl80 .ln.cjOp.sl::before{border-top-width:1px;opacity:.85}
+.graf.opl80 .ln.cjOp.ent::before{border-top-width:1px;border-top-style:dotted;opacity:.8}
+.graf.opl80 .gsom.z76z b.z76{text-shadow:0 0 3px var(--b0),0 0 6px var(--b0)}
+/* la capa de encima de las velas: ▲ de entrada, ● de salida, la línea de puntos y «Entraste» */
+.graf .op80{position:absolute;inset:0;pointer-events:none;z-index:6;overflow:hidden}
+.graf .op80 .s80{position:absolute;left:0;top:0;overflow:visible}
+.graf .op80 .tri80{fill:var(--tx);stroke:var(--b0);stroke-width:1;opacity:.92}
+.graf .op80 .l80{stroke:var(--t2);stroke-width:1.2;stroke-dasharray:2 3;opacity:.8}
+.graf .op80 .pt80{stroke:var(--b0);stroke-width:1.5}
+.graf .op80 .pt80.u{fill:var(--upTx)}
+.graf .op80 .pt80.d{fill:var(--dnTx)}
+.graf .op80 .pt80.z{fill:var(--t2)}
+.graf .op80 .t80{position:absolute;display:flex;flex-direction:column;align-items:flex-end;gap:1px;white-space:nowrap;padding:3px 6px;border-radius:6px;font-size:10px;line-height:1.25;color:var(--t2);
+  background:color-mix(in srgb,var(--b0) 78%,transparent)}
+.graf .op80 .t80 b{color:var(--tx);font-weight:700}
+.graf .op80 .t80 span{font-weight:600}
+/* tocar un punto: zona cómoda para el dedo; el aro azul marca que su detalle está abierto */
+.graf .op80 .m80{position:absolute;pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.graf .op80 .m80.on::after{content:"";position:absolute;inset:8px;border:2px solid #7c8cff;border-radius:50%}
+.graf.conHerr .op80 .m80{pointer-events:none}
+.graf .op80 .op80c{position:absolute;left:50%;transform:translateX(-50%);width:min(312px,92%);box-sizing:border-box;padding:10px 12px 9px;border-radius:14px;pointer-events:auto;
+  background:var(--b1,#161c2c);color:var(--tx);border:1px solid color-mix(in srgb,var(--tx) 22%,transparent);box-shadow:0 8px 22px rgba(0,0,0,.55);font-size:11.5px;line-height:1.25;font-weight:600}
+.graf .op80 .op80c.aba{top:auto}
+.graf .op80c .h80{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-bottom:6px;margin-bottom:4px;border-bottom:1px solid color-mix(in srgb,var(--tx) 14%,transparent)}
+.graf .op80c .h80 b{font-size:12.5px;font-weight:800}
+.graf .op80c .g80{flex:none;font-size:13px}
+.graf .op80c .g80.u{color:var(--upTx)}
+.graf .op80c .g80.d{color:var(--dnTx)}
+.graf .op80c .r80{display:flex;justify-content:space-between;gap:12px;padding:3px 0}
+.graf .op80c .r80>span:first-child{color:var(--t3)}
+.graf .op80c .r80 b{color:var(--tx);font-weight:700}
+.graf .op80c .r80 em{font-style:normal;color:var(--t3)}
+.graf .op80c .b80{display:flex;gap:8px;margin-top:8px}
+.graf .op80c .b80 button{flex:1;min-height:38px;border-radius:10px;border:1px solid color-mix(in srgb,var(--tx) 20%,transparent);background:var(--b2,#222a3f);color:var(--tx);font:inherit;font-weight:700;cursor:pointer}
+
+/* §151 · «Promedio total» + «(ganadas y perdidas)» chiquito debajo (computadora y teléfono) */
+.met .cab span .et80{display:block;font-size:.72em;font-weight:500;opacity:.78;letter-spacing:0;margin-top:1px;line-height:1.15}
+#cuerpo .marc .mrcL .et80{display:block;font-size:7.5px;font-weight:500;opacity:.85;letter-spacing:0;line-height:1.1;margin-top:1px;text-transform:none}
+
+/* ===== v80 · CASAS (barra «Casa», caja «Mis casas», «Dónde la tiene») ===== */
+.casaB80{margin:0 0 12px;padding:8px 10px;border-radius:14px;border:1px solid var(--ln);background:var(--b1);display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.casaB80 .cb80{font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--t3)}
+.cr80{display:flex;flex-wrap:wrap;gap:6px}
+.cc80{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--ln);background:var(--b2);color:var(--tx);font:inherit;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.cc80 .casa{flex:none;border-radius:6px}
+.cc80.on{background:var(--tx);color:var(--b0);border-color:var(--tx)}
+.casaB80 .casaH80{flex-basis:100%;font-size:12px;line-height:1.35;color:var(--t2)}
+.casaT80{margin:0 0 14px;padding:12px 12px 6px;border-radius:16px;border:1px solid var(--ln);background:var(--b1)}
+.casaT80 .ct-h{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-bottom:4px}
+.casaT80 .ct-h b{font-size:12px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--t2)}
+.casaT80 .cr80{margin-left:auto}
+.hero .heC80{display:flex;align-items:center;gap:6px}
+.hero .heC80 .casa{flex:none;border-radius:6px}
+.hero .casaDe80{opacity:.8;font-size:.92em}
+.dt80{margin:12px 0 4px;padding:10px 10px 2px;border-radius:14px;border:1px solid var(--ln);background:var(--b2)}
+.dt80 .dh{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--t2);margin-bottom:8px}
+.dt80 .dh small{text-transform:none;letter-spacing:0;font-weight:500;color:var(--t3);font-size:11.5px}
+.dt80 .dl{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px;margin-bottom:8px;border-radius:12px;border:1px solid var(--ln);background:var(--b1);color:var(--tx);font:inherit;cursor:pointer}
+.dt80 .dl .casa{flex:none;border-radius:8px}
+.dt80 .dl .dx{flex:1;min-width:0}
+.dt80 .dl .dx b{display:block;font-size:14px}
+.dt80 .dl .dx i{display:block;font-style:normal;font-size:12px;color:var(--t2);margin-top:2px}
+.dt80 .dl .ch{color:var(--t3);font-size:20px;line-height:1}
+.dt80 .dl.cur{border-color:color-mix(in srgb,var(--tx) 45%,var(--ln))}
+.dt80 .dl .aq{font-style:normal;font-size:11px;font-weight:700;color:var(--t2)}
+/* tabla «Mis casas»: columnas fijas, sin el fondo de las tablas viejas */
+.casaT80 .ct-h{justify-content:space-between}
+.hero .casaDe80{font-size:12.5px;line-height:1.3}
+.casaT80 .cc80{height:28px;padding:0 10px;font-size:12.5px}
+.casaT80 .cc80 .casa{display:none}
+.casaT80 .ct-h{flex-wrap:nowrap}
+.casaT80 .cr80{margin-left:0;flex-wrap:nowrap;gap:5px}
+
+/* «Mis casas»: filas con rejilla (4 columnas fijas) para que las cifras nunca se corten */
+.casaT80 .ct{display:flex;flex-direction:column}
+.casaT80 .ctr{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1.05fr) minmax(0,.85fr) minmax(0,1.05fr);align-items:center;column-gap:6px;padding:10px 0;border-top:1px solid var(--ln);font-size:12.5px;text-align:right;white-space:nowrap}
+.casaT80 .ctr>span,.casaT80 .ctr>b{min-width:0}
+.casaT80 .ctr b{font-size:12.5px;font-weight:800}
+.casaT80 .ctr>.cn{justify-self:start;text-align:left;font-size:13.5px;font-weight:700;display:inline-flex;align-items:center;gap:7px;min-width:0}
+.casaT80 .ctr>.cn>span:last-child{overflow:hidden;text-overflow:ellipsis}
+.casaT80 .ctr.cth{border-top:0;padding:2px 0 6px;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--t3)}
+.casaT80 .ctr.cr{cursor:pointer}
+.casaT80 .ctr.cr.on{background:color-mix(in srgb,var(--tx) 7%,transparent);border-radius:8px}
+.casaT80 .ctr.ctt{border-top:2px solid var(--ln);font-weight:800}
+@media (min-width:480px){ .casaT80 .ctr{font-size:14px;column-gap:10px} .casaT80 .ctr b{font-size:14px} }
+
+.casaT80 .ctr.cr{padding-left:6px;padding-right:6px;margin:0 -6px}
+.casaT80 .ctr.cth{padding-left:6px;padding-right:6px;margin:0 -6px}
+
+/* «Dónde la tiene» dentro de la tarjeta de la moneda: sin caja propia, con la raya de arriba */
+.dt80.enT80{background:transparent;border:0;border-top:1px solid var(--ln);border-radius:0;margin:10px 0 6px;padding:10px 0 0}
+.dt80.enT80 .dl{background:var(--b2)}
+
+/* §155 · con un indicador «solo», sus dibujos (y la parte de la vertical que lo cruza) se agarran y se mueven; los del precio, que no se ve, siguen apagados */
+.graf.soloPanel .gmanij .gm[data-pn="1"]{visibility:visible!important;pointer-events:auto!important}
+.graf.soloPanel .gmanij .gm:not([data-pn="1"]){visibility:hidden!important;pointer-events:none!important}
+
+/* v80 · §138: la ★ de las filas que no son favoritas se ve más tenue (vacía), y sigue en su sitio */
+html .filaRn78 .rn78.card79 .gci:not(.on) .gcs:not(.on){opacity:.5}
+/* v80 · §139: tira «Para operar» al abrir «+ Nueva operación» (gráfica limpia) */
+.graf .tira80{display:flex;align-items:center;gap:10px;flex:none;margin:8px 12px 10px;padding:9px 10px 9px 12px;border-radius:14px;background:var(--b2,#1b2130);
+  border:1px solid color-mix(in srgb,var(--tx,#fff) 14%,transparent);box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.graf .tira80 .t80t{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px;font-size:12.5px;line-height:1.3;color:var(--t2,#b8c0d4)}
+.graf .tira80 .t80t b{color:var(--tx,#fff);font-size:13px}
+.graf .tira80 .t80b{flex:none;min-height:40px;padding:0 14px;font-size:13px;font-weight:800;white-space:normal;line-height:1.15;max-width:46%}
+.graf .tira80 .t80x{flex:none;width:30px;height:30px;border-radius:50%;border:1px solid color-mix(in srgb,var(--tx,#fff) 18%,transparent);background:transparent;color:var(--t2,#b8c0d4);font:600 15px system-ui;cursor:pointer;padding:0}
+@media (max-height:520px){ .graf .tira80{display:none} }
+
+/* ===================================================================
+   v80 · OPERACIONES EN LA GRÁFICA (§134/135/137) — v80_ops.js
+   =================================================================== */
+/* «Líneas finas»: sin caja de color; rayas finas (objetivo y stop a trazos, entrada punteada) desde la vela de entrada */
+.graf.opl80 .gsom.cjOp{background:none!important;box-shadow:none!important;opacity:1}
+.graf.opl80 .ln.cjOp.tp::before,.graf.opl80 .ln.cjOp.sl::before{border-top-width:1px;opacity:.85}
+.graf.opl80 .ln.cjOp.ent::before{border-top-width:1px;border-top-style:dotted;opacity:.8}
+.graf.opl80 .gsom.z76z b.z76{text-shadow:0 0 3px var(--b0),0 0 6px var(--b0)}
+/* la capa de encima de las velas: ▲ de entrada, ● de salida, la línea de puntos y «Entraste» */
+.graf .op80{position:absolute;inset:0;pointer-events:none;z-index:6;overflow:hidden}
+.graf .op80 .s80{position:absolute;left:0;top:0;overflow:visible}
+.graf .op80 .tri80{fill:var(--tx);stroke:var(--b0);stroke-width:1;opacity:.92}
+.graf .op80 .l80{stroke:var(--t2);stroke-width:1.2;stroke-dasharray:2 3;opacity:.8}
+.graf .op80 .pt80{stroke:var(--b0);stroke-width:1.5}
+.graf .op80 .pt80.u{fill:var(--upTx)}
+.graf .op80 .pt80.d{fill:var(--dnTx)}
+.graf .op80 .pt80.z{fill:var(--t2)}
+.graf .op80 .t80{position:absolute;display:flex;flex-direction:column;align-items:flex-end;gap:1px;white-space:nowrap;padding:3px 6px;border-radius:6px;font-size:10px;line-height:1.25;color:var(--t2);
+  background:color-mix(in srgb,var(--b0) 78%,transparent)}
+.graf .op80 .t80 b{color:var(--tx);font-weight:700}
+.graf .op80 .t80 span{font-weight:600}
+/* tocar un punto: zona cómoda para el dedo; el aro azul marca que su detalle está abierto */
+.graf .op80 .m80{position:absolute;pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.graf .op80 .m80.on::after{content:"";position:absolute;inset:8px;border:2px solid #7c8cff;border-radius:50%}
+.graf.conHerr .op80 .m80{pointer-events:none}
+.graf .op80 .op80c{position:absolute;left:50%;transform:translateX(-50%);width:min(312px,92%);box-sizing:border-box;padding:10px 12px 9px;border-radius:14px;pointer-events:auto;
+  background:var(--b1,#161c2c);color:var(--tx);border:1px solid color-mix(in srgb,var(--tx) 22%,transparent);box-shadow:0 8px 22px rgba(0,0,0,.55);font-size:11.5px;line-height:1.25;font-weight:600}
+.graf .op80 .op80c.aba{top:auto}
+.graf .op80c .h80{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-bottom:6px;margin-bottom:4px;border-bottom:1px solid color-mix(in srgb,var(--tx) 14%,transparent)}
+.graf .op80c .h80 b{font-size:12.5px;font-weight:800}
+.graf .op80c .g80{flex:none;font-size:13px}
+.graf .op80c .g80.u{color:var(--upTx)}
+.graf .op80c .g80.d{color:var(--dnTx)}
+.graf .op80c .r80{display:flex;justify-content:space-between;gap:12px;padding:3px 0}
+.graf .op80c .r80>span:first-child{color:var(--t3)}
+.graf .op80c .r80 b{color:var(--tx);font-weight:700}
+.graf .op80c .r80 em{font-style:normal;color:var(--t3)}
+.graf .op80c .b80{display:flex;gap:8px;margin-top:8px}
+.graf .op80c .b80 button{flex:1;min-height:38px;border-radius:10px;border:1px solid color-mix(in srgb,var(--tx) 20%,transparent);background:var(--b2,#222a3f);color:var(--tx);font:inherit;font-weight:700;cursor:pointer}
+
+/* §151 · «Promedio total» + «(ganadas y perdidas)» chiquito debajo (computadora y teléfono) */
+.met .cab span .et80{display:block;font-size:.72em;font-weight:500;opacity:.78;letter-spacing:0;margin-top:1px;line-height:1.15}
+#cuerpo .marc .mrcL .et80{display:block;font-size:7.5px;font-weight:500;opacity:.85;letter-spacing:0;line-height:1.1;margin-top:1px;text-transform:none}
+
+/* ===== v80 · CASAS (barra «Casa», caja «Mis casas», «Dónde la tiene») ===== */
+.casaB80{margin:0 0 12px;padding:8px 10px;border-radius:14px;border:1px solid var(--ln);background:var(--b1);display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.casaB80 .cb80{font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--t3)}
+.cr80{display:flex;flex-wrap:wrap;gap:6px}
+.cc80{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--ln);background:var(--b2);color:var(--tx);font:inherit;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.cc80 .casa{flex:none;border-radius:6px}
+.cc80.on{background:var(--tx);color:var(--b0);border-color:var(--tx)}
+.casaB80 .casaH80{flex-basis:100%;font-size:12px;line-height:1.35;color:var(--t2)}
+.casaT80{margin:0 0 14px;padding:12px 12px 6px;border-radius:16px;border:1px solid var(--ln);background:var(--b1)}
+.casaT80 .ct-h{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-bottom:4px}
+.casaT80 .ct-h b{font-size:12px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--t2)}
+.casaT80 .cr80{margin-left:auto}
+.hero .heC80{display:flex;align-items:center;gap:6px}
+.hero .heC80 .casa{flex:none;border-radius:6px}
+.hero .casaDe80{opacity:.8;font-size:.92em}
+.dt80{margin:12px 0 4px;padding:10px 10px 2px;border-radius:14px;border:1px solid var(--ln);background:var(--b2)}
+.dt80 .dh{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--t2);margin-bottom:8px}
+.dt80 .dh small{text-transform:none;letter-spacing:0;font-weight:500;color:var(--t3);font-size:11.5px}
+.dt80 .dl{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px;margin-bottom:8px;border-radius:12px;border:1px solid var(--ln);background:var(--b1);color:var(--tx);font:inherit;cursor:pointer}
+.dt80 .dl .casa{flex:none;border-radius:8px}
+.dt80 .dl .dx{flex:1;min-width:0}
+.dt80 .dl .dx b{display:block;font-size:14px}
+.dt80 .dl .dx i{display:block;font-style:normal;font-size:12px;color:var(--t2);margin-top:2px}
+.dt80 .dl .ch{color:var(--t3);font-size:20px;line-height:1}
+.dt80 .dl.cur{border-color:color-mix(in srgb,var(--tx) 45%,var(--ln))}
+.dt80 .dl .aq{font-style:normal;font-size:11px;font-weight:700;color:var(--t2)}
+/* tabla «Mis casas»: columnas fijas, sin el fondo de las tablas viejas */
+.casaT80 .ct-h{justify-content:space-between}
+.hero .casaDe80{font-size:12.5px;line-height:1.3}
+.casaT80 .cc80{height:28px;padding:0 10px;font-size:12.5px}
+.casaT80 .cc80 .casa{display:none}
+.casaT80 .ct-h{flex-wrap:nowrap}
+.casaT80 .cr80{margin-left:0;flex-wrap:nowrap;gap:5px}
+
+/* «Mis casas»: filas con rejilla (4 columnas fijas) para que las cifras nunca se corten */
+.casaT80 .ct{display:flex;flex-direction:column}
+.casaT80 .ctr{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1.05fr) minmax(0,.85fr) minmax(0,1.05fr);align-items:center;column-gap:6px;padding:10px 0;border-top:1px solid var(--ln);font-size:12.5px;text-align:right;white-space:nowrap}
+.casaT80 .ctr>span,.casaT80 .ctr>b{min-width:0}
+.casaT80 .ctr b{font-size:12.5px;font-weight:800}
+.casaT80 .ctr>.cn{justify-self:start;text-align:left;font-size:13.5px;font-weight:700;display:inline-flex;align-items:center;gap:7px;min-width:0}
+.casaT80 .ctr>.cn>span:last-child{overflow:hidden;text-overflow:ellipsis}
+.casaT80 .ctr.cth{border-top:0;padding:2px 0 6px;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--t3)}
+.casaT80 .ctr.cr{cursor:pointer}
+.casaT80 .ctr.cr.on{background:color-mix(in srgb,var(--tx) 7%,transparent);border-radius:8px}
+.casaT80 .ctr.ctt{border-top:2px solid var(--ln);font-weight:800}
+@media (min-width:480px){ .casaT80 .ctr{font-size:14px;column-gap:10px} .casaT80 .ctr b{font-size:14px} }
+
+.casaT80 .ctr.cr{padding-left:6px;padding-right:6px;margin:0 -6px}
+.casaT80 .ctr.cth{padding-left:6px;padding-right:6px;margin:0 -6px}
+
+/* «Dónde la tiene» dentro de la tarjeta de la moneda: sin caja propia, con la raya de arriba */
+.dt80.enT80{background:transparent;border:0;border-top:1px solid var(--ln);border-radius:0;margin:10px 0 6px;padding:10px 0 0}
+.dt80.enT80 .dl{background:var(--b2)}
+
+/* §155 · con un indicador «solo», sus dibujos (y la parte de la vertical que lo cruza) se agarran y se mueven; los del precio, que no se ve, siguen apagados */
+.graf.soloPanel .gmanij .gm[data-pn="1"]{visibility:visible!important;pointer-events:auto!important}
+.graf.soloPanel .gmanij .gm:not([data-pn="1"]){visibility:hidden!important;pointer-events:none!important}
 
 /*V76CSS>>*/
 
@@ -23795,7 +24021,7 @@ function sel68Abrir(s){
    Cada cambio se ve al instante en la gráfica; «Cancelar» lo devuelve todo, «Ok» lo deja. Lo mismo que antes guardaba el panel
    de Ajustes (BD.ajustes: gTipo, gGrid, gDec, gEsc, gInv, gLey, gLin, velaUp/Dn/Bu/Bd/Mu/Md, velaPrev): ahora está todo aquí, en un solo lugar.
    =================================================================== */
-var AJ68_CLAVES=["gTipo","gGrid","gDec","gEsc","gInv","gLey","gLin","gMM","gCD","velaUp","velaDn","velaBu","velaBd","velaMu","velaMd","velaPrev","qBloq","opFalta","zEtQue","zEtDonde","zEtSl","zEtTp","resalte","msgTodos","cruzDedo","dibComp","zEtRR","zEtForma"];      /* v74 · ptos 52, 56, 57 y 40 */
+var AJ68_CLAVES=["gTipo","gGrid","gDec","gEsc","gInv","gLey","gLin","gMM","gCD","velaUp","velaDn","velaBu","velaBd","velaMu","velaMd","velaPrev","qBloq","opFalta","zEtQue","zEtDonde","zEtSl","zEtTp","resalte","msgTodos","cruzDedo","dibComp","zEtRR","zEtForma","opVivo80","opCerr80","opDias80"];      /* v74 · ptos 52, 56, 57 y 40 */
 var AJ68_TAB="simbolo";
 var AJ68_IC={
   simbolo:'<path d="M7 3.5v3M7 17.5v3M5 6.5h4v11H5zM17 2.5v4M17 14.5v5M15 6.5h4v8h-4z"/>',
@@ -23901,6 +24127,7 @@ function ajustesVentana68(E){
       h+=fsw68("Compartir los dibujos entre Spot, Futuros y Backtesting", "data-adib", !!a.dibComp, "Apagado: cada pantalla tiene sus propios dibujos.");      /* v75 · pto 63 */
       h+=fsw68("Dibujar con la cruz", "data-acruz", a.cruzDedo!==false, "En el teléfono: un dedo mueve solo la cruz y un toque pone el punto; dos dedos mueven la gráfica.");      /* v74 · pto 40 */
       h+=f68("Color de lo elegido", selAj68("data-ares", [["","Neutro (blanco pálido)"],["tema","Color del tema"]], (a.resalte==="tema")?"tema":""));      /* v74 · pto 57 */
+      h+=(typeof ajOps80==="function") ? ajOps80(E) : "";      /* v80 · operaciones en la gráfica */
       h+=t68("Mensajes");      /* v74 · pto 56 */
       h+=fsw68("Mensajes de confirmación", "data-amsg", !!a.msgTodos, "Los avisos de abajo como «Agregado», «Listo» u «Operación abierta». Apagado: esos no salen; los importantes, sí.");
       return h;
@@ -23921,6 +24148,7 @@ function ajustesVentana68(E){
     },
     alClic:function(ev, d, pintar){
       var t=ev.target, b;
+      if(typeof ajOpsClic80==="function" && ajOpsClic80(t, aplicar, pintar)) return;      /* v80 */
       if((b=t.closest("[data-vdef]"))){
         m68DeBoton([{txt:tr("Restablecer los ajustes de la gráfica"), fn:restablecer}], b); return;
       }
@@ -23957,6 +24185,7 @@ function ajustesVentana68(E){
       if(t.hasAttribute("data-adib")){ BD.ajustes.dibComp=!!t.checked; if(t.checked) dibJuntar75(); else dibSeparar75(); aplicar(); return; }      /* v75 · pto 63 */
       if(t.hasAttribute("data-ares")){ if(t.value) BD.ajustes.resalte=t.value; else delete BD.ajustes.resalte; aplicar(); return; }      /* v74 · pto 57 */
       if(t.hasAttribute("data-acruz")){ BD.ajustes.cruzDedo=!!t.checked; guarda(); return; }      /* v74 · pto 40 */
+      if(typeof ajOpsCambio80==="function" && ajOpsCambio80(t, aplicar)) return;      /* v80 */
       if(t.hasAttribute("data-amsg")){ BD.ajustes.msgTodos=!!t.checked; guarda(); return; }      /* v74 · pto 56 */
     }
   });
@@ -24103,10 +24332,10 @@ function filaRueda68(s, actual, merc){
   var fav=false; try{ fav=favsEs67(s); }catch(e){}
   var on=(s===actual), nom="";
   try{ var nn=nombreDe(s); if(nn && String(nn).toUpperCase()!==s) nom='<span class="gcn" translate="no">'+esc(nn)+'</span>'; }catch(e0){}
-  var est=(on||fav)
-    ? (on ? '<i class="gcs'+(fav?" on":"")+'" role="button" data-fav="'+esc(s)+'" title="'+esc(tr(fav?"Quitar de favoritas":"Agregar a favoritas"))+'" aria-label="'+esc(tr(fav?"Quitar de favoritas":"Agregar a favoritas"))+'">'+estrella67(fav)+'</i>'
-            : '<i class="gcs on" aria-hidden="true">'+estrella67(true)+'</i>')
-    : '';
+  /* v80 · §138 (Luis, 19 oct, foto 1 aprobada): la ★ sale en TODAS las filas, en el mismo sitio (dorada = favorita, vacía = no) y al tocarla se agrega o se quita;
+     así las cifras de cada fila quedan en columnas parejas (antes solo la fila elegida y las favoritas la llevaban y las demás quedaban corridas) */
+  var tit=esc(tr(fav?"Quitar de favoritas":"Agregar a favoritas"));
+  var est='<i class="gcs'+(fav?" on":"")+'" role="button" data-fav="'+esc(s)+'" title="'+tit+'" aria-label="'+tit+'">'+estrella67(fav)+'</i>';
   return '<div class="gci'+(on?" on":"")+'" role="option" aria-selected="'+(on?"true":"false")+'" data-cs="'+esc(s)+'">'+
     '<span class="gcx">'+icono(s,18)+'<b translate="no">'+esc(s)+'</b>'+nom+'</span>'+
     ((merc && typeof celdas79==="function") ? celdas79(merc, s) : '')+est+'</div>';
@@ -25219,7 +25448,7 @@ function cajaDe70(E, op, val, lado){
   function xp(i){ return (i-i0v+0.5)/cu*100; }
   var xa=xp(i0), xb=Math.max(xp(i1), xa+100/cu);
   var vis=!(xa>=100 || xb<=0);
-  var r={oculta:false, vis:vis, x0:100, x1:100, fin:null};
+  var r={oculta:false, vis:vis, x0:100, x1:100, fin:null, i0:i0, i1:i1, xa:xa, xb:xb};      /* v80 · i0/i1: velas de entrada y de salida; xa/xb: su sitio en %, sin recortar a la pantalla */
   if(vis){ r.x0=Math.max(0,xa); r.x1=Math.min(100, xb); }
   if(vis && fin){
     var xf=xp(fin.i);
@@ -29550,21 +29779,10 @@ function cerPrep79(E){
   try{ var v0=vOrig.call(op), raw=op.caja(); c.liq=(motivo70(raw, v0||{}, op.lado?op.lado():"LONG")==="liq"); }catch(e){ c.liq=false; }
   op.valores=function(){
     var v=vOrig.apply(this, arguments); if(!v) return v;
-    if(ocuEstado79(E)) return {};                       /* oculta: la gráfica pide lo mismo que la de la moneda sola */
-    /* la caja cae fuera de lo que se está mirando: no estira la escala. Se mide con el «fin» ya acomodado a las velas
-       (al cambiar de intervalo la gráfica pide esto ANTES de acomodarlo y, sin esto, la caja tardaba segundos en salir) */
-    var svF=E.fin;
-    try{
-      var nV=E.velas?E.velas.length:0, f=svF;
-      if(f==null && E.cuantas>0 && typeof huecoIni==="function") f=nV+huecoIni(E.cuantas);   /* recién cambiado de intervalo: «fin» aún vacío = pegada al final */
-      if(f!=null && typeof limitarFin==="function"){
-        E.fin=limitarFin(E, f);
-        var cj=cajaDe70(E, op, v, op.lado?op.lado():"LONG"); if(cj && cj.oculta===false && cj.vis===false){ E.fin=svF; return {}; }
-      }
-    }catch(e){}
-    E.fin=svF;
-    if(c.liq) return v;
-    var o=Object.assign({}, v); o.liq=null; return o;     /* cerrada: la liquidación no se dibuja si no fue así como terminó */
+    /* v80 · §134/135: una operación CERRADA ya no dibuja caja, rayas ni etiquetas en la escala (ni con «Ver la operación»):
+       la gráfica pide lo mismo que la de la moneda sola. Lo suyo son dos puntos (▲ entrada, ● salida) que dibuja v80_ops.js
+       con la entrada, la salida y las fechas de la operación; vOrig (los valores de verdad) se guarda en cer79.vOrig para el detalle. */
+    return {};
   };
 }
 /* la fila de abajo: «Operación cerrada · ✗ Te sacó el stop · −$0,18» + el botón */
@@ -29649,6 +29867,31 @@ vigilarCierres=function(){
    PC y teléfono acostado no tienen ese botón (el formulario está en la página): no cambian.
    =================================================================== */
 var NUEVA79={tok:0};
+/* v80 · §139: la tira «Para operar»: la ve hasta 3 veces; con la ✕ no vuelve a salir. */
+var TIRA80_CLAVE="cripto_tira_nueva80";
+function tira80Veces(){ try{ return parseInt(localStorage.getItem(TIRA80_CLAVE),10)||0; }catch(e){ return 0; } }
+function tira80Poner(n){ try{ localStorage.setItem(TIRA80_CLAVE, String(n)); }catch(e){} }
+function nueva80Tira(E){
+  var c=E && E.cont; if(!c || c.querySelector(".tira80") || tira80Veces()>=3) return;
+  var d=document.createElement("div"); d.className="tira80"; d.setAttribute("role","note");
+  d.innerHTML='<div class="t80t"><b>'+esc(tr("Para operar"))+'</b><span>'+esc(tr("Toque Dibujar y elija Largo o Corto."))+'</span></div>'+
+    '<button type="button" class="b ac t80b">'+esc(tr("Dibujar mi operación"))+'</button>'+
+    '<button type="button" class="t80x" title="'+esc(tr("No mostrar más este aviso"))+'" aria-label="'+esc(tr("No mostrar más este aviso"))+'">✕</button>';
+  c.appendChild(d);
+  tira80Poner(tira80Veces()+1);
+  function quitar(){ try{ d.remove(); }catch(e){} try{ dibujar(E); }catch(e1){} }
+  d.querySelector(".t80x").addEventListener("click", function(ev){ ev.stopPropagation(); tira80Poner(99); quitar(); });
+  d.querySelector(".t80b").addEventListener("click", function(ev){
+    ev.stopPropagation(); quitar();
+    try{ if(!E.herr) elegirHerramienta(E, (typeof FU!=="undefined" && FU && FU.lado==="SHORT") ? "corto" : "largo"); }catch(e2){ if(window.console) console.error(e2); }
+  });
+  /* si la persona elige una herramienta por su cuenta (Dibujar), la tira ya no hace falta */
+  var tm=setInterval(function(){
+    if(!document.body.contains(d)){ clearInterval(tm); return; }
+    if(E.herr){ clearInterval(tm); quitar(); }
+  }, 300);
+  requestAnimationFrame(function(){ try{ dibujar(E); }catch(e3){} });
+}
 function nueva79Armar(k, s, tok, intento){
   if(tok!==NUEVA79.tok) return;                                            /* ya hubo otro toque: este se olvida */
   var E=(typeof GRAF!=="undefined") ? GRAF : null;
@@ -29656,7 +29899,8 @@ function nueva79Armar(k, s, tok, intento){
   if(listo){
     if(E.herr) return;                                                     /* ya tiene una herramienta elegida */
     if(typeof vista!=="undefined" && vista!==k) return;                    /* se salió de la pantalla */
-    try{ elegirHerramienta(E, (typeof FU!=="undefined" && FU && FU.lado==="SHORT") ? "corto" : "largo"); }catch(e){ if(window.console) console.error(e); }
+    /* v80 · §139 (Luis 19 oct, foto aprobada): la gráfica se abre LIMPIA, sin armar la caja sola; una tira corta (con ✕) dice cómo operar y trae un botón que la arma */
+    try{ nueva80Tira(E); }catch(e){ if(window.console) console.error(e); }
     return;
   }
   if(intento>=45) return;                                                  /* unos 7 s: si no cargó, la gráfica queda a secas y se arma con «Largo» o «Corto» */
@@ -30328,6 +30572,661 @@ pintarBarra=function(E){
   return r;
 };
 window.addEventListener("resize", function(){ try{ if(typeof GRAF!=="undefined" && GRAF) burbAplicar79(GRAF); }catch(e){} });
+
+/* v80 · varios (lista de monedas, estadísticas) */
+
+/* §151 · la letra chica que va debajo del nombre de una cifra de las estadísticas (Luis, 19 oct: «promedio total» y, chiquito, «(ganadas y perdidas)»).
+   Un solo sitio: aquí se dice a qué cifras les toca y qué dice. Lo usan met() (computadora) y tiraMarcador() (teléfono). */
+var ET80={"Promedio total":"(ganadas y perdidas)"};
+function et80(nombre){
+  var t=ET80[nombre]; if(!t) return "";
+  return '<small class="et80">'+esc(t)+'</small>';
+}
+
+/* ===================================================================
+   §155 · Luis, 19 oct 21:49: «cuando trazo una línea sobre un indicador… solo me permite colocar y no mover… debería permitirme mover la línea como a mí se me antoje».
+   Causa: con UN indicador «solo» (doble toque en el panel; es la foto de Luis) la v68 esconde y apaga TODA la capa de manijas (.gmanij) para que no se agarre
+   nada del precio, que no se ve; con ella se apagaban también las de los dibujos del panel. Ahora las piezas tocables de los dibujos del panel
+   (y la parte de la vertical que cruza el panel) llevan data-pn="1" y esas SÍ se agarran; las del precio siguen apagadas.
+   =================================================================== */
+(function(){
+  if(typeof pnPintar73==="function"){
+    var pn0=pnPintar73;
+    pnPintar73=function(E, W){
+      var r=pn0.apply(this, arguments)||[];
+      r.forEach(function(p){ p.pn=1; });
+      return r;
+    };
+  }
+  if(typeof pintarPartes==="function"){
+    var pp0=pintarPartes;
+    pintarPartes=function(E, lista){
+      var r=pp0.apply(this, arguments);
+      try{
+        var mapa=E.mapa||{};
+        (lista||[]).forEach(function(p){
+          var el=mapa[p.z+":"+p.k]; if(!el) return;
+          if(p.pn){ if(el.getAttribute("data-pn")!=="1") el.setAttribute("data-pn","1"); }
+          else if(el.hasAttribute("data-pn")) el.removeAttribute("data-pn");
+        });
+      }catch(e){}
+      return r;
+    };
+  }
+})();
+
+/* ===================================================================
+   v80 · OPERACIONES EN LA GRÁFICA (Luis, 19 oct 18:44, 18:48, 19:25 y 19:46 · §134, §135, §137 · fotos N1, N2 y N3 aprobadas)
+   ---------------------------------------------------------------------
+   · OPERACIÓN EN MARCHA («Líneas finas», de fábrica): sin caja de color. Raya fina del objetivo (verde) y del stop (rojo), la de la
+     entrada punteada, desde la vela donde entró; el % chico junto a cada raya; un ▲ en la vela de entrada y «Entraste · día y hora»
+     debajo, sin tapar nada. Las etiquetas OBJ. / ENTRÓ / STOP / LIQ. de la escala se quedan como siempre.
+   · OPERACIÓN CERRADA: ni caja ni rayas ni etiquetas en la escala. Solo dos puntos: ▲ donde entró y ● donde salió (verde si ganó,
+     rojo si perdió), unidos por una línea de puntos. Al tocar uno sale su detalle (cómo cerró, entrada, salida, stop y objetivo) con
+     «Quitar» (se va para siempre de la gráfica, la operación sigue en el Historial) y «Ocultar» (solo por ahora; la fila de abajo
+     trae «Ver la operación»).
+   · AJUSTES › Lienzo › «Operaciones en la gráfica»: la operación en marcha se ve como Líneas finas · Caja de color · Nada; las
+     cerradas, Siempre · Unos días (1, 3, 7 o 30, contados desde que se cierra) · Nunca. «Volver a ponerlas» trae las quitadas.
+   · §137: el % de una raya no queda cruzado por la raya blanca de HOY: se aparta de ella.
+   UN SOLO LUGAR para todo lo que se puede cambiar: el objeto OPS80 de abajo y los tres ajustes (opVivo80, opCerr80, opDias80).
+   =================================================================== */
+var OPS80={
+  dias:[1,3,7,30], diasFab:3,          /* «Unos días»: cuántos días se ven las cerradas, contados desde que se cerró */
+  tocar:34,                            /* lado (px) de la zona que se toca alrededor de cada punto */
+  tri:5, rad:4.5,                      /* medio ancho del ▲ y radio del ● (px) */
+  gapTag:5,                            /* aire entre la raya de entrada y «Entraste» */
+  cardTop:34, cardAlto:190,            /* a qué altura sale el detalle (px desde arriba de la gráfica) y lo que mide más o menos */
+  cardAbajo:66                         /* si sale abajo: a cuántos px del fondo, para no quedar debajo de los botones + y − */
+};
+function opVivo80(){ var v=(BD.ajustes||{}).opVivo80; return (v==="caja"||v==="nada") ? v : "lineas"; }
+function opCerr80(){ var v=(BD.ajustes||{}).opCerr80; return (v==="siempre"||v==="nunca") ? v : "dias"; }
+function opDias80(){ var d=+(BD.ajustes||{}).opDias80; return OPS80.dias.indexOf(d)>=0 ? d : OPS80.diasFab; }
+
+/* ---- lo «quitado» (se recuerda: es la misma lista que guardó la v79 con «Ocultar la operación») ---- */
+function quitN80(){ try{ return Object.keys(ocuLeer79()).length; }catch(e){ return 0; } }
+function quitTodas80(){ try{ localStorage.removeItem(OCU79_CLAVE); }catch(e){} }
+function quitPoner80(E){
+  var c=E && E.cer79; if(!c || !c.clave) return;
+  try{ var o=ocuLeer79(); o[c.clave]=1; localStorage.setItem(OCU79_CLAVE, JSON.stringify(o)); }catch(e){}
+}
+/* ¿ya pasaron los días que eligió? (sin hora de cierre cuenta hasta el final de ese día) */
+function cer80Vence(E){
+  var m=opCerr80(); if(m==="siempre") return false; if(m==="nunca") return true;
+  var raw=null; try{ raw=E.op.caja(); }catch(e){ return false; }
+  if(!raw || !raw.b) return false;
+  var fin=raw.b.t+(raw.b.ex ? 0 : 864e5);
+  return Date.now() > fin+opDias80()*864e5;
+}
+/* ¿los puntos de esta operación cerrada están ocultos ahora? Lo de «por ahora» (c.sesion) manda; luego lo quitado; luego Ajustes. */
+ocuEstado79=function(E){
+  var c=E && E.cer79; if(!c) return false;
+  if(c.sesion!=null) return !!c.sesion;
+  if(c.clave){ try{ if(ocuLeer79()[c.clave]) return true; }catch(e){} }
+  return cer80Vence(E);
+};
+ocuPoner79=function(E, v){ var c=E && E.cer79; if(c) c.sesion=!!v; };       /* el botón de abajo: solo por ahora */
+
+/* ---- cómo cerró y la frase de abajo: «Cerrada · Objetivo · +$43,67» ---- */
+var MOT80={objetivo:"Objetivo", stop:"Stop", liq:"Liquidación", mano:"A mano"};
+function cer80Valores(E){ try{ return (E.cer79 && E.cer79.vOrig) ? (E.cer79.vOrig.call(E.op)||{}) : {}; }catch(e){ return {}; } }
+function cer80Motivo(E){
+  try{ return motivo70(E.op.caja(), cer80Valores(E), E.op.lado ? E.op.lado() : "LONG"); }catch(e){ return "mano"; }
+}
+function cer80Gan(E){
+  try{ var vv=(E.cer79.f && typeof estadoOp==="function") ? estadoOp(E.cer79.f) : null; return (vv && vv.gan!=null && isFinite(vv.gan)) ? vv.gan : null; }catch(e){ return null; }
+}
+function cer80Usd(g){ return (g>=0?"+":"−")+usdF(Math.abs(g)); }
+cerTexto79=function(E){
+  var t=tr("Cerrada")+" · "+tr(MOT80[cer80Motivo(E)]||"A mano"), g=cer80Gan(E);
+  if(g!=null) t+=" · "+cer80Usd(g);
+  return t;
+};
+
+/* ---- día y hora, en el idioma de la persona ---- */
+function ops80Fecha(a){
+  if(!a || !(a.t>0)) return "";
+  var d=new Date(a.t), loc, o={weekday:"short", day:"numeric", month:"short"};
+  try{ loc=(typeof localeNumeros==="function") ? localeNumeros() : undefined; }catch(e){ loc=undefined; }
+  if(d.getFullYear()!==new Date().getFullYear()) o.year="2-digit";
+  var s=""; try{ s=d.toLocaleDateString(loc, o).replace(/,/g, ""); }catch(e1){ s=d.toDateString(); }       /* «dom 18 oct», sin la coma del navegador */
+  if(a.ex) s+=" · "+P(d.getHours())+":"+P(d.getMinutes());
+  return s;
+}
+
+/* ---- qué operación hay en esta gráfica ---- */
+function ops80Tipo(E){
+  var op=E && E.op; if(!op || !op.soloVer || typeof op.caja!=="function" || typeof op.lado!=="function") return null;
+  if(E.cer79) return "cerrada";
+  var raw=null; try{ raw=op.caja(); }catch(e){ return null; }
+  if(raw && raw.estado==="cerrada") return "cerrada";            /* aún no la ha visto v79 (primer dibujo): ya se marca como cerrada en el siguiente */
+  return (raw && raw.estado==="abierta") ? "abierta" : null;
+}
+/* «Nada»: mientras se dibuja o se calcula la escala, la operación en marcha pide lo mismo que la gráfica de la moneda sola */
+function ops80Envolver(E){
+  var op=E && E.op; if(!op || op._v80 || typeof op.valores!=="function") return;
+  op._v80=true;
+  var v0=op.valores;
+  op.valores=function(){
+    var v=v0.apply(this, arguments);
+    return (E.nada80on && v) ? {} : v;
+  };
+}
+function ops80Nada(E){
+  try{ return opVivo80()==="nada" && ops80Tipo(E)==="abierta"; }catch(e){ return false; }
+}
+(function(){
+  var _calc=calcularEscala;
+  calcularEscala=function(E){
+    var n=false; try{ if(E && E.op){ ops80Envolver(E); n=ops80Nada(E); if(n) E.nada80on=true; } }catch(e){}
+    try{ return _calc.apply(this, arguments); } finally { if(n) E.nada80on=false; }
+  };
+  var _dib=dibujar;
+  dibujar=function(E){
+    var n=false; try{ if(E && E.op){ ops80Envolver(E); n=ops80Nada(E); if(n) E.nada80on=true; } }catch(e){}
+    var r;
+    try{ r=_dib.apply(this, arguments); } finally { if(n) E.nada80on=false; }
+    try{ ops80Pinta(E); }catch(e2){ if(window.console) console.error(e2); }
+    try{ ops80Etiquetas(E); }catch(e3){ if(window.console) console.error(e3); }
+    return r;
+  };
+})();
+
+/* ---- dónde van los puntos ---- */
+function ops80Zona(E, z){
+  var w=z.clientWidth, H=(E.escH||0)*100; if(!(H>0)) H=z.clientHeight;
+  return {w:w, h:H, hz:z.clientHeight};
+}
+function ops80Plan(E, z){
+  var tipo=ops80Tipo(E); if(!tipo) return null;
+  var op=E.op, lado=op.lado(), Z=ops80Zona(E, z), raw=null;
+  try{ raw=op.caja(); }catch(e){ return null; }
+  if(!raw || !E.velas || !E.velas.length || !(E.cuantas>0) || !(Z.w>0)) return null;
+  var W=E.anchoV||Z.w;
+  if(tipo==="abierta"){
+    if(opVivo80()!=="lineas") return null;
+    var val=op.valores()||{};
+    var cj=cajaDe70(E, op, val, lado); if(!cj || cj.oculta || !cj.vis) return null;
+    var pE=val.entrada>0 ? val.entrada : raw.p0;
+    if(!(pE>0) || cj.xa<0 || cj.xa>100) return null;
+    var x=cj.xa/100*W, y=pxDeP(E, pE);
+    if(!(y>=0 && y<=Z.h)) return null;
+    var ys=[]; if(val.sl>0) ys.push(pxDeP(E, val.sl)); if(val.tp>0) ys.push(pxDeP(E, val.tp));
+    return {k:"abierta", lado:lado, x:x, y:y, ys:ys, a:raw.a, Z:Z};
+  }
+  /* cerrada */
+  if(!E.cer79 || ocuEstado79(E)) return null;
+  var cj2=cajaDe70(E, op, {}, lado); if(!cj2 || cj2.oculta) return null;
+  var vo=cer80Valores(E), pE2=raw.p0>0 ? raw.p0 : vo.entrada, pS=raw.p1>0 ? raw.p1 : null;
+  var P={k:"cerrada", lado:lado, Z:Z, a:raw.a, b:raw.b, pE:pE2, pS:pS};
+  if(pE2>0 && cj2.xa>=0 && cj2.xa<=100){ var ye=pxDeP(E, pE2); if(ye>=0 && ye<=Z.h){ P.e={x:cj2.xa/100*W, y:ye}; } }
+  var n=E.velas.length, ms=msInter(E), futuro=!!(raw.b && raw.b.t>=E.velas[n-1].t+ms && E.rp && E.rp.activo);
+  if(pS>0 && raw.b && !futuro && cj2.xb>=0 && cj2.xb<=100){ var ys2=pxDeP(E, pS); if(ys2>=0 && ys2<=Z.h){ P.s={x:cj2.xb/100*W, y:ys2}; } }
+  return (P.e || P.s) ? P : null;
+}
+
+/* ---- dibujo: la capa de encima de las velas ---- */
+function ops80Capa(z){
+  var L=z.querySelector(".op80");
+  if(!L){ L=document.createElement("div"); L.className="op80"; z.appendChild(L); }
+  return L;
+}
+function ops80Tri(x, y, corto){
+  var t=OPS80.tri;
+  return corto ? '<path class="tri80" d="M'+(x-t)+' '+(y-4)+' L'+(x+t)+' '+(y-4)+' L'+x+' '+(y+6)+' Z"/>'
+               : '<path class="tri80" d="M'+(x-t)+' '+(y+4)+' L'+(x+t)+' '+(y+4)+' L'+x+' '+(y-6)+' Z"/>';
+}
+function ops80Pinta(E){
+  var c=E && E.cont, z=c && c.querySelector(".gzona"); if(!z) return;
+  var tipo=null; try{ tipo=ops80Tipo(E); }catch(e0){ tipo=null; }
+  c.classList.toggle("opl80", tipo==="abierta" && opVivo80()==="lineas");
+  var plan=null; try{ plan=ops80Plan(E, z); }catch(e){ if(window.console) console.error(e); }
+  var L=z.querySelector(".op80");
+  if(!plan){ if(L) L.remove(); E.card80=false; return; }
+  L=ops80Capa(z);
+  var corto=(plan.lado==="SHORT"), h='<svg class="s80" width="'+plan.Z.w+'" height="'+plan.Z.hz+'" aria-hidden="true">', hit="";
+  if(plan.k==="abierta"){
+    h+=ops80Tri(plan.x, plan.y, corto)+'</svg>';
+    h+='<div class="t80" data-t80><b>'+(corto?'▼ ':'▲ ')+esc(tr("Entraste"))+'</b><span>'+esc(ops80Fecha(plan.a))+'</span></div>';
+    L.innerHTML=h;
+    ops80Etiqueta(L, plan);
+    return;
+  }
+  /* cerrada */
+  var g=cer80Gan(E), cls=(g==null||Math.abs(g)<1e-9) ? "z" : (g>0 ? "u" : "d");
+  if(plan.e && plan.s) h+='<line class="l80" x1="'+plan.e.x+'" y1="'+plan.e.y+'" x2="'+plan.s.x+'" y2="'+plan.s.y+'"/>';
+  if(plan.e){ h+=ops80Tri(plan.e.x, plan.e.y, corto); hit+=ops80Toque(plan.e, "e", E.card80); }
+  if(plan.s){ h+='<circle class="pt80 '+cls+'" cx="'+plan.s.x+'" cy="'+plan.s.y+'" r="'+OPS80.rad+'"/>'; hit+=ops80Toque(plan.s, "s", E.card80); }
+  h+='</svg>'+hit;
+  var card=L.querySelector(".op80c");
+  L.innerHTML=h;
+  if(card && E.card80) L.appendChild(card);             /* el detalle abierto no se vuelve a armar en cada repintado: un toque a medias no se pierde */
+  [].forEach.call(L.querySelectorAll(".m80"), function(m){
+    ["pointerdown","dblclick"].forEach(function(n){ m.addEventListener(n, function(ev){ ev.stopPropagation(); }); });
+    m.addEventListener("click", function(ev){ ev.stopPropagation(); E.card80=!E.card80; ops80Pinta(E); });
+  });
+  if(E.card80){ if(!L.querySelector(".op80c")) ops80Card(E, L, plan, cls, g); }
+  else { var k=L.querySelector(".op80c"); if(k) k.remove(); }
+}
+function ops80Toque(p, k, on){
+  var t=OPS80.tocar;
+  return '<i class="m80'+(on?' on':'')+'" data-m="'+k+'" role="button" tabindex="-1" aria-label="'+esc(tr(k==="e"?"Entrada":"Salida"))+'" style="left:'+(p.x-t/2).toFixed(1)+'px;top:'+(p.y-t/2).toFixed(1)+'px;width:'+t+'px;height:'+t+'px"></i>';
+}
+/* «▲ Entraste» va debajo de la raya de entrada, pegado a la izquierda de la vela; si ahí no cabe, a la derecha; arriba si debajo no hay sitio */
+function ops80Etiqueta(L, plan){
+  var t=L.querySelector(".t80"); if(!t) return;
+  var w=t.offsetWidth, h=t.offsetHeight, Z=plan.Z, y=plan.y, gap=OPS80.gapTag;
+  var sobre=y, bajo=Z.h-y;
+  plan.ys.forEach(function(q){ if(q<y) sobre=Math.min(sobre, y-q); else if(q>y) bajo=Math.min(bajo, q-y); });
+  var abajo=(bajo>=h+gap+4) || (bajo>=sobre);
+  var top=abajo ? y+gap : y-gap-h;
+  top=Math.max(2, Math.min(Z.h-h-2, top));
+  var left=plan.x-9-w; if(left<4) left=plan.x+9;
+  t.style.left=Math.round(left)+"px"; t.style.top=Math.round(top)+"px";
+}
+
+/* ---- el detalle de una operación cerrada ---- */
+function ops80Fila(k, v, v2){ return '<div class="r80"><span>'+esc(tr(k))+'</span><span><b>'+v+'</b>'+(v2?' <em>'+v2+'</em>':'')+'</span></div>'; }
+function ops80Card(E, L, plan, cls, g){
+  var raw=null; try{ raw=E.op.caja(); }catch(e){ raw=null; } if(!raw) return;
+  var vo=cer80Valores(E), mt=cer80Motivo(E), corto=(plan.lado==="SHORT");
+  var msg=(typeof CAJA70_FIN==="object" && CAJA70_FIN[mt]) ? tr(CAJA70_FIN[mt].rg[1]) : tr("Cerrada a mano");
+  var pr=function(p){ return (p>0 && typeof precioEt==="function") ? esc(precioEt(p)) : ""; };
+  var h='<div class="h80"><b>'+esc(tr(corto?"CORTO":"LARGO"))+' · '+esc(msg)+'</b>'+(g!=null?'<b class="g80 '+cls+'">'+esc(cer80Usd(g))+'</b>':'')+'</div>';
+  h+=ops80Fila("Entrada", esc(ops80Fecha(raw.a)), pr(plan.pE));
+  if(raw.b) h+=ops80Fila("Salida", esc(ops80Fecha(raw.b)), pr(plan.pS));
+  if(vo.sl>0 || vo.tp>0) h+=ops80Fila("Stop / Objetivo", vo.sl>0 ? pr(vo.sl) : "—", vo.tp>0 ? "/ "+pr(vo.tp) : "/ —");
+  h+='<div class="b80"><button type="button" data-q80>'+'🗑 '+esc(tr("Quitar"))+'</button><button type="button" data-o80>'+'👁 '+esc(tr("Ocultar"))+'</button></div>';
+  /* arriba si los puntos están más abajo que el detalle (así no los tapa); si no, abajo, por encima de los botones + y − */
+  var ys=[]; if(plan.e) ys.push(plan.e.y); if(plan.s) ys.push(plan.s.y);
+  var k=document.createElement("div"); k.className="op80c"+(Math.min.apply(null, ys) < OPS80.cardTop+OPS80.cardAlto+16 ? " aba" : "");
+  if(k.classList.contains("aba")) k.style.bottom=OPS80.cardAbajo+"px"; else k.style.top=OPS80.cardTop+"px";
+  k.innerHTML=h; k._E=E;
+  ["pointerdown","click","dblclick","touchstart"].forEach(function(n){ k.addEventListener(n, function(ev){ ev.stopPropagation(); }); });
+  k.querySelector("[data-q80]").addEventListener("click", function(){ quitPoner80(E); ops80Cerrar(E, true); });
+  k.querySelector("[data-o80]").addEventListener("click", function(){ ops80Cerrar(E, true); });
+  L.appendChild(k);
+}
+/* cierra el detalle; con «ocultar», además esconde los puntos (por ahora; si venía de «Quitar», ya quedó guardado) */
+function ops80Cerrar(E, ocultar){
+  if(!E) return;
+  E.card80=false;
+  if(ocultar && E.cer79) E.cer79.sesion=true;
+  try{ dibujar(E); }catch(e){ if(window.console) console.error(e); }
+}
+(function(){
+  if(window._ops80) return; window._ops80=true;
+  /* un toque fuera del detalle (y fuera de sus puntos) lo cierra */
+  document.addEventListener("pointerdown", function(ev){
+    var K=document.querySelectorAll(".op80c"); if(!K.length) return;
+    [].forEach.call(K, function(k){
+      if(k.contains(ev.target)) return;
+      var m=ev.target && ev.target.closest ? ev.target.closest(".m80") : null;
+      if(m && k.parentNode && k.parentNode.contains(m)) return;
+      if(k._E) ops80Cerrar(k._E, false);
+    });
+  }, true);
+})();
+
+/* ---- §137 · el % de cada raya, fino y sin que lo cruce la raya de HOY ---- */
+function ops80Etiquetas(E){
+  var c=E && E.cont, L=c && c.querySelector(".glineas"), z=c && c.querySelector(".gzona"); if(!L || !z) return;
+  var G=L.querySelectorAll(".gsom.z76z"); if(!G.length) return;
+  var lineas=c.classList.contains("opl80"), zr=z.getBoundingClientRect();
+  var base=zr.top+((E.escH||0)>0 ? E.escH*100 : zr.height);
+  var hoy=L.querySelector(".ln.ahora"), yH=null;
+  if(hoy){ var hr=hoy.getBoundingClientRect(); yH=hr.top+hr.height/2; }
+  [].forEach.call(G, function(g){
+    var b=g.querySelector("b.z76"); if(!b) return;
+    var sube=g.classList.contains("lt76");           /* su raya es el borde de arriba de la franja */
+    function poner(fuera, dy){ b.style.translate="0 calc("+(fuera ? (sube ? "-100% - 2px" : "100% + 2px") : "0px")+" + "+(dy||0)+"px)"; }
+    function choca(){ if(yH==null) return false; var r=b.getBoundingClientRect(); return r.bottom>yH-2 && r.top<yH+2; }
+    function cabe(){ var r=b.getBoundingClientRect(); return r.top>=zr.top+2 && r.bottom<=base-2; }
+    var fuera=false;
+    poner(false, 0);
+    if(lineas && g.classList.contains("cjOp")){                /* «Líneas finas»: el % va fuera de la franja, pegado a su raya, si ahí cabe y no lo cruza HOY */
+      poner(true, 0);
+      if(cabe() && !choca()) fuera=true; else poner(false, 0);
+    }
+    if(choca()){                                     /* de ningún lado se libra: se corre lo justo para quedar pegado a la raya de HOY */
+      var r=b.getBoundingClientRect(), abajo=(yH+2)-r.top, arriba=(yH-2)-r.bottom;
+      poner(fuera, Math.abs(abajo)<=Math.abs(arriba) ? abajo : arriba);
+    }
+  });
+}
+
+/* ---- AJUSTES › Lienzo › «Operaciones en la gráfica» (se pone en v68_menus por inyectar_v80.py) ---- */
+function ajOps80(E){
+  var h=t68("Operaciones en la gráfica");
+  var grupo=function(tit, desc, ctl){
+    return '<div class="v68r"><span class="v68l an"><span class="v68ln"><b>'+esc(tr(tit))+'</b><small>'+esc(tr(desc))+'</small></span></span></div><div class="v68blq">'+ctl+'</div>';
+  };
+  var o=function(a, tx){ return [a, esc(tr(tx))]; };
+  h+=grupo("Operación en marcha", "Cómo se ve mientras está abierta.", seg68("data-aov80", [o("lineas","Líneas finas"), o("caja","Caja de color"), o("nada","Nada")], opVivo80()));
+  h+=grupo("Operaciones cerradas", "Los puntos de entrada y salida.", seg68("data-aoc80", [o("siempre","Siempre"), o("dias","Unos días"), o("nunca","Nunca")], opCerr80()));
+  h+='<div class="v68r" data-aod80'+(opCerr80()==="dias" ? '' : ' hidden')+'><span class="v68l an"><span class="v68ln"><b>'+esc(tr("Quitarlas solas a los"))+'</b><small>'+esc(tr("Se cuentan desde que se cierra la operación."))+'</small></span></span><div class="v68k">'+
+     selAj68("data-aod80s", OPS80.dias.map(function(d){ return [d, d+" "+(d===1?"día":"días")]; }), opDias80())+'</div></div>';
+  var n=quitN80();
+  if(n) h+='<div class="v68r"><span class="v68l an"><span class="v68ln"><b>'+esc(tr("Operaciones quitadas")+": "+n)+'</b></span></span><div class="v68k"><button type="button" class="b sm" data-aoq80>'+esc(tr("Volver a ponerlas"))+'</button></div></div>';
+  return h;
+}
+/* devuelve true si el toque era de esta sección */
+function ajOpsClic80(t, aplicar, pintar){
+  var b;
+  if((b=t.closest("[data-aov80]"))){ BD.ajustes.opVivo80=b.getAttribute("data-aov80"); aplicar(); pintar(); return true; }
+  if((b=t.closest("[data-aoc80]"))){ BD.ajustes.opCerr80=b.getAttribute("data-aoc80"); aplicar(); pintar(); return true; }
+  if((b=t.closest("[data-aoq80]"))){ quitTodas80(); aplicar(); pintar(); return true; }
+  return false;
+}
+function ajOpsCambio80(t, aplicar){
+  if(t.hasAttribute && t.hasAttribute("data-aod80s")){ BD.ajustes.opDias80=+t.value; aplicar(); return true; }
+  return false;
+}
+
+/* ===================================================================
+   v80 · CASAS DE CAMBIO (§142–§147; Luis, 19 oct 2026)
+   «Cuando uno cambia de casa de cambio no es como que se estuviera nuevamente en cero… son casas diferentes y no se deben mezclar.
+    Si pulsa Binance, le auto redirige todo a Binance: resumen, spot, futuros, backtest.»
+
+   Cada casa es una CUENTA APARTE. Lo que se ve en pantalla (Resumen, Spot, Futuros, Backtesting) es o «Todas» (todo junto, como siempre) o UNA casa.
+   · Qué casa tiene cada registro:   casaOp80(o)  → la que dice «casa»; si no dice ninguna, la CASA DE ANTES (casaBase80)
+   · Qué se está viendo:             casaVer80()  → "" (Todas) o la clave de una casa (BINANCE, BITGET…)
+   · La pulsa el usuario en la barra «CASA · Todas | Binance | Bitget» (o en «Mis casas» del Resumen): elegirCasaVista80(k)
+     Elegir una casa también pasa los precios y las compras nuevas a esa casa (es lo que ya hacía «EN VIVO · casa»).
+   · De fábrica se ve «Todas»: quien no toque nada ve exactamente lo de siempre.
+   · Los cálculos (estadoDe, carteraSpot0, efectivoDet0, futurosDet, carteraFut0, listas…) usan opsV80()/casaOk80()/futV80() — los parches
+     están en inyectar_v80.py. Para sacar la cuenta de OTRA casa sin cambiar la pantalla: conCasa80(clave, función).
+   =================================================================== */
+var CV80={over:null};          /* casa que se fuerza un momento (conCasa80); null = la que eligió el usuario */
+
+/* la «casa de antes»: la de los registros que nunca anotaron casa. Se decide UNA vez y queda guardada en Ajustes:
+   · nadie anotó casa nunca → la casa de ahora · una sola casa anotada → esa · varias → Binance (si está) */
+function casaBase80(){
+  var a=BD.ajustes||(BD.ajustes={});
+  if(a.casaBase80 && CASAS[a.casaBase80]) return a.casaBase80;
+  var E={}, n=0, add=function(k){ k=String(k||"").toUpperCase(); if(k && CASAS[k] && !E[k]){ E[k]=1; n++; } };
+  (BD.ops||[]).forEach(function(o){ add(o.casa); });
+  (BD.fut||[]).forEach(function(f){ add(f.casa); });
+  (BD.pruebas||[]).forEach(function(p){ add(p.casa); });
+  (BD.ordenes||[]).forEach(function(o){ add(o.casa); });
+  var b = !n ? casaGlobal() : (n===1 ? Object.keys(E)[0] : (E.BINANCE ? "BINANCE" : Object.keys(E)[0]));
+  a.casaBase80=b;
+  return b;
+}
+/* «binance», "BITGET", "" … → clave de CASAS (las que no están en la lista son «OTRA»; sin casa = la casa de antes) */
+function casaClave80(k){
+  k=String(k||"").toUpperCase();
+  if(!k) return casaBase80();
+  return CASAS[k] ? k : "OTRA";
+}
+/* la casa de la prueba de Backtesting: la que tiene anotada o, si no, la que sale de su comisión (igual que cfgPrueba/casaDeOp) */
+function casaPrueba80(p){
+  if(!p) return casaBase80();
+  var k=p.casa;
+  if(!k){ try{ k=comisionDe(p.casa, p.orden, p.com).casa; }catch(e){ k=""; } }
+  return casaClave80(k);
+}
+/* la casa de UN registro: compra/venta/dinero de spot, operación de futuros, de backtesting u orden programada */
+function casaOp80(o){
+  if(!o) return casaBase80();
+  var k=o.casa;
+  if(!k && o.prueba){
+    var p=(BD.pruebas||[]).filter(function(x){ return x.id===o.prueba; })[0];
+    if(p) return casaPrueba80(p);
+  }
+  return casaClave80(k);
+}
+/* lo que se está viendo: "" = Todas · o la clave de la casa */
+function casaVer80(){
+  if(CV80.over!==null) return CV80.over;
+  var v=(typeof BD!=="undefined" && BD && BD.ajustes) ? BD.ajustes.casaVer : "";
+  if(!v || v==="TODAS") return "";
+  return CASAS[v] ? v : "";
+}
+function casaOk80(o){ var k=casaVer80(); return !k || casaOp80(o)===k; }
+function opsV80(){ var k=casaVer80(); return k ? BD.ops.filter(function(o){ return casaOp80(o)===k; }) : BD.ops; }
+function ordV80(){ var L=BD.ordenes||[], k=casaVer80(); return k ? L.filter(function(o){ return casaOp80(o)===k; }) : L; }
+/* las operaciones de Futuros (BD.fut) o de TODAS las pruebas (BD.back) solo se recortan si llega la lista entera; la lista de una prueba ya viene de su casa */
+function futV80(f){
+  var k=casaVer80();
+  if(!k || (f!==BD.fut && f!==BD.back)) return f;
+  return f.filter(function(x){ return casaOp80(x)===k; });
+}
+function pruebasV80(){ var k=casaVer80(), L=BD.pruebas||[]; return k ? L.filter(function(p){ return casaPrueba80(p)===k; }) : L; }
+
+/* saca una cuenta «como si se mirara» otra casa ("" = Todas), sin cambiar lo que hay en pantalla */
+function conCasa80(k, fn){
+  var a=CV80.over, m=MEMO;
+  CV80.over=k||"";
+  try{ MEMO=null; return fn(); }
+  finally{ CV80.over=a; MEMO=m; }
+}
+
+/* las casas que tienen algo (en el orden de la lista de casas: Binance primero) */
+function casasConDatos80(){
+  var s={};
+  (BD.ops||[]).forEach(function(o){ s[casaOp80(o)]=1; });
+  (BD.fut||[]).forEach(function(f){ s[casaOp80(f)]=1; });
+  (BD.pruebas||[]).forEach(function(p){ s[casaPrueba80(p)]=1; });
+  (BD.ordenes||[]).forEach(function(o){ s[casaOp80(o)]=1; });
+  return Object.keys(CASAS).filter(function(k){ return s[k]; });
+}
+/* las casas de la barra: las que tienen algo + la que está elegida (aunque todavía esté vacía) */
+function casasBarra80(){
+  var L=casasConDatos80(), v=casaVer80();
+  if(v && L.indexOf(v)<0){ L.push(v); L.sort(function(a,b){ return Object.keys(CASAS).indexOf(a)-Object.keys(CASAS).indexOf(b); }); }
+  return L;
+}
+/* la barra y «Mis casas» solo salen si hay dónde elegir (dos o más casas con algo) */
+function hayCasas80(){ return casasConDatos80().length>=2; }
+
+/* elegir qué casa se ve. «Todas»: todo junto. Una casa: los precios y las compras nuevas pasan a ella (lo que hacía «EN VIVO · casa»). */
+function elegirCasaVista80(k){
+  var a=BD.ajustes;
+  if(!k || k==="TODAS"){
+    a.casaVer="TODAS"; guardar();
+    try{ repintar(); }catch(e){}
+    return;
+  }
+  if(!CASAS[k]) return;
+  a.casaVer=k;
+  if(k!==casaGlobal()){ cambiarCasa(k); }      /* guarda, trae los precios de esa casa y repinta */
+  else { guardar(); try{ repintar(); }catch(e){} }
+}
+/* si ya se está viendo UNA casa y la casa de ahora cambia por otro lado (Ajustes, «EN VIVO»), la pantalla la sigue */
+(function(){
+  var _cc=cambiarCasa;
+  cambiarCasa=function(k){
+    try{ if(casaVer80() && CASAS[k]) BD.ajustes.casaVer=k; }catch(e){}      /* antes de repintar: la pantalla ya nace con la casa nueva */
+    return _cc.apply(this, arguments);
+  };
+})();
+
+/* ===================================================================
+   LA BARRA «CASA · Todas | Binance | Bitget» (Spot, Futuros y Backtesting) y la caja «MIS CASAS» del Resumen
+   Solo salen si hay dónde elegir (dos o más casas con algo). Tocar una casa pasa TODA la aplicación a esa casa; «Todas» lo junta todo, como siempre.
+   =================================================================== */
+function chipsCasa80(){
+  var v=casaVer80(), h='<button type="button" class="cc80'+(!v?' on':'')+'" data-casa80="TODAS">'+esc(tr("Todas"))+'</button>';
+  casasBarra80().forEach(function(k){
+    h+='<button type="button" class="cc80'+(v===k?' on':'')+'" data-casa80="'+k+'">'+logoCasa(k,18)+'<span translate="no">'+esc(nombreCasa(k))+'</span></button>';
+  });
+  return h;
+}
+function barraCasa80(){
+  if(!hayCasas80() && !casaVer80()) return "";      /* si se está viendo UNA casa, la barra queda para poder volver a «Todas» aunque ya no haya dónde elegir */
+  var v=casaVer80();
+  return '<div class="casaB80" id="casaB80"><span class="cb80">'+esc(tr("Casa"))+'</span><div class="cr80">'+chipsCasa80()+'</div>'+
+    (v ? '<div class="casaH80">'+esc(tr("Se ve solo lo de §. Todo el programa cambia con esta casa.").replace("§", nombreCasa(v)))+'</div>' : '')+'</div>';
+}
+/* lo que vale cada casa: spot y futuros (k = "" → Todas) */
+function resCasa80(k){
+  return conCasa80(k, function(){ var T=todoSuDinero(); return {s:T.spot.total, f:T.fut.total}; });
+}
+/* las filas de «Mis casas». Cada cifra va en centavos y las partes suman EXACTO lo de «Todas»: si sobra o falta un centavo por redondear, lo lleva la casa más grande */
+function filasCasas80(){
+  var rows=casasConDatos80().map(function(k){ var r=resCasa80(k); return {k:k, s:cent(r.s), f:cent(r.f)}; });
+  var T=resCasa80(""), ts=cent(T.s), tf=cent(T.f);
+  [["s",ts],["f",tf]].forEach(function(c){
+    var suma=rows.reduce(function(a,r){ return a+r[c[0]]; },0), d=cent(c[1]-suma);
+    if(Math.abs(d)>=0.005 && Math.abs(d)<=0.05 && rows.length){
+      rows.slice().sort(function(a,b){ return b[c[0]]-a[c[0]]; })[0][c[0]]=cent(rows.slice().sort(function(a,b){ return b[c[0]]-a[c[0]]; })[0][c[0]]+d);
+    }
+  });
+  rows.forEach(function(r){ r.t=cent(r.s+r.f); });
+  return {rows:rows, todas:{s:ts, f:tf, t:cent(ts+tf)}};
+}
+function cajaMisCasas80(){
+  if(!hayCasas80() && !casaVer80()) return "";
+  var v=casaVer80(), F=filasCasas80();
+  var fila=function(k, nom, r, cls){
+    return '<div class="ctr '+cls+((k==="TODAS"?!v:v===k)?' on':'')+'" data-casa80="'+k+'" role="button" tabindex="0"><span class="cn">'+(k==="TODAS"?'':logoCasa(k,22))+
+      '<span'+(k==="TODAS"?'':' translate="no"')+'>'+esc(nom)+'</span></span><span class="mono">'+usd(r.s)+'</span><span class="mono">'+usd(r.f)+'</span><b class="mono">'+usd(r.t)+'</b></div>';
+  };
+  return '<div class="casaT80" id="casaT80"><div class="ct-h"><b>'+esc(tr("Mis casas"))+'</b><div class="cr80">'+chipsCasa80()+'</div></div>'+
+    '<div class="ct"><div class="ctr cth"><span></span><span>'+esc(tr("Spot"))+'</span><span>'+esc(tr("Futuros"))+'</span><span>'+esc(tr("Total"))+'</span></div>'+
+    F.rows.map(function(r){ return fila(r.k, nombreCasa(r.k), r, "cr"); }).join("")+
+    fila("TODAS", tr("Todas"), F.todas, "cr ctt")+'</div></div>';
+}
+/* pone o quita lo de las casas en la pantalla de ahora (se puede repetir sin problema) */
+function casaPoner80(){
+  var c=document.getElementById("cuerpo"); if(!c) return;
+  [].forEach.call(c.querySelectorAll("#casaB80,#casaT80"), function(e){ if(e.parentNode) e.parentNode.removeChild(e); });
+  if(!hayCasas80() && !casaVer80()) return;
+  var v=(typeof vista!=="undefined") ? vista : "";
+  if(v==="res"){
+    var cima=c.querySelector(".cima");
+    if(cima) cima.insertAdjacentHTML("afterend", cajaMisCasas80());
+  } else if(v==="spot" || v==="fut" || v==="back"){
+    c.insertAdjacentHTML("afterbegin", barraCasa80());
+  }
+}
+(function(){
+  ["pintarRes","pintarSpot","pintarFut","pintarBack"].forEach(function(n){
+    var f0=window[n]; if(typeof f0!=="function") return;
+    window[n]=function(){ var r=f0.apply(this, arguments); try{ casaPoner80(); }catch(e){ if(window.console) console.error(e); } return r; };
+  });
+  /* las cifras de «Mis casas» siguen al precio (la caja se rehace como mucho cada 2 s) */
+  var ult=0, rv0=refrescarVivos;
+  refrescarVivos=function(){
+    var r=rv0.apply(this, arguments);
+    try{
+      var t=document.getElementById("casaT80");
+      if(t && Date.now()-ult>2000){ ult=Date.now(); var d=document.createElement("div"); d.innerHTML=cajaMisCasas80(); if(d.firstChild) t.parentNode.replaceChild(d.firstChild, t); }
+    }catch(e){}
+    return r;
+  };
+  /* tocar una casa (chip o fila) pasa toda la aplicación a esa casa */
+  document.addEventListener("click", function(ev){
+    var b=ev.target && ev.target.closest ? ev.target.closest("[data-casa80]") : null;
+    if(!b) return;
+    ev.preventDefault();
+    elegirCasaVista80(b.getAttribute("data-casa80"));
+  });
+})();
+
+/* los títulos de las cajas de arriba dicen de qué casa son (solo cuando se ve UNA casa y hay más de una) */
+(function(){
+  var cual=function(){ return casaVer80(); };
+  var hg0=heroGrande;
+  heroGrande=function(titulo){
+    var v=cual(), a=[].slice.call(arguments);
+    if(v && titulo==="TODO SU DINERO") a[0]=tr("TODO SU DINERO EN §").replace("§", nombreCasa(v).toUpperCase());
+    return hg0.apply(this, a);
+  };
+  var hr0=heroResultado;
+  heroResultado=function(titulo){
+    var v=cual(), a=[].slice.call(arguments);
+    if(v && titulo==="RESULTADO EN FUTUROS") a[0]=tr("RESULTADO EN FUTUROS")+" · "+nombreCasa(v).toUpperCase();
+    return hr0.apply(this, a);
+  };
+  var hs0=heroSpot;
+  heroSpot=function(S, D){
+    var h=hs0.apply(this, arguments), v=cual();
+    if(!v) return h;
+    var todas=conCasa80("", function(){ var T=todoSuDinero(); return T.spot.total; });
+    h=h.replace('<div class="he">TODO SU SPOT</div>', '<div class="he heC80">'+logoCasa(v,18)+'<span>'+esc(tr("TODO SU SPOT EN §").replace("§", nombreCasa(v).toUpperCase()))+'</span></div>');
+    h=h.replace(/(<div class="hD">[^<]*<\/div>)/, '$1<div class="hD casaDe80">'+esc(tr("de "+usd(todas)+" en todas las casas"))+'</div>');
+    return h;
+  };
+})();
+
+/* ===================================================================
+   «DÓNDE LA TIENE» (ficha de una moneda): una línea por casa con cuánto tiene, su precio promedio y desde cuándo. Tocar una casa pasa la aplicación
+   a esa casa y deja abierta la ficha de la moneda con SUS compras (fecha, cantidad, precio).
+   =================================================================== */
+/* lo que tiene de una moneda en cada casa (solo las casas donde hoy tiene algo; vacío si está en una sola) */
+function casasDe80(sym){
+  sym=String(sym||"").toUpperCase();
+  var ks={}; BD.ops.forEach(function(o){ if(String(o.sym).toUpperCase()===sym && !esDinero(o)) ks[casaOp80(o)]=1; });
+  var L=Object.keys(CASAS).filter(function(k){ return ks[k]; }), R=[];
+  L.forEach(function(k){
+    var e=conCasa80(k, function(){ return estadoDe(sym); });
+    if(!(e.cantidad>1e-12)) return;
+    var d0=e.ops.filter(function(o){ return o.tipo!=="venta"; }).map(function(o){ return o.fecha||""; }).sort()[0];
+    R.push({k:k, cant:e.cantidad, costo:e.costo, prom:e.promedio, desde:d0||""});
+  });
+  return R.length>=2 ? R : [];
+}
+/* «Dónde la tiene»: una línea por casa (cantidad · precio promedio · desde cuándo · ›). Tocar una casa pasa la aplicación a esa casa y abre
+   el detalle de la moneda con SUS compras. Sale en la tarjeta de la moneda (Spot, Resumen) y en la ficha (detalle). */
+function dondeTiene80(sym, enTarjeta){
+  var R=casasDe80(sym); if(!R.length) return "";
+  var v=casaVer80(), S=String(sym).toUpperCase();
+  return '<div class="dt80'+(enTarjeta?' enT80':'')+'"'+(enTarjeta?'':' id="dt80"')+'><div class="dh">'+esc(tr("Dónde la tiene"))+(enTarjeta?'':' <small>· '+esc(tr("toque una casa para ver sus compras"))+'</small>')+'</div>'+R.map(function(r){
+    var aqui=(v===r.k);
+    return '<button type="button" class="dl'+(aqui?' cur':'')+'" data-dc80="'+r.k+'" data-sym80="'+esc(S)+'"'+(aqui?' aria-current="true"':'')+'>'+logoCasa(r.k,28)+
+      '<span class="dx"><b><span translate="no">'+esc(nombreCasa(r.k))+'</span> · <span class="mono" translate="no">'+cant(r.cant)+' '+esc(S)+'</span></b>'+
+      '<i>'+esc(tr("prom."))+' '+precioC(r.prom)+(r.desde?' · '+esc(tr("desde"))+' '+esc(fechaCorta(r.desde)):'')+'</i></span>'+
+      (aqui?'<em class="aq">'+esc(tr("esta casa"))+'</em>':'<span class="ch">›</span>')+'</button>';
+  }).join("")+'</div>';
+}
+function dondeTieneCard80(sym){ return dondeTiene80(sym, true); }
+document.addEventListener("click", function(ev){
+  var b=ev.target && ev.target.closest ? ev.target.closest("[data-dc80]") : null;
+  if(!b) return;
+  ev.preventDefault();
+  var k=b.getAttribute("data-dc80"), sym=b.getAttribute("data-sym80") || ((typeof MIRANDO==="string" && MIRANDO) ? MIRANDO : "");
+  if(!sym || k===casaVer80()) return;
+  try{ cerrar(); }catch(e){}
+  elegirCasaVista80(k);
+  setTimeout(function(){ try{ verMoneda(sym); }catch(e){} }, 60);
+});
+
+/* ===================================================================
+   LA LÍNEA DE «CÓMO VA» (histórico) Y LAS CASAS
+   · Lo que se guarda cada día/minuto es SIEMPRE el total de «Todas» (se mire la casa que se mire: si no, mirar Bitget borraría la línea de Todas).
+   · Además se anota lo de cada casa (cs) para poder dibujar la línea de UNA casa. Los días de antes no tienen ese dato y no se inventan.
+   =================================================================== */
+(function(){
+  var ah0=anotarHistTot;
+  anotarHistTot=function(){
+    var h=BD.histTot||[], antes=h[h.length-1], r;
+    r=conCasa80("", function(){ return ah0.apply(this, arguments); });
+    try{
+      if(!hayCasas80()) return r;
+      var cs={};
+      casasConDatos80().forEach(function(k){
+        var v=conCasa80(k, function(){ return {t:+todoSuDinero().total.toFixed(2), m:+carteraSpot().tot.valor.toFixed(2)}; });
+        cs[k]=v;
+      });
+      var d=BD.histDia&&BD.histDia[BD.histDia.length-1], u=BD.histTot&&BD.histTot[BD.histTot.length-1];
+      if(d && d.d===hoy()) d.cs=cs;
+      if(u && u!==antes) u.cs=cs;
+    }catch(e){}
+    return r;
+  };
+  var s0=serieDe2;
+  serieDe2=function(campo, ahora){
+    var k=casaVer80();
+    if(!k || !hayCasas80()) return s0.call(this, campo, ahora);
+    var d0=BD.histDia, h0=BD.histTot;
+    try{
+      BD.histDia=(d0||[]).filter(function(x){ return x.cs && x.cs[k]; }).map(function(x){ return {d:x.d, t:x.cs[k].t, m:x.cs[k].m}; });
+      BD.histTot=(h0||[]).filter(function(x){ return x.cs && x.cs[k]; }).map(function(x){ return {t:x.t, v:x.cs[k].t, m:x.cs[k].m}; });
+      return s0.call(this, campo, ahora);
+    } finally { BD.histDia=d0; BD.histTot=h0; }
+  };
+})();
 
 /*V76>>*/
 function calcularEscala(estado){
@@ -31550,7 +32449,7 @@ function cent(x){ return x==null||!isFinite(x) ? x : Math.round(x*100+(x>=0?1e-7
 function estadoDe(sym){
   var S=String(sym).toUpperCase();
   var ops=ordenarSpot76(BD.ops.filter(function(o){      /* v76 · pto 75 H1 */
-    return String(o.sym).toUpperCase()===S;
+    return String(o.sym).toUpperCase()===S && casaOk80(o);      /* v80 · la casa que se ve */
   }));
   var cantidad=0, costo=0, realizado=0, comprado=0, vendido=0, nCompras=0, nVentas=0, com=0, volumen=0;
   var porOp={}, compras=[];
@@ -31650,8 +32549,8 @@ function carteraSpot(){ if(!MEMO) return carteraSpot0(); return MEMO.s||(MEMO.s=
    mismo orden y ordenar 5.000 registros cuesta; mientras dura un refresco se
    ordenan UNA vez. */
 function opsEnOrden(){
-  if(!MEMO) return ordenarMovimientos(BD.ops);
-  return MEMO.o||(MEMO.o=ordenarMovimientos(BD.ops));
+  if(!MEMO) return ordenarMovimientos(opsV80());      /* v80 · la casa que se ve */
+  return MEMO.o||(MEMO.o=ordenarMovimientos(opsV80()));
 }
 function efectivoDet(){ if(!MEMO) return efectivoDet0(); return MEMO.e||(MEMO.e=efectivoDet0()); }
 function carteraFut(fuente){
@@ -31660,7 +32559,7 @@ function carteraFut(fuente){
 }
 function carteraSpot0(){
   var s={};
-  BD.ops.forEach(function(o){
+  opsV80().forEach(function(o){      /* v80 · la casa que se ve */
     if(!o.sym || o.tipo==="traspaso" || esEstable(o.sym)) return;
     s[String(o.sym).toUpperCase()]=1;
   });
@@ -31768,7 +32667,7 @@ function efectivo(){ return efectivoDet().total; }
    igual que pasa en Binance (y como ya pasaba en Backtesting). */
 function futurosDet(){
   var entro=0, salio=0;
-  BD.ops.forEach(function(o){
+  opsV80().forEach(function(o){      /* v80 · la casa que se ve */
     if(o.tipo==="traspaso"){
       if(o.a==="fut") entro+=montoDinero(o);
       else if(o.de==="fut") salio+=montoDinero(o);
@@ -32008,7 +32907,7 @@ function textoDeDonde(G){
 }
 /* Ventas de monedas de verdad: sacar USDT a su banco NO es una venta */
 function nVentasSpot(){
-  return BD.ops.filter(function(o){ return o.tipo==="venta" && !esDinero(o); }).length;
+  return opsV80().filter(function(o){ return o.tipo==="venta" && !esDinero(o); }).length;
 }
 function cambio24(S){
   /* v45 · el «24 h» que da Binance es de hoy contra AYER: si una moneda subió
@@ -32035,7 +32934,7 @@ function cambio24Total(){
   return {usd:ch.usd, pct: ayer>0 ? ch.usd/ayer*100 : null};
 }
 function diasInvertido(){
-  var f=BD.ops.filter(function(o){ return o.tipo!=="venta"&&o.fecha; })
+  var f=opsV80().filter(function(o){ return o.tipo!=="venta"&&o.fecha; })
               .map(function(o){ return o.fecha; }).sort();
   if(!f.length) return 0;
   return diasDesde(f[0]);
@@ -32044,7 +32943,7 @@ function diasInvertido(){
    En futuros se cuentan solo las CERRADAS, que es lo ya pagado del todo;
    lo de las abiertas se lleva aparte porque todavía está en curso. */
 function comisionesDet(){
-  var spot=BD.ops.reduce(function(a,o){ return a+(+o.com||0); },0);
+  var spot=opsV80().reduce(function(a,o){ return a+(+o.com||0); },0);
   var F=carteraFut(BD.fut);
   return {spot:spot, fut:F.tot.comision, futAbiertas:F.tot.comisionAb,
           total: spot+F.tot.comision};
@@ -32452,7 +33351,7 @@ function estadoOp(f){
 }
 
 function carteraFut0(fuente){
-  var lista=(fuente||[]).map(estadoOp);
+  var lista=(futV80(fuente)||[]).map(estadoOp);      /* v80 · la casa que se ve */
   /* las PROGRAMADAS no entran en ningún total: todavía no ha entrado en ellas */
   var programadas=lista.filter(function(e){ return e.programada; });
   var cerradas=lista.filter(function(e){ return !e.abierta&&!e.programada&&e.pct!=null; });
@@ -32850,7 +33749,7 @@ function guardarCfgReal(c){
     if(Math.abs(dif)>=0.005){
       BD.ops.push({id:idNuevo(), sym:"USDT", tipo:dif>0?"compra":"venta",
         cant:Math.round(Math.abs(dif)*100)/100, precio:1, com:0, fecha:hoy(),
-        bolsillo:"fut", ajuste:true, nota:"Ajuste de la cartera de futuros",
+        bolsillo:"fut", ajuste:true, nota:"Ajuste de la cartera de futuros", casa:casaGlobal(),
         mod:ahoraReal()});
     }
   }
@@ -32899,9 +33798,10 @@ function migrarCarteraFut(){
   BD.ajustes.futMigrada=1;
 }
 function pruebaActiva(){
-  if(!BD.pruebas.length) return null;
+  var L=pruebasV80();      /* v80 · las pruebas de la casa que se ve */
+  if(!L.length) return null;
   var id=BD.ajustes.prueba;
-  return BD.pruebas.filter(function(p){ return p.id===id; })[0] || BD.pruebas[0];
+  return L.filter(function(p){ return p.id===id; })[0] || L[0];
 }
 function opsDePrueba(id){
   return BD.back.filter(function(o){ return o.prueba===id; });
@@ -33170,8 +34070,8 @@ document.addEventListener("click", function(ev){
    Los colores en sí están en el CSS («COLORES DE LOS ICONOS»). */
 var COL_ICO={"Dinero que puso":1,"Dinero invertido":1,"Operaciones acertadas":1,
   "Vale hoy":2,"Abiertas ahora":2,
-  "Ganancia sin vender":3,"Ganancia sin cerrar":3,"Resultado medio de todas":3,
-  "Ganancia ya vendida":4,"Ganancia ya cerrada":4,"Ganancia media de las acertadas":4,
+  "Ganancia sin vender":3,"Ganancia sin cerrar":3,"Promedio total":3,
+  "Ganancia ya vendida":4,"Ganancia ya cerrada":4,"Promedio de las ganadas":4,
   "Comisiones":5,"Comisiones pagadas":5};
 function met(ico, etiqueta, valor, clase, sub, color, serie, ir){
   var paleta = typeof color==="number" ? (" p"+(((color-1)%6)+1))
@@ -33181,7 +34081,7 @@ function met(ico, etiqueta, valor, clase, sub, color, serie, ir){
   return '<div class="met'+paleta+(ir?" pulsa":"")+'"'+
     (ir?' data-met="'+esc(ir)+'" tabindex="0" role="button" title="Toque para ver el detalle"':'')+
     '><div class="cab"><div class="ico">'+ico+'</div>'+
-    '<span>'+esc(etiqueta)+'</span></div><div class="v '+(clase||"")+(largo>=12?" chica":"")+'">'+valor+'</div>'+
+    '<span>'+esc(etiqueta)+((typeof et80==="function")?et80(etiqueta):"")+'</span></div><div class="v '+(clase||"")+(largo>=12?" chica":"")+'">'+valor+'</div>'+
     (sub?'<div class="s">'+sub+'</div>':'')+
     (ir?'<div class="mflecha">'+IC.flecha+'</div>':'')+
     /* v39 · la línea va en verde si sube y en rojo si baja */
@@ -33456,6 +34356,7 @@ function filaMonedaCorta(e){
         '<div><span>Dinero invertido</span><b>'+usd(e.costo)+'</b></div>'+
         '<div><span>Compras</span><b>'+e.nCompras+'</b></div>'+
       '</div>'+
+      ((typeof dondeTieneCard80==="function") ? dondeTieneCard80(e.sym) : "")+      /* v80 · casas */
       '<div class="opBts">'+
         '<button class="b sm st" data-vender="'+esc(e.sym)+'">Vender</button>'+
         '<button class="b sm" data-ver="'+esc(e.sym)+'">Ver detalle</button>'+
@@ -33503,7 +34404,7 @@ function tiraMarcador(celdas, tit){
       var col=COL_ICO[c.et]||1;
       return '<div class="mrc i'+col+(c.ir?' pulsa':'')+'"'+
         (c.ir?' data-met="'+esc(c.ir)+'" tabindex="0" role="button"':'')+'>'+
-        '<div class="mrcC"><span class="mrcI">'+c.ico+'</span><span class="mrcL">'+esc(c.et)+'</span></div>'+
+        '<div class="mrcC"><span class="mrcI">'+c.ico+'</span><span class="mrcL">'+esc(c.et)+((typeof et80==="function")?et80(c.et):"")+'</span></div>'+
         '<div class="mrcV '+(c.clase||"")+'">'+c.val+'</div></div>';
     }).join("")+'</div>';
 }
@@ -33546,6 +34447,7 @@ function listaMonedasTel(lista, conVender){
 }
 function engancharListaTel(c){
   c.querySelectorAll("[data-ver]").forEach(function(d){
+    if(d.tagName==="BUTTON"){ d.onclick=function(ev){ ev.stopPropagation(); verMoneda(d.getAttribute("data-ver")); }; return; }      /* v80 · §143 */
     d.onclick=function(ev){ if(ev.target.closest("button")) return; verMoneda(d.getAttribute("data-ver")); };
   });
 }
@@ -33969,7 +34871,7 @@ function pintarSpot(){
      Se le dice qué hacer, y las cifras aparecen cuando haya algo que contar. */
   /* solo depósitos (sin ninguna compra todavía) también es «vacío»: cuatro
      tarjetas en cero no dicen nada, el dinero ya se ve en su barra */
-  var vacioSpot = !BD.ops.some(function(o){ return !esDinero(o); });
+  var vacioSpot = !opsV80().some(function(o){ return !esDinero(o); });
 
   var TEL=esTel();
   /* v54 · en el teléfono: el botón grande arriba, el resumen compacto y el marcador;
@@ -34079,7 +34981,7 @@ function pintarSpot(){
 
   if(TEL){
     /* v54 · tres pestañas: sus monedas, las órdenes programadas y los movimientos */
-    var nOrd=(BD.ordenes||[]).length;
+    var nOrd=ordV80().length;
     h+='<div class="pest" id="pestSpot">'+
       '<button data-pest="mon" class="'+(SPOT_PEST==="mon"?"on":"")+'">Monedas'+
         (vivas.length?'<span class="pNum">'+vivas.length+'</span>':'')+'</button>'+
@@ -34293,7 +35195,7 @@ function historialSpot(){
   /* aquí van los movimientos de SPOT: las compras y ventas de monedas y el
      dinero que entra o sale de spot. Lo que se deposita o retira directo en
      futuros no es de spot y no sale aquí (está en «Movimientos de dinero»). */
-  var todo=ordenarMovimientos(BD.ops.filter(function(o){
+  var todo=ordenarMovimientos(opsV80().filter(function(o){
     return !(esEstable(o.sym) && o.tipo!=="traspaso" && o.bolsillo==="fut");
   }), true);
   if(!todo.length) return "";
@@ -34305,7 +35207,7 @@ function historialSpot(){
      repartir lo que queda entre compras concretas. Lo honesto es decirlo:
      en las monedas de las que ya vendió algo, la fila dice «Hoy valdría». */
   var conVentas={};
-  BD.ops.forEach(function(o){
+  opsV80().forEach(function(o){
     if(o.tipo==="venta" && !esDinero(o)) conVentas[String(o.sym).toUpperCase()]=1;
   });
   var ver=todo.slice(0, SPOT_cuantos);
@@ -34442,10 +35344,10 @@ function ventasSinCompra(){
      registró la compra, o porque la registró con una fecha posterior a
      la venta — y son dos cosas distintas que hay que decirle distinto. */
   var conCompra={};
-  BD.ops.forEach(function(o){
+  opsV80().forEach(function(o){
     if(o.tipo!=="venta") conCompra[String(o.sym).toUpperCase()]=1;
   });
-  BD.ops.forEach(function(o){
+  opsV80().forEach(function(o){
     if(o.tipo!=="venta"||esEstable(o.sym)) return;
     var r=R[o.id];
     var cuadra = r && r.gan!=null && !r.sinCosto && !r.recortada;
@@ -34942,7 +35844,7 @@ function conQuePago(nuevo, cuesta, hay, falta){
     if(bf) bf.onclick=function(){
       if(!alcanzaFut) return;
       cerrar();
-      registrarCompraVenta(nuevo, {sym:"USDT", tipo:"traspaso", de:"fut", a:"spot", cant:monto, precio:1, com:0, fecha:nuevo.fecha});
+      registrarCompraVenta(nuevo, {sym:"USDT", tipo:"traspaso", de:"fut", a:"spot", cant:monto, precio:1, com:0, fecha:nuevo.fecha, casa:nuevo.casa});
     };
     M.querySelector("#cqDes").onclick=function(){ cerrar(); registrarCompraVenta(nuevo, null); };
   });
@@ -35478,7 +36380,7 @@ function hojaDinero(modo, bols, id, pre){
       if(m==null||m<=0){ aviso("Escriba cuántos dólares.",true); return; }
       var datos={sym:"USDT", tipo:dep?"compra":"venta", cant:m, precio:1, com:0,
         fecha:M.querySelector("#dnF").value||hoy(),
-        nota:M.querySelector("#dnN").value.trim(), casa:casaGlobal(),
+        nota:M.querySelector("#dnN").value.trim(), casa:(o&&o.casa)?o.casa:casaGlobal(),      /* v80 · al editar se queda con su casa */
         mod:ahoraReal()};
       if(b==="fut") datos.bolsillo="fut";
       if(!o && pre.para) datos.para=pre.para;    /* v40 · unido a la compra que paga */
@@ -35578,7 +36480,7 @@ function hojaMover(dir, id, pre){
       if(m==null||m<=0){ aviso("Escriba cuántos dólares.",true); return; }
       var datos={sym:"USDT", tipo:"traspaso", cant:m, precio:1, com:0,
         de:desde(), a:(d==="aFut"?"fut":"spot"),
-        fecha:M.querySelector("#mvF").value||hoy(), mod:ahoraReal()};
+        fecha:M.querySelector("#mvF").value||hoy(), casa:(o&&o.casa)?o.casa:casaGlobal(), mod:ahoraReal()};      /* v80 · cada casa es una cuenta aparte */
       if(!o && pre.para) datos.para=pre.para;    /* v40 · unido a la compra que paga */
       if(o){ Object.keys(datos).forEach(function(k){ o[k]=datos[k]; }); }
       else { datos.id=idNuevo(); BD.ops.push(datos); }
@@ -35719,7 +36621,7 @@ function filaDinero(o, conBoton, desde){
    TODOS LOS MOVIMIENTOS DE DINERO, en una hoja: de los dos bolsillos.
    --------------------------------------------------------------------- */
 function hojaMovimientosDinero(){
-  var L=ordenarMovimientos(BD.ops.filter(esDinero), true);
+  var L=ordenarMovimientos(opsV80().filter(esDinero), true);
   /* lo que entró de fuera y lo que salió afuera; los traspasos no cuentan,
      porque ese dinero no entra ni sale: solo cambia de bolsillo */
   var entro=0, salio=0;
@@ -35803,6 +36705,7 @@ function verMoneda(sym){
         cl(e.realizado)+'">'+(e.realizado>=0?"+":"−")+usd(e.realizado).replace("-","")+'</div>'+
         '<div class="s">'+plural(ventas.length,"venta","ventas")+'</div></div>':'')+
     '</div>'+
+    ((typeof dondeTiene80==="function") ? dondeTiene80(sym) : "")+      /* v80 · casas */
     '<div id="vmGraf"></div>'+
     '<div id="vmRegla">'+reglaCompras(e, compras)+'</div>'+
     '<div id="vmLote2">'+loteMoneda2(e, compras, sym)+'</div>'+
@@ -36138,7 +37041,7 @@ function franjaRiesgo(A){
   return '<div class="franja">'+
     (A.k==="back"
       ? '<div class="fc"><label>Prueba</label><select id="frPrueba">'+
-        BD.pruebas.map(function(x){
+        pruebasV80().map(function(x){
           return '<option value="'+esc(x.id)+'"'+((p&&p.id===x.id)?" selected":"")+'>'+
             esc(x.nombre)+'</option>'; }).join("")+'</select></div>'
       : '')+
@@ -36797,7 +37700,7 @@ function voltearStopTp(A){
 function pintarAmbito(k){
   var A=ambito(k);
   var c=document.getElementById("cuerpo");
-  if(k==="back" && !BD.pruebas.length){
+  if(k==="back" && !pruebasV80().length){
     c.innerHTML=cajaVacia("Todavía no tiene ninguna prueba",
       "Una prueba es un cuaderno aparte: tiene su propia cartera y sus propias operaciones, "+
       "y nunca se mezcla con su dinero de verdad. Sirve para probar una idea sin arriesgar "+
@@ -36812,7 +37715,7 @@ function pintarAmbito(k){
   if(k==="back" && typeof botonPractica71==="function") h+=botonPractica71();      /* v71 · «Practicar», lo primero de Backtesting */
 
   /* ---- franja de riesgo ---- */
-  var vacioFut = !A.lista.length;
+  var vacioFut = !futV80(A.lista).length;      /* v80 */
   /* v46 · en el teléfono: ajustes en una línea, operaciones abiertas arriba del todo */
   var TEL=esTel();
   h+=(TEL && A.cfg.cartera>0) ? franjaPlegada(A) : franjaRiesgo(A);
@@ -36823,8 +37726,8 @@ function pintarAmbito(k){
     (k==="back"?"Nueva operación de prueba":"Nueva operación")+'</button>';
   if(k==="back") h+='<div class="filaPrueba" style="display:flex;gap:8px;flex-wrap:wrap;margin:-6px 0 14px">'+
     '<button class="b sm ac" onclick="nuevaPrueba()">+ Nueva prueba</button>'+
-    (BD.pruebas.length>1?'<button class="b sm" onclick="compararPruebas()">Comparar las '+
-      BD.pruebas.length+' pruebas</button>':'')+
+    (pruebasV80().length>1?'<button class="b sm" onclick="compararPruebas()">Comparar las '+
+      pruebasV80().length+' pruebas</button>':'')+
     '<button class="b sm" onclick="renombrarPrueba()">Renombrar</button>'+
     '<button class="b sm gh" onclick="borrarPrueba()" style="margin-left:auto">Borrar esta prueba</button>'+
     '</div>';
@@ -36870,12 +37773,12 @@ function pintarAmbito(k){
           T.decididas?(T.ganadas+" de "+T.decididas):"—","",
           T.aciertos!=null?(T.aciertos.toFixed(0)+"% de acierto"):"todavía no ha cerrado ninguna", 1,
           null, T.ganadas?"res:GANA":"")+
-      met(IC.dolar,"Resultado medio de todas",
+      met(IC.dolar,"Promedio total",
           T.porOperacion==null?"—":((T.porOperacion>=0?"+":"−")+usdF(T.porOperacion).replace("-","")),"",
           T.n?("lo que gana o pierde cada vez, en "+plural(T.n,"operación cerrada","operaciones cerradas")):"todavía no ha cerrado ninguna",
           T.porOperacion==null?6:(T.porOperacion>=0?"gana":"pierde"),
           null, T.n?"res:TODO":"")+
-      met(IC.sube,"Ganancia media de las acertadas",
+      met(IC.sube,"Promedio de las ganadas",
           T.ganaUsd==null?"—":("+"+usdF(T.ganaUsd)),"",
           T.pierdeUsd!=null?("pérdida promedio al fallar: "+usdF(T.pierdeUsd))
             :(T.ganaUsd==null?"todavía no ha acertado ninguna":"todavía no ha fallado ninguna"),
@@ -36986,10 +37889,10 @@ function marcador(T){
      val:T.decididas?(T.ganadas+" de "+T.decididas+
         (T.aciertos!=null?' <small>'+T.aciertos.toFixed(0)+'%</small>':'')):"—",
      ir:T.ganadas?"res:GANA":""},
-    {ico:IC.dolar, et:"Resultado medio de todas",
+    {ico:IC.dolar, et:"Promedio total",
      val:T.porOperacion==null?"—":((T.porOperacion>=0?"+":"−")+usdF(T.porOperacion).replace("-","")),
      clase:T.porOperacion==null?"":cl(T.porOperacion), ir:T.n?"res:TODO":""},
-    {ico:IC.sube, et:"Ganancia media de las acertadas",
+    {ico:IC.sube, et:"Promedio de las ganadas",
      val:T.ganaUsd==null?"—":("+"+usdF(T.ganaUsd)), clase:T.ganaUsd==null?"":"up"},
     {ico:IC.banco, et:"Comisiones pagadas", val:usdF(T.comision), ir:"f:comisiones"}
   ]);
@@ -37861,7 +38764,7 @@ function conQuePagoFut(o, hay, falta, fin){
     var bs=M.querySelector("#cqSpot");
     if(bs) bs.onclick=function(){
       if(!alcanza) return;
-      cerrar(); fin({sym:"USDT", tipo:"traspaso", de:"spot", a:"fut", cant:monto, precio:1, com:0, fecha:o.fecha});
+      cerrar(); fin({sym:"USDT", tipo:"traspaso", de:"spot", a:"fut", cant:monto, precio:1, com:0, fecha:o.fecha, casa:casaGlobal()});
     };
     M.querySelector("#cqDes").onclick=function(){ cerrar(); fin(null); };
   });
@@ -38617,7 +39520,7 @@ function dineroLibreParaCompras(){
   /* lo que hay en spot menos lo ya comprometido en otras compras programadas
      (una pareja «baja / sube» solo compromete el dinero una vez) */
   var libre=efectivoDet0().total, vistas={};
-  (BD.ordenes||[]).forEach(function(o){
+  ordV80().forEach(function(o){
     if(o.lado!=="compra" || vistas[o.id]) return;
     if(o.par) vistas[o.par]=1;
     libre-=(+o.cant||0)*(+o.precio||0)+(+o.com||0);
@@ -38739,7 +39642,7 @@ function quitarOrden(id){
     }, true);
 }
 function cajaOrdenes(){
-  var l=BD.ordenes||[];
+  var l=ordV80();      /* v80 · la casa que se ve */
   return '<div class="caja"><h2><span class="ic">'+IC.alr+'</span>Órdenes programadas'+
     (l.length?'<span class="chip a">'+l.length+'</span>':'')+
     '</h2><div class="cp">'+
@@ -40882,7 +41785,7 @@ function listaComOps(fuente){
   }).join("");
 }
 function listaComSpot(){
-  var L=BD.ops.filter(function(o){ return (+o.com||0)>0 && o.tipo!=="traspaso"; });
+  var L=opsV80().filter(function(o){ return (+o.com||0)>0 && o.tipo!=="traspaso"; });
   if(!L.length) return "";
   L=L.slice().sort(function(a,b){ return (a.fecha||"")<(b.fecha||"")?1:-1; });
   return '<div class="fsec">Spot, compra por compra y venta por venta</div>'+L.map(function(o){
@@ -40947,7 +41850,7 @@ function hojaComisionesPrueba(){
 function hojaComisiones(){
   if(vista==="back"){ hojaComisionesPrueba(); return; }
   var K=comisionesDet(), F=carteraFut(BD.fut), T=F.tot;
-  var nSpot=BD.ops.filter(function(o){ return (+o.com||0)>0; }).length;
+  var nSpot=opsV80().filter(function(o){ return (+o.com||0)>0; }).length;
   var cuanto = T.bruto>0 && K.fut>0 ? K.fut/T.bruto*100 : null;
   abrir('<div class="hoja"><div class="hh"><span class="ic">'+IC.banco+'</span>'+
     '<h3>Comisiones</h3><button class="x" data-cerrar>×</button></div><div class="hb">'+
@@ -50171,6 +51074,44 @@ DIC.en={
 "Mom. frecuencias":"Freq. momentum",
 "Bill Williams":"Bill Williams",
 "Operación programada":"Scheduled trade",
+"Para operar":"To trade",
+"Toque Dibujar y elija Largo o Corto.":"Tap Draw and choose Long or Short.",
+"Dibujar mi operación":"Draw my trade",
+"No mostrar más este aviso":"Don't show this tip again",
+"Operaciones en la gráfica":"Trades on the chart",
+"Operación en marcha":"Open trade",
+"Cómo se ve mientras está abierta.":"How it looks while it is open.",
+"Líneas finas":"Thin lines",
+"Caja de color":"Colored box",
+"Nada":"Nothing",
+"Los puntos de entrada y salida.":"The entry and exit points.",
+"Siempre":"Always",
+"Unos días":"A few days",
+"Quitarlas solas a los":"Remove them automatically after",
+"Se cuentan desde que se cierra la operación.":"Counted from the day the trade closes.",
+"1 día":"1 day",
+"3 días":"3 days",
+"7 días":"7 days",
+"30 días":"30 days",
+"Entraste":"You entered",
+"Stop / Objetivo":"Stop / Target",
+"A mano":"Manual",
+"Cerrada a mano":"Closed manually",
+"Operaciones quitadas":"Removed trades",
+"Volver a ponerlas":"Put them back",
+"Promedio total":"Overall average",
+"(ganadas y perdidas)":"(wins and losses)",
+"Promedio de las ganadas":"Average of wins",
+"Mis casas":"My exchanges",
+"Se ve solo lo de §. Todo el programa cambia con esta casa.":"Showing only what is in §. The whole app switches to this exchange.",
+"TODO SU DINERO EN §":"ALL YOUR MONEY ON §",
+"TODO SU SPOT EN §":"ALL YOUR SPOT ON §",
+"de $# en todas las casas":"of $# across all exchanges",
+"Dónde la tiene":"Where you hold it",
+"toque una casa para ver sus compras":"tap an exchange to see its purchases",
+"prom.":"avg.",
+"esta casa":"this exchange",
+"También la tiene en §":"You also hold it on §",
 
 "Línea horizontal":"Horizontal line",
 "Línea vertical":"Vertical line",
@@ -56668,6 +57609,44 @@ DIC.pt={
 "Mom. frecuencias":"Mom. por frequências",
 "Bill Williams":"Bill Williams",
 "Operación programada":"Operação programada",
+"Para operar":"Para operar",
+"Toque Dibujar y elija Largo o Corto.":"Toque em Desenhar e escolha Longo ou Curto.",
+"Dibujar mi operación":"Desenhar minha operação",
+"No mostrar más este aviso":"Não mostrar mais este aviso",
+"Operaciones en la gráfica":"Operações no gráfico",
+"Operación en marcha":"Operação aberta",
+"Cómo se ve mientras está abierta.":"Como aparece enquanto está aberta.",
+"Líneas finas":"Linhas finas",
+"Caja de color":"Caixa colorida",
+"Nada":"Nada",
+"Los puntos de entrada y salida.":"Os pontos de entrada e saída.",
+"Siempre":"Sempre",
+"Unos días":"Alguns dias",
+"Quitarlas solas a los":"Remover sozinhas após",
+"Se cuentan desde que se cierra la operación.":"Contam a partir do fechamento da operação.",
+"1 día":"1 dia",
+"3 días":"3 dias",
+"7 días":"7 dias",
+"30 días":"30 dias",
+"Entraste":"Você entrou",
+"Stop / Objetivo":"Stop / Alvo",
+"A mano":"Manual",
+"Cerrada a mano":"Fechada manualmente",
+"Operaciones quitadas":"Operações removidas",
+"Volver a ponerlas":"Colocar de volta",
+"Promedio total":"Média total",
+"(ganadas y perdidas)":"(ganhas e perdidas)",
+"Promedio de las ganadas":"Média das ganhas",
+"Mis casas":"Minhas corretoras",
+"Se ve solo lo de §. Todo el programa cambia con esta casa.":"Mostrando só o que está em §. Todo o programa muda para esta corretora.",
+"TODO SU DINERO EN §":"TODO O SEU DINHEIRO EM §",
+"TODO SU SPOT EN §":"TODO O SEU SPOT EM §",
+"de $# en todas las casas":"de $# em todas as corretoras",
+"Dónde la tiene":"Onde você a tem",
+"toque una casa para ver sus compras":"toque numa corretora para ver as compras",
+"prom.":"méd.",
+"esta casa":"esta corretora",
+"También la tiene en §":"Também a tem em §",
 
 "Línea horizontal":"Linha horizontal",
 "Línea vertical":"Linha vertical",
@@ -63158,6 +64137,44 @@ DIC.fr={
 "Mom. frecuencias":"Mom. par fréquences",
 "Bill Williams":"Bill Williams",
 "Operación programada":"Opération programmée",
+"Para operar":"Pour trader",
+"Toque Dibujar y elija Largo o Corto.":"Touchez Dessiner et choisissez Long ou Short.",
+"Dibujar mi operación":"Dessiner mon trade",
+"No mostrar más este aviso":"Ne plus afficher cet avis",
+"Operaciones en la gráfica":"Opérations sur le graphique",
+"Operación en marcha":"Opération ouverte",
+"Cómo se ve mientras está abierta.":"Son apparence tant qu'elle est ouverte.",
+"Líneas finas":"Lignes fines",
+"Caja de color":"Zone colorée",
+"Nada":"Rien",
+"Los puntos de entrada y salida.":"Les points d'entrée et de sortie.",
+"Siempre":"Toujours",
+"Unos días":"Quelques jours",
+"Quitarlas solas a los":"Les retirer toutes seules après",
+"Se cuentan desde que se cierra la operación.":"Décompte à partir de la clôture de l'opération.",
+"1 día":"1 jour",
+"3 días":"3 jours",
+"7 días":"7 jours",
+"30 días":"30 jours",
+"Entraste":"Vous êtes entré",
+"Stop / Objetivo":"Stop / Objectif",
+"A mano":"Manuel",
+"Cerrada a mano":"Clôturée à la main",
+"Operaciones quitadas":"Opérations retirées",
+"Volver a ponerlas":"Les remettre",
+"Promedio total":"Moyenne totale",
+"(ganadas y perdidas)":"(gagnantes et perdantes)",
+"Promedio de las ganadas":"Moyenne des gagnantes",
+"Mis casas":"Mes plateformes",
+"Se ve solo lo de §. Todo el programa cambia con esta casa.":"Seul ce qui est sur § s'affiche. Toute l'application passe sur cette plateforme.",
+"TODO SU DINERO EN §":"TOUT VOTRE ARGENT SUR §",
+"TODO SU SPOT EN §":"TOUT VOTRE SPOT SUR §",
+"de $# en todas las casas":"sur $# au total, toutes plateformes",
+"Dónde la tiene":"Où vous l'avez",
+"toque una casa para ver sus compras":"touchez une plateforme pour voir ses achats",
+"prom.":"moy.",
+"esta casa":"cette plateforme",
+"También la tiene en §":"Vous l'avez aussi sur §",
 
 "Línea horizontal":"Ligne horizontale",
 "Línea vertical":"Ligne verticale",
@@ -69648,6 +70665,44 @@ DIC.de={
 "Mom. frecuencias":"Mom. nach Frequenz",
 "Bill Williams":"Bill Williams",
 "Operación programada":"Geplanter Trade",
+"Para operar":"Zum Handeln",
+"Toque Dibujar y elija Largo o Corto.":"Tippen Sie auf Zeichnen und wählen Sie Long oder Short.",
+"Dibujar mi operación":"Meinen Trade zeichnen",
+"No mostrar más este aviso":"Diesen Hinweis nicht mehr zeigen",
+"Operaciones en la gráfica":"Trades im Chart",
+"Operación en marcha":"Offener Trade",
+"Cómo se ve mientras está abierta.":"So sieht er aus, solange er offen ist.",
+"Líneas finas":"Dünne Linien",
+"Caja de color":"Farbige Box",
+"Nada":"Nichts",
+"Los puntos de entrada y salida.":"Die Ein- und Ausstiegspunkte.",
+"Siempre":"Immer",
+"Unos días":"Ein paar Tage",
+"Quitarlas solas a los":"Automatisch entfernen nach",
+"Se cuentan desde que se cierra la operación.":"Gezählt ab dem Schließen des Trades.",
+"1 día":"1 Tag",
+"3 días":"3 Tage",
+"7 días":"7 Tage",
+"30 días":"30 Tage",
+"Entraste":"Du bist eingestiegen",
+"Stop / Objetivo":"Stop / Ziel",
+"A mano":"Manuell",
+"Cerrada a mano":"Manuell geschlossen",
+"Operaciones quitadas":"Entfernte Trades",
+"Volver a ponerlas":"Wieder einblenden",
+"Promedio total":"Gesamtdurchschnitt",
+"(ganadas y perdidas)":"(Gewinne und Verluste)",
+"Promedio de las ganadas":"Durchschnitt der Gewinne",
+"Mis casas":"Meine Börsen",
+"Se ve solo lo de §. Todo el programa cambia con esta casa.":"Angezeigt wird nur, was bei § liegt. Die ganze App wechselt zu dieser Börse.",
+"TODO SU DINERO EN §":"IHR GESAMTES GELD BEI §",
+"TODO SU SPOT EN §":"IHR GESAMTER SPOT BEI §",
+"de $# en todas las casas":"von $# bei allen Börsen",
+"Dónde la tiene":"Wo Sie sie haben",
+"toque una casa para ver sus compras":"tippen Sie auf eine Börse, um die Käufe zu sehen",
+"prom.":"Ø",
+"esta casa":"diese Börse",
+"También la tiene en §":"Sie haben sie auch bei §",
 
 "Línea horizontal":"Horizontale Linie",
 "Línea vertical":"Vertikale Linie",
@@ -76138,6 +77193,44 @@ DIC.it={
 "Mom. frecuencias":"Mom. per frequenze",
 "Bill Williams":"Bill Williams",
 "Operación programada":"Operazione programmata",
+"Para operar":"Per operare",
+"Toque Dibujar y elija Largo o Corto.":"Tocca Disegna e scegli Long o Short.",
+"Dibujar mi operación":"Disegna la mia operazione",
+"No mostrar más este aviso":"Non mostrare più questo avviso",
+"Operaciones en la gráfica":"Operazioni sul grafico",
+"Operación en marcha":"Operazione aperta",
+"Cómo se ve mientras está abierta.":"Come appare finché è aperta.",
+"Líneas finas":"Linee sottili",
+"Caja de color":"Riquadro colorato",
+"Nada":"Niente",
+"Los puntos de entrada y salida.":"I punti di entrata e di uscita.",
+"Siempre":"Sempre",
+"Unos días":"Alcuni giorni",
+"Quitarlas solas a los":"Toglile da sole dopo",
+"Se cuentan desde que se cierra la operación.":"Si contano da quando l'operazione si chiude.",
+"1 día":"1 giorno",
+"3 días":"3 giorni",
+"7 días":"7 giorni",
+"30 días":"30 giorni",
+"Entraste":"Sei entrato",
+"Stop / Objetivo":"Stop / Obiettivo",
+"A mano":"Manuale",
+"Cerrada a mano":"Chiusa a mano",
+"Operaciones quitadas":"Operazioni tolte",
+"Volver a ponerlas":"Rimettile",
+"Promedio total":"Media totale",
+"(ganadas y perdidas)":"(vinte e perse)",
+"Promedio de las ganadas":"Media delle vinte",
+"Mis casas":"Le mie piattaforme",
+"Se ve solo lo de §. Todo el programa cambia con esta casa.":"Si vede solo ciò che è su §. Tutta l'app passa a questa piattaforma.",
+"TODO SU DINERO EN §":"TUTTI I SUOI SOLDI SU §",
+"TODO SU SPOT EN §":"TUTTO IL SUO SPOT SU §",
+"de $# en todas las casas":"di $# su tutte le piattaforme",
+"Dónde la tiene":"Dove ce l'ha",
+"toque una casa para ver sus compras":"tocchi una piattaforma per vedere i suoi acquisti",
+"prom.":"medio",
+"esta casa":"questa piattaforma",
+"También la tiene en §":"Ce l'ha anche su §",
 
 "Línea horizontal":"Linea orizzontale",
 "Línea vertical":"Linea verticale",
@@ -82618,6 +83711,44 @@ DIC.nl={
 "Mom. frecuencias":"Mom. per frequentie",
 "Bill Williams":"Bill Williams",
 "Operación programada":"Geplande transactie",
+"Para operar":"Om te handelen",
+"Toque Dibujar y elija Largo o Corto.":"Tik op Tekenen en kies Long of Short.",
+"Dibujar mi operación":"Mijn trade tekenen",
+"No mostrar más este aviso":"Deze tip niet meer tonen",
+"Operaciones en la gráfica":"Transacties op de grafiek",
+"Operación en marcha":"Open transactie",
+"Cómo se ve mientras está abierta.":"Hoe het eruitziet zolang de transactie open is.",
+"Líneas finas":"Dunne lijnen",
+"Caja de color":"Gekleurd vak",
+"Nada":"Niets",
+"Los puntos de entrada y salida.":"De instap- en uitstappunten.",
+"Siempre":"Altijd",
+"Unos días":"Een paar dagen",
+"Quitarlas solas a los":"Automatisch verwijderen na",
+"Se cuentan desde que se cierra la operación.":"Geteld vanaf het sluiten van de transactie.",
+"1 día":"1 dag",
+"3 días":"3 dagen",
+"7 días":"7 dagen",
+"30 días":"30 dagen",
+"Entraste":"Je stapte in",
+"Stop / Objetivo":"Stop / Doel",
+"A mano":"Handmatig",
+"Cerrada a mano":"Handmatig gesloten",
+"Operaciones quitadas":"Verwijderde transacties",
+"Volver a ponerlas":"Terugzetten",
+"Promedio total":"Totaal gemiddelde",
+"(ganadas y perdidas)":"(winst en verlies)",
+"Promedio de las ganadas":"Gemiddelde van de winsten",
+"Mis casas":"Mijn exchanges",
+"Se ve solo lo de §. Todo el programa cambia con esta casa.":"Alleen wat bij § staat is zichtbaar. De hele app schakelt naar deze exchange.",
+"TODO SU DINERO EN §":"AL UW GELD BIJ §",
+"TODO SU SPOT EN §":"AL UW SPOT BIJ §",
+"de $# en todas las casas":"van $# bij alle exchanges",
+"Dónde la tiene":"Waar u het heeft",
+"toque una casa para ver sus compras":"tik op een exchange om de aankopen te zien",
+"prom.":"gem.",
+"esta casa":"deze exchange",
+"También la tiene en §":"U heeft het ook bij §",
 
 "Línea horizontal":"Horizontale lijn",
 "Línea vertical":"Verticale lijn",
@@ -89384,6 +90515,44 @@ DIC.pl={
 "Mom. frecuencias":"Mom. częstotliwości",
 "Bill Williams":"Bill Williams",
 "Operación programada":"Zaplanowana transakcja",
+"Para operar":"Aby handlować",
+"Toque Dibujar y elija Largo o Corto.":"Dotknij Rysuj i wybierz Long lub Short.",
+"Dibujar mi operación":"Narysuj moją transakcję",
+"No mostrar más este aviso":"Nie pokazuj więcej tej wskazówki",
+"Operaciones en la gráfica":"Transakcje na wykresie",
+"Operación en marcha":"Otwarta transakcja",
+"Cómo se ve mientras está abierta.":"Jak wygląda, dopóki jest otwarta.",
+"Líneas finas":"Cienkie linie",
+"Caja de color":"Kolorowe pole",
+"Nada":"Nic",
+"Los puntos de entrada y salida.":"Punkty wejścia i wyjścia.",
+"Siempre":"Zawsze",
+"Unos días":"Kilka dni",
+"Quitarlas solas a los":"Usuń automatycznie po",
+"Se cuentan desde que se cierra la operación.":"Liczone od zamknięcia transakcji.",
+"1 día":"1 dzień",
+"3 días":"3 dni",
+"7 días":"7 dni",
+"30 días":"30 dni",
+"Entraste":"Wszedłeś",
+"Stop / Objetivo":"Stop / Cel",
+"A mano":"Ręcznie",
+"Cerrada a mano":"Zamknięta ręcznie",
+"Operaciones quitadas":"Usunięte transakcje",
+"Volver a ponerlas":"Przywróć",
+"Promedio total":"Średnia łączna",
+"(ganadas y perdidas)":"(wygrane i przegrane)",
+"Promedio de las ganadas":"Średnia z wygranych",
+"Mis casas":"Moje giełdy",
+"Se ve solo lo de §. Todo el programa cambia con esta casa.":"Widoczne jest tylko to, co jest na §. Cała aplikacja przełącza się na tę giełdę.",
+"TODO SU DINERO EN §":"CAŁE PIENIĄDZE NA §",
+"TODO SU SPOT EN §":"CAŁY SPOT NA §",
+"de $# en todas las casas":"z $# na wszystkich giełdach",
+"Dónde la tiene":"Gdzie ją Pan ma",
+"toque una casa para ver sus compras":"dotknij giełdy, aby zobaczyć jej zakupy",
+"prom.":"śr.",
+"esta casa":"ta giełda",
+"También la tiene en §":"Ma ją Pan też na §",
 
 "Línea horizontal":"Linia pozioma",
 "Línea vertical":"Linia pionowa",
@@ -96150,6 +97319,44 @@ DIC.tr={
 "Mom. frecuencias":"Frekans MOM",
 "Bill Williams":"Bill Williams",
 "Operación programada":"Planlanmış işlem",
+"Para operar":"İşlem yapmak için",
+"Toque Dibujar y elija Largo o Corto.":"Çiz'e dokunun ve Long ya da Short seçin.",
+"Dibujar mi operación":"İşlemimi çiz",
+"No mostrar más este aviso":"Bu ipucunu bir daha gösterme",
+"Operaciones en la gráfica":"Grafikteki işlemler",
+"Operación en marcha":"Açık işlem",
+"Cómo se ve mientras está abierta.":"Açıkken nasıl görüneceği.",
+"Líneas finas":"İnce çizgiler",
+"Caja de color":"Renkli kutu",
+"Nada":"Hiçbir şey",
+"Los puntos de entrada y salida.":"Giriş ve çıkış noktaları.",
+"Siempre":"Her zaman",
+"Unos días":"Birkaç gün",
+"Quitarlas solas a los":"Şu süre sonra kendiliğinden kaldır",
+"Se cuentan desde que se cierra la operación.":"İşlem kapandığı andan itibaren sayılır.",
+"1 día":"1 gün",
+"3 días":"3 gün",
+"7 días":"7 gün",
+"30 días":"30 gün",
+"Entraste":"Girdin",
+"Stop / Objetivo":"Stop / Hedef",
+"A mano":"Elle",
+"Cerrada a mano":"Elle kapatıldı",
+"Operaciones quitadas":"Kaldırılan işlemler",
+"Volver a ponerlas":"Geri koy",
+"Promedio total":"Genel ortalama",
+"(ganadas y perdidas)":"(kazanç ve kayıp)",
+"Promedio de las ganadas":"Kazançların ortalaması",
+"Mis casas":"Borsalarım",
+"Se ve solo lo de §. Todo el programa cambia con esta casa.":"Yalnızca §'deki varlıklar gösteriliyor. Tüm uygulama bu borsaya geçer.",
+"TODO SU DINERO EN §":"§ ÜZERİNDEKİ TÜM PARANIZ",
+"TODO SU SPOT EN §":"§ ÜZERİNDEKİ TÜM SPOT",
+"de $# en todas las casas":"tüm borsalarda toplam $#",
+"Dónde la tiene":"Nerede tutuyorsunuz",
+"toque una casa para ver sus compras":"alımları görmek için bir borsaya dokunun",
+"prom.":"ort.",
+"esta casa":"bu borsa",
+"También la tiene en §":"Bunu § üzerinde de tutuyorsunuz",
 
 "Línea horizontal":"Yatay çizgi",
 "Línea vertical":"Dikey çizgi",
@@ -102916,6 +104123,44 @@ DIC.ru={
 "Mom. frecuencias":"Имп. по частотам",
 "Bill Williams":"Bill Williams",
 "Operación programada":"Запланированная сделка",
+"Para operar":"Чтобы торговать",
+"Toque Dibujar y elija Largo o Corto.":"Нажмите «Рисовать» и выберите Лонг или Шорт.",
+"Dibujar mi operación":"Нарисовать мою сделку",
+"No mostrar más este aviso":"Больше не показывать эту подсказку",
+"Operaciones en la gráfica":"Сделки на графике",
+"Operación en marcha":"Открытая сделка",
+"Cómo se ve mientras está abierta.":"Как она выглядит, пока открыта.",
+"Líneas finas":"Тонкие линии",
+"Caja de color":"Цветная область",
+"Nada":"Ничего",
+"Los puntos de entrada y salida.":"Точки входа и выхода.",
+"Siempre":"Всегда",
+"Unos días":"Несколько дней",
+"Quitarlas solas a los":"Убирать сами через",
+"Se cuentan desde que se cierra la operación.":"Считаются с момента закрытия сделки.",
+"1 día":"1 день",
+"3 días":"3 дня",
+"7 días":"7 дней",
+"30 días":"30 дней",
+"Entraste":"Вы вошли",
+"Stop / Objetivo":"Стоп / Цель",
+"A mano":"Вручную",
+"Cerrada a mano":"Закрыта вручную",
+"Operaciones quitadas":"Убранные сделки",
+"Volver a ponerlas":"Вернуть",
+"Promedio total":"Общее среднее",
+"(ganadas y perdidas)":"(прибыльные и убыточные)",
+"Promedio de las ganadas":"Среднее по прибыльным",
+"Mis casas":"Мои биржи",
+"Se ve solo lo de §. Todo el programa cambia con esta casa.":"Показано только то, что на §. Всё приложение переключается на эту биржу.",
+"TODO SU DINERO EN §":"ВСЕ ВАШИ ДЕНЬГИ НА §",
+"TODO SU SPOT EN §":"ВЕСЬ ВАШ СПОТ НА §",
+"de $# en todas las casas":"из $# на всех биржах",
+"Dónde la tiene":"Где она у вас",
+"toque una casa para ver sus compras":"нажмите на биржу, чтобы увидеть её покупки",
+"prom.":"сред.",
+"esta casa":"эта биржа",
+"También la tiene en §":"Она есть у вас и на §",
 
 "Línea horizontal":"Горизонтальная линия",
 "Línea vertical":"Вертикальная линия",
@@ -109682,6 +110927,44 @@ DIC.uk={
 "Mom. frecuencias":"Імп. за частотами",
 "Bill Williams":"Bill Williams",
 "Operación programada":"Запланована угода",
+"Para operar":"Щоб торгувати",
+"Toque Dibujar y elija Largo o Corto.":"Натисніть «Малювати» і виберіть Лонг або Шорт.",
+"Dibujar mi operación":"Намалювати мою угоду",
+"No mostrar más este aviso":"Більше не показувати цю підказку",
+"Operaciones en la gráfica":"Угоди на графіку",
+"Operación en marcha":"Відкрита угода",
+"Cómo se ve mientras está abierta.":"Як вона виглядає, поки відкрита.",
+"Líneas finas":"Тонкі лінії",
+"Caja de color":"Кольорова зона",
+"Nada":"Нічого",
+"Los puntos de entrada y salida.":"Точки входу та виходу.",
+"Siempre":"Завжди",
+"Unos días":"Кілька днів",
+"Quitarlas solas a los":"Прибирати самі через",
+"Se cuentan desde que se cierra la operación.":"Рахуються від моменту закриття угоди.",
+"1 día":"1 день",
+"3 días":"3 дні",
+"7 días":"7 днів",
+"30 días":"30 днів",
+"Entraste":"Ви увійшли",
+"Stop / Objetivo":"Стоп / Ціль",
+"A mano":"Вручну",
+"Cerrada a mano":"Закрита вручну",
+"Operaciones quitadas":"Прибрані угоди",
+"Volver a ponerlas":"Повернути",
+"Promedio total":"Загальне середнє",
+"(ganadas y perdidas)":"(прибуткові та збиткові)",
+"Promedio de las ganadas":"Середнє по прибуткових",
+"Mis casas":"Мої біржі",
+"Se ve solo lo de §. Todo el programa cambia con esta casa.":"Показано лише те, що на §. Увесь застосунок перемикається на цю біржу.",
+"TODO SU DINERO EN §":"ВСІ ВАШІ ГРОШІ НА §",
+"TODO SU SPOT EN §":"ВЕСЬ ВАШ СПОТ НА §",
+"de $# en todas las casas":"з $# на всіх біржах",
+"Dónde la tiene":"Де вона у вас",
+"toque una casa para ver sus compras":"натисніть на біржу, щоб побачити її покупки",
+"prom.":"серед.",
+"esta casa":"ця біржа",
+"También la tiene en §":"Вона є у вас і на §",
 
 "Línea horizontal":"Горизонтальна лінія",
 "Línea vertical":"Вертикальна лінія",
@@ -116448,6 +117731,44 @@ DIC.id={
 "Mom. frecuencias":"Mom. frekuensi",
 "Bill Williams":"Bill Williams",
 "Operación programada":"Transaksi terjadwal",
+"Para operar":"Untuk bertransaksi",
+"Toque Dibujar y elija Largo o Corto.":"Ketuk Gambar lalu pilih Long atau Short.",
+"Dibujar mi operación":"Gambar transaksi saya",
+"No mostrar más este aviso":"Jangan tampilkan petunjuk ini lagi",
+"Operaciones en la gráfica":"Transaksi di grafik",
+"Operación en marcha":"Transaksi terbuka",
+"Cómo se ve mientras está abierta.":"Tampilannya selama masih terbuka.",
+"Líneas finas":"Garis tipis",
+"Caja de color":"Kotak berwarna",
+"Nada":"Tidak ada",
+"Los puntos de entrada y salida.":"Titik masuk dan keluar.",
+"Siempre":"Selalu",
+"Unos días":"Beberapa hari",
+"Quitarlas solas a los":"Hapus otomatis setelah",
+"Se cuentan desde que se cierra la operación.":"Dihitung sejak transaksi ditutup.",
+"1 día":"1 hari",
+"3 días":"3 hari",
+"7 días":"7 hari",
+"30 días":"30 hari",
+"Entraste":"Kamu masuk",
+"Stop / Objetivo":"Stop / Target",
+"A mano":"Manual",
+"Cerrada a mano":"Ditutup manual",
+"Operaciones quitadas":"Transaksi dihapus",
+"Volver a ponerlas":"Pasang kembali",
+"Promedio total":"Rata-rata total",
+"(ganadas y perdidas)":"(untung dan rugi)",
+"Promedio de las ganadas":"Rata-rata yang untung",
+"Mis casas":"Bursa saya",
+"Se ve solo lo de §. Todo el programa cambia con esta casa.":"Hanya yang ada di § yang ditampilkan. Seluruh aplikasi beralih ke bursa ini.",
+"TODO SU DINERO EN §":"SEMUA UANG ANDA DI §",
+"TODO SU SPOT EN §":"SELURUH SPOT ANDA DI §",
+"de $# en todas las casas":"dari $# di semua bursa",
+"Dónde la tiene":"Di mana Anda menyimpannya",
+"toque una casa para ver sus compras":"ketuk bursa untuk melihat pembeliannya",
+"prom.":"rata-rata",
+"esta casa":"bursa ini",
+"También la tiene en §":"Anda juga menyimpannya di §",
 
 "Línea horizontal":"Garis horizontal",
 "Línea vertical":"Garis vertikal",
@@ -123214,6 +124535,44 @@ DIC.vi={
 "Mom. frecuencias":"ĐL theo tần số",
 "Bill Williams":"Bill Williams",
 "Operación programada":"Lệnh đã lên lịch",
+"Para operar":"Để giao dịch",
+"Toque Dibujar y elija Largo o Corto.":"Chạm vào Vẽ rồi chọn Long hoặc Short.",
+"Dibujar mi operación":"Vẽ lệnh của tôi",
+"No mostrar más este aviso":"Không hiện gợi ý này nữa",
+"Operaciones en la gráfica":"Lệnh trên biểu đồ",
+"Operación en marcha":"Lệnh đang mở",
+"Cómo se ve mientras está abierta.":"Lệnh còn mở sẽ hiển thị như thế nào.",
+"Líneas finas":"Đường mảnh",
+"Caja de color":"Hộp màu",
+"Nada":"Không có",
+"Los puntos de entrada y salida.":"Điểm vào và điểm thoát.",
+"Siempre":"Luôn luôn",
+"Unos días":"Vài ngày",
+"Quitarlas solas a los":"Tự gỡ sau",
+"Se cuentan desde que se cierra la operación.":"Tính từ lúc lệnh đóng.",
+"1 día":"1 ngày",
+"3 días":"3 ngày",
+"7 días":"7 ngày",
+"30 días":"30 ngày",
+"Entraste":"Bạn đã vào lệnh",
+"Stop / Objetivo":"Stop / Mục tiêu",
+"A mano":"Thủ công",
+"Cerrada a mano":"Đã đóng thủ công",
+"Operaciones quitadas":"Lệnh đã gỡ",
+"Volver a ponerlas":"Đặt lại",
+"Promedio total":"Trung bình tổng",
+"(ganadas y perdidas)":"(lãi và lỗ)",
+"Promedio de las ganadas":"Trung bình các lệnh lãi",
+"Mis casas":"Sàn của tôi",
+"Se ve solo lo de §. Todo el programa cambia con esta casa.":"Chỉ hiển thị những gì có trên §. Toàn bộ ứng dụng chuyển sang sàn này.",
+"TODO SU DINERO EN §":"TOÀN BỘ TIỀN CỦA BẠN TRÊN §",
+"TODO SU SPOT EN §":"TOÀN BỘ SPOT CỦA BẠN TRÊN §",
+"de $# en todas las casas":"trong tổng $# trên mọi sàn",
+"Dónde la tiene":"Bạn đang giữ ở đâu",
+"toque una casa para ver sus compras":"chạm vào một sàn để xem các lần mua",
+"prom.":"TB",
+"esta casa":"sàn này",
+"También la tiene en §":"Bạn cũng đang giữ trên §",
 
 "Línea horizontal":"Đường ngang",
 "Línea vertical":"Đường dọc",
@@ -129980,6 +131339,44 @@ DIC.hi={
 "Mom. frecuencias":"आवृत्ति मोमेंटम",
 "Bill Williams":"Bill Williams",
 "Operación programada":"निर्धारित ट्रेड",
+"Para operar":"ट्रेड करने के लिए",
+"Toque Dibujar y elija Largo o Corto.":"ड्रॉ करें दबाएँ और लॉन्ग या शॉर्ट चुनें।",
+"Dibujar mi operación":"मेरा सौदा ड्रॉ करें",
+"No mostrar más este aviso":"यह सुझाव दोबारा न दिखाएँ",
+"Operaciones en la gráfica":"चार्ट पर ट्रेड",
+"Operación en marcha":"खुला ट्रेड",
+"Cómo se ve mientras está abierta.":"खुला रहने तक यह कैसा दिखता है।",
+"Líneas finas":"पतली रेखाएँ",
+"Caja de color":"रंगीन बॉक्स",
+"Nada":"कुछ नहीं",
+"Los puntos de entrada y salida.":"एंट्री और एग्ज़िट के बिंदु।",
+"Siempre":"हमेशा",
+"Unos días":"कुछ दिन",
+"Quitarlas solas a los":"अपने-आप हटाएँ, इतने दिन बाद",
+"Se cuentan desde que se cierra la operación.":"ट्रेड बंद होने के समय से गिने जाते हैं।",
+"1 día":"1 दिन",
+"3 días":"3 दिन",
+"7 días":"7 दिन",
+"30 días":"30 दिन",
+"Entraste":"आपने एंट्री ली",
+"Stop / Objetivo":"स्टॉप / टारगेट",
+"A mano":"मैन्युअल",
+"Cerrada a mano":"हाथ से बंद किया",
+"Operaciones quitadas":"हटाए गए ट्रेड",
+"Volver a ponerlas":"वापस लगाएँ",
+"Promedio total":"कुल औसत",
+"(ganadas y perdidas)":"(जीत और हार)",
+"Promedio de las ganadas":"जीत का औसत",
+"Mis casas":"मेरे एक्सचेंज",
+"Se ve solo lo de §. Todo el programa cambia con esta casa.":"केवल § पर जो है वही दिख रहा है। पूरा ऐप इसी एक्सचेंज पर आ जाता है।",
+"TODO SU DINERO EN §":"§ पर आपका सारा पैसा",
+"TODO SU SPOT EN §":"§ पर आपका पूरा स्पॉट",
+"de $# en todas las casas":"सभी एक्सचेंज में कुल $# में से",
+"Dónde la tiene":"आपके पास कहाँ है",
+"toque una casa para ver sus compras":"खरीद देखने के लिए किसी एक्सचेंज को छुएँ",
+"prom.":"औसत",
+"esta casa":"यह एक्सचेंज",
+"También la tiene en §":"यह आपके पास § पर भी है",
 
 "Línea horizontal":"क्षैतिज रेखा",
 "Línea vertical":"ऊर्ध्वाधर रेखा",
@@ -136746,6 +138143,44 @@ DIC.ja={
 "Mom. frecuencias":"周波数MOM",
 "Bill Williams":"Bill Williams",
 "Operación programada":"予約中の取引",
+"Para operar":"取引するには",
+"Toque Dibujar y elija Largo o Corto.":"「描画」をタップして、ロングかショートを選びます。",
+"Dibujar mi operación":"自分の取引を描く",
+"No mostrar más este aviso":"このヒントを二度と表示しない",
+"Operaciones en la gráfica":"チャート上の取引",
+"Operación en marcha":"保有中の取引",
+"Cómo se ve mientras está abierta.":"保有中の見た目です。",
+"Líneas finas":"細い線",
+"Caja de color":"色付きボックス",
+"Nada":"なし",
+"Los puntos de entrada y salida.":"エントリーと決済のポイント。",
+"Siempre":"常に",
+"Unos días":"数日間",
+"Quitarlas solas a los":"自動で削除するまでの日数",
+"Se cuentan desde que se cierra la operación.":"取引が決済されてから数えます。",
+"1 día":"1日",
+"3 días":"3日",
+"7 días":"7日",
+"30 días":"30日",
+"Entraste":"エントリーしました",
+"Stop / Objetivo":"ストップ / 目標",
+"A mano":"手動",
+"Cerrada a mano":"手動で決済",
+"Operaciones quitadas":"削除した取引",
+"Volver a ponerlas":"元に戻す",
+"Promedio total":"総平均",
+"(ganadas y perdidas)":"(勝ちと負け)",
+"Promedio de las ganadas":"勝ちの平均",
+"Mis casas":"マイ取引所",
+"Se ve solo lo de §. Todo el programa cambia con esta casa.":"§にあるものだけを表示しています。アプリ全体がこの取引所に切り替わります。",
+"TODO SU DINERO EN §":"§ のすべての資金",
+"TODO SU SPOT EN §":"§ の現物のすべて",
+"de $# en todas las casas":"全取引所の合計 $# のうち",
+"Dónde la tiene":"保有している場所",
+"toque una casa para ver sus compras":"取引所をタップすると購入履歴が見られます",
+"prom.":"平均",
+"esta casa":"この取引所",
+"También la tiene en §":"§ にも保有しています",
 
 "Línea horizontal":"水平線",
 "Línea vertical":"垂直線",
@@ -143512,6 +144947,44 @@ DIC.ko={
 "Mom. frecuencias":"주파수 모멘텀",
 "Bill Williams":"Bill Williams",
 "Operación programada":"예약된 거래",
+"Para operar":"거래하려면",
+"Toque Dibujar y elija Largo o Corto.":"'그리기'를 누르고 롱 또는 숏을 고르세요.",
+"Dibujar mi operación":"내 거래 그리기",
+"No mostrar más este aviso":"이 안내를 다시 표시하지 않기",
+"Operaciones en la gráfica":"차트의 거래",
+"Operación en marcha":"진행 중인 거래",
+"Cómo se ve mientras está abierta.":"진행 중일 때의 표시 방식입니다.",
+"Líneas finas":"가는 선",
+"Caja de color":"색상 박스",
+"Nada":"없음",
+"Los puntos de entrada y salida.":"진입과 종료 지점입니다.",
+"Siempre":"항상",
+"Unos días":"며칠",
+"Quitarlas solas a los":"자동 제거 시점",
+"Se cuentan desde que se cierra la operación.":"거래가 종료된 시점부터 계산합니다.",
+"1 día":"1일",
+"3 días":"3일",
+"7 días":"7일",
+"30 días":"30일",
+"Entraste":"진입했습니다",
+"Stop / Objetivo":"손절가 / 목표가",
+"A mano":"수동",
+"Cerrada a mano":"수동으로 종료",
+"Operaciones quitadas":"제거한 거래",
+"Volver a ponerlas":"다시 표시",
+"Promedio total":"전체 평균",
+"(ganadas y perdidas)":"(수익과 손실)",
+"Promedio de las ganadas":"수익 거래 평균",
+"Mis casas":"내 거래소",
+"Se ve solo lo de §. Todo el programa cambia con esta casa.":"§에 있는 것만 보입니다. 앱 전체가 이 거래소로 바뀝니다.",
+"TODO SU DINERO EN §":"§의 전체 자금",
+"TODO SU SPOT EN §":"§의 현물 전체",
+"de $# en todas las casas":"모든 거래소 합계 $# 중",
+"Dónde la tiene":"보유 중인 곳",
+"toque una casa para ver sus compras":"거래소를 눌러 구매 내역을 보세요",
+"prom.":"평균",
+"esta casa":"이 거래소",
+"También la tiene en §":"§에도 보유 중입니다",
 
 "Línea horizontal":"수평선",
 "Línea vertical":"수직선",
@@ -150278,6 +151751,44 @@ DIC.zh={
 "Mom. frecuencias":"频率动量",
 "Bill Williams":"Bill Williams",
 "Operación programada":"已预设的交易",
+"Para operar":"要交易",
+"Toque Dibujar y elija Largo o Corto.":"点按“绘图”，然后选择做多或做空。",
+"Dibujar mi operación":"绘制我的交易",
+"No mostrar más este aviso":"不再显示此提示",
+"Operaciones en la gráfica":"图表上的交易",
+"Operación en marcha":"未平仓交易",
+"Cómo se ve mientras está abierta.":"持仓期间的显示方式。",
+"Líneas finas":"细线",
+"Caja de color":"彩色区域",
+"Nada":"无",
+"Los puntos de entrada y salida.":"开仓点和平仓点。",
+"Siempre":"始终",
+"Unos días":"几天",
+"Quitarlas solas a los":"自动移除，时间为",
+"Se cuentan desde que se cierra la operación.":"从交易平仓时开始计算。",
+"1 día":"1天",
+"3 días":"3天",
+"7 días":"7天",
+"30 días":"30天",
+"Entraste":"你在此开仓",
+"Stop / Objetivo":"止损 / 止盈价",
+"A mano":"手动",
+"Cerrada a mano":"手动平仓",
+"Operaciones quitadas":"已移除的交易",
+"Volver a ponerlas":"重新显示",
+"Promedio total":"总平均",
+"(ganadas y perdidas)":"(盈利和亏损)",
+"Promedio de las ganadas":"盈利平均",
+"Mis casas":"我的交易所",
+"Se ve solo lo de §. Todo el programa cambia con esta casa.":"仅显示§上的内容。整个应用都会切换到这个交易所。",
+"TODO SU DINERO EN §":"您在§的全部资金",
+"TODO SU SPOT EN §":"您在§的全部现货",
+"de $# en todas las casas":"在所有交易所合计 $# 中",
+"Dónde la tiene":"持有位置",
+"toque una casa para ver sus compras":"点按交易所查看其买入记录",
+"prom.":"均价",
+"esta casa":"此交易所",
+"También la tiene en §":"您在§也持有",
 
 "Línea horizontal":"水平线",
 "Línea vertical":"垂直线",
