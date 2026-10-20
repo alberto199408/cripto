@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="82">
+<meta name="v" content="83">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -7425,13 +7425,13 @@ function montarGrafica(cont, op){
       dedos[ev.pointerId]={x:ev.clientX,y:ev.clientY};
       var ids=Object.keys(dedos);
       estado.dedos={n:ids.length};
-      if(ids.length===2 && (!estado.herr || estado._herrToque73) && !estado.crea && !estado.arrastrando && estado.velas && estado.velas.length){
+      if(ids.length===2 && (!estado.herr || estado._herrToque73) && !estado.crea && (!estado.arrastrando || (typeof arr83Soltar==="function" && arr83Soltar(estado))) && estado.velas && estado.velas.length){      /* v83 · §164 */
         if(!estado.cuantas) velasVisibles(estado);
         var a=dedos[ids[0]], b=dedos[ids[1]], r=zona.getBoundingClientRect();
         var d0=Math.max(10, Math.hypot(a.x-b.x,a.y-b.y)), W=anchoVelas(estado), c0=estado.cuantas;
         var foco=Math.max(0, Math.min(W, (a.x+b.x)/2-r.left));
         estado.gen=(estado.gen||0)+1;                              /* el arrastre de un dedo, ya no vale */
-        estado.pinch={d0:d0, c0:c0, W:W, foco:foco, idx0:((estado.fin||0)-c0)+foco/(W/c0), ids:ids.slice(), left:r.left};      /* v74 · pto 40c */
+        estado.pinch={d0:d0, c0:c0, W:W, foco:foco, idx0:((estado.fin||0)-c0)+foco/(W/c0), ids:ids.slice(), left:r.left, y0:(a.y+b.y)/2, S0:null};      /* v74 · pto 40c */
       }
     }, true);
     window.addEventListener("pointermove", function(ev){
@@ -7444,6 +7444,9 @@ function montarGrafica(cont, op){
       var c1=Math.max(VEL_MIN, Math.min(cuantasTope(estado), Math.round(P.c0*P.d0/d)));
       var foco1=(P.left!=null) ? Math.max(0, Math.min(P.W, (a.x+b.x)/2-P.left)) : P.foco;      /* v74 · pto 40d: los dos dedos también mueven la gráfica */
       var per1=P.W/c1, fin1=limitarFin(estado, Math.round(P.idx0-foco1/per1+c1));
+      var dyp=(a.y+b.y)/2-P.y0;      /* v83 · §167: arriba y abajo con dos dedos (la escala de precios), como con un dedo */
+      if(!P.S0 && Math.abs(dyp)>=14 && typeof esc67Empezar==="function") P.S0=esc67Empezar(estado);
+      if(P.S0 && typeof esc67Mover==="function"){ var dzp=Math.abs(dyp)<14 ? 0 : dyp-(dyp>0?14:-14); esc67Mover(estado, P.S0, dzp/Math.max(0.01,estado.escH)); }
       if(c1===estado.cuantas && fin1===estado.fin) return;
       estado.cuantas=c1;
       estado.fin=fin1;
@@ -24193,7 +24196,7 @@ function ajustesVentana68(E){
       h+=t68("Dibujos");
       h+=fsw68("Quitar siempre los dibujos bloqueados", "data-aqb", !!a.qBloq, "Al usar «Quitar objetos» también se van los dibujos con candado.");
       h+=fsw68("Compartir los dibujos entre Spot, Futuros y Backtesting", "data-adib", !!a.dibComp, "Apagado: cada pantalla tiene sus propios dibujos.");      /* v75 · pto 63 */
-      h+=fsw68("Dibujar con la cruz", "data-acruz", a.cruzDedo!==false, "En el teléfono: un dedo mueve solo la cruz (al dibujar, un toque pone el punto) y dos dedos mueven la gráfica. Apagado: un dedo mueve la gráfica.");      /* v74 · pto 40 */
+      h+=fsw68("Dibujar con la cruz", "data-acruz", a.cruzDedo!==false, "Al dibujar, en el teléfono: un dedo mueve solo la cruz y un toque pone el punto; dos dedos mueven la gráfica.");      h+=ajDedo83();      /* v83 · §163 */      /* v74 · pto 40 */
       h+=f68("Color de lo elegido", selAj68("data-ares", [["","Neutro (blanco pálido)"],["tema","Color del tema"]], (a.resalte==="tema")?"tema":""));      /* v74 · pto 57 */
       h+=(typeof ajOps80==="function") ? ajOps80(E) : "";      /* v80 · operaciones en la gráfica */
       h+=t68("Mensajes");      /* v74 · pto 56 */
@@ -24255,6 +24258,7 @@ function ajustesVentana68(E){
       if(t.hasAttribute("data-adib")){ BD.ajustes.dibComp=!!t.checked; if(t.checked) dibJuntar75(); else dibSeparar75(); aplicar(); return; }      /* v75 · pto 63 */
       if(t.hasAttribute("data-ares")){ if(t.value) BD.ajustes.resalte=t.value; else delete BD.ajustes.resalte; aplicar(); return; }      /* v74 · pto 57 */
       if(t.hasAttribute("data-acruz")){ BD.ajustes.cruzDedo=!!t.checked; guarda(); return; }      /* v74 · pto 40 */
+      if(t.hasAttribute("data-ad83")){ ajDedoCambio83(t); aplicar(); return; }      /* v83 · §163 */
       if(ajEstCambio81(t, aplicar, E)) return;      /* v81 · §157 */
       if(typeof ajOpsCambio80==="function" && ajOpsCambio80(t, aplicar)) return;      /* v80 */
       if(t.hasAttribute("data-amsg")){ BD.ajustes.msgTodos=!!t.checked; guarda(); return; }      /* v74 · pto 56 */
@@ -27678,6 +27682,7 @@ abrirPos74=function(E, d){
   function despues(o){
     if(prac){                            /* Practicar: la gráfica se queda (y la caja también, para ver el stop y el objetivo) */
       var tx;
+      try{ var zk83=(TRAZOS[kd]||[]).filter(function(z){ return z.id===d.id; })[0]; if(zk83){ zk83.ab83=o.id; zk83.bl=true; guardarTrazos(); } if(E.sel===d.id) E.sel=null; E.posId=null; E.panelDe=null; }catch(e83){ if(window.console) console.error(e83); }      /* v83 · §165 */
       if(tRp!=null){                     /* en la repetición: se sigue con las velas que van saliendo */
         o.rp75={t:tRp, chk:tRp, inter:E.inter, ult:{t:tRp, c:+o.entrada}};
         if(o.hora==="" || o.hora==null) o.hora=horaLocal75(tRp);
@@ -28889,7 +28894,7 @@ function repasarCierres76(forzar){
   REP76.ult=Date.now();
   var lista=[];
   [["fut",BD.fut],["back",BD.back]].forEach(function(par){ (par[1]||[]).forEach(function(f){
-    if(!f || f.estado!=="abierta" || !f.sym || !(+f.entrada>0)) return;
+    if(!f || f.estado!=="abierta" || !f.sym || !(+f.entrada>0) || f.rp75) return;      /* v83 · §166: la práctica no se cierra con velas que aún no se vieron */
     var a=null; try{ a=(cajaDeOp70(f)||{}).a; }catch(e){}
     if(!a || a.t>Date.now()) return;
     lista.push({f:f, amb:par[0], a:a});
@@ -31748,7 +31753,7 @@ function cruz81Cambio(E){ try{ if(E) cruz67Repintar(E); }catch(e){} }
     mueve todo… y salgo atrás… nuevamente queda bloqueado donde traza el primer punto… Esa línea punteada debe ser la misma exacta cuando no
     esté trazando nada.»  (y, a mi pregunta, eligió «Igual que al dibujar»)
    La v81 dejaba la cruz «Siempre» clavada en la pantalla y un dedo corría la gráfica; la cruz de dibujar (v74) es otra: un dedo la mueve a ella sola.
-   Ahora, con la cruz en «Siempre» y «Dibujar con la cruz» encendido (Ajustes › Lienzo; BD.ajustes.cruzDedo), SIN herramienta, en el teléfono:
+   Ahora, con la cruz en «Siempre» y «Dibujar con la cruz» encendido (v82; en la v83 lo decide «Un dedo sobre la gráfica», BD.ajustes.dedo83), SIN herramienta, en el teléfono:
      · UN dedo que se desliza mueve SOLO la cruz (como el ratón de una laptop; el dedo puede ir donde sea), la gráfica queda quieta;
      · DOS dedos mueven y acercan la gráfica (igual que al dibujar);
      · un toque pone la cruz ahí (v81) y sigue eligiendo dibujos y figuras como siempre;
@@ -31757,9 +31762,14 @@ function cruz81Cambio(E){ try{ if(E) cruz67Repintar(E); }catch(e){} }
    No cambia: la PC (ratón), «Al mantener», «Nunca», las tijeras de la repetición (ahí el dedo sigue corriendo la gráfica) y «Dibujar con la cruz» apagado
    (vuelve a lo de la v81: un dedo corre la gráfica).
    =================================================================== */
-function cruz82Activo(E){
-  return !!(E && !E.herr && !E.crea && !(E.rp && E.rp.eligiendo) && typeof cruzModo74==="function" && cruzModo74(E) && typeof cruz81Fijo==="function" && cruz81Fijo(E));
+/* v83 · QUÉ HACE UN DEDO sobre la gráfica (sin herramienta de dibujo, en el teléfono, con la cruz «Siempre»). Ajustes › Lienzo › «Un dedo sobre la gráfica»,
+   BD.ajustes.dedo83:  "a" Gráfica y cruz (DE FÁBRICA: un dedo desplaza la gráfica y los indicadores y la cruz lo acompaña) · "c" Solo la cruz (v82) · "g" Solo la gráfica (v81) */
+function dedo83Modo(){ var m=(typeof BD!=="undefined" && BD.ajustes) ? BD.ajustes.dedo83 : null; return (m==="c" || m==="g") ? m : "a"; }
+function cruz82Base(E){
+  return !!(E && !E.herr && !E.crea && !(E.rp && E.rp.eligiendo) && typeof cruz81Fijo==="function" && cruz81Fijo(E));
 }
+/* ¿el dedo maneja la cruz (modos «a» y «c»)? entonces no hace falta la cruz de «mantener el dedo» */
+function cruz82Activo(E){ return cruz82Base(E) && dedo83Modo()!=="g"; }
 /* la cruz en el sitio (x, y de la zona de la gráfica) leyendo lo que hay ahí: vela, y precio o valor del indicador de ese panel */
 function cruz82En(E, x, y){
   var z=E.cont && E.cont.querySelector(".gzona"); if(!z || !E.velas || !E.velas.length) return null;
@@ -31771,17 +31781,24 @@ function cruz82En(E, x, y){
   if(typeof indHoverLey==="function" && typeof indLista==="function" && indLista().length && E.indHover!==q.i){ E.indHover=q.i; indHoverLey(E); }
   return q;
 }
-/* lo llama el arrastre de la gráfica (el dedo, sin herramienta): devuelve true si lo manejó la cruz (la gráfica no se corre) */
+/* lo llama el arrastre de la gráfica (el dedo, sin herramienta); devuelve true si la cruz lo maneja SOLA (la gráfica no se corre) */
 function cruz82Mover(E, ev0, e2){
-  if(!ev0 || ev0.pointerType==="mouse" || !cruz82Activo(E)) return false;
+  if(!ev0 || ev0.pointerType==="mouse" || !cruz82Base(E)) return false;
+  var m=dedo83Modo(); if(m==="g") return false;
   var G=E._c82;
   if(!G || G.ev!==ev0){
     var P=E.cz81 || cruz81Ini(E); if(!P) return false;
     G=E._c82={ev:ev0, x0:ev0.clientX, y0:ev0.clientY, c:{x:P.x, y:P.y}, mv:false, dos:false};
   }
-  if(E.pinch || (E.dedos && E.dedos.n>1)) G.dos=true;      /* dos dedos: es la gráfica, no la cruz */
-  if(G.dos) return true;
+  if(E.pinch || (E.dedos && E.dedos.n>1)) G.dos=true;      /* dos dedos: es la gráfica (acercar / alejar), no la cruz */
+  if(G.dos) return m==="c";
   var dx=e2.clientX-G.x0, dy=e2.clientY-G.y0;
+  if(m==="a"){                                               /* v83 · la cruz acompaña al dedo Y la gráfica se desplaza (como en la PC al arrastrar) */
+    if(!G.mv && Math.abs(dx)<4 && Math.abs(dy)<4) return false;
+    G.mv=true;
+    cruz82En(E, G.c.x+dx, G.c.y+dy);
+    return false;
+  }
   if(!G.mv && Math.abs(dx)<6 && Math.abs(dy)<6) return true;
   G.mv=true;
   cruz82En(E, G.c.x+dx, G.c.y+dy);
@@ -31796,6 +31813,123 @@ function cruz82Mover(E, ev0, e2){
     return i0.apply(this, arguments);
   };
 })();
+
+/* ===================================================================
+   v83 · Ajustes › Lienzo › «Un dedo sobre la gráfica»  (Luis, 20 oct 18:06, §163)
+   «Para desplazar la gráfica o los indicadores de izquierda a derecha tengo que hacer con los dos dedos. Algo que nunca te autoricé… igual tiene que
+    desplazarse la gráfica… Espero que haya dejado configurable… en Ajustes.»
+   Tres opciones (BD.ajustes.dedo83; de fábrica «a»); se lee al empezar cada gesto, así que el cambio vale al momento.
+   =================================================================== */
+function ajDedo83(){
+  return f68("Un dedo sobre la gráfica", selAj68("data-ad83", [["a","Gráfica y cruz"],["c","Solo la cruz"],["g","Solo la gráfica"]], dedo83Modo()))+
+    '<div class="v68nota">'+esc(tr("Sin herramienta de dibujo, en el teléfono. Gráfica y cruz: un dedo desplaza la gráfica y los indicadores y la cruz lo acompaña (dos dedos acercan y alejan). Solo la cruz: un dedo mueve la cruz y dos dedos mueven la gráfica. Solo la gráfica: un dedo desplaza la gráfica y la cruz queda quieta."))+'</div>';
+}
+function ajDedoCambio83(t){
+  var v=t.value; if(!BD.ajustes) BD.ajustes={};
+  if(v==="c" || v==="g") BD.ajustes.dedo83=v; else delete BD.ajustes.dedo83;
+}
+if(typeof AJ68_CLAVES!=="undefined" && AJ68_CLAVES.indexOf("dedo83")<0) AJ68_CLAVES.push("dedo83");      /* «Cancelar» lo devuelve y «Por defecto» lo restablece */
+
+/* ===================================================================
+   v83 · LA PRÁCTICA, EL ZOOM CON UNA CAJA Y LA BARRA «LARGO · CORTO · ABRIR»  (Luis, 20 oct 18:16–18:22, §164–§166)
+   §166 «Backtesting · La operación N° 3 de AR se cerró sola en el stop… lo tocó el 4 ene 26 a las 19:00» — con la repetición parada en el 2 ene, sin
+        dar play. Era el revisor de la v76 (repasarCierres76: mira las velas REALES desde la entrada hasta hoy) que no excluía las operaciones de
+        Practicar (f.rp75): veía velas que en la repetición todavía son «el futuro». Ahora las salta (esas solo se cierran con las velas que salen al
+        dar play, rp75Revisar) y las que ya se habían cerrado así se reabren (reabrirPractica83).
+   §164 «Con una flecha o una caja puesta no puedo hacer zoom: queda trabado»: apoyar un dedo sobre una figura o la caja empieza a arrastrarla
+        (E.arrastrando) y eso impedía el pellizco. Ahora el segundo dedo cancela ese arrastre (la figura vuelve a donde estaba) y hace zoom.
+   §165 «Yo ya abrí la operación, ¿por qué me sigue saliendo Largo/Corto/Abrir?»: en Practicar la caja se queda a propósito tras abrir (para ver el
+        stop y el objetivo) y por eso la barra seguía. Ahora esa caja queda como la marca de la operación abierta (ab83, bloqueada) y no cuenta para la
+        barra: esta solo sale mientras hay una caja por graficar.
+   =================================================================== */
+/* ---- §165: la caja ya abierta no cuenta como «caja por abrir» ---- */
+if(typeof posDe==="function" && !window._pos83){
+  window._pos83=true;
+  posDe=function(E){
+    var L=[]; try{ L=listaTrazos(E).filter(function(z){ return z.tipo==="pos" && !z.ab83; }); }catch(e){}
+    var s=E.sel?buscarTrazo(E,E.sel):null;
+    if(s && s.tipo==="pos" && !s.ab83){ E.posId=s.id; return s; }
+    if(E.posId){ for(var i=0;i<L.length;i++) if(L[i].id===E.posId) return L[i]; }
+    if(L.length){ E.posId=L[L.length-1].id; return L[L.length-1]; }
+    E.posId=null; return null;
+  };
+}
+/* ---- §164: dos dedos mandan sobre el arrastre de una figura ---- */
+function arr83Marca(E, id, ev, cl){
+  var A={id:id, cl:cl||null, pid:(ev && ev.pointerId!=null) ? ev.pointerId : 0};
+  E._arr83=A;
+  function fin(){ if(E._arr83===A) E._arr83=null; window.removeEventListener("pointerup", fin, true); window.removeEventListener("pointercancel", fin, true); }
+  window.addEventListener("pointerup", fin, true); window.addEventListener("pointercancel", fin, true);
+}
+/* el segundo dedo llegó mientras el primero arrastraba una figura: se cancela ese arrastre (la figura vuelve) y sigue el pellizco. true = ya se puede hacer zoom */
+function arr83Soltar(E){
+  var A=E && E._arr83; if(!A) return false;
+  E._arr83=null;
+  try{ window.dispatchEvent(new PointerEvent("pointercancel", {pointerId:-83, bubbles:true})); }catch(e){}      /* pointerId falso: lo oye el arrastre (suelta) pero no el contador de dedos del pellizco */
+  try{
+    var z=A.cl ? buscarTrazo(E, A.id) : null;
+    if(z){ Object.keys(z).forEach(function(k){ if(!(k in A.cl)) delete z[k]; }); Object.keys(A.cl).forEach(function(k){ z[k]=A.cl[k]; }); guardarTrazos(); pintarTrazos(E); }
+  }catch(e2){ if(window.console) console.error(e2); }
+  return !E.arrastrando;
+}
+if(typeof empezarArrastre==="function" && !window._arr83){
+  window._arr83=true;
+  var ea83=empezarArrastre;
+  empezarArrastre=function(E, id, modo, ev){
+    if(E && E.pinch) return;      /* con dos dedos puestos (zoom) el dedo que cae sobre la caja o la figura no la arrastra */
+    var cl=null; try{ if(String(id).indexOf("af73:")!==0){ var z0=buscarTrazo(E, id); if(z0 && !z0.bl) cl=JSON.parse(JSON.stringify(z0)); } }catch(e){}
+    var r=ea83.apply(this, arguments);
+    if(E.arrastrando) arr83Marca(E, id, ev, cl);
+    return r;
+  };
+}
+/* ---- §166: las operaciones de práctica cerradas con velas que aún no se habían visto se reabren ---- */
+function reabrirPractica83(){
+  if(typeof BD==="undefined" || !BD.back) return 0;
+  var n=0;
+  BD.back.forEach(function(f){
+    if(!f || !f.rp75 || !f.rp75.ult || f.estado!=="cerrada") return;
+    if(f.auto!=="stop" && f.auto!=="liq" && f.auto!=="objetivo") return;
+    var tc=(typeof msDe==="function") ? msDe(f.cierre, f.horaCierre) : null;
+    if(tc==null || !(tc>(+f.rp75.ult.t)+60000)) return;      /* una de verdad (rp75Revisar) se cierra EN la vela que ya salió; esta es de después */
+    f.estado="abierta"; f.salida=null; f.cierre=null; f.horaCierre=""; f.pct=null; delete f.auto; try{ tocar(f); }catch(e){}
+    n++;
+  });
+  if(n){
+    try{ guardar(); }catch(e){}
+    try{ if(typeof pintarBack75==="function") pintarBack75(); }catch(e2){}
+    try{ aviso(esc(tr("Se reabrieron operaciones de práctica que se habían cerrado con velas que aún no se habían visto en la repetición.")), false); }catch(e3){}
+  }
+  return n;
+}
+if(!window._rep83){ window._rep83=true; setTimeout(function(){ try{ reabrirPractica83(); }catch(e){ if(window.console) console.error(e); } }, 1500); }
+/* ---- §165 en SPOT: «Comprar» lleva la caja al formulario de compra; cuando la compra queda REGISTRADA la caja ya cumplió y sale de la gráfica
+        (igual que en Futuros), así al volver a abrir la gráfica no reaparece la barra Largo/Corto/Comprar. Si no registra, la caja sigue ahí. ---- */
+if(typeof usarPosicionEnSpot68==="function" && !window._spot83){
+  window._spot83=true;
+  var us83=usarPosicionEnSpot68;
+  usarPosicionEnSpot68=function(E, z){
+    try{ if(z && z.id && E && E.op) SP._caja83={kz:simTrazos(E), id:z.id, sym:String(E.op.sym).toUpperCase(), t:Date.now()}; }catch(e){}
+    return us83.apply(this, arguments);
+  };
+}
+if(typeof registrarCompraVenta==="function" && !window._reg83c){
+  window._reg83c=true;
+  var rc83=registrarCompraVenta;
+  registrarCompraVenta=function(nuevo, pago){
+    var C=null; try{ C=SP._caja83; }catch(e){}
+    var esCompra=false; try{ esCompra=(SP.tipo==="compra"); }catch(e1){}
+    var r=rc83.apply(this, arguments);
+    try{
+      if(C && esCompra && nuevo && String(nuevo.sym).toUpperCase()===C.sym && (Date.now()-C.t)<2*3600e3){
+        var L=TRAZOS[C.kz];
+        if(L){ TRAZOS[C.kz]=L.filter(function(z){ return z.id!==C.id; }); if(!TRAZOS[C.kz].length) delete TRAZOS[C.kz]; guardarTrazos(); }
+        SP._caja83=null;
+      }
+    }catch(e2){ if(window.console) console.error(e2); }
+    return r;
+  };
+}
 
 /* ===================================================================
    v81 · «MIS FAVORITAS» EN LISTA DESPLEGABLE  (Luis, 20 oct 06:49, §159)
@@ -51832,6 +51966,13 @@ DIC.en={
 "Corte de la repetición":"Replay cut point",
 "La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"The vertical line where the replay starts: it shows while you pick the point.",
 "En el teléfono: un dedo mueve solo la cruz (al dibujar, un toque pone el punto) y dos dedos mueven la gráfica. Apagado: un dedo mueve la gráfica.":"On the phone: one finger moves only the crosshair (when drawing, a tap places the point) and two fingers move the chart. Off: one finger moves the chart.",
+"Un dedo sobre la gráfica":"One finger on the chart",
+"Gráfica y cruz":"Chart and crosshair",
+"Solo la cruz":"Crosshair only",
+"Solo la gráfica":"Chart only",
+"Sin herramienta de dibujo, en el teléfono. Gráfica y cruz: un dedo desplaza la gráfica y los indicadores y la cruz lo acompaña (dos dedos acercan y alejan). Solo la cruz: un dedo mueve la cruz y dos dedos mueven la gráfica. Solo la gráfica: un dedo desplaza la gráfica y la cruz queda quieta.":"With no drawing tool, on the phone. Chart and crosshair: one finger scrolls the chart and indicators and the crosshair goes along (two fingers zoom in and out). Crosshair only: one finger moves the crosshair and two fingers move the chart. Chart only: one finger scrolls the chart and the crosshair stays still.",
+"Al dibujar, en el teléfono: un dedo mueve solo la cruz y un toque pone el punto; dos dedos mueven la gráfica.":"When drawing, on the phone: one finger moves only the crosshair and a tap places the point; two fingers move the chart.",
+"Se reabrieron operaciones de práctica que se habían cerrado con velas que aún no se habían visto en la repetición.":"Practice trades that had been closed using candles not yet seen in the replay were reopened.",
 
 "Línea horizontal":"Horizontal line",
 "Línea vertical":"Vertical line",
@@ -58389,6 +58530,13 @@ DIC.pt={
 "Corte de la repetición":"Ponto de corte da repetição",
 "La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"A linha vertical onde a repetição começa: aparece enquanto você escolhe o ponto.",
 "En el teléfono: un dedo mueve solo la cruz (al dibujar, un toque pone el punto) y dos dedos mueven la gráfica. Apagado: un dedo mueve la gráfica.":"No telefone: um dedo move só a cruz (ao desenhar, um toque põe o ponto) e dois dedos movem o gráfico. Desligado: um dedo move o gráfico.",
+"Un dedo sobre la gráfica":"Um dedo no gráfico",
+"Gráfica y cruz":"Gráfico e cruz",
+"Solo la cruz":"Só a cruz",
+"Solo la gráfica":"Só o gráfico",
+"Sin herramienta de dibujo, en el teléfono. Gráfica y cruz: un dedo desplaza la gráfica y los indicadores y la cruz lo acompaña (dos dedos acercan y alejan). Solo la cruz: un dedo mueve la cruz y dos dedos mueven la gráfica. Solo la gráfica: un dedo desplaza la gráfica y la cruz queda quieta.":"Sem ferramenta de desenho, no telefone. Gráfico e cruz: um dedo desloca o gráfico e os indicadores e a cruz acompanha (dois dedos aproximam e afastam). Só a cruz: um dedo move a cruz e dois dedos movem o gráfico. Só o gráfico: um dedo desloca o gráfico e a cruz fica parada.",
+"Al dibujar, en el teléfono: un dedo mueve solo la cruz y un toque pone el punto; dos dedos mueven la gráfica.":"Ao desenhar, no telefone: um dedo move só a cruz e um toque põe o ponto; dois dedos movem o gráfico.",
+"Se reabrieron operaciones de práctica que se habían cerrado con velas que aún no se habían visto en la repetición.":"Foram reabertas operações de prática que tinham sido fechadas com velas ainda não vistas na repetição.",
 
 "Línea horizontal":"Linha horizontal",
 "Línea vertical":"Linha vertical",
@@ -64939,6 +65087,13 @@ DIC.fr={
 "Corte de la repetición":"Point de coupure de la relecture",
 "La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"La ligne verticale où la relecture commence : elle s'affiche pendant le choix du point.",
 "En el teléfono: un dedo mueve solo la cruz (al dibujar, un toque pone el punto) y dos dedos mueven la gráfica. Apagado: un dedo mueve la gráfica.":"Sur le téléphone : un doigt déplace seulement le réticule (en dessinant, une touche place le point) et deux doigts déplacent le graphique. Désactivé : un doigt déplace le graphique.",
+"Un dedo sobre la gráfica":"Un doigt sur le graphique",
+"Gráfica y cruz":"Graphique et réticule",
+"Solo la cruz":"Réticule seul",
+"Solo la gráfica":"Graphique seul",
+"Sin herramienta de dibujo, en el teléfono. Gráfica y cruz: un dedo desplaza la gráfica y los indicadores y la cruz lo acompaña (dos dedos acercan y alejan). Solo la cruz: un dedo mueve la cruz y dos dedos mueven la gráfica. Solo la gráfica: un dedo desplaza la gráfica y la cruz queda quieta.":"Sans outil de dessin, sur le téléphone. Graphique et réticule : un doigt fait défiler le graphique et les indicateurs et le réticule suit (deux doigts zooment et dézooment). Réticule seul : un doigt déplace le réticule et deux doigts déplacent le graphique. Graphique seul : un doigt fait défiler le graphique et le réticule reste immobile.",
+"Al dibujar, en el teléfono: un dedo mueve solo la cruz y un toque pone el punto; dos dedos mueven la gráfica.":"En dessinant, sur le téléphone : un doigt déplace seulement le réticule et une touche place le point ; deux doigts déplacent le graphique.",
+"Se reabrieron operaciones de práctica que se habían cerrado con velas que aún no se habían visto en la repetición.":"Des opérations d’entraînement fermées avec des bougies pas encore vues dans la relecture ont été rouvertes.",
 
 "Línea horizontal":"Ligne horizontale",
 "Línea vertical":"Ligne verticale",
@@ -71489,6 +71644,13 @@ DIC.de={
 "Corte de la repetición":"Schnittpunkt der Wiederholung",
 "La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"Die senkrechte Linie, an der die Wiederholung beginnt: sie erscheint, während Sie den Punkt wählen.",
 "En el teléfono: un dedo mueve solo la cruz (al dibujar, un toque pone el punto) y dos dedos mueven la gráfica. Apagado: un dedo mueve la gráfica.":"Am Telefon: Ein Finger bewegt nur das Fadenkreuz (beim Zeichnen setzt ein Tippen den Punkt), zwei Finger bewegen den Chart. Aus: Ein Finger bewegt den Chart.",
+"Un dedo sobre la gráfica":"Ein Finger auf dem Chart",
+"Gráfica y cruz":"Chart und Fadenkreuz",
+"Solo la cruz":"Nur Fadenkreuz",
+"Solo la gráfica":"Nur Chart",
+"Sin herramienta de dibujo, en el teléfono. Gráfica y cruz: un dedo desplaza la gráfica y los indicadores y la cruz lo acompaña (dos dedos acercan y alejan). Solo la cruz: un dedo mueve la cruz y dos dedos mueven la gráfica. Solo la gráfica: un dedo desplaza la gráfica y la cruz queda quieta.":"Ohne Zeichenwerkzeug, am Telefon. Chart und Fadenkreuz: Ein Finger verschiebt Chart und Indikatoren, das Fadenkreuz geht mit (zwei Finger zoomen). Nur Fadenkreuz: Ein Finger bewegt das Fadenkreuz, zwei Finger bewegen den Chart. Nur Chart: Ein Finger verschiebt den Chart, das Fadenkreuz bleibt stehen.",
+"Al dibujar, en el teléfono: un dedo mueve solo la cruz y un toque pone el punto; dos dedos mueven la gráfica.":"Beim Zeichnen am Telefon: Ein Finger bewegt nur das Fadenkreuz und ein Tippen setzt den Punkt; zwei Finger bewegen den Chart.",
+"Se reabrieron operaciones de práctica que se habían cerrado con velas que aún no se habían visto en la repetición.":"Übungs-Trades, die mit Kerzen geschlossen worden waren, die in der Wiederholung noch nicht zu sehen waren, wurden wieder geöffnet.",
 
 "Línea horizontal":"Horizontale Linie",
 "Línea vertical":"Vertikale Linie",
@@ -78039,6 +78201,13 @@ DIC.it={
 "Corte de la repetición":"Punto di taglio della ripetizione",
 "La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"La linea verticale da cui parte la ripetizione: compare mentre scegli il punto.",
 "En el teléfono: un dedo mueve solo la cruz (al dibujar, un toque pone el punto) y dos dedos mueven la gráfica. Apagado: un dedo mueve la gráfica.":"Sul telefono: un dito muove solo il mirino (disegnando, un tocco mette il punto) e due dita muovono il grafico. Spento: un dito muove il grafico.",
+"Un dedo sobre la gráfica":"Un dito sul grafico",
+"Gráfica y cruz":"Grafico e mirino",
+"Solo la cruz":"Solo mirino",
+"Solo la gráfica":"Solo grafico",
+"Sin herramienta de dibujo, en el teléfono. Gráfica y cruz: un dedo desplaza la gráfica y los indicadores y la cruz lo acompaña (dos dedos acercan y alejan). Solo la cruz: un dedo mueve la cruz y dos dedos mueven la gráfica. Solo la gráfica: un dedo desplaza la gráfica y la cruz queda quieta.":"Senza strumento di disegno, sul telefono. Grafico e mirino: un dito sposta il grafico e gli indicatori e il mirino lo accompagna (due dita ingrandiscono e riducono). Solo mirino: un dito muove il mirino e due dita muovono il grafico. Solo grafico: un dito sposta il grafico e il mirino resta fermo.",
+"Al dibujar, en el teléfono: un dedo mueve solo la cruz y un toque pone el punto; dos dedos mueven la gráfica.":"Disegnando, sul telefono: un dito muove solo il mirino e un tocco mette il punto; due dita muovono il grafico.",
+"Se reabrieron operaciones de práctica que se habían cerrado con velas que aún no se habían visto en la repetición.":"Sono state riaperte operazioni di pratica chiuse con candele non ancora viste nella ripetizione.",
 
 "Línea horizontal":"Linea orizzontale",
 "Línea vertical":"Linea verticale",
@@ -84579,6 +84748,13 @@ DIC.nl={
 "Corte de la repetición":"Knippunt van de herhaling",
 "La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"De verticale lijn waar de herhaling begint: ze verschijnt terwijl u het punt kiest.",
 "En el teléfono: un dedo mueve solo la cruz (al dibujar, un toque pone el punto) y dos dedos mueven la gráfica. Apagado: un dedo mueve la gráfica.":"Op de telefoon: één vinger verplaatst alleen het dradenkruis (bij het tekenen zet een tik het punt) en twee vingers verplaatsen de grafiek. Uit: één vinger verplaatst de grafiek.",
+"Un dedo sobre la gráfica":"Eén vinger op de grafiek",
+"Gráfica y cruz":"Grafiek en dradenkruis",
+"Solo la cruz":"Alleen dradenkruis",
+"Solo la gráfica":"Alleen grafiek",
+"Sin herramienta de dibujo, en el teléfono. Gráfica y cruz: un dedo desplaza la gráfica y los indicadores y la cruz lo acompaña (dos dedos acercan y alejan). Solo la cruz: un dedo mueve la cruz y dos dedos mueven la gráfica. Solo la gráfica: un dedo desplaza la gráfica y la cruz queda quieta.":"Zonder tekengereedschap, op de telefoon. Grafiek en dradenkruis: één vinger verschuift de grafiek en de indicatoren en het dradenkruis gaat mee (twee vingers zoomen in en uit). Alleen dradenkruis: één vinger verplaatst het dradenkruis en twee vingers verplaatsen de grafiek. Alleen grafiek: één vinger verschuift de grafiek en het dradenkruis blijft staan.",
+"Al dibujar, en el teléfono: un dedo mueve solo la cruz y un toque pone el punto; dos dedos mueven la gráfica.":"Bij het tekenen op de telefoon: één vinger verplaatst alleen het dradenkruis en een tik zet het punt; twee vingers verplaatsen de grafiek.",
+"Se reabrieron operaciones de práctica que se habían cerrado con velas que aún no se habían visto en la repetición.":"Oefenposities die waren gesloten met kaarsen die in de herhaling nog niet te zien waren, zijn heropend.",
 
 "Línea horizontal":"Horizontale lijn",
 "Línea vertical":"Verticale lijn",
@@ -91405,6 +91581,13 @@ DIC.pl={
 "Corte de la repetición":"Punkt odcięcia powtórki",
 "La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"Pionowa linia, od której zaczyna się powtórka: widoczna podczas wybierania punktu.",
 "En el teléfono: un dedo mueve solo la cruz (al dibujar, un toque pone el punto) y dos dedos mueven la gráfica. Apagado: un dedo mueve la gráfica.":"Na telefonie: jeden palec przesuwa tylko krzyż (podczas rysowania dotknięcie stawia punkt), a dwa palce przesuwają wykres. Wyłączone: jeden palec przesuwa wykres.",
+"Un dedo sobre la gráfica":"Jeden palec na wykresie",
+"Gráfica y cruz":"Wykres i krzyż",
+"Solo la cruz":"Tylko krzyż",
+"Solo la gráfica":"Tylko wykres",
+"Sin herramienta de dibujo, en el teléfono. Gráfica y cruz: un dedo desplaza la gráfica y los indicadores y la cruz lo acompaña (dos dedos acercan y alejan). Solo la cruz: un dedo mueve la cruz y dos dedos mueven la gráfica. Solo la gráfica: un dedo desplaza la gráfica y la cruz queda quieta.":"Bez narzędzia rysowania, na telefonie. Wykres i krzyż: jeden palec przesuwa wykres i wskaźniki, a krzyż mu towarzyszy (dwa palce powiększają i pomniejszają). Tylko krzyż: jeden palec przesuwa krzyż, a dwa palce przesuwają wykres. Tylko wykres: jeden palec przesuwa wykres, a krzyż stoi w miejscu.",
+"Al dibujar, en el teléfono: un dedo mueve solo la cruz y un toque pone el punto; dos dedos mueven la gráfica.":"Podczas rysowania na telefonie: jeden palec przesuwa tylko krzyż, a dotknięcie stawia punkt; dwa palce przesuwają wykres.",
+"Se reabrieron operaciones de práctica que se habían cerrado con velas que aún no se habían visto en la repetición.":"Ponownie otwarto transakcje treningowe zamknięte świecami, których jeszcze nie widziano w odtwarzaniu.",
 
 "Línea horizontal":"Linia pozioma",
 "Línea vertical":"Linia pionowa",
@@ -98231,6 +98414,13 @@ DIC.tr={
 "Corte de la repetición":"Tekrar kesme noktası",
 "La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"Tekrarın başladığı dikey çizgi: noktayı seçerken görünür.",
 "En el teléfono: un dedo mueve solo la cruz (al dibujar, un toque pone el punto) y dos dedos mueven la gráfica. Apagado: un dedo mueve la gráfica.":"Telefonda: tek parmak yalnızca artıyı hareket ettirir (çizerken dokunmak noktayı koyar), iki parmak grafiği kaydırır. Kapalıyken: tek parmak grafiği kaydırır.",
+"Un dedo sobre la gráfica":"Grafikte tek parmak",
+"Gráfica y cruz":"Grafik ve artı",
+"Solo la cruz":"Yalnızca artı",
+"Solo la gráfica":"Yalnızca grafik",
+"Sin herramienta de dibujo, en el teléfono. Gráfica y cruz: un dedo desplaza la gráfica y los indicadores y la cruz lo acompaña (dos dedos acercan y alejan). Solo la cruz: un dedo mueve la cruz y dos dedos mueven la gráfica. Solo la gráfica: un dedo desplaza la gráfica y la cruz queda quieta.":"Çizim aracı yokken, telefonda. Grafik ve artı: tek parmak grafiği ve göstergeleri kaydırır, artı da eşlik eder (iki parmak yakınlaştırır ve uzaklaştırır). Yalnızca artı: tek parmak artıyı, iki parmak grafiği hareket ettirir. Yalnızca grafik: tek parmak grafiği kaydırır, artı yerinde kalır.",
+"Al dibujar, en el teléfono: un dedo mueve solo la cruz y un toque pone el punto; dos dedos mueven la gráfica.":"Çizerken, telefonda: tek parmak yalnızca artıyı hareket ettirir, dokunmak noktayı koyar; iki parmak grafiği kaydırır.",
+"Se reabrieron operaciones de práctica que se habían cerrado con velas que aún no se habían visto en la repetición.":"Tekrarda henüz görülmemiş mumlarla kapanmış pratik işlemler yeniden açıldı.",
 
 "Línea horizontal":"Yatay çizgi",
 "Línea vertical":"Dikey çizgi",
@@ -105057,6 +105247,13 @@ DIC.ru={
 "Corte de la repetición":"Точка отсечения повтора",
 "La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"Вертикальная линия, с которой начинается повтор: видна, пока вы выбираете точку.",
 "En el teléfono: un dedo mueve solo la cruz (al dibujar, un toque pone el punto) y dos dedos mueven la gráfica. Apagado: un dedo mueve la gráfica.":"На телефоне: один палец двигает только перекрестие (при рисовании касание ставит точку), два пальца двигают график. Выключено: один палец двигает график.",
+"Un dedo sobre la gráfica":"Один палец на графике",
+"Gráfica y cruz":"График и перекрестие",
+"Solo la cruz":"Только перекрестие",
+"Solo la gráfica":"Только график",
+"Sin herramienta de dibujo, en el teléfono. Gráfica y cruz: un dedo desplaza la gráfica y los indicadores y la cruz lo acompaña (dos dedos acercan y alejan). Solo la cruz: un dedo mueve la cruz y dos dedos mueven la gráfica. Solo la gráfica: un dedo desplaza la gráfica y la cruz queda quieta.":"Без инструмента рисования, на телефоне. График и перекрестие: один палец сдвигает график и индикаторы, перекрестие движется вместе с ним (два пальца масштабируют). Только перекрестие: один палец двигает перекрестие, два пальца двигают график. Только график: один палец сдвигает график, перекрестие стоит на месте.",
+"Al dibujar, en el teléfono: un dedo mueve solo la cruz y un toque pone el punto; dos dedos mueven la gráfica.":"При рисовании на телефоне: один палец двигает только перекрестие, касание ставит точку; два пальца двигают график.",
+"Se reabrieron operaciones de práctica que se habían cerrado con velas que aún no se habían visto en la repetición.":"Учебные сделки, закрытые свечами, которых в повторе ещё не было видно, снова открыты.",
 
 "Línea horizontal":"Горизонтальная линия",
 "Línea vertical":"Вертикальная линия",
@@ -111883,6 +112080,13 @@ DIC.uk={
 "Corte de la repetición":"Точка відсікання повтору",
 "La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"Вертикальна лінія, з якої починається повтор: видна, поки ви вибираєте точку.",
 "En el teléfono: un dedo mueve solo la cruz (al dibujar, un toque pone el punto) y dos dedos mueven la gráfica. Apagado: un dedo mueve la gráfica.":"На телефоні: один палець рухає лише перехрестя (під час малювання дотик ставить точку), два пальці рухають графік. Вимкнено: один палець рухає графік.",
+"Un dedo sobre la gráfica":"Один палець на графіку",
+"Gráfica y cruz":"Графік і перехрестя",
+"Solo la cruz":"Лише перехрестя",
+"Solo la gráfica":"Лише графік",
+"Sin herramienta de dibujo, en el teléfono. Gráfica y cruz: un dedo desplaza la gráfica y los indicadores y la cruz lo acompaña (dos dedos acercan y alejan). Solo la cruz: un dedo mueve la cruz y dos dedos mueven la gráfica. Solo la gráfica: un dedo desplaza la gráfica y la cruz queda quieta.":"Без інструмента малювання, на телефоні. Графік і перехрестя: один палець зсуває графік та індикатори, перехрестя рухається разом з ним (два пальці масштабують). Лише перехрестя: один палець рухає перехрестя, два пальці рухають графік. Лише графік: один палець зсуває графік, перехрестя стоїть на місці.",
+"Al dibujar, en el teléfono: un dedo mueve solo la cruz y un toque pone el punto; dos dedos mueven la gráfica.":"Під час малювання на телефоні: один палець рухає лише перехрестя, дотик ставить точку; два пальці рухають графік.",
+"Se reabrieron operaciones de práctica que se habían cerrado con velas que aún no se habían visto en la repetición.":"Навчальні угоди, закриті свічками, яких у повторі ще не було видно, знову відкрито.",
 
 "Línea horizontal":"Горизонтальна лінія",
 "Línea vertical":"Вертикальна лінія",
@@ -118709,6 +118913,13 @@ DIC.id={
 "Corte de la repetición":"Titik potong pemutaran ulang",
 "La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"Garis vertikal tempat pemutaran ulang dimulai: tampil saat Anda memilih titik.",
 "En el teléfono: un dedo mueve solo la cruz (al dibujar, un toque pone el punto) y dos dedos mueven la gráfica. Apagado: un dedo mueve la gráfica.":"Di ponsel: satu jari hanya menggeser tanda silang (saat menggambar, ketukan menaruh titik) dan dua jari menggeser grafik. Mati: satu jari menggeser grafik.",
+"Un dedo sobre la gráfica":"Satu jari di grafik",
+"Gráfica y cruz":"Grafik dan tanda silang",
+"Solo la cruz":"Hanya tanda silang",
+"Solo la gráfica":"Hanya grafik",
+"Sin herramienta de dibujo, en el teléfono. Gráfica y cruz: un dedo desplaza la gráfica y los indicadores y la cruz lo acompaña (dos dedos acercan y alejan). Solo la cruz: un dedo mueve la cruz y dos dedos mueven la gráfica. Solo la gráfica: un dedo desplaza la gráfica y la cruz queda quieta.":"Tanpa alat gambar, di ponsel. Grafik dan tanda silang: satu jari menggeser grafik dan indikator, tanda silang ikut bergerak (dua jari memperbesar dan memperkecil). Hanya tanda silang: satu jari menggeser tanda silang dan dua jari menggeser grafik. Hanya grafik: satu jari menggeser grafik dan tanda silang tetap diam.",
+"Al dibujar, en el teléfono: un dedo mueve solo la cruz y un toque pone el punto; dos dedos mueven la gráfica.":"Saat menggambar di ponsel: satu jari hanya menggeser tanda silang dan ketukan menaruh titik; dua jari menggeser grafik.",
+"Se reabrieron operaciones de práctica que se habían cerrado con velas que aún no se habían visto en la repetición.":"Transaksi latihan yang tertutup dengan candle yang belum terlihat di pemutaran ulang telah dibuka kembali.",
 
 "Línea horizontal":"Garis horizontal",
 "Línea vertical":"Garis vertikal",
@@ -125535,6 +125746,13 @@ DIC.vi={
 "Corte de la repetición":"Điểm cắt của phát lại",
 "La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"Đường dọc nơi phát lại bắt đầu: hiện ra khi bạn chọn điểm.",
 "En el teléfono: un dedo mueve solo la cruz (al dibujar, un toque pone el punto) y dos dedos mueven la gráfica. Apagado: un dedo mueve la gráfica.":"Trên điện thoại: một ngón chỉ di chuyển dấu chữ thập (khi vẽ, chạm để đặt điểm) và hai ngón di chuyển biểu đồ. Tắt: một ngón di chuyển biểu đồ.",
+"Un dedo sobre la gráfica":"Một ngón tay trên biểu đồ",
+"Gráfica y cruz":"Biểu đồ và chữ thập",
+"Solo la cruz":"Chỉ chữ thập",
+"Solo la gráfica":"Chỉ biểu đồ",
+"Sin herramienta de dibujo, en el teléfono. Gráfica y cruz: un dedo desplaza la gráfica y los indicadores y la cruz lo acompaña (dos dedos acercan y alejan). Solo la cruz: un dedo mueve la cruz y dos dedos mueven la gráfica. Solo la gráfica: un dedo desplaza la gráfica y la cruz queda quieta.":"Khi không dùng công cụ vẽ, trên điện thoại. Biểu đồ và chữ thập: một ngón kéo biểu đồ và các chỉ báo, dấu chữ thập đi theo (hai ngón để phóng to, thu nhỏ). Chỉ chữ thập: một ngón di chuyển dấu chữ thập, hai ngón di chuyển biểu đồ. Chỉ biểu đồ: một ngón kéo biểu đồ, dấu chữ thập đứng yên.",
+"Al dibujar, en el teléfono: un dedo mueve solo la cruz y un toque pone el punto; dos dedos mueven la gráfica.":"Khi vẽ trên điện thoại: một ngón chỉ di chuyển dấu chữ thập và chạm để đặt điểm; hai ngón di chuyển biểu đồ.",
+"Se reabrieron operaciones de práctica que se habían cerrado con velas que aún no se habían visto en la repetición.":"Các lệnh luyện tập đã đóng bằng nến chưa xuất hiện trong phần phát lại đã được mở lại.",
 
 "Línea horizontal":"Đường ngang",
 "Línea vertical":"Đường dọc",
@@ -132361,6 +132579,13 @@ DIC.hi={
 "Corte de la repetición":"रीप्ले का कट पॉइंट",
 "La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"वह लंबवत रेखा जहाँ रीप्ले शुरू होता है: बिंदु चुनते समय दिखती है।",
 "En el teléfono: un dedo mueve solo la cruz (al dibujar, un toque pone el punto) y dos dedos mueven la gráfica. Apagado: un dedo mueve la gráfica.":"फ़ोन पर: एक उंगली सिर्फ़ क्रॉसहेयर हिलाती है (बनाते समय टैप से बिंदु लगता है) और दो उंगलियाँ चार्ट हिलाती हैं। बंद होने पर: एक उंगली चार्ट हिलाती है।",
+"Un dedo sobre la gráfica":"चार्ट पर एक उंगली",
+"Gráfica y cruz":"चार्ट और क्रॉस",
+"Solo la cruz":"सिर्फ़ क्रॉस",
+"Solo la gráfica":"सिर्फ़ चार्ट",
+"Sin herramienta de dibujo, en el teléfono. Gráfica y cruz: un dedo desplaza la gráfica y los indicadores y la cruz lo acompaña (dos dedos acercan y alejan). Solo la cruz: un dedo mueve la cruz y dos dedos mueven la gráfica. Solo la gráfica: un dedo desplaza la gráfica y la cruz queda quieta.":"बिना ड्रॉइंग टूल के, फ़ोन पर। चार्ट और क्रॉस: एक उंगली चार्ट और इंडिकेटर खिसकाती है और क्रॉस साथ चलता है (दो उंगलियाँ ज़ूम करती हैं)। सिर्फ़ क्रॉस: एक उंगली क्रॉस हिलाती है और दो उंगलियाँ चार्ट हिलाती हैं। सिर्फ़ चार्ट: एक उंगली चार्ट खिसकाती है और क्रॉस अपनी जगह रहता है।",
+"Al dibujar, en el teléfono: un dedo mueve solo la cruz y un toque pone el punto; dos dedos mueven la gráfica.":"बनाते समय, फ़ोन पर: एक उंगली सिर्फ़ क्रॉसहेयर हिलाती है और टैप से बिंदु लगता है; दो उंगलियाँ चार्ट हिलाती हैं।",
+"Se reabrieron operaciones de práctica que se habían cerrado con velas que aún no se habían visto en la repetición.":"जिन अभ्यास ट्रेडों को रीप्ले में अभी तक न दिखी मोमबत्तियों से बंद कर दिया गया था, उन्हें फिर से खोल दिया गया।",
 
 "Línea horizontal":"क्षैतिज रेखा",
 "Línea vertical":"ऊर्ध्वाधर रेखा",
@@ -139187,6 +139412,13 @@ DIC.ja={
 "Corte de la repetición":"リプレイのカット位置",
 "La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"リプレイが始まる縦線：位置を選んでいる間に表示されます。",
 "En el teléfono: un dedo mueve solo la cruz (al dibujar, un toque pone el punto) y dos dedos mueven la gráfica. Apagado: un dedo mueve la gráfica.":"スマホでは：指1本で十字カーソルだけを動かし（描画中はタップで点を置きます）、指2本でチャートを動かします。オフ：指1本でチャートを動かします。",
+"Un dedo sobre la gráfica":"チャート上の指1本",
+"Gráfica y cruz":"チャートと十字カーソル",
+"Solo la cruz":"十字カーソルのみ",
+"Solo la gráfica":"チャートのみ",
+"Sin herramienta de dibujo, en el teléfono. Gráfica y cruz: un dedo desplaza la gráfica y los indicadores y la cruz lo acompaña (dos dedos acercan y alejan). Solo la cruz: un dedo mueve la cruz y dos dedos mueven la gráfica. Solo la gráfica: un dedo desplaza la gráfica y la cruz queda quieta.":"描画ツールを使っていないとき、スマホでは。チャートと十字カーソル：指1本でチャートとインジケーターをスクロールし、十字カーソルも一緒に動きます（指2本でズーム）。十字カーソルのみ：指1本で十字カーソルを動かし、指2本でチャートを動かします。チャートのみ：指1本でチャートをスクロールし、十字カーソルは動きません。",
+"Al dibujar, en el teléfono: un dedo mueve solo la cruz y un toque pone el punto; dos dedos mueven la gráfica.":"描画中のスマホでは：指1本で十字カーソルだけを動かし、タップで点を置きます。指2本でチャートを動かします。",
+"Se reabrieron operaciones de práctica que se habían cerrado con velas que aún no se habían visto en la repetición.":"リプレイでまだ見ていないローソク足で決済されていた練習トレードを再度オープンしました。",
 
 "Línea horizontal":"水平線",
 "Línea vertical":"垂直線",
@@ -146013,6 +146245,13 @@ DIC.ko={
 "Corte de la repetición":"리플레이 시작 지점",
 "La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"리플레이가 시작되는 세로선: 지점을 고르는 동안 표시됩니다.",
 "En el teléfono: un dedo mueve solo la cruz (al dibujar, un toque pone el punto) y dos dedos mueven la gráfica. Apagado: un dedo mueve la gráfica.":"휴대폰에서: 한 손가락은 십자선만 움직이고(그릴 때는 탭하면 점이 찍힙니다) 두 손가락은 차트를 움직입니다. 끄면 한 손가락이 차트를 움직입니다.",
+"Un dedo sobre la gráfica":"차트 위 한 손가락",
+"Gráfica y cruz":"차트와 십자선",
+"Solo la cruz":"십자선만",
+"Solo la gráfica":"차트만",
+"Sin herramienta de dibujo, en el teléfono. Gráfica y cruz: un dedo desplaza la gráfica y los indicadores y la cruz lo acompaña (dos dedos acercan y alejan). Solo la cruz: un dedo mueve la cruz y dos dedos mueven la gráfica. Solo la gráfica: un dedo desplaza la gráfica y la cruz queda quieta.":"그리기 도구가 없을 때, 휴대폰에서. 차트와 십자선: 한 손가락으로 차트와 지표를 밀면 십자선이 함께 움직입니다(두 손가락은 확대·축소). 십자선만: 한 손가락은 십자선을, 두 손가락은 차트를 움직입니다. 차트만: 한 손가락으로 차트를 밀고 십자선은 그대로 있습니다.",
+"Al dibujar, en el teléfono: un dedo mueve solo la cruz y un toque pone el punto; dos dedos mueven la gráfica.":"그릴 때 휴대폰에서: 한 손가락은 십자선만 움직이고 탭하면 점이 찍힙니다. 두 손가락은 차트를 움직입니다.",
+"Se reabrieron operaciones de práctica que se habían cerrado con velas que aún no se habían visto en la repetición.":"리플레이에서 아직 보지 않은 캔들로 종료되었던 연습 거래를 다시 열었습니다.",
 
 "Línea horizontal":"수평선",
 "Línea vertical":"수직선",
@@ -152839,6 +153078,13 @@ DIC.zh={
 "Corte de la repetición":"回放切入点",
 "La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"回放开始的竖线：选择起点时显示。",
 "En el teléfono: un dedo mueve solo la cruz (al dibujar, un toque pone el punto) y dos dedos mueven la gráfica. Apagado: un dedo mueve la gráfica.":"手机上：一根手指只移动十字光标（绘图时轻点放置点），两根手指移动图表。关闭时：一根手指移动图表。",
+"Un dedo sobre la gráfica":"图表上的单指操作",
+"Gráfica y cruz":"图表和十字光标",
+"Solo la cruz":"仅十字光标",
+"Solo la gráfica":"仅图表",
+"Sin herramienta de dibujo, en el teléfono. Gráfica y cruz: un dedo desplaza la gráfica y los indicadores y la cruz lo acompaña (dos dedos acercan y alejan). Solo la cruz: un dedo mueve la cruz y dos dedos mueven la gráfica. Solo la gráfica: un dedo desplaza la gráfica y la cruz queda quieta.":"未使用绘图工具时，在手机上。图表和十字光标：一根手指滚动图表和指标，十字光标随之移动（两根手指缩放）。仅十字光标：一根手指移动十字光标，两根手指移动图表。仅图表：一根手指滚动图表，十字光标保持不动。",
+"Al dibujar, en el teléfono: un dedo mueve solo la cruz y un toque pone el punto; dos dedos mueven la gráfica.":"绘图时在手机上：一根手指只移动十字光标，轻点放置点；两根手指移动图表。",
+"Se reabrieron operaciones de práctica que se habían cerrado con velas que aún no se habían visto en la repetición.":"已重新打开那些用回放中尚未出现的K线平仓的练习交易。",
 
 "Línea horizontal":"水平线",
 "Línea vertical":"垂直线",
