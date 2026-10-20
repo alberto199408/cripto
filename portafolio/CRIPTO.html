@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="80">
+<meta name="v" content="81">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -5034,6 +5034,63 @@ html .filaRn78 .rn78.card79 .gci:not(.on) .gcs:not(.on){opacity:.5}
 .graf.soloPanel .gmanij .gm[data-pn="1"]{visibility:visible!important;pointer-events:auto!important}
 .graf.soloPanel .gmanij .gm:not([data-pn="1"]){visibility:hidden!important;pointer-events:none!important}
 
+/* ===== v81 · estilos por elemento (Ajustes › Escalas y líneas), cruz del puntero, favoritas desplegables ===== */
+/* —— filas de «Líneas de la gráfica»: nombre (se toca) · muestra y › · interruptor —— */
+.v68w .v68r.e81r .v68l.e81t{cursor:pointer;flex:1;min-width:0;-webkit-tap-highlight-color:transparent}
+.v68w .v68r.e81r .v68k{gap:10px}
+.v68w .e81s{display:inline-flex;align-items:center;gap:8px;cursor:pointer;min-height:34px;padding:0 2px}
+.v68w .e81m{display:inline-block;width:46px;height:0;vertical-align:middle}
+.v68w .e81fl{font-size:22px;line-height:1;color:var(--t3);transition:transform .15s}
+.v68w .e81r.ab .e81fl{transform:rotate(90deg);color:var(--tx)}
+.v68w .e81b{margin:2px 0 8px;padding:4px 0 8px;background:var(--b2);border-radius:12px;border:1px solid var(--ln)}
+.v68w .e81b .v68r{background:none;border-bottom:0}
+.v68w .e81b .v68pal{justify-content:flex-end}
+.v68w .e81pie{display:flex;justify-content:flex-end;padding:2px 12px 0}
+.v68w .e81pie .e81fab{width:auto;height:auto;padding:7px 12px;font-size:12.5px;font-weight:700}
+.v68w .e81b .v68seg button{min-width:34px;padding:7px 10px}
+@media (max-width:520px){
+  .v68w .e81b .v68pal{justify-content:flex-start}
+  .v68w .e81b .v68r{flex-wrap:wrap;gap:6px}
+  .v68w .e81b .v68r .v68k{width:100%;justify-content:flex-start}
+  .v68w .e81m{width:34px}
+}
+/* —— la cruz del puntero: color, grosor, raya y opacidad vienen de Ajustes (variables --cz-*; ver v81_estilos.js) —— */
+.graf .gcz i{opacity:var(--cz-o,.78)}
+.graf .gcz i.h{border-top:var(--cz-w,1.5px) var(--cz-d,dotted) var(--cz-c,var(--tx))}
+.graf .gcz i.v{border-left:var(--cz-w,1.5px) var(--cz-d,dotted) var(--cz-c,var(--tx))}
+/* —— «Mis favoritas» en lista desplegable (favModo = lista): se ve una moneda y una flechita; al tocarla se abre toda la lista —— */
+.favT68.favL81{position:relative;display:flex!important;align-items:center;gap:8px;padding:6px 7px 6px 10px!important;margin:0 0 10px!important;border-radius:14px!important;z-index:30}
+.favL81 .st{display:inline-grid;place-items:center;flex:none;color:var(--fav2);filter:drop-shadow(0 0 6px color-mix(in srgb,var(--fav2) 55%,transparent))}
+.favL81 .chip.v{flex:none;font-size:11.5px}
+.favL81 .favP81{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:9px;padding:5px 10px 5px 7px;min-height:46px;border-radius:12px;border:1px solid color-mix(in srgb,var(--fav2) 55%,var(--ln));background:var(--b0);color:var(--tx);font:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.favL81.ab .favP81{border-color:var(--fav2)}
+.favL81 .favP81 .ic{width:30px;height:30px;flex:none}
+.favL81 .tx{display:flex;flex-direction:column;align-items:flex-start;gap:2px;line-height:1.1;min-width:0;flex:1 1 auto}
+.favL81 .tx b{font-size:13.5px;font-weight:800}
+.favL81 .tx i{font-style:normal;font-size:11.5px;color:var(--t2);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.favL81 .px{display:flex;flex-direction:column;align-items:flex-end;gap:2px;line-height:1.1;flex:none}
+.favL81 .px .pr{font-size:13px;font-weight:800}
+.favL81 .px em{font-style:normal;font-size:11.5px;font-weight:800}
+.favL81 em.up::before,.favL81 em.dn::before{content:"▲";font-size:.68em;margin-right:.3em;vertical-align:.08em}
+.favL81 em.dn::before{content:"▼"}
+.favL81 .px .viejo79{opacity:.6}
+.favL81 .car{flex:none;font-size:13px;color:var(--t2);transition:transform .15s}
+.favL81.ab .car{transform:rotate(180deg);color:var(--fav2)}
+.favL81 .favMas81{flex:none;width:34px;height:34px;padding:0;border:0;background:none;color:var(--fav,#f5b301);display:grid;place-items:center;cursor:pointer}
+.favL81 .favMas81::before{content:"";width:16px;height:16px;background:linear-gradient(currentColor,currentColor) center/100% 2.5px no-repeat,linear-gradient(currentColor,currentColor) center/2.5px 100% no-repeat}
+.favL81 .favD81{display:none;position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:40;max-height:min(64vh,540px);overflow-y:auto;padding:7px;border-radius:16px;border:1px solid color-mix(in srgb,var(--fav2) 45%,var(--ln));background:var(--b1);box-shadow:0 18px 44px rgba(0,0,0,.55);-webkit-overflow-scrolling:touch}
+.favL81.ab .favD81{display:block}
+.favL81 .favR81{width:100%;display:flex;align-items:center;gap:10px;padding:8px 10px;margin:0 0 5px;border-radius:12px;border:1px solid var(--ln);background:var(--b0);color:var(--tx);font:inherit;text-align:left;cursor:pointer;min-height:50px}
+.favL81 .favR81.act{border-color:var(--fav2);box-shadow:0 0 0 1px color-mix(in srgb,var(--fav2) 60%,transparent)}
+.favL81 .favR81 .ic{width:32px;height:32px;flex:none}
+.favL81 .favAg81{width:100%;min-height:44px;margin-top:2px;border-radius:12px;border:1px dashed color-mix(in srgb,var(--fav2) 55%,var(--ln));background:none;color:var(--fav2);font:inherit;font-weight:800;cursor:pointer}
+/* Ajustes de la aplicación › Mis favoritas */
+.fav81ops{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.fav81o{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--ln);background:var(--b0);color:var(--tx);font:inherit;font-weight:700;text-align:left;cursor:pointer}
+.fav81o i{flex:none;font-style:normal;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:13px;background:#3C8DFF;color:#fff;opacity:0}
+.fav81o.on{border-color:#3C8DFF;box-shadow:0 0 0 1px #3C8DFF inset}
+.fav81o.on i{opacity:1}
+
 /*V76CSS>>*/
 
 /* pantalla ancha o teléfono acostado: el tiempo y las pestañas en la misma fila que el nombre de la moneda */
@@ -7482,7 +7539,7 @@ function quitarTrazo(E, id){
   dibujar(E);
 }
 function colorTrazo(z){ return colorOk(z.c) ? z.c : PALETA_TRAZO[0]; }
-function anchoTrazo(z){ var w=+z.w; return (w>=1&&w<=4) ? w : 2; }
+function anchoTrazo(z){ var w=+z.w; return (w>=1&&w<=6) ? w : 2; }      /* v81 · §157: hasta 6 */
 function rayaTrazo(z){
   var d=+z.d||0, w=anchoTrazo(z);
   return d===1 ? ' stroke-dasharray="'+(5+w*2)+' '+(4+w*1.5)+'"'
@@ -7931,7 +7988,7 @@ function dibujoDe(E, z, sel, W, H, previa){
       if(prev!=null && fo73>0) R.svg+='<rect x="'+xa.toFixed(1)+'" y="'+Math.min(prev,y).toFixed(1)+'" width="'+(xb-xa).toFixed(1)+
                       '" height="'+Math.abs(y-prev).toFixed(1)+'" fill="'+((typeof fibColB73==="function") ? fibColB73(z,i-1) : c)+'" fill-opacity="'+fo73+'"/>';
       R.svg+='<line x1="'+xa.toFixed(1)+'" y1="'+y.toFixed(1)+'" x2="'+xb.toFixed(1)+'" y2="'+y.toFixed(1)+
-             '" stroke="'+c+'" stroke-width="1.4"/>';
+             '" stroke="'+c+'" stroke-width="'+fibW81(z)+'"'+fibDa81(z,true)+'/>';      /* v81 · §160 */
       R.tags+=tag("fib", xa+4, y-2, '<span style="display:inline-block;max-width:'+Math.max(24,xb-xa-8).toFixed(0)+'px;overflow:hidden;white-space:nowrap;vertical-align:bottom"><span style="color:'+c+'">'+nivelTxt(Lv)+'</span>'+((xb-xa)>=150?' <i>('+precioEt(p)+')</i>':'')+'</span>', "i", "a");
       if(!previa) R.partes.push({z:id,k:"n"+i,m:"c",t:"s",x1:xa,y1:y,x2:xb,y2:y});
       prev=y; ymin=Math.min(ymin,y); ymax=Math.max(ymax,y);
@@ -7985,12 +8042,12 @@ function dibujoDe(E, z, sel, W, H, previa){
     var largo=(z.lado!=="SHORT");
     var wB=Math.max(1,x2p-x1p);
     R.svg+='<rect x="'+x1p.toFixed(1)+'" y="'+Math.min(yE,yT).toFixed(1)+'" width="'+wB.toFixed(1)+'" height="'+Math.abs(yT-yE).toFixed(1)+
-           '" fill="'+cajCol75("tp")+'" fill-opacity=".20"/>'+
+           '" fill="'+cajCol75("tp")+'" fill-opacity="'+posFo81(z)+'"/>'+
            '<rect x="'+x1p.toFixed(1)+'" y="'+Math.min(yE,yS).toFixed(1)+'" width="'+wB.toFixed(1)+'" height="'+Math.abs(yS-yE).toFixed(1)+
-           '" fill="'+cajCol75("sl")+'" fill-opacity=".20"/>'+
-           '<line x1="'+x1p.toFixed(1)+'" y1="'+yT.toFixed(1)+'" x2="'+x2p.toFixed(1)+'" y2="'+yT.toFixed(1)+'" stroke="'+cajCol75("tp")+'" stroke-width="1.6"/>'+
-           '<line x1="'+x1p.toFixed(1)+'" y1="'+yS.toFixed(1)+'" x2="'+x2p.toFixed(1)+'" y2="'+yS.toFixed(1)+'" stroke="'+cajCol75("sl")+'" stroke-width="1.6"/>'+
-           '<line x1="'+x1p.toFixed(1)+'" y1="'+yE.toFixed(1)+'" x2="'+x2p.toFixed(1)+'" y2="'+yE.toFixed(1)+'" stroke="#F5C542" stroke-width="2"/>';
+           '" fill="'+cajCol75("sl")+'" fill-opacity="'+posFo81(z)+'"/>'+
+           '<line x1="'+x1p.toFixed(1)+'" y1="'+yT.toFixed(1)+'" x2="'+x2p.toFixed(1)+'" y2="'+yT.toFixed(1)+'" stroke="'+cajCol75("tp")+'" stroke-width="'+posW81(z,1.6)+'"'+posDa81(z)+'/>'+
+           '<line x1="'+x1p.toFixed(1)+'" y1="'+yS.toFixed(1)+'" x2="'+x2p.toFixed(1)+'" y2="'+yS.toFixed(1)+'" stroke="'+cajCol75("sl")+'" stroke-width="'+posW81(z,1.6)+'"'+posDa81(z)+'/>'+
+           '<line x1="'+x1p.toFixed(1)+'" y1="'+yE.toFixed(1)+'" x2="'+x2p.toFixed(1)+'" y2="'+yE.toFixed(1)+'" stroke="'+cajCol75("en")+'" stroke-width="'+posW81(z,2)+'"'+posDa81(z)+'/>';
     /* las etiquetas: dentro de cada zona, con su porcentaje; en el centro, la relación */
     var pcTp=(z.tp-z.p)/z.p*100, pcSl=(z.sl-z.p)/z.p*100;
     var D=datosPos(E,z), money=D.R&&D.R.ok;
@@ -19270,7 +19327,7 @@ function indLevels(it, I){
   var c=IND66[it.id], st=it.lv||{};
   return (c.lv||[]).map(function(l){
     var s=st[l.k]||{}, v= l.en ? I[l.en] : (s.v!=null ? s.v : l.v);
-    return {k:l.k, n:l.n, v:+v, c:(s.c||l.c), cd:l.c, d:(s.d!=null?s.d:(l.d||0)), on:(s.on!=null?s.on:(l.on!==false)), en:l.en, vd:l.v};
+    return {k:l.k, n:l.n, v:+v, c:(s.c||l.c), cd:l.c, d:(s.d!=null?s.d:(l.d||0)), w:(s.w!=null?s.w:(l.w||1)), o:(s.o!=null?s.o:(l.o!=null?l.o:75)), on:(s.on!=null?s.on:(l.on!==false)), en:l.en, vd:l.v};      /* v81 · §160: grosor y opacidad */
   });
 }
 function indFills(it){
@@ -19652,7 +19709,7 @@ function indTrazo(p, S, ctx){
         d+="L"+f(run[run.length-1][0])+" "+f(ctx.base)+"Z";
         var ln="M"+f(run[0][0])+" "+f(run[0][1]); for(var q2=1;q2<run.length;q2++) ln+="L"+f(run[q2][0])+" "+f(run[q2][1]);
         out+='<path d="'+d+'" fill="'+runC+'" fill-opacity="'+op+'" stroke="none"/>'+
-             (p.w>0 ? '<path d="'+ln+'" fill="none" stroke="'+runC+'" stroke-width="1" stroke-opacity="'+Math.min(1,op+0.35)+'" stroke-linejoin="round"/>' : '');
+             (p.w>0 ? '<path d="'+ln+'" fill="none" stroke="'+runC+'" stroke-width="'+Math.max(1,p.w)+'" stroke-opacity="'+Math.min(1,op+0.35)+'" stroke-linejoin="round"'+indDash(p.d||0,Math.max(1,p.w))+'/>' : '');      /* v81 · §160 */
       }
       run=[]; runC=null;
     }
@@ -19734,7 +19791,7 @@ function indCajas(arr, p, ctx){
     var y0=ctx.Y(Math.max(bx.p0,bx.p1)), y1=ctx.Y(Math.min(bx.p0,bx.p1));
     if(y1<-5 || y0>ctx.H+5) return;
     y0=Math.max(-2,y0); y1=Math.min(ctx.H+2,y1);
-    s+='<rect x="'+indF(xa)+'" y="'+indF(y0)+'" width="'+indF(xb-xa)+'" height="'+indF(Math.max(1,y1-y0))+'" fill="'+col+'" fill-opacity="'+op+'" stroke="'+col+'" stroke-opacity="'+Math.min(1,op+0.5)+'" stroke-width="1"'+indDash(p.d,1)+'/>';
+    s+='<rect x="'+indF(xa)+'" y="'+indF(y0)+'" width="'+indF(xb-xa)+'" height="'+indF(Math.max(1,y1-y0))+'" fill="'+col+'" fill-opacity="'+op+'" stroke="'+col+'" stroke-opacity="'+Math.min(1,op+0.5)+'" stroke-width="'+Math.max(1,p.w||1)+'"'+indDash(p.d,Math.max(1,p.w||1))+'/>';      /* v81 · §160 */
   });
   return s;
 }
@@ -19822,7 +19879,7 @@ function indDibujarItem(E, it, res, ctx, solo){
     lvs.forEach(function(l){
       if(!l.on || !iOk(l.v)) return;
       var y=ctx.Y(l.v); if(y<-2 || y>ctx.H+2) return;
-      s+='<line x1="0" x2="'+ctx.W+'" y1="'+indF(y)+'" y2="'+indF(y)+'" stroke="'+indCol(l.c)+'" stroke-width="1" stroke-opacity=".75"'+indDash(l.d||0,1)+'/>';
+      s+='<line x1="0" x2="'+ctx.W+'" y1="'+indF(y)+'" y2="'+indF(y)+'" stroke="'+indCol(l.c)+'"'+nivelSvg81(l)+'/>';      /* v81 · §160 */
     });
   }
   pls.slice().filter(function(p){ return p.on; }).sort(function(p,q){ return (IND_ORDEN_E[p.e]||4)-(IND_ORDEN_E[q.e]||4); }).forEach(function(p){
@@ -20017,7 +20074,7 @@ function indPane(E, g, ph, base){
   /* la rejilla sale de la escala principal */
   if(gv) sc[prim].ticks.forEach(function(t){
     var y=sc[prim].Y(t); if(y<6 || y>ph-6) return;
-    svg+='<line x1="0" x2="'+W+'" y1="'+indF(y)+'" y2="'+indF(y)+'" stroke="var(--ln)" stroke-opacity=".42" stroke-width="1"/>';
+    svg+='<line x1="0" x2="'+W+'" y1="'+indF(y)+'" y2="'+indF(y)+'"'+gridSvg81()+'/>';      /* v81 · §160 */
   });
   ix=Math.min(i1-1, E.velas.length-1);
   if(E.indHover!=null) ix=Math.max(0, Math.min(E.velas.length-1, E.indHover));
@@ -21169,15 +21226,15 @@ function hisEditor(it, ab){
   } else {
     h+='<div class="his-nota">Los colores de este trazo se cambian en Entradas.</div>';
   }
-  var op = pl ? pl.o : (fl ? fl.o : null);
+  var op = pl ? pl.o : (fl ? fl.o : (lv ? lv.o : null));      /* v81 · §160: los niveles también */
   if(op!=null){
     h+='<div class="his-r"><span class="his-l">Opacidad</span><div class="his-rng"><input type="range" min="0" max="100" step="1" data-hop value="'+Math.round(op)+'"><em translate="no">'+Math.round(op)+'%</em></div></div>';
   }
-  if(pl && (["l","s","h","o","x","sg","nv","a"].indexOf(indBaseE(pl.e))>=0)){
-    h+='<div class="his-r"><span class="his-l">Grosor</span><div class="his-seg">'+[1,2,3,4,5].map(function(w){ return '<button type="button" data-hw="'+w+'" class="'+(pl.w===w?"on":"")+'" translate="no">'+w+'</button>'; }).join("")+'</div></div>';
+  if((pl && (["l","s","h","o","x","sg","nv","a","bx"].indexOf(indBaseE(pl.e))>=0)) || lv){      /* v81 · §160: los niveles también */
+    h+='<div class="his-r"><span class="his-l">Grosor</span><div class="his-seg">'+[1,2,3,4,5].map(function(w){ return '<button type="button" data-hw="'+w+'" class="'+((pl?pl.w:lv.w)===w?"on":"")+'" translate="no">'+w+'</button>'; }).join("")+'</div></div>';
   }
   var dash= pl ? pl.d : (lv ? lv.d : null);
-  if(dash!=null && (!pl || ["l","s","sg","nv"].indexOf(indBaseE(pl.e))>=0)){
+  if(dash!=null && (!pl || ["l","s","sg","nv","a","bx"].indexOf(indBaseE(pl.e))>=0)){
     h+='<div class="his-r"><span class="his-l">Estilo de la línea</span><div class="his-seg">'+
       [[0,"━━━"],[1,"╌╌╌"],[2,"· · ·"]].map(function(o){ return '<button type="button" data-hd="'+o[0]+'" class="'+(dash===o[0]?"on":"")+'" translate="no">'+o[1]+'</button>'; }).join("")+'</div></div>';
   }
@@ -21390,7 +21447,7 @@ function indHojaEnganchar(d){
     var pc=t.closest("[data-hcol]");
     if(pc && H.ab){ hisPonerColor(pc.getAttribute("data-hcol")); return; }
     var hw=t.closest("[data-hw]");
-    if(hw && H.ab){ var kp=H.ab.split(":")[1], w=+hw.getAttribute("data-hw"); hisSet(function(x){ (x.st[kp]=x.st[kp]||{}).w=w; }); indHojaPintar(); return; }
+    if(hw && H.ab){ var kp=H.ab.split(":")[1], w=+hw.getAttribute("data-hw"), kw=H.ab.split(":")[0]; hisSet(function(x){ var bg=(kw==="lv") ? x.lv : x.st; (bg[kp]=bg[kp]||{}).w=w; }); indHojaPintar(); return; }      /* v81 · §160: también los niveles */
     var hd=t.closest("[data-hd]");
     if(hd && H.ab){
       var pp=H.ab.split(":"), dv=+hd.getAttribute("data-hd");
@@ -21482,7 +21539,7 @@ function indHojaEnganchar(d){
     }
     if(t.hasAttribute("data-hop") && H.ab){
       var q=H.ab.split(":"), o=+t.value, em=t.parentNode.querySelector("em"); if(em) em.textContent=Math.round(o)+"%";
-      hisSet(function(x){ var bag= q[0]==="pl"?x.st : x.fl; (bag[q[1]]=bag[q[1]]||{}).o=o; });
+      hisSet(function(x){ var bag= q[0]==="pl"?x.st : (q[0]==="lv"?x.lv:x.fl); (bag[q[1]]=bag[q[1]]||{}).o=o; });      /* v81 · §160 */
       return;
     }
     if(t.hasAttribute("data-hcolp") && H.ab){ hisPonerColor(t.value, true); return; }
@@ -23581,14 +23638,16 @@ function ventDibujo68(E, id){
     if(conLinea){
       h+=t68("Línea");
       h+=f68("Color", colores68(PALETA_TRAZO.map(function(c){ return c; }), colorTrazo(z), "data-c"));
-      h+=f68("Grosor", seg68("data-w", [[1,"1"],[2,"2"],[3,"3"],[4,"4"]], anchoTrazo(z)));
+      h+=f68("Grosor", seg68("data-w", [[1,"1"],[2,"2"],[3,"3"],[4,"4"],[5,"5"],[6,"6"]], anchoTrazo(z)));
       h+=f68("Tipo de raya", seg68("data-d", [[0,'<svg width="34" height="10"><path d="M2 5h30" stroke="currentColor" stroke-width="2"/></svg>',tr("Continua")],[1,'<svg width="34" height="10"><path d="M2 5h30" stroke="currentColor" stroke-width="2" stroke-dasharray="6 4"/></svg>',tr("Guiones")],[2,'<svg width="34" height="10"><path d="M2 5h30" stroke="currentColor" stroke-width="2.4" stroke-dasharray="0.1 5" stroke-linecap="round"/></svg>',tr("Puntos")]], +z.d||0));
-    }
+      h+=opDib81(z);      /* v81 · §157: transparencia */
+    } else { h+=t68("Línea"); h+=dibExtra81(z); h+=opDib81(z); }      /* v81 · §160 */
     if(T==="rect" || T==="canal"){
       h+=t68("Fondo");
       h+=f68("Relleno", '<label class="v68sw"><input type="checkbox" data-fo-on'+(z.fo===0?"":" checked")+'><i></i></label>');
       h+=f68("Opacidad", '<input type="range" class="v68rg" min="5" max="60" step="1" data-fo value="'+Math.round((z.fo!=null?z.fo:0.13)*100)+'"><b class="v68n" data-fo-n>'+Math.round((z.fo!=null?z.fo:0.13)*100)+' %</b>');
     }
+    if(T==="pos") h+=posEstiloHTML81(z);      /* v81 · §160: colores, grosor, raya y relleno de Largo/Corto */
     if(T==="pos") h+='<div class="v68nota">'+esc(tr("El stop, el objetivo y el lote se cambian en el panel de la caja."))+'</div>';
     if(T==="fib" || T==="fibx" || T==="fibc") h+=(typeof fibEstiloHTML73==="function") ? fibEstiloHTML73(z) : '<div class="v68nota">'+esc(tr("Los niveles de Fibonacci tienen sus colores de siempre."))+'</div>';      /* v73 · pto 31 */
     if(z.pg || z.fg) h+='<div class="v68nota">'+esc(tr("Esta figura la trazó usted con la guía; sus colores y sus textos son los del patrón."))+'</div>';
@@ -23614,6 +23673,7 @@ function ventDibujo68(E, id){
     titulo:nomTrazo68(z), tituloHTML:function(){ return esc(nomTrazo68(z)); }, tabs:tabs, clase:"dib",
     pieIzq:function(){ return '<span class="v68pl">'+esc(tr("Lo que cambie se ve en la gráfica"))+'</span>'; },
     alClic:function(ev, d, pintar){
+      if(dibClic81(ev, z)){ vivo(); pintar(); return; }      /* v81 · §160 */
       if((typeof esFib73==="function" ? esFib73(T) : T==="fib") && typeof fibClic73==="function" && fibClic73(ev, z)){ vivo(); pintar(); return; }      /* v73 · pto 31 */
       var b=ev.target.closest("[data-c]"); if(b){ z.c=b.getAttribute("data-c"); vivo(); pintar(); return; }
       b=ev.target.closest("[data-w]"); if(b){ z.w=+b.getAttribute("data-w"); vivo(); pintar(); return; }
@@ -23622,8 +23682,10 @@ function ventDibujo68(E, id){
     },
     alEntrada:function(ev, d, pintar){
       var t=ev.target;
+      if(dibEntrada81(ev, z, d)){ vivo(); return; }      /* v81 · §160 */
       if((typeof esFib73==="function" ? esFib73(T) : T==="fib") && typeof fibEntrada73==="function" && fibEntrada73(ev, z, d)){ vivo(); return; }      /* v73 · pto 31 */
       if(t.hasAttribute("data-c-p")){ z.c=t.value; vivo(); return; }
+      if(t.hasAttribute("data-zo")){ z.o=(+t.value>=100) ? undefined : +t.value; var nzo=d.querySelector("[data-zo-n]"); if(nzo) nzo.textContent=t.value+" %"; vivo(); return; }      /* v81 · §157 */
       if(t.hasAttribute("data-nm")){ z.nm=t.value.trim()||undefined; var ti=d.querySelector(".v68t"); if(ti) ti.textContent=nomTrazo68(z); guardarTrazosSinNotar68(); return; }
       if(t.hasAttribute("data-fo")){ z.fo=(+t.value)/100; var n=d.querySelector("[data-fo-n]"); if(n) n.textContent=t.value+" %"; vivo(); return; }
       if(t.hasAttribute("data-cp")){
@@ -23635,6 +23697,7 @@ function ventDibujo68(E, id){
     },
     alCambio:function(ev, d, pintar){
       var t=ev.target;
+      if(dibCambio81(ev, z)){ vivo(); pintar(); return; }      /* v81 · §160 */
       if((typeof esFib73==="function" ? esFib73(T) : T==="fib") && typeof fibCambio73==="function" && fibCambio73(ev, z)){ vivo(); pintar(); return; }      /* v73 · pto 31 */
       if(t.hasAttribute("data-fo-on")){ z.fo=t.checked ? 0.13 : 0; vivo(); pintar(); return; }
       if(t.hasAttribute("data-vi")){
@@ -24066,6 +24129,7 @@ function selAj68(attr, opts, act){
   return '<select class="v68sl" '+attr+'>'+opts.map(function(o){ return '<option value="'+o[0]+'"'+(String(act)===String(o[0])?" selected":"")+'>'+esc(tr(o[1]))+'</option>'; }).join("")+'</select>';
 }
 function ajustesVentana68(E){
+  EST81.abre=null;      /* v81 · §157: la ventana se abre con todas las líneas cerradas */
   var A=BD.ajustes||(BD.ajustes={}), snap={};
   AJ68_CLAVES.forEach(function(k){ snap[k]=(A[k]===undefined) ? undefined : JSON.parse(JSON.stringify(A[k])); });
   paletaGenCerrar68();
@@ -24085,6 +24149,7 @@ function ajustesVentana68(E){
     {id:"simbolo", nom:"Símbolo", ic:AJ68_IC.simbolo, html:function(){
       var a=BD.ajustes||{}, h="";
       h+=t68("Tipo de gráfica")+'<div class="v68blq">'+tipoHTML()+'</div>';
+      h+=ajFilaEst81("prec", "Línea del precio", "Se usa cuando la gráfica es de tipo Línea o Área.", "var(--ac)");      /* v81 · §160 */
       h+=t68("Velas");
       h+=fsw68("Colorear según el cierre anterior", "data-aprev", !!a.velaPrev, "Cada vela se pinta por cómo cierra frente a la vela de antes.");
       h+=colPar("Cuerpo", "velaUp", "velaDn", colorVela(true), colorVela(false), "Color de fábrica");
@@ -24109,19 +24174,21 @@ function ajustesVentana68(E){
       h+=f68("Tipo de escala", selAj68("data-aesc", [["","Normal"],["pct","Porcentaje"],["log","Logarítmica"]], a.gEsc||""));
       h+=fsw68("Invertir la escala", "data-ainv", !!a.gInv, "Los precios altos quedan abajo.");
       var op=(E&&E.op)||{}, lin=LINEAS_AJ.filter(function(x){ return x[0]!=="mar" || (op.marcas && op.marcas.length); });
-      h+=t68("Líneas de la gráfica");
-      lin.forEach(function(x){ h+=fsw68(x[1], 'data-alin="'+x[0]+'"', linVer(x[0]), "", x[2]); });
+      h+=t68("Líneas de la gráfica · toque una para cambiar su estilo");      /* v81 · §157 */
+      h+=ajCruz81(E);
+      lin.forEach(function(x){ h+=ajFila81(x, E); });
+      h+=ajFilaEst81("corte", "Corte de la repetición", "La raya vertical donde empieza la repetición: sale mientras se elige el punto.", "var(--tx)");      /* v81 · §160 */
       h+=(typeof ajLineas71==="function") ? ajLineas71(E) : "";          /* v71 */
       h+=(typeof ajZonas74==="function") ? ajZonas74(E) : "";          /* v74 · pto 52 */
       h+=ajFaltas70(E);        /* v70 · justo debajo de las líneas de la operación; solo en la gráfica de una operación */
       h+=t68("Etiquetas y líneas de precio");     /* v68 · puntos 68 y 69: apagadas de fábrica (gráfica clara y concisa) */
-      h+=fsw68("Máximo y mínimo del tramo", "data-agmm", !!a.gMM, "Los precios más alto y más bajo de lo que se ve, con su línea y su etiqueta.");
+      h+=ajFilaSw81("mm", "Máximo y mínimo del tramo", "data-agmm", !!a.gMM, "Los precios más alto y más bajo de lo que se ve, con su línea y su etiqueta.", "var(--t2)");      /* v81 · §160 */
       h+=fsw68("Cuenta atrás de la vela", "data-agcd", a.gCD!==false,      /* v75 · pto 64 */ "Lo que falta para que cierre la vela de ahora, bajo la etiqueta del precio.");
       return h;
     }},
     {id:"lienzo", nom:"Lienzo", ic:AJ68_IC.lienzo, html:function(){
       var a=BD.ajustes||{}, h=t68("Cuadrícula");
-      h+=fsw68("Cuadrícula", "data-agrid", (a.gGrid!==false), "Las líneas tenues de fondo detrás de las velas.");
+      h+=ajFilaSw81("gr", "Cuadrícula", "data-agrid", (a.gGrid!==false), "Las líneas tenues de fondo detrás de las velas.", "var(--ln)");      /* v81 · §160 */
       h+=t68("Dibujos");
       h+=fsw68("Quitar siempre los dibujos bloqueados", "data-aqb", !!a.qBloq, "Al usar «Quitar objetos» también se van los dibujos con candado.");
       h+=fsw68("Compartir los dibujos entre Spot, Futuros y Backtesting", "data-adib", !!a.dibComp, "Apagado: cada pantalla tiene sus propios dibujos.");      /* v75 · pto 63 */
@@ -24148,6 +24215,7 @@ function ajustesVentana68(E){
     },
     alClic:function(ev, d, pintar){
       var t=ev.target, b;
+      if(ajEstClic81(t, aplicar, pintar, E)) return;      /* v81 · §157 */
       if(typeof ajOpsClic80==="function" && ajOpsClic80(t, aplicar, pintar)) return;      /* v80 */
       if((b=t.closest("[data-vdef]"))){
         m68DeBoton([{txt:tr("Restablecer los ajustes de la gráfica"), fn:restablecer}], b); return;
@@ -24168,6 +24236,7 @@ function ajustesVentana68(E){
         return;
       }
     },
+    alEntrada:function(ev, d, pintar){ ajEstEntrada81(ev.target, function(){ try{ dibujar(E); }catch(e){} }); },      /* v81 · §157: el deslizador y el color se ven en vivo */
     alCambio:function(ev, d, pintar){
       var t=ev.target; if(!t.hasAttribute) return;
       if(t.hasAttribute("data-zet")){ var vz=t.value; if(vz) BD.ajustes[t.getAttribute("data-zet")]=vz; else delete BD.ajustes[t.getAttribute("data-zet")]; aplicar(); return; }      /* v74 · pto 52 */
@@ -24185,6 +24254,7 @@ function ajustesVentana68(E){
       if(t.hasAttribute("data-adib")){ BD.ajustes.dibComp=!!t.checked; if(t.checked) dibJuntar75(); else dibSeparar75(); aplicar(); return; }      /* v75 · pto 63 */
       if(t.hasAttribute("data-ares")){ if(t.value) BD.ajustes.resalte=t.value; else delete BD.ajustes.resalte; aplicar(); return; }      /* v74 · pto 57 */
       if(t.hasAttribute("data-acruz")){ BD.ajustes.cruzDedo=!!t.checked; guarda(); return; }      /* v74 · pto 40 */
+      if(ajEstCambio81(t, aplicar, E)) return;      /* v81 · §157 */
       if(typeof ajOpsCambio80==="function" && ajOpsCambio80(t, aplicar)) return;      /* v80 */
       if(t.hasAttribute("data-amsg")){ BD.ajustes.msgTodos=!!t.checked; guarda(); return; }      /* v74 · pto 56 */
     }
@@ -24266,7 +24336,7 @@ function favPoner68(){
 function favBadge68(raiz){
   var L=favsLista67();
   [].forEach.call((raiz||document).querySelectorAll(".ic[data-sym]"), function(ic){
-    if(ic.closest(".favC, .mfic, .v68w, .hindSheet, .gcw, .conRueda .gsym, .opIc")) return;      /* en la rueda de monedas la estrella ya va en su fila */
+    if(ic.closest(".favC, .favL81, .mfic, .v68w, .hindSheet, .gcw, .conRueda .gsym, .opIc")) return;      /* en la rueda de monedas la estrella ya va en su fila */
     var p=ic.parentNode; if(!p || p.nodeType!==1) return;
     var sym=ic.getAttribute("data-sym"), fav=L.indexOf(String(sym).toUpperCase())>=0;
     var b=ic.nextElementSibling; if(b && !(b.classList && b.classList.contains("fvb68"))) b=null;
@@ -26313,7 +26383,7 @@ function pnPintar73(E, W){
       if(z.tipo!=="vert" || z.pk) return;
       var x=pxDeT(E, z.t1); if(!(x>=-4 && x<=W+4)) return;
       s+='<line x1="'+x.toFixed(1)+'" y1="'+yTop.toFixed(1)+'" x2="'+x.toFixed(1)+'" y2="'+yBot.toFixed(1)+'" stroke="'+colorTrazo(z)+
-         '" stroke-width="'+anchoTrazo(z)+'" stroke-linecap="butt"'+rayaTrazo(z)+' data-v73="vert"/>';
+         '" stroke-width="'+anchoTrazo(z)+'" stroke-linecap="butt"'+rayaTrazo(z)+((z.o>=10&&z.o<100)?' opacity="'+(z.o/100)+'"':'')+' data-v73="vert"/>';
       partes.push({z:z.id, k:"cP", m:"c", t:"s", x1:x, y1:yTop, x2:x, y2:yBot});      /* también se elige y se corre tocándola en un panel */
     });
   } finally { E._pnc=prev; }
@@ -26753,7 +26823,7 @@ function dibTres73(E, z, sel, W, H, previa, R, cuadritos, col, w, da, X, Y){
         else R.svg+=linea(xa,y1,xb,y2,col,w,da);
       } else {
         var cl=fibColL73(z, i);
-        R.svg+=linea(xa,y1,xb,y2,cl,1.4,"");
+        R.svg+=linea(xa,y1,xb,y2,cl,fibW81(z),fibDa81(z));      /* v81 · §160 */
         if(!previa) R.tags+=tag("fib", Math.min(xa,xb)+4, (xa<=xb?y1:y2)-2, '<span style="color:'+cl+'">'+nivelTxt(L)+'</span>', "i", "a");
       }
       if(L!==0.5) parte("l"+i, xa,y1,xb,y2);
@@ -26769,7 +26839,7 @@ function dibTres73(E, z, sel, W, H, previa, R, cuadritos, col, w, da, X, Y){
     fibNiv73(z).forEach(function(L, i){
       var p=C.p+d*L, y=Y(p), cl=fibColL73(z, i);
       if(prevY!=null && fo2>0) R.svg+='<rect x="'+x0.toFixed(1)+'" y="'+Math.min(prevY,y).toFixed(1)+'" width="'+(x1-x0).toFixed(1)+'" height="'+Math.abs(y-prevY).toFixed(1)+'" fill="'+fibColB73(z,i-1)+'" fill-opacity="'+fo2+'"/>';
-      R.svg+=linea(x0,y,x1,y,cl,1.4,"");
+      R.svg+=linea(x0,y,x1,y,cl,fibW81(z),fibDa81(z));      /* v81 · §160 */
       if(!previa) R.tags+=tag("fib", x0+4, y-2, '<span style="display:inline-block;max-width:'+Math.max(24,x1-x0-8).toFixed(0)+'px;overflow:hidden;white-space:nowrap;vertical-align:bottom"><span style="color:'+cl+'">'+nivelTxt(L)+'</span>'+((x1-x0)>=150?' <i>('+precioEt(p)+')</i>':'')+'</span>', "i", "a");
       parte("n"+i, x0,y,x1,y);
       prevY=y;
@@ -27798,6 +27868,7 @@ ajZonas74=function(E){
   h+=f68("Dónde va el rótulo", selAj68('data-zet="zEtDonde"', ZET74.donde, z.donde));
   h+=f68("Colores", '<span class="v68par">'+sq68("zEtSl", z.sl||"#F23645", "Stop")+sq68("zEtTp", z.tp||"#089981", "Objetivo")+'</span>'+
     '<button type="button" class="v68rs" data-ar="zEtSl,zEtTp" title="'+esc(tr("Color de fábrica"))+'" aria-label="'+esc(tr("Color de fábrica"))+'">×</button>');
+  if(typeof ajZonOp81==="function") h+=ajZonOp81();      /* v81 · §160: cuánto se ve el fondo de las franjas */
   h+='<div class="v68nota">'+esc(tr("Vale para la caja Largo / Corto (largo y corto) y para las franjas de una operación."))+'</div>';
   return h;
 };
@@ -30903,6 +30974,7 @@ function ajOps80(E){
   var o=function(a, tx){ return [a, esc(tr(tx))]; };
   h+=grupo("Operación en marcha", "Cómo se ve mientras está abierta.", seg68("data-aov80", [o("lineas","Líneas finas"), o("caja","Caja de color"), o("nada","Nada")], opVivo80()));
   h+=grupo("Operaciones cerradas", "Los puntos de entrada y salida.", seg68("data-aoc80", [o("siempre","Siempre"), o("dias","Unos días"), o("nunca","Nunca")], opCerr80()));
+  h+=ajFilaEst81("cer", "Línea entre la entrada y la salida", "La raya que une los dos puntos de cada operación cerrada.", "var(--t2)");      /* v81 · §160 */
   h+='<div class="v68r" data-aod80'+(opCerr80()==="dias" ? '' : ' hidden')+'><span class="v68l an"><span class="v68ln"><b>'+esc(tr("Quitarlas solas a los"))+'</b><small>'+esc(tr("Se cuentan desde que se cierra la operación."))+'</small></span></span><div class="v68k">'+
      selAj68("data-aod80s", OPS80.dias.map(function(d){ return [d, d+" "+(d===1?"día":"días")]; }), opDias80())+'</div></div>';
   var n=quitN80();
@@ -31226,6 +31298,575 @@ document.addEventListener("click", function(ev){
       return s0.call(this, campo, ahora);
     } finally { BD.histDia=d0; BD.histTot=h0; }
   };
+})();
+
+/* ===================================================================
+   v81 · ESTILOS POR ELEMENTO  (Luis, 20 oct 06:29: §156 «la línea blanca del precio de hoy marea, parece un soporte» y
+   §157 «en Ajustes solo tiene la opción de eliminar… si quiero más transparente, punteada, el grosor, cambiar el color… en todo»)
+   · Cada línea de la gráfica (Precio hoy, Entrada, Stop, Objetivo, Liquidación, Salida) y la cruz del puntero tienen su propio estilo:
+     color · grosor (1 a 6) · tipo de raya · transparencia. Se toca el nombre de la línea en Ajustes › Escalas y líneas y los controles
+     se abren ahí mismo, debajo (el interruptor de encender/apagar de siempre queda en la fila).
+   · Todo vive en BD.ajustes.est81 = { hoy:{c,w,d,o}, ent:{…}, …, cruz:{modo,c,w,d,o,pr,fe} }. Lo que no está puesto es «de fábrica»:
+     las líneas, como siempre; «Precio hoy», discreta (rayas finas y tenue) para que no parezca un soporte.
+   · «Cancelar» lo devuelve (est81 está en AJ68_CLAVES) y «Por defecto» lo restablece.
+   · Los DIBUJOS (horizontal, vertical, línea, rayo, flecha, rectángulo…) ganan «Transparencia» (z.o) y grosor hasta 6 (parches en inyectar_v81.py).
+   =================================================================== */
+var EST81={
+  lin:["hoy","ent","sl","tp","liq","sal"],                      /* las líneas con estilo propio («Mis compras» no) */
+  cls:{hoy:"ahora", ent:"ent", sl:"sl", tp:"tp", liq:"liq", sal:"sal", mm:["mx","mn"]},
+  /* cómo se ven de fábrica (lo que dice el CSS de siempre) — sirve para mostrar la muestra y qué botón está activo */
+  base:{hoy:{w:1.5,d:0,o:100}, ent:{w:1.5,d:1,o:100}, sl:{w:1.5,d:1,o:100}, tp:{w:1.5,d:1,o:100}, liq:{w:2,d:1,o:90}, sal:{w:2,d:0,o:100}, cruz:{w:1.5,d:2,o:78},
+        mm:{w:1.5,d:2,o:85}, gr:{w:1,d:0,o:42}, prec:{w:2,d:0,o:100}, cer:{w:1.2,d:2,o:80}, zon:{o:18}, corte:{w:1.5,d:1,o:70}},      /* v81 · §160: el máximo/mínimo del tramo y la cuadrícula también */
+  /* lo que cambia de fábrica respecto a lo de siempre */
+  fab:{hoy:{w:1,d:1,o:42}},
+  pal:["#FFFFFF","#9FB3D9","#4B9FE1","#FFB020","#16D98A","#FF4D6A","#A97BFF"],
+  raya:["solid","dashed","dotted"],
+  abre:null                                                     /* la fila que está desplegada en Ajustes */
+};
+function est81Todo(){ var a=BD.ajustes||(BD.ajustes={}); if(!a.est81 || typeof a.est81!=="object") a.est81={}; return a.est81; }
+/* lo que vale para la línea k: de fábrica + lo que el usuario cambió */
+function estDe81(k){
+  var S=(BD.ajustes||{}).est81||{}, o={}, f=EST81.fab[k]||{}, u=S[k]||{};
+  Object.keys(f).forEach(function(x){ o[x]=f[x]; });
+  Object.keys(u).forEach(function(x){ if(u[x]!==undefined && u[x]!==null) o[x]=u[x]; });
+  return o;
+}
+function estPon81(k, campo, valor){
+  var S=est81Todo(); if(!S[k]) S[k]={};
+  if(valor===null || valor===undefined) delete S[k][campo]; else S[k][campo]=valor;
+}
+function estOk81(c){ return typeof c==="string" && /^#[0-9a-fA-F]{6}$/.test(c); }
+
+/* el CSS de las líneas de la gráfica según lo elegido (un <style> propio que se pone al día en cada dibujo) */
+function estCss81(){
+  var r=[];
+  EST81.lin.concat(["mm"]).forEach(function(k){
+    var e=estDe81(k), cl=EST81.cls[k], a=[], b=[];
+    cl=(cl instanceof Array) ? cl : [cl];
+    var S=function(suf, pre){ return cl.map(function(x){ return (pre||"")+".graf .ln."+x+(suf||""); }).join(","); };
+    if(estOk81(e.c)){ a.push("--lc:"+e.c, "color:"+e.c); }
+    if(e.w>0) b.push("border-top-width:"+e.w+"px!important");
+    if(e.d===0||e.d===1||e.d===2) b.push("border-top-style:"+EST81.raya[e.d]+"!important");
+    if(e.o>=10 && e.o<=100) b.push("opacity:"+(e.o/100)+"!important");
+    if(a.length) r.push(S("")+"{"+a.join(";")+"}");
+    if(k==="hoy" && estOk81(e.c)) r.push("html .graf .ln.ahora .et,html .graf .ln.ahora .et b,html .graf .ln.ahora .et em{color:"+e.c+"!important}html .graf .ln.ahora .et em{border-left-color:"+e.c+"!important}");
+    if(k==="mm" && estOk81(e.c)) r.push(S(" .et em","html ")+"{background:color-mix(in srgb,"+e.c+" 88%,var(--b0))!important}");
+    if(b.length) r.push(S(":not(.agarrada)::before","html ")+"{"+b.join(";")+"}");
+  });
+  /* la raya que une la entrada y la salida de cada operación cerrada */
+  var ce=estDe81("cer"), q=[];
+  if(estOk81(ce.c)) q.push("stroke:"+ce.c+"!important");
+  if(ce.w>0) q.push("stroke-width:"+ce.w+"px!important");
+  if(ce.d===0||ce.d===1||ce.d===2){ var cw=ce.w>0 ? ce.w : 1.2; q.push("stroke-dasharray:"+(ce.d===0 ? "none" : (ce.d===1 ? (4+cw*2)+" "+(3+cw*1.5) : cw+" "+(cw+2)))+"!important"); }
+  if(ce.o>=10 && ce.o<=100) q.push("opacity:"+(ce.o/100)+"!important");
+  if(q.length) r.push("html .graf .op80 .l80{"+q.join(";")+"}");
+  /* la raya vertical del punto donde empieza la repetición (mientras se elige) */
+  var co=estDe81("corte"), cq=[];
+  if(estOk81(co.c) || co.w>0 || co.d===0 || co.d===1 || co.d===2 || (co.o>=10 && co.o<=100)){
+    var cop=(co.o>=10 && co.o<=100) ? co.o : 70, cc=estOk81(co.c) ? co.c : "var(--tx)";
+    r.push("html .graf .rpCorte{border-left:"+(co.w>0 ? co.w : 1.5)+"px "+EST81.raya[(co.d===0||co.d===1||co.d===2) ? co.d : 1]+" color-mix(in srgb,"+cc+" "+cop+"%,transparent)!important}");
+  }
+  /* el fondo de las franjas de stop y objetivo (Futuros y Backtesting) */
+  var zo=estDe81("zon");
+  if(zo.o>=5 && zo.o<=60) r.push("html .graf:not(.opl80) .gsom.riesgo{background:color-mix(in srgb,var(--dn) "+zo.o+"%,transparent)}html .graf:not(.opl80) .gsom.premio{background:color-mix(in srgb,var(--up) "+zo.o+"%,transparent)}html .graf:not(.opl80) .gsom.riesgo.zc74,html .graf:not(.opl80) .gsom.premio.zc74{background:color-mix(in srgb,var(--zc74) "+zo.o+"%,transparent)}");
+  /* la cuadrícula (los renglones horizontales detrás de las velas) */
+  var g=estDe81("gr");
+  if(estOk81(g.c) || g.w>0 || g.d===0 || g.d===1 || g.d===2 || (g.o>=10 && g.o<=100)){
+    var gw=g.w>0 ? g.w : 1, gd=EST81.raya[(g.d===0||g.d===1||g.d===2) ? g.d : 0], go=(g.o>=10 && g.o<=100) ? g.o : 42, gc=estOk81(g.c) ? g.c : "var(--ln)";
+    r.push("html .graf .gejes .gr{border-top:"+gw+"px "+gd+" color-mix(in srgb,"+gc+" "+go+"%,transparent)!important}");
+  }
+  /* la cruz (v81_cruz.js la usa con estas variables) */
+  var c=estDe81("cruz"), v=[];
+  if(estOk81(c.c)) v.push("--cz-c:"+c.c);
+  if(c.w>0) v.push("--cz-w:"+c.w+"px");
+  if(c.d===0||c.d===1||c.d===2) v.push("--cz-d:"+EST81.raya[c.d]);
+  if(c.o>=10 && c.o<=100) v.push("--cz-o:"+(c.o/100));
+  if(v.length) r.push(".graf .gcz{"+v.join(";")+"}");
+  if(c.pr===false) r.push(".graf .gcz b.p{display:none!important}");
+  if(c.fe===false) r.push(".graf .gcz b.t{display:none!important}");
+  return r.join("\n");
+}
+function estAplicar81(){
+  var css=estCss81(), st=document.getElementById("est81css");
+  if(!st){ st=document.createElement("style"); st.id="est81css"; document.head.appendChild(st); }
+  if(st._v!==css){ st._v=css; st.textContent=css; }
+}
+(function(){
+  if(window._est81) return; window._est81=true;
+  var d0=dibujar;
+  dibujar=function(E){ try{ estAplicar81(); }catch(e){} return d0.apply(this, arguments); };
+  if(typeof AJ68_CLAVES!=="undefined" && AJ68_CLAVES.indexOf("est81")<0) AJ68_CLAVES.push("est81");
+  /* la transparencia de un dibujo (z.o: 10 a 100): se envuelve todo su dibujo */
+  var dd0=dibujoDe;
+  dibujoDe=function(E, z){
+    var R=dd0.apply(this, arguments);
+    try{ if(R && z && z.o>=10 && z.o<100 && typeof R.svg==="string" && R.svg) R.svg='<g opacity="'+(z.o/100)+'">'+R.svg+'</g>'; }catch(e){}
+    return R;
+  };
+  try{ estAplicar81(); }catch(e){}
+})();
+
+/* ---------- Ajustes › Escalas y líneas ---------- */
+function est81MuestraCss(k, colorBase){
+  var b=EST81.base[k]||{}, e=estDe81(k);
+  var w=e.w||b.w||1.5, d=(e.d!=null?e.d:(b.d||0)), o=(e.o!=null?e.o:(b.o!=null?b.o:100)), c=estOk81(e.c)?e.c:colorBase;
+  return 'border-top:'+Math.max(1,w)+'px '+EST81.raya[d]+' '+c+';opacity:'+(o/100);
+}
+function est81Muestra(k, colorBase){ return '<span class="e81m" data-cb="'+esc(colorBase)+'" style="'+est81MuestraCss(k, colorBase)+'"></span>'; }
+function est81Refresca(raiz, k){
+  var m=raiz && raiz.querySelector ? raiz.querySelector('[data-e81f="'+k+'"] .e81m') : null;
+  if(m) m.setAttribute("style", est81MuestraCss(k, m.getAttribute("data-cb")||"currentColor"));
+}
+function est81Controles(k, colorBase){
+  var b=EST81.base[k]||{}, e=estDe81(k);
+  var d=(e.d!=null?e.d:(b.d||0)), o=Math.round(e.o!=null?e.o:(b.o!=null?b.o:100));
+  var ray=function(ex){ return '<svg width="34" height="10"><path d="M2 5h30" stroke="currentColor" stroke-width="2" '+(ex||"")+'/></svg>'; };
+  var h='<div class="e81b" data-e81b="'+k+'">';
+  if(k==="cruz"){
+    var m=e.modo||"s";
+    h+=f68("Mostrar", seg68("data-e81m", [["s",tr("Siempre")],["m",tr("Al mantener")],["n",tr("Nunca")]], m));
+  }
+  h+=f68("Color", colores68(EST81.pal, estOk81(e.c)?e.c:"", "data-e81c"));
+  h+=f68("Grosor", seg68("data-e81w", [1,2,3,4,5,6].map(function(n){ return [n,String(n)]; }), e.w||""));
+  h+=f68("Tipo de raya", seg68("data-e81d", [[0,ray(""),tr("Continua")],[1,ray('stroke-dasharray="6 4"'),tr("Guiones")],[2,ray('stroke-dasharray="0.1 5" stroke-linecap="round"').replace('stroke-width="2"','stroke-width="2.4"'),tr("Puntos")]], d));
+  h+=f68("Opacidad", '<input type="range" class="v68rg" min="10" max="100" step="1" data-e81o value="'+o+'"><b class="v68n" data-e81o-n>'+o+' %</b>');
+  if(k==="cruz"){
+    h+=f68("Precio (a la derecha)", sw68('data-e81p="1"', e.pr!==false));
+    h+=f68("Fecha (abajo)", sw68('data-e81fe="1"', e.fe!==false));
+    h+='<div class="v68nota">'+esc(tr("Al trazar un dibujo, la cruz sale siempre: es la ayuda para poner los puntos."))+'</div>';
+  }
+  h+='<div class="e81pie"><button type="button" class="v68rs e81fab" data-e81r="'+k+'">'+esc(tr("De fábrica"))+'</button></div></div>';
+  return h;
+}
+/* una fila de «Líneas de la gráfica»: nombre (se toca para abrir su estilo) · muestra · › · interruptor */
+function ajFila81(x, E){
+  var k=x[0];
+  if(EST81.lin.indexOf(k)<0) return fsw68(x[1], 'data-alin="'+k+'"', linVer(k), "", x[2]);        /* «Mis compras»: solo interruptor */
+  var ab=(EST81.abre===k);
+  return '<div class="v68r e81r'+(ab?' ab':'')+'" data-e81f="'+k+'"><span class="v68l an e81t" role="button" tabindex="0" data-e81a="'+k+'"><i class="v68pt" style="--c:'+x[2]+'"></i><span class="v68ln"><b>'+esc(tr(x[1]))+'</b></span></span>'+
+    '<div class="v68k"><span class="e81s" data-e81a="'+k+'">'+est81Muestra(k, x[2])+'<span class="e81fl" aria-hidden="true">›</span></span>'+sw68('data-alin="'+k+'"', linVer(k))+'</div></div>'+
+    (ab ? est81Controles(k, x[2]) : '');
+}
+function ajCruz81(E){
+  var e=estDe81("cruz"), ab=(EST81.abre==="cruz"), col="#9FB3D9";
+  return '<div class="v68r e81r'+(ab?' ab':'')+'" data-e81f="cruz"><span class="v68l an e81t" role="button" tabindex="0" data-e81a="cruz"><i class="v68pt" style="--c:'+col+'"></i><span class="v68ln"><b>'+esc(tr("Cruz del puntero"))+'</b></span></span>'+
+    '<div class="v68k"><span class="e81s" data-e81a="cruz">'+est81Muestra("cruz", "var(--tx)")+'<span class="e81fl" aria-hidden="true">›</span></span>'+sw68('data-e81s="cruz"', (e.modo||"s")!=="n")+'</div></div>'+
+    (ab ? est81Controles("cruz", col) : '');
+}
+
+/* devuelve true si el toque era de esta sección */
+function ajEstClic81(t, aplicar, pintar, E){
+  var b;
+  if((b=t.closest("[data-e81a]"))){ var k=b.getAttribute("data-e81a"); EST81.abre=(EST81.abre===k)?null:k; pintar(); return true; }
+  if((b=t.closest("[data-e81c]"))){ var ka=t.closest("[data-e81b]"); if(ka){ estPon81(ka.getAttribute("data-e81b"), "c", b.getAttribute("data-e81c")); aplicar(); pintar(); } return true; }
+  if((b=t.closest("[data-e81w]"))){ var kw=t.closest("[data-e81b]"); if(kw){ estPon81(kw.getAttribute("data-e81b"), "w", +b.getAttribute("data-e81w")); aplicar(); pintar(); } return true; }
+  if((b=t.closest("[data-e81d]"))){ var kd=t.closest("[data-e81b]"); if(kd){ estPon81(kd.getAttribute("data-e81b"), "d", +b.getAttribute("data-e81d")); aplicar(); pintar(); } return true; }
+  if((b=t.closest("[data-e81m]"))){ var km=t.closest("[data-e81b]"); if(km){ estPon81(km.getAttribute("data-e81b"), "modo", b.getAttribute("data-e81m")); try{ if(typeof cruz81Cambio==="function") cruz81Cambio(E); }catch(e){} aplicar(); pintar(); } return true; }
+  if((b=t.closest("[data-e81r]"))){ var S=est81Todo(); delete S[b.getAttribute("data-e81r")]; try{ if(b.getAttribute("data-e81r")==="cruz" && typeof cruz81Cambio==="function") cruz81Cambio(E); }catch(e){} aplicar(); pintar(); return true; }
+  return false;
+}
+/* los controles que mandan «input» seguido (el deslizador y el selector de color) */
+function ajEstEntrada81(t, aplicar){
+  if(!t.hasAttribute) return false;
+  var kb=t.closest ? t.closest("[data-e81b]") : null;
+  if(t.hasAttribute("data-e81o") && kb){
+    var v=+t.value; estPon81(kb.getAttribute("data-e81b"), "o", v);
+    var n=kb.querySelector("[data-e81o-n]"); if(n) n.textContent=Math.round(v)+" %";
+    est81Refresca(kb.parentNode, kb.getAttribute("data-e81b"));
+    aplicar(); return true;
+  }
+  if(t.hasAttribute("data-e81c-p") && kb){ estPon81(kb.getAttribute("data-e81b"), "c", t.value); est81Refresca(kb.parentNode, kb.getAttribute("data-e81b")); aplicar(); return true; }
+  return false;
+}
+/* interruptores: la cruz (encender/apagar) y sus etiquetas */
+function ajEstCambio81(t, aplicar, E){
+  if(!t.hasAttribute) return false;
+  if(t.hasAttribute("data-e81s")){
+    var c=est81Todo().cruz||(est81Todo().cruz={});
+    if(t.checked){ c.modo=(c.modoAnt && c.modoAnt!=="n") ? c.modoAnt : "s"; } else { if(c.modo && c.modo!=="n") c.modoAnt=c.modo; c.modo="n"; }
+    try{ if(typeof cruz81Cambio==="function") cruz81Cambio(E); }catch(e){}
+    aplicar(); if(typeof V68!=="undefined" && V68 && V68.pintar) V68.pintar(); return true;
+  }
+  if(t.hasAttribute("data-e81o")){ aplicar(); return true; }                      /* el deslizador suelta: se guarda */
+  if(t.hasAttribute("data-e81p")){ estPon81("cruz","pr", !!t.checked); aplicar(); return true; }
+  if(t.hasAttribute("data-e81fe")){ estPon81("cruz","fe", !!t.checked); aplicar(); return true; }
+  if(t.hasAttribute("data-e81c-p")){ return ajEstEntrada81(t, aplicar); }
+  return false;
+}
+
+/* la opacidad de un dibujo (ventana de cada dibujo: Estilo) — 100 % = sólido; menos = más transparente */
+function opDib81(z){
+  var o=(z.o>=10 && z.o<=100) ? Math.round(z.o) : 100;
+  return f68("Opacidad", '<input type="range" class="v68rg" min="10" max="100" step="1" data-zo value="'+o+'"><b class="v68n" data-zo-n>'+o+' %</b>');
+}
+
+/* ===================================================================
+   v81 · §160 «TODO LO CONFIGURABLE, IGUAL EN TODOS» (Luis, 20 oct 09:34 y 09:35)
+   «por sentido común… no puede ser posible que uno sí y otros no… tienen que tener todos los indicadores, todas las líneas, todo»
+   Auditoría (doc81/audit_*.py): lo que faltaba y ahora está:
+   · Fibonacci (retroceso, extensión, canal): Grosor y Tipo de raya (z.fw, z.fd; de fábrica 1,4 y continua).
+   · Largo / Corto: Color de Objetivo, Stop y Entrada (z.pc), Grosor (z.pw), Tipo de raya (z.pd) y Relleno de las zonas (z.pf).
+   · Opacidad (z.o) también sobre los TEXTOS de cada dibujo (antes solo se aclaraba la raya).
+   · Niveles de los indicadores (el 70/30 del RSI…): Grosor y Opacidad (it.lv[k].w / .o), además del color y la raya que ya tenían.
+   · Cuadrícula y Máximo/mínimo: estilo completo (est81.gr / est81.mm), en la misma fila donde está su interruptor.
+   =================================================================== */
+var POS81={z:null};
+function fibTipo81(z){ return !!z && (z.tipo==="fib" || z.tipo==="fibx" || z.tipo==="fibc"); }
+/* ---- Fibonacci ---- */
+function fibW81(z){ var w=+z.fw; return (w>=1 && w<=6) ? w : 1.4; }
+function fibDa81(z, cap){
+  var d=+z.fd||0, w=fibW81(z);
+  if(d===1) return ' stroke-dasharray="'+(5+w*2)+' '+(4+w*1.5)+'"';
+  if(d===2) return ' stroke-dasharray="0.1 '+(3+w*2)+'"'+(cap ? ' stroke-linecap="round"' : '');
+  return "";
+}
+/* ---- Largo / Corto ---- */
+function posW81(z, def){ var w=+z.pw; return (w>=1 && w<=6) ? w : def; }
+function posDa81(z){
+  var d=+z.pd||0, w=posW81(z,1.6);
+  if(d===1) return ' stroke-dasharray="'+(5+w*2)+' '+(4+w*1.5)+'"';
+  if(d===2) return ' stroke-dasharray="0.1 '+(3+w*2)+'" stroke-linecap="round"';
+  return "";
+}
+function posFo81(z){ var f=z.pf; return (f!=null && f>=0 && f<=0.6) ? f : 0.2; }
+(function(){
+  if(window._todo81) return; window._todo81=true;
+  /* los colores de la caja Largo/Corto pasan por cajCol75: si el dibujo que se está pintando trae los suyos, mandan */
+  var cc0=cajCol75;
+  cajCol75=function(k){
+    var z=POS81.z;
+    if(z && z.pc && colorOk(z.pc[k])) return z.pc[k];
+    if(k==="en") return "#F5C542";
+    return cc0.apply(this, arguments);
+  };
+  var dd0=dibujoDe;
+  dibujoDe=function(E, z){
+    var previo=POS81.z; POS81.z=(z && z.tipo==="pos") ? z : null;
+    var R;
+    try{ R=dd0.apply(this, arguments); } finally { POS81.z=previo; }
+    /* la opacidad también aclara los textos del dibujo (los de siempre quedan igual cuando es 100 %) */
+    try{
+      if(R && z && z.o>=10 && z.o<100 && typeof R.tags==="string" && R.tags)
+        R.tags=R.tags.replace(/(<div class="gtag[^"]*" style=")/g, '$1opacity:'+(z.o/100)+';');
+    }catch(e){}
+    return R;
+  };
+})();
+
+/* ---- la ventana de cada dibujo (pestaña Estilo) ---- */
+function rayasOpc81(){
+  var ray=function(ex){ return '<svg width="34" height="10"><path d="M2 5h30" stroke="currentColor" stroke-width="2" '+(ex||"")+'/></svg>'; };
+  return [[0,ray(""),tr("Continua")],[1,ray('stroke-dasharray="6 4"'),tr("Guiones")],[2,ray('stroke-dasharray="0.1 5" stroke-linecap="round"').replace('stroke-width="2"','stroke-width="2.4"'),tr("Puntos")]];
+}
+function grosorOpc81(){ return [[0,esc(tr("Normal"))]].concat([1,2,3,4,5,6].map(function(n){ return [n,String(n)]; })); }
+/* Grosor y raya que no tenían Fibonacci ni Largo/Corto (van dentro de «Línea», antes de la Opacidad) */
+function dibExtra81(z){
+  var h="";
+  if(fibTipo81(z)){
+    h+=f68("Grosor", seg68("data-fw", grosorOpc81(), (z.fw>=1 && z.fw<=6) ? z.fw : 0));
+    h+=f68("Tipo de raya", seg68("data-fd", rayasOpc81(), +z.fd||0));
+  } else if(z.tipo==="pos"){
+    h+=f68("Grosor", seg68("data-pw", grosorOpc81(), (z.pw>=1 && z.pw<=6) ? z.pw : 0));
+    h+=f68("Tipo de raya", seg68("data-pd", rayasOpc81(), +z.pd||0));
+  }
+  return h;
+}
+function posEstiloHTML81(z){
+  var c=z.pc||{}, h=t68("Colores");
+  [["tp","Objetivo"],["sl","Stop"],["en","Entrada"]].forEach(function(p){
+    h+=f68(p[1], colores68(PALETA_TRAZO, colorOk(c[p[0]]) ? c[p[0]] : "", "data-pc-"+p[0]));
+  });
+  var pf=posFo81(z), on=pf>0, pc=Math.round((on ? pf : 0.2)*100);
+  h+=t68("Fondo de las zonas");
+  h+=f68("Relleno", '<label class="v68sw"><input type="checkbox" data-pfo-on'+(on?" checked":"")+'><i></i></label>');
+  h+=f68("Opacidad", '<input type="range" class="v68rg" min="5" max="60" step="1" data-pfo value="'+pc+'"'+(on?"":" disabled")+'><b class="v68n" data-pfo-n>'+pc+' %</b>');
+  h+='<div class="v73fibRs"><button type="button" class="v73rs" data-prs'+((z.pc||z.pw||z.pd||z.pf!=null)?"":" disabled")+'>'+esc(tr("De fábrica"))+'</button></div>';
+  return h;
+}
+/* devuelven true si el evento era de esto (y ya cambió el dibujo) */
+function dibClic81(ev, z){
+  var b, T=z.tipo, t=ev.target; if(!t || !t.closest) return false;
+  if(fibTipo81(z)){
+    if((b=t.closest("[data-fw]"))){ var w=+b.getAttribute("data-fw"); if(w>=1) z.fw=w; else delete z.fw; return true; }
+    if((b=t.closest("[data-fd]"))){ var d=+b.getAttribute("data-fd"); if(d>0) z.fd=d; else delete z.fd; return true; }
+  }
+  if(T==="pos"){
+    if((b=t.closest("[data-pw]"))){ var pw=+b.getAttribute("data-pw"); if(pw>=1) z.pw=pw; else delete z.pw; return true; }
+    if((b=t.closest("[data-pd]"))){ var pd=+b.getAttribute("data-pd"); if(pd>0) z.pd=pd; else delete z.pd; return true; }
+    var ks=["tp","sl","en"];
+    for(var i=0;i<ks.length;i++){
+      if((b=t.closest("[data-pc-"+ks[i]+"]"))){ var col=b.getAttribute("data-pc-"+ks[i]); if(colorOk(col)){ z.pc=z.pc||{}; z.pc[ks[i]]=col; } return true; }
+    }
+    if((b=t.closest("[data-prs]")) && !b.disabled){ delete z.pc; delete z.pw; delete z.pd; delete z.pf; return true; }
+  }
+  return false;
+}
+function dibEntrada81(ev, z, d){
+  var t=ev.target; if(!t || !t.hasAttribute || z.tipo!=="pos") return false;
+  var ks=["tp","sl","en"];
+  for(var i=0;i<ks.length;i++){
+    if(t.hasAttribute("data-pc-"+ks[i]+"-p")){ if(colorOk(t.value)){ z.pc=z.pc||{}; z.pc[ks[i]]=t.value; } return true; }
+  }
+  if(t.hasAttribute("data-pfo")){ z.pf=(+t.value)/100; var n=d.querySelector("[data-pfo-n]"); if(n) n.textContent=t.value+" %"; return true; }
+  return false;
+}
+function dibCambio81(ev, z){
+  var t=ev.target; if(!t || !t.hasAttribute || z.tipo!=="pos") return false;
+  if(t.hasAttribute("data-pfo-on")){ z.pf=t.checked ? 0.2 : 0; return true; }
+  return false;
+}
+
+/* ---- Cuadrícula de los paneles de indicadores: sale del mismo estilo que la de la gráfica ---- */
+function gridSvg81(){
+  var e=estDe81("gr"), d=(e.d===0||e.d===1||e.d===2) ? e.d : 0, w=e.w>0 ? e.w : 1, o=(e.o>=10 && e.o<=100) ? e.o : 42, c=estOk81(e.c) ? e.c : "var(--ln)";
+  return ' stroke="'+c+'" stroke-opacity="'+(o/100)+'" stroke-width="'+w+'"'+(d===1 ? ' stroke-dasharray="'+(5+w*2)+' '+(4+w*1.5)+'"' : (d===2 ? ' stroke-dasharray="0.1 '+(3+w*2)+'" stroke-linecap="round"' : ''));
+}
+/* ---- niveles de los indicadores: grosor y opacidad (raya y color ya estaban) ---- */
+function nivelSvg81(l){
+  var w=(l.w>0) ? l.w : 1, o=(l.o>=0 && l.o<=100) ? l.o : 75;
+  return ' stroke-width="'+w+'" stroke-opacity="'+(o/100)+'"'+indDash(l.d||0, w);
+}
+/* una fila de Ajustes con su interruptor de siempre (atributo y casilla propios) + el estilo desplegable debajo */
+function ajFilaSw81(k, nombre, attr, on, desc, colorBase){
+  var ab=(EST81.abre===k);
+  return '<div class="v68r e81r'+(ab?' ab':'')+'" data-e81f="'+k+'"><span class="v68l an e81t" role="button" tabindex="0" data-e81a="'+k+'"><i class="v68pt" style="--c:'+colorBase+'"></i><span class="v68ln"><b>'+esc(tr(nombre))+'</b>'+(desc?'<small>'+esc(tr(desc))+'</small>':'')+'</span></span>'+
+    '<div class="v68k"><span class="e81s" data-e81a="'+k+'">'+est81Muestra(k, colorBase)+'<span class="e81fl" aria-hidden="true">›</span></span>'+sw68(attr, on)+'</div></div>'+
+    (ab ? est81Controles(k, colorBase) : '');
+}
+
+/* ---- la línea del precio cuando la gráfica es de tipo Línea o Área (antes: azul de la app, grosor 2, fija) ---- */
+function precCol81(){ var e=estDe81("prec"); return estOk81(e.c) ? e.c : "var(--ac)"; }
+function precSvg81(){
+  var e=estDe81("prec"), d=(e.d===0||e.d===1||e.d===2) ? e.d : 0, w=e.w>0 ? e.w : 2, o=(e.o>=10 && e.o<=100) ? e.o : 100;
+  return ' stroke="'+precCol81()+'" stroke-width="'+w+'"'+(o<100 ? ' stroke-opacity="'+(o/100)+'"' : '')+
+    (d===1 ? ' stroke-dasharray="'+(5+w*2)+' '+(4+w*1.5)+'"' : (d===2 ? ' stroke-dasharray="0.1 '+(3+w*2)+'" stroke-linecap="round"' : ''));
+}
+/* una fila de Ajustes que solo abre su estilo (sin interruptor: la línea siempre se ve) */
+function ajFilaEst81(k, nombre, desc, colorBase){
+  var ab=(EST81.abre===k);
+  return '<div class="v68r e81r'+(ab?' ab':'')+'" data-e81f="'+k+'"><span class="v68l an e81t" role="button" tabindex="0" data-e81a="'+k+'"><i class="v68pt" style="--c:'+colorBase+'"></i><span class="v68ln"><b>'+esc(tr(nombre))+'</b>'+(desc?'<small>'+esc(tr(desc))+'</small>':'')+'</span></span>'+
+    '<div class="v68k"><span class="e81s" data-e81a="'+k+'">'+est81Muestra(k, colorBase)+'<span class="e81fl" aria-hidden="true">›</span></span></div></div>'+
+    (ab ? est81Controles(k, colorBase) : '');
+}
+/* las franjas de stop y objetivo: cuánto se ve su fondo (de fábrica, lo de siempre: 18 %) */
+function ajZonOp81(){
+  var e=estDe81("zon"), o=Math.round(e.o>=5 && e.o<=60 ? e.o : 18);
+  return '<div data-e81b="zon">'+f68("Opacidad del fondo", '<input type="range" class="v68rg" min="5" max="60" step="1" data-e81o value="'+o+'"><b class="v68n" data-e81o-n>'+o+' %</b>'+
+    '<button type="button" class="v68rs" data-e81r="zon" title="'+esc(tr("De fábrica"))+'" aria-label="'+esc(tr("De fábrica"))+'">×</button>')+'</div>';
+}
+
+/* ===================================================================
+   v81 · LA CRUZ DEL PUNTERO, SIEMPRE A LA VISTA  (Luis, 20 oct 06:31, §158)
+   «No me indican las cruces blancas que debe indicar tanto en la gráfica como en los indicadores… eso me sale solamente cuando voy a
+    dibujar algo… es lo que yo quiero que dé todo el tiempo… debe tener un ajuste: color, grosor, sin puntos, activar o desactivar.»
+   Antes la cruz salía solo con una herramienta de dibujo, con el ratón encima o manteniendo el dedo pulsado. Ahora hay tres modos
+   (Ajustes de la gráfica › Escalas y líneas › «Cruz del puntero» › Mostrar), guardados en BD.ajustes.est81.cruz.modo:
+     · «Siempre» (de fábrica): la cruz está siempre en la gráfica, con el precio a la derecha y la fecha abajo; en los indicadores marca
+       el valor de ese indicador. Se mueve con el ratón, con un TOQUE en la gráfica o manteniendo el dedo pulsado y arrastrando;
+       se queda donde se dejó (no se esconde sola). Si todavía no se tocó nada, sale en la última vela.
+     · «Al mantener»: como antes (ratón al pasar; dedo al mantener pulsado; se esconde a los 2,6 s).
+     · «Nunca»: no sale sola (al trazar un dibujo sale siempre, es la ayuda para poner los puntos).
+   Color, grosor, raya, opacidad y las cajas del precio y la fecha: ver v81_estilos.js (--cz-c, --cz-w, --cz-d, --cz-o).
+   La posición se guarda en píxeles (E.cz81 = {x,y}): al mover o acercar la gráfica la cruz se queda en su sitio y lo que lee se pone al día.
+   =================================================================== */
+function cruz81Modo(){ var m=((typeof BD!=="undefined" && BD.ajustes && BD.ajustes.est81 && BD.ajustes.est81.cruz) || {}).modo; return (m==="m" || m==="n") ? m : "s"; }
+/* ¿esta gráfica lleva ahora la cruz fija? (con una herramienta de dibujo manda la cruz de siempre, la de colocar puntos) */
+function cruz81Fijo(E){
+  if(!E || E.herr || !E.cont || !E.velas || !E.velas.length || !(E.per>0) || cruz81Modo()!=="s") return false;
+  var z=E.cont.querySelector(".gzona"); return !!(z && z.clientWidth>0 && z.clientHeight>0);
+}
+/* dónde está la cruz si nadie la ha movido: en la última vela que se ve, a la altura de su cierre (o en el primer panel si solo hay uno) */
+function cruz81Ini(E){
+  var z=E.cont.querySelector(".gzona"), V=E.velas; if(!z || !V || !V.length || !(E.per>0)) return null;
+  var W=E.anchoV||z.clientWidth, H=(E.escH||0)*100, fin=(E.fin!=null ? E.fin : V.length), cu=(E.cuantas || Math.floor(W/E.per));
+  var i=Math.max(0, Math.min(V.length-1, Math.round(fin)-1));
+  var x=(i-(fin-cu)+0.5)*E.per; x=Math.max(E.per/2, Math.min(W-E.per/2, x));
+  var y=null;
+  if(H>=40){ try{ y=pxDeP(E, V[i].c); }catch(e){ y=null; } if(y==null || !isFinite(y)) y=H*0.45; y=Math.max(14, Math.min(H-14, y)); }
+  else {                                         /* solo hay un panel de indicador a la vista */
+    var ps=z.querySelectorAll(".gpane"), zr=z.getBoundingClientRect();
+    for(var k=0;k<ps.length;k++){ var rp=ps[k].getBoundingClientRect(); if(rp.height>0){ y=(rp.top-zr.top)+rp.height*0.45; break; } }
+    if(y==null) y=Math.max(14, (z.clientHeight-(typeof TXH!=="undefined"?TXH:18))*0.45);
+  }
+  return {x:x, y:y};
+}
+/* la posición de q en píxeles de la zona de la gráfica (q: {t,y,val} de lo que hay bajo el puntero o {t,p} del punto de un dibujo) */
+function cruz81Px(E, q){
+  var x=(q.x!=null) ? q.x : pxDeT(E, q.t), y=null;
+  if(q.y!=null) y=q.y; else if(q.p!=null){ var pc=E._pnc; E._pnc=null; try{ y=pxDeP(E, q.p); } finally { E._pnc=pc; } }
+  return (isFinite(x) ? {x:x, y:(y!=null && isFinite(y)) ? y : null} : null);
+}
+function cruz81Sinc(E){
+  if(!E || !E.cont) return;
+  if(cruz81Fijo(E)){
+    var z=E.cont.querySelector(".gzona"), r=z.getBoundingClientRect(), P=E.cz81, q=null;
+    if(P && P.x!=null && P.y!=null) q=cruz68Lectura(E, r.left+P.x, r.top+P.y);
+    if(!q){ P=cruz81Ini(E); if(P) q=cruz68Lectura(E, r.left+P.x, r.top+P.y); }
+    if(q){ E.cz81=P; E.cz67=q; E._cz81a=true; }
+  } else if(!E.herr && !E._cz67Pres){
+    if(E._cz81a){ E._cz81a=false; E.cz67=null; }                   /* se cambió de «Siempre» a otro modo: la cruz fija se va */
+    else if(cruz81Modo()==="n" && E.cz67) E.cz67=null;
+  }
+}
+(function(){
+  if(window._cruz81) return; window._cruz81=true;
+  var q0=cruz67Quitar, p0=cruz67Poner, r0=cruz67Repintar, e0=cruz67Enganchar;
+  /* con la cruz fija, lo que la esconde (salir el ratón, soltar el dedo, empezar a arrastrar) ya no la quita */
+  cruz67Quitar=function(E){ if(cruz81Fijo(E)) return; if(E){ E._cz81a=false; } return q0.apply(this, arguments); };
+  cruz67Poner=function(E, q){
+    if(!E.herr && cruz81Modo()==="n") return;
+    try{ var P=cruz81Px(E, q); if(P && P.y!=null) E.cz81=P; else if(P && E.cz81) E.cz81={x:P.x, y:E.cz81.y}; }catch(e){}
+    return p0.apply(this, arguments);
+  };
+  cruz67Repintar=function(E){ try{ cruz81Sinc(E); }catch(e){ if(window.console) console.error(e); } return r0.apply(this, arguments); };
+  /* un toque en la gráfica (con el dedo) pone la cruz ahí */
+  var NO81=".gley,.gleyMin,.gleyP,.gsel,.gpop,.gm,.gpsep,.gejeP,.gejeT,.gpnx,.gpnl,button,.gpTab,.gcab,.gherr,.ln,.gcompra,.gtira,.tira80,a,input,select,textarea,[data-act]";
+  cruz67Enganchar=function(E, zona){
+    e0.apply(this, arguments);
+    var d=null;
+    zona.addEventListener("pointerdown", function(ev){ d=(ev.pointerType==="mouse" || ev.isPrimary===false) ? null : {x:ev.clientX, y:ev.clientY, t:Date.now(), id:ev.pointerId}; }, true);
+    zona.addEventListener("pointermove", function(ev){ if(d && ev.pointerId===d.id && Math.hypot(ev.clientX-d.x, ev.clientY-d.y)>10) d=null; }, true);
+    zona.addEventListener("pointercancel", function(){ d=null; }, true);
+    zona.addEventListener("pointerup", function(ev){
+      if(!d || ev.pointerId!==d.id) return;
+      var tap=(Date.now()-d.t<350 && Math.hypot(ev.clientX-d.x, ev.clientY-d.y)<10); d=null;
+      if(!tap || E.pinch || E.crea || !cruz81Fijo(E)) return;
+      if(ev.target.closest && ev.target.closest(NO81)) return;
+      var q=cruz68Lectura(E, ev.clientX, ev.clientY); if(!q) return;
+      cruz67Poner(E, q);
+      if(typeof indHoverLey==="function" && typeof indLista==="function" && indLista().length && E.indHover!==q.i){ E.indHover=q.i; indHoverLey(E); }
+    }, true);
+  };
+})();
+/* al cambiar el modo en Ajustes: la cruz sale o se va al momento */
+function cruz81Cambio(E){ try{ if(E) cruz67Repintar(E); }catch(e){} }
+
+/* ===================================================================
+   v81 · «MIS FAVORITAS» EN LISTA DESPLEGABLE  (Luis, 20 oct 06:49, §159)
+   «Sale mis favoritos, la primera criptomoneda, pero si él pulsa, automáticamente se despliega una lista. Y ya cuando toca la
+    criptomoneda, nuevamente se vuelve normal… es tedioso estar buscando de forma horizontal… Ojo, que quede con la opción calibrable,
+    si es que quiero horizontal… en Resumen, Spot, Futuros y Backtesting.»
+   · Dos formas (Ajustes › Mis favoritas), en BD.ajustes.favModo: «lista» (de fábrica: se ve UNA moneda y una flechita; al tocarla se abre
+     toda la lista, una moneda por renglón con su precio y su variación en vivo; al tocar una moneda se abre su gráfica, como siempre, y la
+     lista se cierra) o «fila» (la tira de siempre, que se desliza de lado).
+   · La moneda que se ve cerrada es la última que se tocó (BD.ajustes.favAct); si no hay, la primera.
+   · La lista se pinta solo al abrirla (los precios en vivo se piden solo para lo que se ve) y se cierra tocando fuera, con Escape o al cambiar de pantalla.
+   · Es la misma tira (#favT68) de las cuatro pantallas: favTira68()/favPoner68() la ponen, esto solo cambia cómo se ve.
+   =================================================================== */
+var FAV81={ab:false};
+function favModo81(){ return ((BD.ajustes||{}).favModo==="fila") ? "fila" : "lista"; }
+function favAct81(){ var L=favsLista67(), a=String((BD.ajustes||{}).favAct||"").toUpperCase(); return (a && L.indexOf(a)>=0) ? a : L[0]; }
+/* el precio y la variación de una moneda, en vivo (lo mismo que ponía cada ficha de la fila) */
+function favPx81(s){
+  var merc=(typeof mercadoVista79==="function") ? mercadoVista79() : null;
+  if(merc) return {
+    pr:'<span class="pr mono" translate="no" data-px79="'+merc+'" data-k="pr" data-s="'+esc(s)+'">'+esc(txtPr79(merc, s))+'</span>',
+    ch:'<em class="'+clCh79(merc, s)+'" translate="no" data-px79="'+merc+'" data-k="ch" data-s="'+esc(s)+'">'+esc(txtCh79(merc, s))+'</em>'};
+  var pr=(typeof precioDe==="function") ? precioDe(s) : null, ch=(typeof cambioDe==="function") ? cambioDe(s) : null;
+  return {
+    pr:'<span class="pr mono" translate="no" data-v="pr" data-s="'+esc(s)+'">'+(pr!=null ? precio(pr) : "—")+'</span>',
+    ch:'<em class="'+(typeof cl==="function" ? cl(ch) : "")+'" translate="no" data-v="ch" data-s="'+esc(s)+'" data-cls="">'+(ch!=null ? pct(ch,1) : "")+'</em>'};
+}
+function favFilas81(){
+  var act=favAct81();
+  return favsLista67().map(function(s){
+    var px=favPx81(s);
+    return '<button type="button" class="favR81'+(s===act?" act":"")+'" role="option" aria-selected="'+(s===act?"true":"false")+'" data-fv81r="'+esc(s)+'">'+icono(s,32)+
+      '<span class="tx"><b translate="no">'+esc(s)+'</b><i translate="no">'+esc(nombreDe(s))+'</i></span><span class="px">'+px.pr+px.ch+'</span></button>';
+  }).join("")+'<button type="button" class="favAg81" data-fv81="mas">+ '+esc(tr("Agregar favorita"))+'</button>';
+}
+function favLista81(){
+  var L=favsLista67(), s=favAct81(), px=favPx81(s);
+  return '<div class="favT68 favL81'+(FAV81.ab?" ab":"")+'" id="favT68"><span class="st">'+estrella67(true)+'</span>'+
+    '<button type="button" class="favP81" data-fv81="t" aria-haspopup="listbox" aria-expanded="'+(FAV81.ab?"true":"false")+'" title="'+esc(tr("Mis favoritas"))+'">'+icono(s,30)+
+      '<span class="tx"><b translate="no">'+esc(s)+'</b><i translate="no">'+esc(nombreDe(s))+'</i></span>'+
+      '<span class="px">'+px.pr+px.ch+'</span><span class="car" aria-hidden="true">▾</span></button>'+
+    '<span class="chip v">'+L.length+'</span>'+
+    '<button type="button" class="favMas81" data-fvmas aria-label="'+esc(tr("Agregar"))+'" title="'+esc(tr("Agregar"))+'"></button>'+
+    '<div class="favD81" role="listbox">'+(FAV81.ab ? favFilas81() : "")+'</div></div>';
+}
+/* abrir o cerrar en el sitio (sin volver a pintar la pantalla) */
+function favAbrir81(ab){
+  var t=document.getElementById("favT68"); if(!t || !t.classList.contains("favL81")){ FAV81.ab=false; return; }
+  FAV81.ab=!!ab; t.classList.toggle("ab", FAV81.ab);
+  var p=t.querySelector(".favP81"); if(p) p.setAttribute("aria-expanded", FAV81.ab ? "true" : "false");
+  var d=t.querySelector(".favD81"); if(!d) return;
+  d.innerHTML=FAV81.ab ? favFilas81() : "";
+  if(FAV81.ab){
+    /* la lista cabe en lo que queda de pantalla, por encima de la barra de abajo (si hay poco sitio, se sube un poco la pantalla) */
+    try{
+      var r=t.getBoundingClientRect(), room=window.innerHeight-r.bottom-92;
+      if(room<240){ window.scrollBy(0, Math.max(0, Math.min(r.top-70, 240-room))); r=t.getBoundingClientRect(); room=window.innerHeight-r.bottom-92; }
+      d.style.maxHeight=Math.max(150, Math.min(540, Math.round(window.innerHeight*0.64), room))+"px";
+    }catch(e){}
+    favEnganchaFilas81(t);
+    var a=d.querySelector(".favR81.act"); if(a && a.scrollIntoView) try{ a.scrollIntoView({block:"nearest"}); }catch(e){}
+  }
+}
+function favEnganchaFilas81(t){
+  [].forEach.call(t.querySelectorAll("[data-fv81r]"), function(b){
+    b.onclick=function(){
+      var s=b.getAttribute("data-fv81r");
+      try{ var A=BD.ajustes||(BD.ajustes={}); A.favAct=s; tocar(A); guardar(); }catch(e){}
+      FAV81.ab=false;
+      try{ favPoner68(); }catch(e){}
+      favAccion68(s);
+    };
+  });
+  var m=t.querySelector('[data-fv81="mas"]');
+  if(m) m.onclick=function(){ FAV81.ab=false; favAbrir81(false); var b=t.querySelector("[data-fvmas]"); if(b) b.click(); };
+}
+function favEnganchar81(){
+  var t=document.getElementById("favT68"); if(!t || !t.classList.contains("favL81")) return;
+  var p=t.querySelector('[data-fv81="t"]'); if(p) p.onclick=function(){ favAbrir81(!FAV81.ab); };
+  if(FAV81.ab) favEnganchaFilas81(t);
+}
+(function(){
+  if(window._fav81) return; window._fav81=true;
+  var ft0=favTira68, fp0=favPoner68;
+  favTira68=function(){
+    if(favModo81()!=="lista" || !favsLista67().length) return ft0.apply(this, arguments);
+    return favLista81();
+  };
+  favPoner68=function(){ var r=fp0.apply(this, arguments); try{ favEnganchar81(); }catch(e){ if(window.console) console.error(e); } return r; };
+  /* tocar fuera, Escape: se cierra */
+  document.addEventListener("pointerdown", function(ev){
+    if(!FAV81.ab) return;
+    var t=document.getElementById("favT68");
+    if(t && ev.target && t.contains(ev.target)) return;
+    favAbrir81(false);
+  }, true);
+  document.addEventListener("keydown", function(ev){ if(ev.key==="Escape" && FAV81.ab){ favAbrir81(false); } }, true);
+})();
+
+/* ---------- Ajustes (la pestaña de la aplicación) › Mis favoritas: en fila / lista desplegable ---------- */
+function favTxt81(m){ return tr(m==="fila" ? "En fila" : "Lista desplegable"); }
+function favCaja81(){
+  var m=favModo81();
+  return '<div class="caja" id="fav81Caja"><h2><span class="ic">'+estrella67(true)+'</span>'+esc(tr("Mis favoritas"))+'<span class="sp"></span><span class="chip a" id="fav81Pill">'+esc(favTxt81(m))+'</span></h2>'+
+    '<div class="cp"><div class="fcalc">'+esc(tr("Cómo se ven sus monedas favoritas arriba de Resumen, Spot, Futuros y Backtesting."))+'</div>'+
+    '<div class="fav81ops" role="radiogroup">'+
+      '<button type="button" role="radio" aria-checked="'+(m==="fila")+'" class="fav81o'+(m==="fila"?" on":"")+'" data-fv81m="fila"><span>'+esc(tr("En fila · se desliza de lado"))+'</span><i aria-hidden="true">✓</i></button>'+
+      '<button type="button" role="radio" aria-checked="'+(m==="lista")+'" class="fav81o'+(m==="lista"?" on":"")+'" data-fv81m="lista"><span>'+esc(tr("Lista desplegable · se abre al tocarla"))+'</span><i aria-hidden="true">✓</i></button>'+
+    '</div></div></div>';
+}
+function favEngancharDat81(){
+  var c=document.getElementById("fav81Caja"); if(!c) return;
+  [].forEach.call(c.querySelectorAll("[data-fv81m]"), function(b){
+    b.onclick=function(){
+      var m=b.getAttribute("data-fv81m"), A=BD.ajustes||(BD.ajustes={});
+      if(m==="fila") A.favModo="fila"; else delete A.favModo;
+      try{ tocar(A); guardar(); }catch(e){}
+      FAV81.ab=false;
+      [].forEach.call(c.querySelectorAll("[data-fv81m]"), function(o){ var on=o.getAttribute("data-fv81m")===m; o.classList.toggle("on", on); o.setAttribute("aria-checked", on?"true":"false"); });
+      var p=document.getElementById("fav81Pill"); if(p) p.textContent=favTxt81(m);
+    };
+  });
+}
+(function(){
+  if(typeof engancharDat!=="function") return;
+  var ed0=engancharDat;
+  engancharDat=function(box){ var r=ed0.apply(this, arguments); try{ favEngancharDat81(); }catch(e){} return r; };
 })();
 
 /*V76>>*/
@@ -31573,11 +32214,11 @@ function dibujar(estado){
         d+=(i?"L":"M")+((i+0.5)*per).toFixed(1)+" "+(aY(estado,x.c)*estado.escH).toFixed(1);
       });
       if(tV==="area" && !v[0].linea){
-        s+='<defs><linearGradient id="gAr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--ac)" stop-opacity=".40"/>'+
-           '<stop offset="1" stop-color="var(--ac)" stop-opacity="0"/></linearGradient></defs>'+
+        s+='<defs><linearGradient id="gAr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+precCol81()+'" stop-opacity=".40"/>'+
+           '<stop offset="1" stop-color="'+precCol81()+'" stop-opacity="0"/></linearGradient></defs>'+
            '<path d="'+d+'L'+((n-0.5)*per).toFixed(1)+' '+H+'L'+(0.5*per).toFixed(1)+' '+H+'Z" fill="url(#gAr)" stroke="none"/>';
       }
-      s+='<path d="'+d+'" fill="none" stroke="var(--ac)" stroke-width="2" stroke-linejoin="round"/>';
+      s+='<path d="'+d+'" fill="none"'+precSvg81()+' stroke-linejoin="round"/>';      /* v81 · §160 */
     } else if(tV==="barras"){
       var tick=Math.max(1, Math.floor(per*0.34)), swb=per>=6?1.6:1;
       v.forEach(function(x,i){
@@ -31845,7 +32486,7 @@ function enganchaBarra(E, b){
     var t=ev.target.closest("[data-gc],[data-gw],[data-gd],[data-gq]"); if(!t) return;
     if(t.hasAttribute("data-gq")){ quitarTrazo(E, E.sel); return; }
     if(t.hasAttribute("data-gc")) z.c=t.getAttribute("data-gc");
-    else if(t.hasAttribute("data-gw")) z.w=(anchoTrazo(z)%4)+1;
+    else if(t.hasAttribute("data-gw")) z.w=(anchoTrazo(z)%6)+1;
     else if(t.hasAttribute("data-gd")) z.d=((+z.d||0)+1)%3;
     guardarTrazos(); pintarTrazos(E);
   });
@@ -44784,6 +45425,7 @@ function pintarDat(){
     cGuardado+          /* 3 · su cuenta, la nube, los respaldos        */
     ((typeof personal75Caja==="function") ? personal75Caja() : "")+      /* v75 · pto 62 */
     cPrecios+           /* 4 · lo que toca todos los días               */
+    ((typeof favCaja81==="function") ? favCaja81() : "")+      /* v81 · §159 */
     panelPrograma()+licenciasCaja()+    /* 5 · la versión y traer la nueva              */
     cColores+           /* 6 · gusto                                    */
     cMarca+             /* 7 · gusto                                    */
@@ -51112,6 +51754,27 @@ DIC.en={
 "prom.":"avg.",
 "esta casa":"this exchange",
 "También la tiene en §":"You also hold it on §",
+"Al mantener":"Hold",
+"Cruz del puntero":"Pointer crosshair",
+"De fábrica":"Factory default",
+"Precio (a la derecha)":"Price (on the right)",
+"Fecha (abajo)":"Date (at the bottom)",
+"Líneas de la gráfica · toque una para cambiar su estilo":"Chart lines · tap one to change its style",
+"Al trazar un dibujo, la cruz sale siempre: es la ayuda para poner los puntos.":"While drawing, the crosshair always shows: it helps you place the points.",
+"Agregar favorita":"Add favorite",
+"Cómo se ven sus monedas favoritas arriba de Resumen, Spot, Futuros y Backtesting.":"How your favorite coins appear at the top of Overview, Spot, Futures and Backtesting.",
+"En fila · se desliza de lado":"In a row · swipe sideways",
+"Lista desplegable · se abre al tocarla":"Dropdown list · opens when tapped",
+"En fila":"In a row",
+"Lista desplegable":"Dropdown list",
+"Línea del precio":"Price line",
+"Se usa cuando la gráfica es de tipo Línea o Área.":"Used when the chart type is Line or Area.",
+"Línea entre la entrada y la salida":"Line between entry and exit",
+"La raya que une los dos puntos de cada operación cerrada.":"The line joining the two points of each closed trade.",
+"Opacidad del fondo":"Background opacity",
+"Fondo de las zonas":"Zone background",
+"Corte de la repetición":"Replay cut point",
+"La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"The vertical line where the replay starts: it shows while you pick the point.",
 
 "Línea horizontal":"Horizontal line",
 "Línea vertical":"Vertical line",
@@ -57647,6 +58310,27 @@ DIC.pt={
 "prom.":"méd.",
 "esta casa":"esta corretora",
 "También la tiene en §":"Também a tem em §",
+"Al mantener":"Ao manter",
+"Cruz del puntero":"Cruz do ponteiro",
+"De fábrica":"De fábrica",
+"Precio (a la derecha)":"Preço (à direita)",
+"Fecha (abajo)":"Data (embaixo)",
+"Líneas de la gráfica · toque una para cambiar su estilo":"Linhas do gráfico · toque numa para mudar o estilo",
+"Al trazar un dibujo, la cruz sale siempre: es la ayuda para poner los puntos.":"Ao traçar um desenho, a cruz sempre aparece: ajuda a colocar os pontos.",
+"Agregar favorita":"Adicionar favorita",
+"Cómo se ven sus monedas favoritas arriba de Resumen, Spot, Futuros y Backtesting.":"Como suas moedas favoritas aparecem no topo de Resumo, Spot, Futuros e Backtesting.",
+"En fila · se desliza de lado":"Em fila · desliza para o lado",
+"Lista desplegable · se abre al tocarla":"Lista suspensa · abre ao tocar",
+"En fila":"Em fila",
+"Lista desplegable":"Lista suspensa",
+"Línea del precio":"Linha do preço",
+"Se usa cuando la gráfica es de tipo Línea o Área.":"Usada quando o gráfico é do tipo Linha ou Área.",
+"Línea entre la entrada y la salida":"Linha entre a entrada e a saída",
+"La raya que une los dos puntos de cada operación cerrada.":"A linha que une os dois pontos de cada operação encerrada.",
+"Opacidad del fondo":"Opacidade do fundo",
+"Fondo de las zonas":"Fundo das zonas",
+"Corte de la repetición":"Ponto de corte da repetição",
+"La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"A linha vertical onde a repetição começa: aparece enquanto você escolhe o ponto.",
 
 "Línea horizontal":"Linha horizontal",
 "Línea vertical":"Linha vertical",
@@ -64175,6 +64859,27 @@ DIC.fr={
 "prom.":"moy.",
 "esta casa":"cette plateforme",
 "También la tiene en §":"Vous l'avez aussi sur §",
+"Al mantener":"Au maintien",
+"Cruz del puntero":"Réticule du pointeur",
+"De fábrica":"Par défaut",
+"Precio (a la derecha)":"Prix (à droite)",
+"Fecha (abajo)":"Date (en bas)",
+"Líneas de la gráfica · toque una para cambiar su estilo":"Lignes du graphique · touchez-en une pour changer son style",
+"Al trazar un dibujo, la cruz sale siempre: es la ayuda para poner los puntos.":"Pendant un tracé, le réticule s'affiche toujours : il aide à placer les points.",
+"Agregar favorita":"Ajouter un favori",
+"Cómo se ven sus monedas favoritas arriba de Resumen, Spot, Futuros y Backtesting.":"Comment vos monnaies favorites s'affichent en haut de Résumé, Spot, Futurs et Backtesting.",
+"En fila · se desliza de lado":"En rangée · se fait défiler sur le côté",
+"Lista desplegable · se abre al tocarla":"Liste déroulante · s'ouvre au toucher",
+"En fila":"En rangée",
+"Lista desplegable":"Liste déroulante",
+"Línea del precio":"Ligne du prix",
+"Se usa cuando la gráfica es de tipo Línea o Área.":"Utilisée quand le graphique est de type Ligne ou Aire.",
+"Línea entre la entrada y la salida":"Ligne entre l'entrée et la sortie",
+"La raya que une los dos puntos de cada operación cerrada.":"La ligne qui relie les deux points de chaque opération clôturée.",
+"Opacidad del fondo":"Opacité du fond",
+"Fondo de las zonas":"Fond des zones",
+"Corte de la repetición":"Point de coupure de la relecture",
+"La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"La ligne verticale où la relecture commence : elle s'affiche pendant le choix du point.",
 
 "Línea horizontal":"Ligne horizontale",
 "Línea vertical":"Ligne verticale",
@@ -70703,6 +71408,27 @@ DIC.de={
 "prom.":"Ø",
 "esta casa":"diese Börse",
 "También la tiene en §":"Sie haben sie auch bei §",
+"Al mantener":"Beim Halten",
+"Cruz del puntero":"Fadenkreuz des Zeigers",
+"De fábrica":"Werkseinstellung",
+"Precio (a la derecha)":"Preis (rechts)",
+"Fecha (abajo)":"Datum (unten)",
+"Líneas de la gráfica · toque una para cambiar su estilo":"Linien im Chart · tippen Sie auf eine, um ihren Stil zu ändern",
+"Al trazar un dibujo, la cruz sale siempre: es la ayuda para poner los puntos.":"Beim Zeichnen ist das Fadenkreuz immer sichtbar: es hilft beim Setzen der Punkte.",
+"Agregar favorita":"Favorit hinzufügen",
+"Cómo se ven sus monedas favoritas arriba de Resumen, Spot, Futuros y Backtesting.":"So erscheinen Ihre Lieblingsmünzen oben in Übersicht, Spot, Futures und Backtesting.",
+"En fila · se desliza de lado":"In einer Reihe · seitlich wischen",
+"Lista desplegable · se abre al tocarla":"Dropdown-Liste · öffnet sich beim Antippen",
+"En fila":"In einer Reihe",
+"Lista desplegable":"Dropdown-Liste",
+"Línea del precio":"Preislinie",
+"Se usa cuando la gráfica es de tipo Línea o Área.":"Wird verwendet, wenn der Diagrammtyp Linie oder Fläche ist.",
+"Línea entre la entrada y la salida":"Linie zwischen Einstieg und Ausstieg",
+"La raya que une los dos puntos de cada operación cerrada.":"Die Linie, die die beiden Punkte jedes geschlossenen Trades verbindet.",
+"Opacidad del fondo":"Deckkraft des Hintergrunds",
+"Fondo de las zonas":"Hintergrund der Zonen",
+"Corte de la repetición":"Schnittpunkt der Wiederholung",
+"La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"Die senkrechte Linie, an der die Wiederholung beginnt: sie erscheint, während Sie den Punkt wählen.",
 
 "Línea horizontal":"Horizontale Linie",
 "Línea vertical":"Vertikale Linie",
@@ -77231,6 +77957,27 @@ DIC.it={
 "prom.":"medio",
 "esta casa":"questa piattaforma",
 "También la tiene en §":"Ce l'ha anche su §",
+"Al mantener":"Al tocco prolungato",
+"Cruz del puntero":"Croce del puntatore",
+"De fábrica":"Di fabbrica",
+"Precio (a la derecha)":"Prezzo (a destra)",
+"Fecha (abajo)":"Data (in basso)",
+"Líneas de la gráfica · toque una para cambiar su estilo":"Linee del grafico · tocca una per cambiarne lo stile",
+"Al trazar un dibujo, la cruz sale siempre: es la ayuda para poner los puntos.":"Quando si traccia un disegno la croce compare sempre: aiuta a posizionare i punti.",
+"Agregar favorita":"Aggiungi preferita",
+"Cómo se ven sus monedas favoritas arriba de Resumen, Spot, Futuros y Backtesting.":"Come appaiono le tue monete preferite in cima a Riepilogo, Spot, Futures e Backtesting.",
+"En fila · se desliza de lado":"In fila · scorre di lato",
+"Lista desplegable · se abre al tocarla":"Elenco a discesa · si apre al tocco",
+"En fila":"In fila",
+"Lista desplegable":"Elenco a discesa",
+"Línea del precio":"Linea del prezzo",
+"Se usa cuando la gráfica es de tipo Línea o Área.":"Usata quando il grafico è di tipo Linea o Area.",
+"Línea entre la entrada y la salida":"Linea tra ingresso e uscita",
+"La raya que une los dos puntos de cada operación cerrada.":"La linea che unisce i due punti di ogni operazione chiusa.",
+"Opacidad del fondo":"Opacità dello sfondo",
+"Fondo de las zonas":"Sfondo delle zone",
+"Corte de la repetición":"Punto di taglio della ripetizione",
+"La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"La linea verticale da cui parte la ripetizione: compare mentre scegli il punto.",
 
 "Línea horizontal":"Linea orizzontale",
 "Línea vertical":"Linea verticale",
@@ -83749,6 +84496,27 @@ DIC.nl={
 "prom.":"gem.",
 "esta casa":"deze exchange",
 "También la tiene en §":"U heeft het ook bij §",
+"Al mantener":"Bij ingedrukt houden",
+"Cruz del puntero":"Kruis van de aanwijzer",
+"De fábrica":"Standaard",
+"Precio (a la derecha)":"Prijs (rechts)",
+"Fecha (abajo)":"Datum (onderaan)",
+"Líneas de la gráfica · toque una para cambiar su estilo":"Lijnen in de grafiek · tik op een lijn om de stijl te wijzigen",
+"Al trazar un dibujo, la cruz sale siempre: es la ayuda para poner los puntos.":"Tijdens het tekenen is het kruis altijd zichtbaar: het helpt bij het plaatsen van de punten.",
+"Agregar favorita":"Favoriet toevoegen",
+"Cómo se ven sus monedas favoritas arriba de Resumen, Spot, Futuros y Backtesting.":"Zo verschijnen uw favoriete munten bovenaan Overzicht, Spot, Futures en Backtesting.",
+"En fila · se desliza de lado":"In een rij · zijwaarts vegen",
+"Lista desplegable · se abre al tocarla":"Uitklaplijst · opent bij aantikken",
+"En fila":"In een rij",
+"Lista desplegable":"Uitklaplijst",
+"Línea del precio":"Prijslijn",
+"Se usa cuando la gráfica es de tipo Línea o Área.":"Wordt gebruikt wanneer het grafiektype Lijn of Vlak is.",
+"Línea entre la entrada y la salida":"Lijn tussen instap en uitstap",
+"La raya que une los dos puntos de cada operación cerrada.":"De lijn die de twee punten van elke gesloten transactie verbindt.",
+"Opacidad del fondo":"Dekking van de achtergrond",
+"Fondo de las zonas":"Achtergrond van de zones",
+"Corte de la repetición":"Knippunt van de herhaling",
+"La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"De verticale lijn waar de herhaling begint: ze verschijnt terwijl u het punt kiest.",
 
 "Línea horizontal":"Horizontale lijn",
 "Línea vertical":"Verticale lijn",
@@ -90553,6 +91321,27 @@ DIC.pl={
 "prom.":"śr.",
 "esta casa":"ta giełda",
 "También la tiene en §":"Ma ją Pan też na §",
+"Al mantener":"Po przytrzymaniu",
+"Cruz del puntero":"Krzyżyk wskaźnika",
+"De fábrica":"Domyślne",
+"Precio (a la derecha)":"Cena (po prawej)",
+"Fecha (abajo)":"Data (na dole)",
+"Líneas de la gráfica · toque una para cambiar su estilo":"Linie wykresu · dotknij jednej, aby zmienić jej styl",
+"Al trazar un dibujo, la cruz sale siempre: es la ayuda para poner los puntos.":"Podczas rysowania krzyżyk jest zawsze widoczny: pomaga ustawiać punkty.",
+"Agregar favorita":"Dodaj ulubioną",
+"Cómo se ven sus monedas favoritas arriba de Resumen, Spot, Futuros y Backtesting.":"Tak ulubione monety wyglądają na górze ekranów Podsumowanie, Spot, Futures i Backtesting.",
+"En fila · se desliza de lado":"W rzędzie · przesuwa się na boki",
+"Lista desplegable · se abre al tocarla":"Lista rozwijana · otwiera się po dotknięciu",
+"En fila":"W rzędzie",
+"Lista desplegable":"Lista rozwijana",
+"Línea del precio":"Linia ceny",
+"Se usa cuando la gráfica es de tipo Línea o Área.":"Używana, gdy typ wykresu to Linia lub Obszar.",
+"Línea entre la entrada y la salida":"Linia między wejściem a wyjściem",
+"La raya que une los dos puntos de cada operación cerrada.":"Linia łącząca dwa punkty każdej zamkniętej transakcji.",
+"Opacidad del fondo":"Przezroczystość tła",
+"Fondo de las zonas":"Tło stref",
+"Corte de la repetición":"Punkt odcięcia powtórki",
+"La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"Pionowa linia, od której zaczyna się powtórka: widoczna podczas wybierania punktu.",
 
 "Línea horizontal":"Linia pozioma",
 "Línea vertical":"Linia pionowa",
@@ -97357,6 +98146,27 @@ DIC.tr={
 "prom.":"ort.",
 "esta casa":"bu borsa",
 "También la tiene en §":"Bunu § üzerinde de tutuyorsunuz",
+"Al mantener":"Basılı tutunca",
+"Cruz del puntero":"İmleç artısı",
+"De fábrica":"Varsayılan",
+"Precio (a la derecha)":"Fiyat (sağda)",
+"Fecha (abajo)":"Tarih (altta)",
+"Líneas de la gráfica · toque una para cambiar su estilo":"Grafik çizgileri · stilini değiştirmek için birine dokunun",
+"Al trazar un dibujo, la cruz sale siempre: es la ayuda para poner los puntos.":"Çizim yaparken artı her zaman görünür: noktaları yerleştirmeye yardım eder.",
+"Agregar favorita":"Favori ekle",
+"Cómo se ven sus monedas favoritas arriba de Resumen, Spot, Futuros y Backtesting.":"Favori paralarınızın Özet, Spot, Vadeli ve Backtesting ekranlarının üstünde nasıl görüneceği.",
+"En fila · se desliza de lado":"Sıra halinde · yana kaydırılır",
+"Lista desplegable · se abre al tocarla":"Açılır liste · dokununca açılır",
+"En fila":"Sıra halinde",
+"Lista desplegable":"Açılır liste",
+"Línea del precio":"Fiyat çizgisi",
+"Se usa cuando la gráfica es de tipo Línea o Área.":"Grafik türü Çizgi veya Alan olduğunda kullanılır.",
+"Línea entre la entrada y la salida":"Giriş ile çıkış arasındaki çizgi",
+"La raya que une los dos puntos de cada operación cerrada.":"Her kapalı işlemin iki noktasını birleştiren çizgi.",
+"Opacidad del fondo":"Arka plan opaklığı",
+"Fondo de las zonas":"Bölgelerin arka planı",
+"Corte de la repetición":"Tekrar kesme noktası",
+"La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"Tekrarın başladığı dikey çizgi: noktayı seçerken görünür.",
 
 "Línea horizontal":"Yatay çizgi",
 "Línea vertical":"Dikey çizgi",
@@ -104161,6 +104971,27 @@ DIC.ru={
 "prom.":"сред.",
 "esta casa":"эта биржа",
 "También la tiene en §":"Она есть у вас и на §",
+"Al mantener":"При удержании",
+"Cruz del puntero":"Перекрестие курсора",
+"De fábrica":"По умолчанию",
+"Precio (a la derecha)":"Цена (справа)",
+"Fecha (abajo)":"Дата (снизу)",
+"Líneas de la gráfica · toque una para cambiar su estilo":"Линии графика · нажмите на линию, чтобы изменить её стиль",
+"Al trazar un dibujo, la cruz sale siempre: es la ayuda para poner los puntos.":"При построении рисунка перекрестие показывается всегда: оно помогает ставить точки.",
+"Agregar favorita":"Добавить в избранное",
+"Cómo se ven sus monedas favoritas arriba de Resumen, Spot, Futuros y Backtesting.":"Как ваши избранные монеты выглядят вверху экранов «Обзор», «Спот», «Фьючерсы» и «Бэктестинг».",
+"En fila · se desliza de lado":"В ряд · прокручивается вбок",
+"Lista desplegable · se abre al tocarla":"Выпадающий список · открывается нажатием",
+"En fila":"В ряд",
+"Lista desplegable":"Выпадающий список",
+"Línea del precio":"Линия цены",
+"Se usa cuando la gráfica es de tipo Línea o Área.":"Используется, когда тип графика — «Линия» или «Область».",
+"Línea entre la entrada y la salida":"Линия между входом и выходом",
+"La raya que une los dos puntos de cada operación cerrada.":"Линия, соединяющая две точки каждой закрытой сделки.",
+"Opacidad del fondo":"Непрозрачность фона",
+"Fondo de las zonas":"Фон зон",
+"Corte de la repetición":"Точка отсечения повтора",
+"La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"Вертикальная линия, с которой начинается повтор: видна, пока вы выбираете точку.",
 
 "Línea horizontal":"Горизонтальная линия",
 "Línea vertical":"Вертикальная линия",
@@ -110965,6 +111796,27 @@ DIC.uk={
 "prom.":"серед.",
 "esta casa":"ця біржа",
 "También la tiene en §":"Вона є у вас і на §",
+"Al mantener":"Під час утримання",
+"Cruz del puntero":"Перехрестя курсора",
+"De fábrica":"За замовчуванням",
+"Precio (a la derecha)":"Ціна (праворуч)",
+"Fecha (abajo)":"Дата (внизу)",
+"Líneas de la gráfica · toque una para cambiar su estilo":"Лінії графіка · торкніться лінії, щоб змінити її стиль",
+"Al trazar un dibujo, la cruz sale siempre: es la ayuda para poner los puntos.":"Під час побудови малюнка перехрестя показується завжди: воно допомагає ставити точки.",
+"Agregar favorita":"Додати до обраного",
+"Cómo se ven sus monedas favoritas arriba de Resumen, Spot, Futuros y Backtesting.":"Як ваші обрані монети виглядають угорі екранів «Огляд», «Спот», «Ф'ючерси» та «Бектестинг».",
+"En fila · se desliza de lado":"У ряд · прокручується вбік",
+"Lista desplegable · se abre al tocarla":"Випадний список · відкривається дотиком",
+"En fila":"У ряд",
+"Lista desplegable":"Випадний список",
+"Línea del precio":"Лінія ціни",
+"Se usa cuando la gráfica es de tipo Línea o Área.":"Використовується, коли тип графіка — «Лінія» або «Область».",
+"Línea entre la entrada y la salida":"Лінія між входом і виходом",
+"La raya que une los dos puntos de cada operación cerrada.":"Лінія, що з'єднує дві точки кожної закритої угоди.",
+"Opacidad del fondo":"Непрозорість фону",
+"Fondo de las zonas":"Фон зон",
+"Corte de la repetición":"Точка відсікання повтору",
+"La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"Вертикальна лінія, з якої починається повтор: видна, поки ви вибираєте точку.",
 
 "Línea horizontal":"Горизонтальна лінія",
 "Línea vertical":"Вертикальна лінія",
@@ -117769,6 +118621,27 @@ DIC.id={
 "prom.":"rata-rata",
 "esta casa":"bursa ini",
 "También la tiene en §":"Anda juga menyimpannya di §",
+"Al mantener":"Saat ditahan",
+"Cruz del puntero":"Salib penunjuk",
+"De fábrica":"Bawaan",
+"Precio (a la derecha)":"Harga (di kanan)",
+"Fecha (abajo)":"Tanggal (di bawah)",
+"Líneas de la gráfica · toque una para cambiar su estilo":"Garis grafik · ketuk salah satu untuk mengubah gayanya",
+"Al trazar un dibujo, la cruz sale siempre: es la ayuda para poner los puntos.":"Saat menggambar, salib selalu tampil: membantu menaruh titik.",
+"Agregar favorita":"Tambah favorit",
+"Cómo se ven sus monedas favoritas arriba de Resumen, Spot, Futuros y Backtesting.":"Tampilan koin favorit Anda di bagian atas Ringkasan, Spot, Futures, dan Backtesting.",
+"En fila · se desliza de lado":"Berderet · digeser ke samping",
+"Lista desplegable · se abre al tocarla":"Daftar tarik-turun · terbuka saat diketuk",
+"En fila":"Berderet",
+"Lista desplegable":"Daftar tarik-turun",
+"Línea del precio":"Garis harga",
+"Se usa cuando la gráfica es de tipo Línea o Área.":"Dipakai saat jenis grafik adalah Garis atau Area.",
+"Línea entre la entrada y la salida":"Garis antara masuk dan keluar",
+"La raya que une los dos puntos de cada operación cerrada.":"Garis yang menghubungkan dua titik setiap transaksi yang ditutup.",
+"Opacidad del fondo":"Opasitas latar",
+"Fondo de las zonas":"Latar zona",
+"Corte de la repetición":"Titik potong pemutaran ulang",
+"La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"Garis vertikal tempat pemutaran ulang dimulai: tampil saat Anda memilih titik.",
 
 "Línea horizontal":"Garis horizontal",
 "Línea vertical":"Garis vertikal",
@@ -124573,6 +125446,27 @@ DIC.vi={
 "prom.":"TB",
 "esta casa":"sàn này",
 "También la tiene en §":"Bạn cũng đang giữ trên §",
+"Al mantener":"Khi giữ",
+"Cruz del puntero":"Chữ thập con trỏ",
+"De fábrica":"Mặc định",
+"Precio (a la derecha)":"Giá (bên phải)",
+"Fecha (abajo)":"Ngày (bên dưới)",
+"Líneas de la gráfica · toque una para cambiar su estilo":"Các đường trên biểu đồ · chạm vào một đường để đổi kiểu",
+"Al trazar un dibujo, la cruz sale siempre: es la ayuda para poner los puntos.":"Khi vẽ, chữ thập luôn hiện ra: giúp đặt các điểm.",
+"Agregar favorita":"Thêm yêu thích",
+"Cómo se ven sus monedas favoritas arriba de Resumen, Spot, Futuros y Backtesting.":"Cách hiển thị các đồng yêu thích của bạn ở đầu Tổng quan, Spot, Futures và Backtesting.",
+"En fila · se desliza de lado":"Hàng ngang · vuốt sang bên",
+"Lista desplegable · se abre al tocarla":"Danh sách thả xuống · mở khi chạm",
+"En fila":"Hàng ngang",
+"Lista desplegable":"Danh sách thả xuống",
+"Línea del precio":"Đường giá",
+"Se usa cuando la gráfica es de tipo Línea o Área.":"Dùng khi loại biểu đồ là Đường hoặc Vùng.",
+"Línea entre la entrada y la salida":"Đường nối điểm vào và điểm ra",
+"La raya que une los dos puntos de cada operación cerrada.":"Đường nối hai điểm của mỗi giao dịch đã đóng.",
+"Opacidad del fondo":"Độ mờ của nền",
+"Fondo de las zonas":"Nền của các vùng",
+"Corte de la repetición":"Điểm cắt của phát lại",
+"La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"Đường dọc nơi phát lại bắt đầu: hiện ra khi bạn chọn điểm.",
 
 "Línea horizontal":"Đường ngang",
 "Línea vertical":"Đường dọc",
@@ -131377,6 +132271,27 @@ DIC.hi={
 "prom.":"औसत",
 "esta casa":"यह एक्सचेंज",
 "También la tiene en §":"यह आपके पास § पर भी है",
+"Al mantener":"दबाए रखने पर",
+"Cruz del puntero":"पॉइंटर का क्रॉस",
+"De fábrica":"डिफ़ॉल्ट",
+"Precio (a la derecha)":"कीमत (दाईं ओर)",
+"Fecha (abajo)":"तारीख़ (नीचे)",
+"Líneas de la gráfica · toque una para cambiar su estilo":"चार्ट की रेखाएँ · शैली बदलने के लिए किसी एक पर टैप करें",
+"Al trazar un dibujo, la cruz sale siempre: es la ayuda para poner los puntos.":"चित्र बनाते समय क्रॉस हमेशा दिखता है: यह बिंदु रखने में मदद करता है।",
+"Agregar favorita":"पसंदीदा जोड़ें",
+"Cómo se ven sus monedas favoritas arriba de Resumen, Spot, Futuros y Backtesting.":"आपके पसंदीदा सिक्के सारांश, स्पॉट, फ्यूचर्स और बैकटेस्टिंग के ऊपर कैसे दिखें।",
+"En fila · se desliza de lado":"एक पंक्ति में · बगल में स्वाइप करें",
+"Lista desplegable · se abre al tocarla":"ड्रॉपडाउन सूची · टैप करने पर खुलती है",
+"En fila":"एक पंक्ति में",
+"Lista desplegable":"ड्रॉपडाउन सूची",
+"Línea del precio":"मूल्य रेखा",
+"Se usa cuando la gráfica es de tipo Línea o Área.":"जब चार्ट का प्रकार लाइन या एरिया हो तब उपयोग होती है।",
+"Línea entre la entrada y la salida":"एंट्री और एग्ज़िट के बीच की रेखा",
+"La raya que une los dos puntos de cada operación cerrada.":"प्रत्येक बंद ट्रेड के दोनों बिंदुओं को जोड़ने वाली रेखा।",
+"Opacidad del fondo":"पृष्ठभूमि की अपारदर्शिता",
+"Fondo de las zonas":"ज़ोन की पृष्ठभूमि",
+"Corte de la repetición":"रीप्ले का कट पॉइंट",
+"La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"वह लंबवत रेखा जहाँ रीप्ले शुरू होता है: बिंदु चुनते समय दिखती है।",
 
 "Línea horizontal":"क्षैतिज रेखा",
 "Línea vertical":"ऊर्ध्वाधर रेखा",
@@ -138181,6 +139096,27 @@ DIC.ja={
 "prom.":"平均",
 "esta casa":"この取引所",
 "También la tiene en §":"§ にも保有しています",
+"Al mantener":"長押し中",
+"Cruz del puntero":"ポインターの十字線",
+"De fábrica":"初期設定",
+"Precio (a la derecha)":"価格（右側）",
+"Fecha (abajo)":"日付（下）",
+"Líneas de la gráfica · toque una para cambiar su estilo":"チャートの線 · タップするとスタイルを変更できます",
+"Al trazar un dibujo, la cruz sale siempre: es la ayuda para poner los puntos.":"描画中は十字線が常に表示されます。点を置く助けになります。",
+"Agregar favorita":"お気に入りを追加",
+"Cómo se ven sus monedas favoritas arriba de Resumen, Spot, Futuros y Backtesting.":"お気に入りのコインを「概要」「現物」「先物」「バックテスト」の上部にどう表示するか。",
+"En fila · se desliza de lado":"横並び · 横にスワイプ",
+"Lista desplegable · se abre al tocarla":"ドロップダウンリスト · タップで開きます",
+"En fila":"横並び",
+"Lista desplegable":"ドロップダウンリスト",
+"Línea del precio":"価格ライン",
+"Se usa cuando la gráfica es de tipo Línea o Área.":"チャートタイプが「ライン」または「エリア」のときに使われます。",
+"Línea entre la entrada y la salida":"エントリーとエグジットの間のライン",
+"La raya que une los dos puntos de cada operación cerrada.":"決済済みの各取引の2点を結ぶライン。",
+"Opacidad del fondo":"背景の不透明度",
+"Fondo de las zonas":"ゾーンの背景",
+"Corte de la repetición":"リプレイのカット位置",
+"La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"リプレイが始まる縦線：位置を選んでいる間に表示されます。",
 
 "Línea horizontal":"水平線",
 "Línea vertical":"垂直線",
@@ -144985,6 +145921,27 @@ DIC.ko={
 "prom.":"평균",
 "esta casa":"이 거래소",
 "También la tiene en §":"§에도 보유 중입니다",
+"Al mantener":"길게 누를 때",
+"Cruz del puntero":"포인터 십자선",
+"De fábrica":"기본값",
+"Precio (a la derecha)":"가격(오른쪽)",
+"Fecha (abajo)":"날짜(아래쪽)",
+"Líneas de la gráfica · toque una para cambiar su estilo":"차트 선 · 눌러서 스타일 변경",
+"Al trazar un dibujo, la cruz sale siempre: es la ayuda para poner los puntos.":"그리는 동안에는 십자선이 항상 나타나 점을 놓는 데 도움이 됩니다.",
+"Agregar favorita":"즐겨찾기 추가",
+"Cómo se ven sus monedas favoritas arriba de Resumen, Spot, Futuros y Backtesting.":"즐겨찾기 코인이 요약, 현물, 선물, 백테스트 화면 맨 위에 표시되는 방식입니다.",
+"En fila · se desliza de lado":"한 줄로 · 옆으로 밀기",
+"Lista desplegable · se abre al tocarla":"드롭다운 목록 · 누르면 열림",
+"En fila":"한 줄",
+"Lista desplegable":"드롭다운 목록",
+"Línea del precio":"가격선",
+"Se usa cuando la gráfica es de tipo Línea o Área.":"차트 유형이 선 또는 영역일 때 사용됩니다.",
+"Línea entre la entrada y la salida":"진입과 청산 사이의 선",
+"La raya que une los dos puntos de cada operación cerrada.":"청산된 각 거래의 두 지점을 잇는 선.",
+"Opacidad del fondo":"배경 불투명도",
+"Fondo de las zonas":"구역 배경",
+"Corte de la repetición":"리플레이 시작 지점",
+"La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"리플레이가 시작되는 세로선: 지점을 고르는 동안 표시됩니다.",
 
 "Línea horizontal":"수평선",
 "Línea vertical":"수직선",
@@ -151789,6 +152746,27 @@ DIC.zh={
 "prom.":"均价",
 "esta casa":"此交易所",
 "También la tiene en §":"您在§也持有",
+"Al mantener":"长按时",
+"Cruz del puntero":"指针十字线",
+"De fábrica":"默认值",
+"Precio (a la derecha)":"价格（右侧）",
+"Fecha (abajo)":"日期（底部）",
+"Líneas de la gráfica · toque una para cambiar su estilo":"图表线条 · 点按一条可更改其样式",
+"Al trazar un dibujo, la cruz sale siempre: es la ayuda para poner los puntos.":"绘图时十字线始终显示，帮助您放置点。",
+"Agregar favorita":"添加收藏",
+"Cómo se ven sus monedas favoritas arriba de Resumen, Spot, Futuros y Backtesting.":"您的收藏币种在“概览”“现货”“合约”和“回测”顶部的显示方式。",
+"En fila · se desliza de lado":"横排 · 左右滑动",
+"Lista desplegable · se abre al tocarla":"下拉列表 · 点按展开",
+"En fila":"横排",
+"Lista desplegable":"下拉列表",
+"Línea del precio":"价格线",
+"Se usa cuando la gráfica es de tipo Línea o Área.":"图表类型为折线或面积时使用。",
+"Línea entre la entrada y la salida":"入场与出场之间的连线",
+"La raya que une los dos puntos de cada operación cerrada.":"连接每笔已平仓交易两个点的连线。",
+"Opacidad del fondo":"背景不透明度",
+"Fondo de las zonas":"区域背景",
+"Corte de la repetición":"回放切入点",
+"La raya vertical donde empieza la repetición: sale mientras se elige el punto.":"回放开始的竖线：选择起点时显示。",
 
 "Línea horizontal":"水平线",
 "Línea vertical":"垂直线",
