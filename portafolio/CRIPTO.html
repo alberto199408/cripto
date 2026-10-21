@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="85">
+<meta name="v" content="84">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -31720,7 +31720,7 @@ function cruz81Sinc(E){
   if(!E || !E.cont) return;
   if(cruz81Fijo(E)){
     var z=E.cont.querySelector(".gzona"), r=z.getBoundingClientRect(), P=E.cz81, q=null;
-    if(P && P.x!=null && P.y!=null){ var Wm=(E.anchoV||z.clientWidth)-0.5; if(P.x>Wm) P={x:Wm, y:P.y}; q=cruz68Lectura(E, r.left+P.x, r.top+P.y); }      /* v85 · §170: si W se angostó, la cruz se queda en el borde (no vuelve a la última vela) */
+    if(P && P.x!=null && P.y!=null) q=cruz68Lectura(E, r.left+P.x, r.top+P.y);
     if(!q){ P=cruz81Ini(E); if(P) q=cruz68Lectura(E, r.left+P.x, r.top+P.y); }
     if(q){ E.cz81=P; E.cz67=q; E._cz81a=true; }
   } else if(!E.herr && !E._cz67Pres){
@@ -31788,7 +31788,7 @@ function cruz82Activo(E){ return cruz82Base(E) && dedo83Modo()!=="g"; }
 function cruz82En(E, x, y){
   var z=E.cont && E.cont.querySelector(".gzona"); if(!z || !E.velas || !E.velas.length) return null;
   var r=z.getBoundingClientRect(), W=E.anchoV||z.clientWidth, H=Math.max(10, z.clientHeight-(typeof TXH!=="undefined" ? TXH : 18));
-  x=Math.max(0, Math.min(W-0.5, x)); y=Math.max(0, Math.min(H-1, y));      /* v85 · §170: W−0.5, no W (x=W exacto lo rechaza la lectura por coma flotante y la cruz se atascaba) */
+  x=Math.max(0, Math.min(W, x)); y=Math.max(0, Math.min(H-1, y));
   var q=cruz68Lectura(E, r.left+x, r.top+y); if(!q) return null;
   cruz67Poner(E, q);
   if(E.cz81) E.cz74={x:E.cz81.x, y:E.cz81.y};              /* la misma posición para cuando se elija una herramienta */
@@ -31810,8 +31810,7 @@ function cruz82Mover(E, ev0, e2){
   if(m==="a"){                                               /* v83 · la cruz acompaña al dedo Y la gráfica se desplaza (como en la PC al arrastrar) */
     if(!G.mv && Math.abs(dx)<4 && Math.abs(dy)<4) return false;
     G.mv=true;
-    var zr=E.cont.querySelector(".gzona").getBoundingClientRect();      /* v85 · §170: la cruz va DEBAJO del dedo (como el ratón en la PC) */
-    cruz82En(E, e2.clientX-zr.left, e2.clientY-zr.top);
+    cruz82En(E, G.c.x+dx, G.c.y+dy);
     return false;
   }
   if(!G.mv && Math.abs(dx)<6 && Math.abs(dy)<6) return true;
