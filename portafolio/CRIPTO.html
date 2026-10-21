@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="84">
+<meta name="v" content="86">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -2838,6 +2838,7 @@ body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+8)>h2 .ic{background:linear-grad
 /* la capa de los indicadores que van sobre el precio */
 .graf .gind{position:absolute;left:0;top:0;display:block;pointer-events:none;overflow:hidden}
 .graf .gindt{position:absolute;inset:0 0 var(--txh) 0;z-index:5;pointer-events:none;overflow:hidden}
+.gtgW{width:auto!important;min-width:var(--ax);padding:0 5px!important;overflow:visible!important}
 .gtg{position:absolute;right:0;width:var(--ax);box-sizing:border-box;transform:translateY(-50%);height:16px;line-height:16px;padding:0 2px;
   text-align:center;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;border-radius:3px 0 0 3px}
 /* los subpaneles */
@@ -3026,6 +3027,7 @@ body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+8)>h2 .ic{background:linear-grad
 /* la tabla de olas del TSA (esquina de arriba a la derecha, sin fondo, como en la referencia) */
 .graf .gindt .gtbl{position:absolute;z-index:2;pointer-events:none;display:flex;flex-direction:column;gap:6px}
 .graf .gindt .gtbl.tr{top:6px;right:calc(var(--ax) + 8px);align-items:flex-end}
+.graf .gindt .gtbl.trm{top:26px;right:calc(var(--ax) + 8px);align-items:flex-end}      /* v86 · debajo del rótulo «SPOT · BINANCE» */
 .graf .gindt .gtbl.tl{top:6px;left:8px;align-items:flex-start}
 .graf .gindt .gtbl.br{bottom:6px;right:calc(var(--ax) + 8px);align-items:flex-end}
 .graf .gindt .gtbl.bl{bottom:6px;left:8px;align-items:flex-start}
@@ -3034,7 +3036,8 @@ body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+8)>h2 .ic{background:linear-grad
 @media (max-width:560px){
   .gtabt{font-size:9.5px;line-height:12px}
   .gtabt span{padding:0 4px}
-  .graf .gindt .gtbl.tr{top:calc(var(--leyH) + 8px)}
+  .graf .gindt .gtbl.tr, .graf .gindt .gtbl.trm{top:calc(var(--leyH) + 8px)}
+  .graf .gindt .gtbl.trm{right:calc(var(--ax) + 44px)}      /* v86 · deja sitio a la etiqueta ancha «CHoCH 83.062» de la escala */
 }
 .gindI small.eq.ok{border-color:color-mix(in srgb,var(--ac) 55%,transparent);color:var(--acTx)}
 /* el menú «···» de la leyenda de un indicador */
@@ -19180,6 +19183,272 @@ indReg({id:"zz", al:"zigzag zig zag giros swing oscilaciones maximos minimos piv
     return {p:{pa:pa, pb:pb}, tx:{pa:ta, pb:tb}, sg:{zz:sg}};
   }});
 
+/* ===================================================================
+   v86 · ESTRUCTURA DE MERCADO · BOS y CHoCH  (Luis, 20–21 oct: «un indicador limpio, configurable, que diga dónde está su BOS y dónde su CHoCH»)
+   Es el mismo motor que se probó en el simulador aparte (contra una referencia independiente en Python: 472 combinaciones, 0 diferencias).
+   · Swing = máximo o mínimo con N velas a cada lado; se confirma N velas DESPUÉS (antes no existe, nunca se repinta).
+   · BOS = el cierre pasa el último swing a favor de la tendencia; CHoCH = lo pasa en contra y la tendencia se da vuelta. Cada swing se rompe una sola vez.
+   · Temporales mayores (1D, 4H, 1H, 15m): cada uno se calcula con SUS propias velas cerradas y SU propio N, y se dibuja más grueso y con su nombre.
+   · Fractalidad interna: «Secundaria» y «Terciaria» = el mismo temporal con un N más chico (impulsos y retrocesos de adentro). Apagadas de fábrica.
+   · Los niveles que aún no se han roto (lo que daría BOS o CHoCH ahora) salen como una raya punteada y su precio va en la escala de la derecha (no sobre las velas).
+   · El mini panel dice si cada temporal va ▲ alcista, ▼ bajista o ◆ sin definir.
+   Todo lo configurable está en «Entradas» (números y reglas) y «Estilo» (qué se dibuja y de qué color).
+   =================================================================== */
+function d86EstRun(O, H, L, C, opt) {
+  var N = opt.N, swing = opt.swing, brk = opt.brk, bodyMin = opt.bodyMin || 0, choch = opt.choch,
+      mk = opt.mk || null, mv = opt.mv || 0, sweeps = !!opt.sweeps, n = C.length;
+  var piv = [], ev = [];
+  var sBias = new Int8Array(n), sHi = new Int32Array(n), sLo = new Int32Array(n), sPr = new Int32Array(n);
+  var bias = 0, hi = null, lo = null, last = null, leg = 0, prot = null, ext = null, atr = 0;
+  var hs = [], ls = [];
+  var j, k, p, t, ph, pl, price, acepta, reemplaza, lista, prev, lab, q;
+  function vivo(s) { return s !== null && !s.x; }
+  for (j = 0; j < n; j++) {
+    var tr = j === 0 ? H[j] - L[j] : Math.max(H[j] - L[j], Math.abs(H[j] - C[j - 1]), Math.abs(L[j] - C[j - 1]));
+    atr = j === 0 ? tr : (atr * 13 + tr) / 14;
+    p = j - N; t = 0;
+    if (p >= 0) {
+      if (swing === 'sym') {
+        if (p - N >= 0) {
+          ph = true; pl = true;
+          for (k = p + 1; k <= j; k++) { if (!(H[p] > H[k])) ph = false; if (!(L[p] < L[k])) pl = false; }
+          for (k = p - N; k < p; k++) { if (H[p] < H[k]) ph = false; if (L[p] > L[k]) pl = false; }
+          if (ph && pl) t = last ? -last.t : 1; else if (ph) t = 1; else if (pl) t = -1;
+        }
+      } else {
+        var nh = true, nl = true;
+        for (k = p + 1; k <= j; k++) { if (!(H[p] > H[k])) nh = false; if (!(L[p] < L[k])) nl = false; }
+        var nleg = nh ? -1 : (nl ? 1 : leg);
+        if (nleg !== leg) { leg = nleg; t = leg === -1 ? 1 : -1; }
+      }
+    }
+    if (t) {
+      price = t === 1 ? H[p] : L[p];
+      acepta = false; reemplaza = false;
+      if (last === null || last.t !== t) acepta = true;
+      else if ((t === 1 && price > last.price) || (t === -1 && price < last.price)) { acepta = true; reemplaza = true; }
+      if (acepta) {
+        if (reemplaza) { last.sup = j; (t === 1 ? hs : ls).pop(); }
+        lista = t === 1 ? hs : ls;
+        if (lista.length) {
+          prev = lista[lista.length - 1];
+          lab = t === 1 ? (price > prev ? 'HH' : price < prev ? 'LH' : 'EQH') : (price > prev ? 'HL' : price < prev ? 'LL' : 'EQL');
+        } else lab = '';
+        q = { id: piv.length, p: p, conf: j, t: t, price: price, lab: lab, sup: -1, bar: false, x: false };
+        piv.push(q); lista.push(price); last = q;
+        if (t === 1) {
+          hi = q;
+          if (bias === 1 && lo !== null && (ext === null || price > ext.price)) { ext = q; prot = lo; }
+        } else {
+          lo = q;
+          if (bias === -1 && hi !== null && (ext === null || price < ext.price)) { ext = q; prot = hi; }
+        }
+      }
+    }
+    var rng = H[j] - L[j], okc = true;
+    if (bodyMin > 0) okc = rng > 0 && Math.abs(C[j] - O[j]) / rng >= bodyMin;
+    var margen = function (nivel) { return mk === 'pct' ? Math.abs(nivel) * mv / 100 : mk === 'atr' ? mv * atr : 0; };
+    var pasaUp = function (nivel) { return brk === 'close' ? C[j] > nivel + margen(nivel) : H[j] > nivel + margen(nivel); };
+    var pasaDn = function (nivel) { return brk === 'close' ? C[j] < nivel - margen(nivel) : L[j] < nivel - margen(nivel); };
+    var cu = vivo(hi) && okc && pasaUp(hi.price);
+    var cd = vivo(lo) && okc && pasaDn(lo.price);
+    var cpu = false, cpd = false;
+    if (choch === 'protegido') {
+      cpu = bias === -1 && vivo(prot) && prot.t === 1 && okc && pasaUp(prot.price);
+      cpd = bias === 1 && vivo(prot) && prot.t === -1 && okc && pasaDn(prot.price);
+    }
+    if ((cu || cpu) && (cd || cpd)) { if (C[j] >= O[j]) { cd = false; cpd = false; } else { cu = false; cpu = false; } }
+    if (sweeps && brk === 'close') {
+      if (vivo(hi) && !hi.bar && !cu && H[j] > hi.price && C[j] <= hi.price + margen(hi.price)) {
+        hi.bar = true; ev.push({ tipo: 'BARRIDA', dir: 1, nivel: hi.price, p: hi.p, j: j, primera: false });
+      }
+      if (vivo(lo) && !lo.bar && !cd && L[j] < lo.price && C[j] >= lo.price - margen(lo.price)) {
+        lo.bar = true; ev.push({ tipo: 'BARRIDA', dir: -1, nivel: lo.price, p: lo.p, j: j, primera: false });
+      }
+    }
+    if (choch === 'ultimo') {
+      if (cu) { ev.push({ tipo: bias === -1 ? 'CHOCH' : 'BOS', dir: 1, nivel: hi.price, p: hi.p, j: j, primera: bias === 0 }); hi.x = true; bias = 1; ext = null; prot = lo; }
+      else if (cd) { ev.push({ tipo: bias === 1 ? 'CHOCH' : 'BOS', dir: -1, nivel: lo.price, p: lo.p, j: j, primera: bias === 0 }); lo.x = true; bias = -1; ext = null; prot = hi; }
+    } else {
+      if (cpu) {
+        ev.push({ tipo: 'CHOCH', dir: 1, nivel: prot.price, p: prot.p, j: j, primera: false });
+        prot.x = true; if (cu) hi.x = true; bias = 1; prot = lo; ext = null;
+      } else if (cpd) {
+        ev.push({ tipo: 'CHOCH', dir: -1, nivel: prot.price, p: prot.p, j: j, primera: false });
+        prot.x = true; if (cd) lo.x = true; bias = -1; prot = hi; ext = null;
+      } else if (cu) {
+        hi.x = true;
+        if (bias !== -1) { ev.push({ tipo: 'BOS', dir: 1, nivel: hi.price, p: hi.p, j: j, primera: bias === 0 }); if (bias === 0) { bias = 1; prot = lo; ext = null; } }
+      } else if (cd) {
+        lo.x = true;
+        if (bias !== 1) { ev.push({ tipo: 'BOS', dir: -1, nivel: lo.price, p: lo.p, j: j, primera: bias === 0 }); if (bias === 0) { bias = -1; prot = hi; ext = null; } }
+      }
+    }
+    sBias[j] = bias; sHi[j] = vivo(hi) ? hi.id : -1; sLo[j] = vivo(lo) ? lo.id : -1; sPr[j] = vivo(prot) ? prot.id : -1;
+  }
+  return { piv: piv, ev: ev, bias: sBias, hi: sHi, lo: sLo, pr: sPr, n: n };
+}
+var D86_NOMSW={HH:"máx. mayor",LH:"máx. menor",HL:"mín. mayor",LL:"mín. menor",EQH:"máx. igual",EQL:"mín. igual"};
+var D86_TFNOM={"1m":"1m","3m":"3m","5m":"5m","15m":"15m","30m":"30m","1h":"1H","2h":"2H","3h":"3H","4h":"4H","6h":"6H","12h":"12H","1d":"1D","3d":"3D","1w":"1W","1M":"1M"};
+function d86Nom(tf){ return D86_TFNOM[tf]||String(tf).toUpperCase(); }
+/* la primera vela de V que empieza en t o después (V va ordenada por tiempo) */
+function d86Buscar(V, t){ var a=0, b=V.length, m; while(a<b){ m=(a+b)>>1; if(V[m].t<t) a=m+1; else b=m; } return a; }
+function d86Opc(I, N){
+  return {N:N, swing:I.sw, brk:I.brk, bodyMin:(I.body||0)/100, choch:I.choch, mk:I.mk==="none" ? null : I.mk, mv:I.mk==="pct" ? I.mvp : I.mva, sweeps:true};
+}
+function d86Corre(W, I, N){
+  var n=W.length, O=new Array(n), H=new Array(n), L=new Array(n), C=new Array(n), i;
+  for(i=0;i<n;i++){ O[i]=W[i].a; H[i]=W[i].h; L[i]=W[i].b; C[i]=W[i].c; }
+  return d86EstRun(O, H, L, C, d86Opc(I, N));
+}
+/* de una vela de la capa a una vela de la gráfica: el swing de un temporal mayor se pone sobre la vela de la gráfica que de verdad hizo el extremo,
+   y la ruptura, en la última vela de la gráfica que cabe dentro de la vela mayor que rompió */
+function d86Mapa(V, Wc, durF, base){
+  var n=V.length;
+  return {
+    antes:function(t0){ return !base && t0+durF(t0)<=V[0].t; },
+    piv:function(p, t){
+      if(base) return p;
+      var t0=Wc[p].t, i0=d86Buscar(V, t0), i1=d86Buscar(V, t0+durF(t0))-1, best, i;
+      if(i0>n-1) return n-1;
+      if(i1<i0) return i0;
+      if(i1>n-1) i1=n-1;
+      best=i0; for(i=i0;i<=i1;i++){ if(t===1 ? V[i].h>V[best].h : V[i].b<V[best].b) best=i; }
+      return best;
+    },
+    fin:function(j){
+      if(base) return j;
+      var t0=Wc[j].t, k=d86Buscar(V, t0+durF(t0))-1;
+      return Math.max(0, Math.min(n-1, k));
+    }
+  };
+}
+indReg({id:"est", al:"estructura de mercado bos choch cambio de estructura ruptura continuacion tendencia swing smc fractalidad voz market structure break of structure change of character trend higher high lower low fractal", sn:"Estructura", n:"Estructura de mercado (BOS / CHoCH)", g:"est", panel:false, sinTF:true, ets:true,
+  nom:function(I, conE){ return tr("Estructura")+(conE ? " "+I.n : ""); },      /* en la leyenda solo el largo del swing principal: «Estructura 5» (las demás cifras estorbarían) */
+  d:"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Es una herramienta de lectura: no da señales de compra ni de venta.",
+  en:[["c1d","Dibujar también el temporal de 1 día","bool",true,null,null,"Temporales (fractalidad)","Solo se dibuja si es más grande que el temporal de la gráfica."],
+      ["c4h","Dibujar también el temporal de 4 horas","bool",true,null,null,"Temporales (fractalidad)"],
+      ["c1h","Dibujar también el temporal de 1 hora","bool",false,null,null,"Temporales (fractalidad)"],
+      ["c15","Dibujar también el temporal de 15 minutos","bool",false,null,null,"Temporales (fractalidad)"],
+      ["n","Largo del swing (N) · temporal de la gráfica","int",5,1,50,"Temporales (fractalidad)","Un swing alto es la vela cuyo máximo supera al de las N velas de cada lado; se confirma N velas después. Más N = menos líneas."],
+      ["n1d","Largo del swing (N) · 1 día","int",5,1,50,"Temporales (fractalidad)"],
+      ["n4h","Largo del swing (N) · 4 horas","int",5,1,50,"Temporales (fractalidad)"],
+      ["n1h","Largo del swing (N) · 1 hora","int",5,1,50,"Temporales (fractalidad)"],
+      ["n15","Largo del swing (N) · 15 minutos","int",5,1,50,"Temporales (fractalidad)"],
+      ["sw","Método","sel","sym",[["sym","Simétrico: N velas a cada lado"],["leg","Solo derecha (estilo LuxAlgo)"]],null,"Cómo se detecta el swing"],
+      ["brk","Se confirma con","sel","close",[["close","Cierre de la vela"],["wick","Mecha (basta tocar)"]],null,"Cuándo cuenta una ruptura"],
+      ["mk","Margen extra","sel","none",[["none","Ninguno"],["pct","% del precio"],["atr","× ATR(14)"]],null,"Cuándo cuenta una ruptura"],
+      ["mvp","Margen en % del precio","float",0.1,0,20,"Cuándo cuenta una ruptura"],
+      ["mva","Margen en × ATR","float",0.3,0,10,"Cuándo cuenta una ruptura"],
+      ["body","Cuerpo mínimo de la vela que rompe (%)","int",0,0,100,"Cuándo cuenta una ruptura","0 = sin filtro. Con 60 solo cuenta una vela con cuerpo de al menos el 60 % de su rango."],
+      ["choch","Nivel de referencia","sel","ultimo",[["ultimo","Último confirmado"],["protegido","Swing protegido (el que lanzó el último máx./mín.)"]],null,"Contra qué se mide el CHoCH","Con «protegido», romper un swing intermedio no es CHoCH: hace falta romper el que originó el último extremo. Da bastantes menos CHoCH."],
+      ["s2","Secundaria · swings más chicos en el mismo temporal","bool",false,null,null,"Fractalidad interna (impulsos y retrocesos de adentro)"],
+      ["n2","Largo del swing (N) secundario","int",3,1,30,"Fractalidad interna (impulsos y retrocesos de adentro)","Tiene que ser menor que el N del temporal de la gráfica para que se note distinto."],
+      ["s3","Terciaria · un nivel más adentro todavía","bool",false,null,null,"Fractalidad interna (impulsos y retrocesos de adentro)"],
+      ["n3","Largo del swing (N) terciario","int",2,1,30,"Fractalidad interna (impulsos y retrocesos de adentro)"],
+      ["nom","Nombres de máximos y mínimos","sel","es",[["es","Con palabras (máx. mayor…)"],["sig","Siglas (HH, HL, LH, LL)"]],null,"Rótulos"],
+      ["tab","Mini panel con la tendencia de cada temporal","bool",true,null,null,"Rótulos"],
+      ["tpos","Dónde va el mini panel","sel","tr",[["tr","Arriba a la derecha"],["br","Abajo a la derecha"],["bl","Abajo a la izquierda"]],null,"Rótulos"]],
+  pl:[{k:"bu",n:"BOS alcista · línea",c:"#089981",e:"sg",w:1.4},
+      {k:"bd",n:"BOS bajista · línea",c:"#F23645",e:"sg",w:1.4},
+      {k:"cu",n:"CHoCH alcista · línea",c:"#089981",e:"sg",w:1.8,d:1},
+      {k:"cd",n:"CHoCH bajista · línea",c:"#F23645",e:"sg",w:1.8,d:1},
+      {k:"lcu",n:"CHoCH alcista · rótulo",c:"#089981",e:"lb",pos:"a",cole:true},
+      {k:"lcd",n:"CHoCH bajista · rótulo",c:"#F23645",e:"lb",pos:"b",cole:true},
+      {k:"lbu",n:"BOS alcista · rótulo",c:"#089981",e:"lb",pos:"a",pln:true,cole:true},
+      {k:"lbd",n:"BOS bajista · rótulo",c:"#F23645",e:"lb",pos:"b",pln:true,cole:true},
+      {k:"shi",n:"Rótulos de los máximos",c:["#089981","#F23645","#787B86"],cn:["Mayor","Menor","Igual"],e:"lb",pos:"a",pln:true,cole:true},
+      {k:"slo",n:"Rótulos de los mínimos",c:["#089981","#F23645","#787B86"],cn:["Mayor","Menor","Igual"],e:"lb",pos:"b",pln:true,cole:true},
+      {k:"pa",net:true,n:"Puntos en los máximos",c:["#089981","#F23645","#787B86"],cn:["Mayor","Menor","Igual"],e:"o",w:1},
+      {k:"pb",net:true,n:"Puntos en los mínimos",c:["#089981","#F23645","#787B86"],cn:["Mayor","Menor","Igual"],e:"o",w:1},
+      {k:"vu",n:"Nivel vigente de arriba (aún sin romper)",c:"#089981",e:"l",w:1,d:1},
+      {k:"vd",n:"Nivel vigente de abajo (aún sin romper)",c:"#F23645",e:"l",w:1,d:1},
+      {k:"g2",n:"Secundaria · líneas",c:"#787B86",e:"sg",w:1,d:1,o:60},
+      {k:"l2",n:"Secundaria · rótulos",c:"#787B86",e:"lb",pos:"a",pln:true,cole:true,o:75},
+      {k:"v2u",net:true,n:"Secundaria · nivel vigente de arriba",c:"#089981",e:"l",w:1,d:2,o:60},
+      {k:"v2d",net:true,n:"Secundaria · nivel vigente de abajo",c:"#F23645",e:"l",w:1,d:2,o:60},
+      {k:"g3",n:"Terciaria · líneas",c:"#787B86",e:"sg",w:1,d:2,o:45},
+      {k:"l3",n:"Terciaria · rótulos",c:"#787B86",e:"lb",pos:"a",pln:true,cole:true,o:60},
+      {k:"v3u",net:true,n:"Terciaria · nivel vigente de arriba",c:"#089981",e:"l",w:1,d:2,o:45},
+      {k:"v3d",net:true,n:"Terciaria · nivel vigente de abajo",c:"#F23645",e:"l",w:1,d:2,o:45},
+      {k:"br",n:"Barridas (la mecha pasa, el cierre vuelve)",c:"#787B86",e:"sg",w:1,d:2,on:false}],
+  calc:function(V, I, E){
+    var n=V.length, P={}, TX={}, CI={}, TE={}, sg={}, VERDE="#089981", ROJO="#F23645", GRIS="#787B86", i, k;
+    ["pa","pb","shi","slo","lbu","lbd","lcu","lcd","l2","l3","vu","vd","v2u","v2d","v3u","v3d"].forEach(function(c){ P[c]=iNaN(n); TX[c]=new Array(n); CI[c]=new Array(n); TE[c]=new Array(n); });
+    ["bu","bd","cu","cd","g2","g3","br"].forEach(function(c){ sg[c]=[]; });
+    if(!n) return {p:P, tx:TX, ci:CI, te:TE, sg:sg, ex:{tabla:null}};
+    var msC=MS_INTER[E.inter]||0, tAhora=(E.rp && E.rp.activo) ? E.rp.T : Date.now();
+    var nB= (V[n-1].t+msC>tAhora) ? n-1 : n;                  /* la vela en formación no entra al cálculo: una ruptura solo cuenta con velas ya cerradas */
+    var tEnd=Math.min(tAhora, V[n-1].t+msC);
+    var Wb=V.slice(0, nB), Rb=d86Corre(Wb, I, I.n), capas=[], colo=[];
+    capas.push({nom:d86Nom(E.inter), R:Rb, W:Wb, durF:function(){ return msC; }, base:true, dur:msC});
+    [["1d","c1d","n1d"],["4h","c4h","n4h"],["1h","c1h","n1h"],["15m","c15","n15"]].forEach(function(r){
+      var tf=r[0]; if(!I[r[1]] || !(MS_INTER[tf]>msC)) return;
+      var Hh=indTfVelas(E, tf); indTfPedir(E, tf);
+      var Wc=Hh.W.filter(function(x){ return x.t+indTfDur(tf, x.t)<=tEnd; });
+      if(Wc.length<3) return;
+      capas.push({nom:d86Nom(tf), R:d86Corre(Wc, I, I[r[2]]), W:Wc, durF:function(t){ return indTfDur(tf, t); }, base:false, dur:MS_INTER[tf]});
+    });
+    capas.sort(function(a,b){ return b.dur-a.dur; });          /* los mayores primero: si dos rótulos se tapan, gana el del temporal más grande */
+    function lugar(side, idx, precio, largo){
+      for(var q=0;q<colo.length;q++){ var c=colo[q]; if(c.s===side && Math.abs(c.i-idx)<=Math.max(4, largo*0.8) && Math.abs(c.p-precio)<=precio*0.003) return false; }
+      colo.push({s:side, i:idx, p:precio}); return true;
+    }
+    capas.forEach(function(cap){
+      var mp=d86Mapa(V, cap.W, cap.durF, cap.base), wm= cap.base ? 1 : Math.min(2.2, 1+0.18*Math.log(cap.dur/msC)/Math.LN2);
+      cap.R.ev.forEach(function(e){
+        var t0=cap.base ? 0 : cap.W[e.j].t;
+        if(e.tipo==="BARRIDA"){ if(cap.base) sg.br.push({i0:e.p, p0:e.nivel, i1:e.j, p1:e.nivel, np:true}); return; }
+        if(!cap.base && mp.antes(t0)) return;
+        var up=(e.dir===1), choch=(e.tipo==="CHOCH"), i1=mp.fin(e.j), i0=mp.piv(e.p, up ? 1 : -1);
+        if(i1<i0) i1=i0;
+        var ant= !cap.base && mp.antes(cap.W[e.p].t);
+        sg[(choch ? "c" : "b")+(up ? "u" : "d")].push({i0:i0, p0:e.nivel, i1:i1, p1:e.nivel, wm:wm, np:ant});
+        var txt=(cap.base ? "" : cap.nom+" ")+(choch ? "CHoCH" : "BOS"), kl="l"+(choch ? "c" : "b")+(up ? "u" : "d"), xm= (i1-i0<8) ? Math.max(i0, i1-2) : Math.round((i0+i1)/2);
+        if(lugar(up ? "a" : "b", xm, e.nivel, txt.length)){ P[kl][xm]=e.nivel; TX[kl][xm]=txt; }
+      });
+    });
+    /* rótulos y puntos de los swings (solo del temporal de la gráfica): los que un swing más extremo ya reemplazó no se muestran */
+    Rb.piv.forEach(function(q){
+      if(q.sup>=0) return;
+      var alto=(q.t===1), ci= (q.lab==="HH"||q.lab==="HL") ? 0 : ((q.lab==="LH"||q.lab==="LL") ? 1 : 2), kp=alto ? "pa" : "pb", kl=alto ? "shi" : "slo";
+      P[kp][q.p]=q.price; CI[kp][q.p]=ci;
+      if(q.lab){ P[kl][q.p]=q.price; CI[kl][q.p]=ci; TX[kl][q.p]= I.nom==="es" ? D86_NOMSW[q.lab] : q.lab; }
+    });
+    /* niveles vigentes: lo que daría BOS o CHoCH si el precio cierra más allá. La raya va del swing hasta la última vela; el precio, a la escala. */
+    function vigentes(R, ku, kd, pref){
+      var j=R.n-1; if(j<0) return;
+      var bs=R.bias[j], hiId=R.hi[j], loId=R.lo[j], prId=R.pr[j], lista=[];
+      var refUp= hiId>=0 ? R.piv[hiId] : null, refDn= loId>=0 ? R.piv[loId] : null, pr= prId>=0 ? R.piv[prId] : null, cr;
+      if(bs===0){ if(refUp) lista.push([refUp,"BOS"]); if(refDn) lista.push([refDn,"BOS"]); }
+      else if(bs===1){ if(refUp) lista.push([refUp,"BOS"]); cr= I.choch==="protegido" ? pr : refDn; if(cr) lista.push([cr,"CHoCH"]); }
+      else { if(refDn) lista.push([refDn,"BOS"]); cr= I.choch==="protegido" ? pr : refUp; if(cr) lista.push([cr,"CHoCH"]); }
+      lista.forEach(function(it){
+        var q=it[0], kk= q.t===1 ? ku : kd, x;
+        for(x=q.p;x<n;x++){ P[kk][x]=q.price; TE[kk][x]=(pref ? pref+" " : "")+it[1]; }
+      });
+    }
+    vigentes(Rb, "vu", "vd", "");
+    /* fractalidad interna: el mismo temporal con un N más chico, más fino y más tenue; solo las últimas rupturas */
+    [[I.s2, I.n2, "g2", "l2", "v2u", "v2d", "2ª"], [I.s3, I.n3, "g3", "l3", "v3u", "v3d", "3ª"]].forEach(function(tr2){
+      var Nt=tr2[1]; if(!tr2[0] || !(Nt>=1) || Nt>=I.n) return;
+      var Rt=d86Corre(Wb, I, Nt), ult=Rt.ev.filter(function(e){ return e.tipo!=="BARRIDA"; }).slice(-8);
+      ult.forEach(function(e){
+        var up=(e.dir===1), choch=(e.tipo==="CHOCH"), i0=e.p, i1=Math.max(e.p, e.j);
+        sg[tr2[2]].push({i0:i0, p0:e.nivel, i1:i1, p1:e.nivel, c: up ? VERDE : ROJO, np:true});
+        var txt=tr2[6]+" "+(choch ? "CHoCH" : "BOS"), xm= (i1-i0<8) ? Math.max(i0, i1-2) : Math.round((i0+i1)/2);
+        if(lugar("a", xm, e.nivel, txt.length)){ P[tr2[3]][xm]=e.nivel; TX[tr2[3]][xm]=txt; }
+      });
+      vigentes(Rt, tr2[4], tr2[5], tr2[6]);
+    });
+    /* el mini panel: la tendencia de cada temporal, del mayor al menor */
+    var filas=capas.map(function(cap){
+      var b= cap.R.n>0 ? cap.R.bias[cap.R.n-1] : 0;
+      return [{t:cap.nom}, {t: b===1 ? "▲ Alcista" : (b===-1 ? "▼ Bajista" : "◆ Sin definir"), c: b===1 ? VERDE : (b===-1 ? ROJO : GRIS)}];
+    });
+    return {p:P, tx:TX, ci:CI, te:TE, sg:sg, ex:{tabla: (I.tab && filas.length) ? {pos:(I.tpos==="br"||I.tpos==="bl") ? I.tpos : "trm", f:filas} : null}};
+  }});
+
 /* ---------------------------------------------------------------------
    8 · VWAP ANCLADO: el precio medio ponderado por volumen contado desde un momento elegido (un máximo, un mínimo, una noticia…).
    VWAP = Σ(precio × volumen) / Σ volumen desde la vela del anclaje; bandas = VWAP ± k × desviación estándar ponderada por volumen
@@ -19289,7 +19558,7 @@ function indClon(o){ return JSON.parse(JSON.stringify(o)); }
 function indNuevo(id){
   var c=IND66[id]; if(!c) return null;
   var b=indBD(); b.n++;
-  var it={u:"i"+Date.now().toString(36)+b.n, id:id, en:{}, st:{}, lv:{}, fl:{}, vis:null, pr:"def", ets:false, lin:true, ent:true, oc:false, pn:null, es:null};
+  var it={u:"i"+Date.now().toString(36)+b.n, id:id, en:{}, st:{}, lv:{}, fl:{}, vis:null, pr:"def", ets:(c.ets===true), lin:true, ent:true, oc:false, pn:null, es:null};
   var d=b.d[id];
   if(d){ ["en","st","lv","fl","vis","pr","ets","lin","ent"].forEach(function(k){ if(d[k]!==undefined) it[k]=indClon(d[k]); }); }
   /* si ya hay uno igual con una sola línea, el nuevo toma otro color (así no se encima con el primero) */
@@ -19335,7 +19604,7 @@ function indPlots(it){
   return c.pl.map(function(p){
     var s=st[p.k]||{};
     return {k:p.k, n:p.n, c:(s.c!=null?s.c:p.c), cd:p.c, e:s.e||p.e||"l", ed:p.e||"l", w:(s.w!=null?s.w:(p.w||1)), d:(s.d!=null?s.d:(p.d||0)),
-            o:(s.o!=null?s.o:(p.o!=null?p.o:100)), on:(s.on!=null?s.on:(p.on!==false)), cn:p.cn, ov:p.ov, pos:p.pos, cin:p.cin, fo:p.fo};
+            o:(s.o!=null?s.o:(p.o!=null?p.o:100)), on:(s.on!=null?s.on:(p.on!==false)), cn:p.cn, ov:p.ov, pos:p.pos, cin:p.cin, fo:p.fo, net:p.net, pln:p.pln, cole:p.cole};      /* v86 · net: esta traza no pone etiqueta en la escala */
   });
 }
 function indLevels(it, I){
@@ -19777,7 +20046,14 @@ function indTrazo(p, S, ctx){
       var xl=X(i), yl=Y(vl), cl=colorIdx(i), arriba=(p.pos==="a");
       if(yl<-30 || yl>H+30) continue;
       t=tr(t);
-      if(p.plano){                                       /* v70 · texto suelto (varias líneas) como en la referencia, sin caja */
+      if(p.cole && ctx.colis){                          /* v86 · un rótulo que caería encima de otro ya puesto (por prioridad de orden) no se dibuja */
+        var wr, ci2, ya0= arriba ? yl-5-15 : yl+4, hit=false, q3;
+        if(p.pln||p.plano){ wr=4; for(ci2=0;ci2<t.length;ci2++) wr+= t.charCodeAt(ci2)>=0x2E80 ? 9.8 : 5.4; } else wr=t.length*5.4+9;      /* los ideogramas ocupan casi el doble de ancho */
+        for(q3=0;q3<ctx.colis.length;q3++){ var rr=ctx.colis[q3]; if(xl-wr/2<rr.x1 && xl+wr/2>rr.x0 && ya0<rr.y1 && ya0+15>rr.y0){ hit=true; break; } }
+        if(hit) continue;
+        ctx.colis.push({x0:xl-wr/2-1, x1:xl+wr/2+1, y0:ya0-1, y1:ya0+16});
+      }
+      if(p.plano || p.pln){                              /* v70 · texto suelto (varias líneas) como en la referencia, sin caja */
         var ls=t.split("\n"), lh=11.5, y0= arriba ? yl-6-(ls.length-1)*lh : yl+6+9.5;
         out+='<text text-anchor="middle" font-size="9.5" font-weight="700" fill="'+cl+'" fill-opacity="'+op+'" stroke="var(--b0)" stroke-width="2.4" stroke-linejoin="round" paint-order="stroke" translate="no">'+
              ls.map(function(q2,k2){ return '<tspan x="'+f(xl)+'" y="'+f(y0+k2*lh)+'">'+esc(q2)+'</tspan>'; }).join("")+'</text>';
@@ -19812,13 +20088,14 @@ function indCajas(arr, p, ctx){
 }
 /* los segmentos: {i0, p0, i1, p1, flecha, np (sin el puntito del comienzo)} */
 function indSegmentos(arr, p, ctx){
-  var s="", col=indCol(Array.isArray(p.c)?p.c[0]:p.c), op=p.o/100;
+  var s="", col0=indCol(Array.isArray(p.c)?p.c[0]:p.c), op=p.o/100;
   (arr||[]).forEach(function(g){
     if(g.i1<ctx.i0-1 && g.i0<ctx.i0-1) return;
     if(Math.min(g.i0,g.i1)>ctx.i1+200) return;
+    var col=g.c ? indCol(g.c) : col0, sw=p.w*(g.wm||1);          /* v86 · cada segmento puede traer su color (c) y su grosor relativo (wm) */
     var x0=ctx.X(g.i0), y0=ctx.Y(g.p0), x1=ctx.X(g.i1), y1=ctx.Y(g.p1);
     if(x1>ctx.W && x1!==x0){ var t=(ctx.W-x0)/(x1-x0); y1=y0+(y1-y0)*t; x1=ctx.W; g=Object.assign({},g,{flecha:false}); }
-    s+='<line x1="'+indF(x0)+'" y1="'+indF(indCl(y0,ctx.H))+'" x2="'+indF(x1)+'" y2="'+indF(indCl(y1,ctx.H))+'" stroke="'+col+'" stroke-width="'+p.w+'" stroke-opacity="'+op+'" stroke-linecap="round"'+indDash(p.d,p.w)+'/>';
+    s+='<line x1="'+indF(x0)+'" y1="'+indF(indCl(y0,ctx.H))+'" x2="'+indF(x1)+'" y2="'+indF(indCl(y1,ctx.H))+'" stroke="'+col+'" stroke-width="'+indF(sw)+'" stroke-opacity="'+op+'" stroke-linecap="round"'+indDash(p.d,sw)+'/>';
     if(!g.np) s+='<circle cx="'+indF(ctx.X(g.i0))+'" cy="'+indF(indCl(ctx.Y(g.p0),ctx.H))+'" r="2" fill="'+col+'" fill-opacity="'+op+'"/>';
     if(g.flecha){
       var ang=Math.atan2(y1-y0, x1-x0), ax=x1, ay=y1, L=7;
@@ -19897,6 +20174,7 @@ function indDibujarItem(E, it, res, ctx, solo){
       s+='<line x1="0" x2="'+ctx.W+'" y1="'+indF(y)+'" y2="'+indF(y)+'" stroke="'+indCol(l.c)+'"'+nivelSvg81(l)+'/>';      /* v81 · §160 */
     });
   }
+  ctx.colis=[];                                                          /* v86 · rótulos de este indicador ya puestos (para que no se tapen entre sí) */
   pls.slice().filter(function(p){ return p.on; }).sort(function(p,q){ return (IND_ORDEN_E[p.e]||4)-(IND_ORDEN_E[q.e]||4); }).forEach(function(p){
     /* «fo» = el trazo de un indicador de panel que se dibuja sobre el precio (force_overlay de Pine) */
     if(solo==="fo"){ if(!(pan && p.fo)) return; }
@@ -20012,14 +20290,14 @@ function indSepararFinal(L, lo, hi, alto, fijos){
 }
 function indEtHTML(L){
   return L.map(function(t){
-    return '<span class="gtg" style="top:'+indF(t.y)+'px;background:'+t.bg+';color:'+t.fg+'" translate="no">'+t.txt+'</span>';
+    return '<span class="gtg'+(t.ancho?" gtgW":"")+'" style="top:'+indF(t.y)+'px;background:'+t.bg+';color:'+t.fg+'" translate="no">'+t.txt+'</span>';
   }).join("");
 }
 function indEtDe(p, res, it, ix, w, sobrePrecio, Y){
   var S=res.p && res.p[p.k]; if(!S) return null;
   var x=S[ix]; if(!iOk(x)) return null;
-  var c=indColorDe(p, res.ci && res.ci[p.k], ix);
-  return {y:Y(x), txt:indFmt(x, it, sobrePrecio), bg:c, fg:indTinta(c)};
+  var c=indColorDe(p, res.ci && res.ci[p.k], ix), pre=(res.te && res.te[p.k] && res.te[p.k][ix]!=null) ? String(res.te[p.k][ix]) : "";     /* v86 · res.te: texto que va delante del precio en la escala («CHoCH 83.062») */
+  return {y:Y(x), txt:(pre ? esc(tr(pre))+" " : "")+indFmt(x, it, sobrePrecio), bg:c, fg:indTinta(c), ancho:!!pre};
 }
 function indTicks(lo, hi, alto){
   var rango=hi-lo; if(!(rango>0) || !(alto>0)) return [];
@@ -20098,7 +20376,7 @@ function indPane(E, g, ph, base){
     svg+=indGU(r.it, indDibujarItem(E, r.it, r.res, ctx, "no"));
     if(r.it.ets===true){
       r.pls.forEach(function(p){
-        if(!p.on || p.fo || !IND_FORMAS_VAL[p.e]) return;
+        if(!p.on || p.fo || p.net || !IND_FORMAS_VAL[p.e]) return;
         /* la etiqueta es del último valor que se ve */
         var A=r.res.p && r.res.p[p.k]; if(!A) return;
         var j=i1-1; while(j>=i0 && !iOk(A[j])) j--;
@@ -20134,7 +20412,7 @@ function indPane(E, g, ph, base){
    Cada celda: {t:texto fijo (se traduce), x:cifra o texto que se agrega tal cual, c:color} */
 function indTablasHTML(arr){
   if(!arr || !arr.length) return "";
-  var por={tr:"", tl:"", br:"", bl:""}, h="";
+  var por={tr:"", tl:"", br:"", bl:"", trm:""}, h="";
   arr.forEach(function(t){
     if(!t || !t.f || !t.f.length) return;
     var pos=por[t.pos]!==undefined ? t.pos : "tr", nc=t.f[0].length;
@@ -20145,7 +20423,7 @@ function indTablasHTML(arr){
       }).join("");
     }).join("")+'</div>';
   });
-  ["tr","tl","br","bl"].forEach(function(k){ if(por[k]) h+='<div class="gtbl '+k+'">'+por[k]+'</div>'; });
+  ["tr","trm","tl","br","bl"].forEach(function(k){ if(por[k]) h+='<div class="gtbl '+k+'">'+por[k]+'</div>'; });
   return h;
 }
 /* ---------------------------------------------------------------------
@@ -20209,7 +20487,7 @@ function indPintar(E, W, H){
     s+=indGU(it, indDibujarItem(E, it, res, ctx, "no"));
     if(it.ets===true){
       pls.forEach(function(p){
-        if(!p.on || p.ov || !IND_FORMAS_VAL[p.e] || p.e==="h" || p.e==="c" || !res.p || !res.p[p.k]) return;
+        if(!p.on || p.ov || p.net || !IND_FORMAS_VAL[p.e] || p.e==="h" || p.e==="c" || !res.p || !res.p[p.k]) return;
         var S=res.p[p.k], j=i1-1; while(j>=i0 && !iOk(S[j])) j--;
         if(j<i0) return;
         var t=indEtDe(p, res, it, j, W, true, Yp);
@@ -21432,7 +21710,7 @@ function indHojaEnganchar(d){
       if(a==="ok"){ indHojaCerrar(true); return; }
       if(a==="mn"){ var mm=d.querySelector(".his-menu"); mm.hidden=!mm.hidden; return; }
       if(a==="reset"){
-        hisSet(function(x){ x.en={}; x.st={}; x.lv={}; x.fl={}; x.pr="def"; x.ets=false; x.lin=true; x.ent=true; x.vis=null; x.tf=null; x.tfw=true; });
+        hisSet(function(x){ x.en={}; x.st={}; x.lv={}; x.fl={}; x.pr="def"; x.ets=!!(IND66[x.id] && IND66[x.id].ets===true); x.lin=true; x.ent=true; x.vis=null; x.tf=null; x.tfw=true; });
         H.ab=null; indHojaPintar(); return;
       }
       if(a==="def"){
@@ -30663,9 +30941,11 @@ window.addEventListener("resize", function(){ try{ if(typeof GRAF!=="undefined" 
 
 /* v80 · varios (lista de monedas, estadísticas) */
 
-/* §151 · la letra chica que va debajo del nombre de una cifra de las estadísticas (Luis, 19 oct: «promedio total» y, chiquito, «(ganadas y perdidas)»).
-   Un solo sitio: aquí se dice a qué cifras les toca y qué dice. Lo usan met() (computadora) y tiraMarcador() (teléfono). */
-var ET80={"Promedio total":"(ganadas y perdidas)"};
+/* §151 · la letra chica que va debajo del nombre de una cifra de las estadísticas: un solo sitio para decir a qué cifras les toca y qué dice.
+   Lo usan met() (computadora) y tiraMarcador() (teléfono). v80 (21 oct) · Luis: «Promedio total» confundía al lado de «Perdió -$X» (sonaba a un total
+   sumado, siendo en realidad un promedio por operación). Ahora la tarjeta se llama «Promedio por operación» y no necesita esta letra chica aparte,
+   porque la frase de abajo (sub) ya lo explica: «lo que gana o pierde cada vez». Queda vacío por si otra cifra la necesita más adelante. */
+var ET80={};
 function et80(nombre){
   var t=ET80[nombre]; if(!t) return "";
   return '<small class="et80">'+esc(t)+'</small>';
@@ -34962,7 +35242,7 @@ document.addEventListener("click", function(ev){
    Los colores en sí están en el CSS («COLORES DE LOS ICONOS»). */
 var COL_ICO={"Dinero que puso":1,"Dinero invertido":1,"Operaciones acertadas":1,
   "Vale hoy":2,"Abiertas ahora":2,
-  "Ganancia sin vender":3,"Ganancia sin cerrar":3,"Promedio total":3,
+  "Ganancia sin vender":3,"Ganancia sin cerrar":3,"Promedio por operación":3,
   "Ganancia ya vendida":4,"Ganancia ya cerrada":4,"Promedio de las ganadas":4,
   "Comisiones":5,"Comisiones pagadas":5};
 function met(ico, etiqueta, valor, clase, sub, color, serie, ir){
@@ -38665,7 +38945,7 @@ function pintarAmbito(k){
           T.decididas?(T.ganadas+" de "+T.decididas):"—","",
           T.aciertos!=null?(T.aciertos.toFixed(0)+"% de acierto"):"todavía no ha cerrado ninguna", 1,
           null, T.ganadas?"res:GANA":"")+
-      met(IC.dolar,"Promedio total",
+      met(IC.dolar,"Promedio por operación",
           T.porOperacion==null?"—":((T.porOperacion>=0?"+":"−")+usdF(T.porOperacion).replace("-","")),"",
           T.n?("lo que gana o pierde cada vez, en "+plural(T.n,"operación cerrada","operaciones cerradas")):"todavía no ha cerrado ninguna",
           T.porOperacion==null?6:(T.porOperacion>=0?"gana":"pierde"),
@@ -38781,7 +39061,7 @@ function marcador(T){
      val:T.decididas?(T.ganadas+" de "+T.decididas+
         (T.aciertos!=null?' <small>'+T.aciertos.toFixed(0)+'%</small>':'')):"—",
      ir:T.ganadas?"res:GANA":""},
-    {ico:IC.dolar, et:"Promedio total",
+    {ico:IC.dolar, et:"Promedio por operación",
      val:T.porOperacion==null?"—":((T.porOperacion>=0?"+":"−")+usdF(T.porOperacion).replace("-","")),
      clase:T.porOperacion==null?"":cl(T.porOperacion), ir:T.n?"res:TODO":""},
     {ico:IC.sube, et:"Promedio de las ganadas",
@@ -51992,8 +52272,6 @@ DIC.en={
 "Cerrada a mano":"Closed manually",
 "Operaciones quitadas":"Removed trades",
 "Volver a ponerlas":"Put them back",
-"Promedio total":"Overall average",
-"(ganadas y perdidas)":"(wins and losses)",
 "Promedio de las ganadas":"Average of wins",
 "Mis casas":"My exchanges",
 "Se ve solo lo de §. Todo el programa cambia con esta casa.":"Showing only what is in §. The whole app switches to this exchange.",
@@ -54279,6 +54557,95 @@ DIC.en={
 "Esas monedas no aparecen en las fuentes. Puede escribir su precio a mano.":"Those coins do not show up in the sources. You can type their price by hand.",
 "Arriba están todas sus compras. La fila de abajo es solo lo que le queda después de sus ventas: # @ por $# que da un precio promedio de":"Above are all your purchases. The bottom row is only what you have left after your sales: # @ for $# which gives an average price of",
 "Se contaron # de # (no tenía más registradas).":"Counted # of # (you had no more recorded).",
+/* v86 · estructura de mercado (BOS / CHoCH) */
+"Estructura":"Structure",
+"Estructura de mercado (BOS / CHoCH)":"Market structure (BOS / CHoCH)",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Es una herramienta de lectura: no da señales de compra ni de venta.":"Shows where the trend continues (BOS: a close breaks a swing in the trend's direction) and where it changes (CHoCH: a close breaks one against it). Higher timeframes are drawn thicker and carry their name. Levels not yet broken appear dotted, and their price sits on the right-hand scale. Within the same timeframe you can also show the smaller impulses and pullbacks (\"Secondary\" and \"Tertiary\"). A swing only appears N candles after it forms, and nothing is repainted. It is a reading tool: it gives no buy or sell signals.",
+"Dibujar también el temporal de 1 día":"Also draw the timeframe: 1 day",
+"Largo del swing (N) · 1 día":"Swing length (N) · 1 day",
+"Dibujar también el temporal de 4 horas":"Also draw the timeframe: 4 hours",
+"Largo del swing (N) · 4 horas":"Swing length (N) · 4 hours",
+"Dibujar también el temporal de 1 hora":"Also draw the timeframe: 1 hour",
+"Largo del swing (N) · 1 hora":"Swing length (N) · 1 hour",
+"Dibujar también el temporal de 15 minutos":"Also draw the timeframe: 15 minutes",
+"Largo del swing (N) · 15 minutos":"Swing length (N) · 15 minutes",
+"Largo del swing (N) · temporal de la gráfica":"Swing length (N) · chart timeframe",
+"Largo del swing (N) secundario":"Swing length (N) · secondary",
+"Largo del swing (N) terciario":"Swing length (N) · tertiary",
+"Temporales (fractalidad)":"Timeframes (fractality)",
+"Solo se dibuja si es más grande que el temporal de la gráfica.":"Only drawn if it is larger than the chart's timeframe.",
+"Un swing alto es la vela cuyo máximo supera al de las N velas de cada lado; se confirma N velas después. Más N = menos líneas.":"A swing high is the candle whose high is above that of the N candles on each side; it is confirmed N candles later. Larger N = fewer lines.",
+"Método":"Method",
+"Simétrico: N velas a cada lado":"Symmetric: N candles on each side",
+"Solo derecha (estilo LuxAlgo)":"Right side only (LuxAlgo style)",
+"Cómo se detecta el swing":"How the swing is detected",
+"Se confirma con":"Confirmed by",
+"Cierre de la vela":"Candle close",
+"Mecha (basta tocar)":"Wick (a touch is enough)",
+"Cuándo cuenta una ruptura":"When a break counts",
+"Margen extra":"Extra buffer",
+"% del precio":"% of price",
+"Margen en % del precio":"Buffer in % of price",
+"Margen en × ATR":"Buffer in × ATR",
+"Cuerpo mínimo de la vela que rompe (%)":"Minimum body of the breaking candle (%)",
+"0 = sin filtro. Con 60 solo cuenta una vela con cuerpo de al menos el 60 % de su rango.":"0 = no filter. With 60, only a candle whose body is at least 60 % of its range counts.",
+"Nivel de referencia":"Reference level",
+"Último confirmado":"Last confirmed",
+"Swing protegido (el que lanzó el último máx./mín.)":"Protected swing (the one that launched the last high/low)",
+"Contra qué se mide el CHoCH":"What the CHoCH is measured against",
+"Con «protegido», romper un swing intermedio no es CHoCH: hace falta romper el que originó el último extremo. Da bastantes menos CHoCH.":"With \"protected\", breaking an intermediate swing is not a CHoCH: you have to break the one that created the last extreme. It gives noticeably fewer CHoCH.",
+"Fractalidad interna (impulsos y retrocesos de adentro)":"Internal fractality (inner impulses and pullbacks)",
+"Secundaria · swings más chicos en el mismo temporal":"Secondary · smaller swings within the same timeframe",
+"Tiene que ser menor que el N del temporal de la gráfica para que se note distinto.":"It has to be smaller than the chart timeframe's N for it to look different.",
+"Terciaria · un nivel más adentro todavía":"Tertiary · one level deeper still",
+"Nombres de máximos y mínimos":"Names of highs and lows",
+"Con palabras (máx. mayor…)":"In words (higher high…)",
+"Siglas (HH, HL, LH, LL)":"Abbreviations (HH, HL, LH, LL)",
+"Rótulos":"Labels",
+"Mini panel con la tendencia de cada temporal":"Mini panel with the trend of each timeframe",
+"Dónde va el mini panel":"Where the mini panel goes",
+"Arriba a la derecha":"Top right",
+"Abajo a la derecha":"Bottom right",
+"Abajo a la izquierda":"Bottom left",
+"▲ Alcista":"▲ Bullish",
+"▼ Bajista":"▼ Bearish",
+"◆ Sin definir":"◆ Undefined",
+"máx. mayor":"higher high",
+"máx. menor":"lower high",
+"mín. mayor":"higher low",
+"mín. menor":"lower low",
+"máx. igual":"equal high",
+"mín. igual":"equal low",
+"Mayor":"Higher",
+"Menor":"Lower",
+"Igual":"Equal",
+"2ª BOS":"2nd BOS",
+"3ª BOS":"3rd BOS",
+"2ª CHoCH":"2nd CHoCH",
+"3ª CHoCH":"3rd CHoCH",
+"BOS alcista · línea":"Bullish BOS · line",
+"BOS alcista · rótulo":"Bullish BOS · label",
+"BOS bajista · línea":"Bearish BOS · line",
+"BOS bajista · rótulo":"Bearish BOS · label",
+"CHoCH alcista · línea":"Bullish CHoCH · line",
+"CHoCH alcista · rótulo":"Bullish CHoCH · label",
+"CHoCH bajista · línea":"Bearish CHoCH · line",
+"CHoCH bajista · rótulo":"Bearish CHoCH · label",
+"Rótulos de los máximos":"Labels on the highs",
+"Rótulos de los mínimos":"Labels on the lows",
+"Puntos en los máximos":"Dots on the highs",
+"Puntos en los mínimos":"Dots on the lows",
+"Nivel vigente de arriba (aún sin romper)":"Active level above (not yet broken)",
+"Nivel vigente de abajo (aún sin romper)":"Active level below (not yet broken)",
+"Secundaria · líneas":"Secondary · lines",
+"Secundaria · rótulos":"Secondary · labels",
+"Secundaria · nivel vigente de arriba":"Secondary · active level above",
+"Secundaria · nivel vigente de abajo":"Secondary · active level below",
+"Terciaria · líneas":"Tertiary · lines",
+"Terciaria · rótulos":"Tertiary · labels",
+"Terciaria · nivel vigente de arriba":"Tertiary · active level above",
+"Terciaria · nivel vigente de abajo":"Tertiary · active level below",
+"Barridas (la mecha pasa, el cierre vuelve)":"Sweeps (the wick passes the level, the close comes back)",
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
@@ -58556,8 +58923,6 @@ DIC.pt={
 "Cerrada a mano":"Fechada manualmente",
 "Operaciones quitadas":"Operações removidas",
 "Volver a ponerlas":"Colocar de volta",
-"Promedio total":"Média total",
-"(ganadas y perdidas)":"(ganhas e perdidas)",
 "Promedio de las ganadas":"Média das ganhas",
 "Mis casas":"Minhas corretoras",
 "Se ve solo lo de §. Todo el programa cambia con esta casa.":"Mostrando só o que está em §. Todo o programa muda para esta corretora.",
@@ -60836,6 +61201,95 @@ DIC.pt={
 "Esas monedas no aparecen en las fuentes. Puede escribir su precio a mano.":"Essas moedas não aparecem nas fontes. Pode escrever o preço delas à mão.",
 "Arriba están todas sus compras. La fila de abajo es solo lo que le queda después de sus ventas: # @ por $# que da un precio promedio de":"Acima estão todas as suas compras. A linha de baixo é só o que sobrou depois das suas vendas: # @ por $# que dá um preço médio de",
 "Se contaron # de # (no tenía más registradas).":"Foram contadas # de # (não havia mais registradas).",
+/* v86 · estructura de mercado (BOS / CHoCH) */
+"Estructura":"Estrutura",
+"Estructura de mercado (BOS / CHoCH)":"Estrutura de mercado (BOS / CHoCH)",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Es una herramienta de lectura: no da señales de compra ni de venta.":"Mostra onde a tendência continua (BOS: o fechamento rompe um swing a favor) e onde muda (CHoCH: rompe-o contra). Os períodos maiores são desenhados mais grossos e com o seu nome. Os níveis ainda não rompidos aparecem pontilhados e o preço fica na escala da direita. Dentro do mesmo período também dá para mostrar os impulsos e recuos menores («Secundária» e «Terciária»). Um swing só aparece N velas depois de se formar e nada é repintado. É uma ferramenta de leitura: não dá sinais de compra nem de venda.",
+"Dibujar también el temporal de 1 día":"Desenhar também o período: 1 dia",
+"Largo del swing (N) · 1 día":"Comprimento do swing (N) · 1 dia",
+"Dibujar también el temporal de 4 horas":"Desenhar também o período: 4 horas",
+"Largo del swing (N) · 4 horas":"Comprimento do swing (N) · 4 horas",
+"Dibujar también el temporal de 1 hora":"Desenhar também o período: 1 hora",
+"Largo del swing (N) · 1 hora":"Comprimento do swing (N) · 1 hora",
+"Dibujar también el temporal de 15 minutos":"Desenhar também o período: 15 minutos",
+"Largo del swing (N) · 15 minutos":"Comprimento do swing (N) · 15 minutos",
+"Largo del swing (N) · temporal de la gráfica":"Comprimento do swing (N) · período do gráfico",
+"Largo del swing (N) secundario":"Comprimento do swing (N) · secundária",
+"Largo del swing (N) terciario":"Comprimento do swing (N) · terciária",
+"Temporales (fractalidad)":"Períodos (fractalidade)",
+"Solo se dibuja si es más grande que el temporal de la gráfica.":"Só é desenhado se for maior que o período do gráfico.",
+"Un swing alto es la vela cuyo máximo supera al de las N velas de cada lado; se confirma N velas después. Más N = menos líneas.":"Um swing de alta é a vela cuja máxima supera a das N velas de cada lado; é confirmado N velas depois. Mais N = menos linhas.",
+"Método":"Método",
+"Simétrico: N velas a cada lado":"Simétrico: N velas de cada lado",
+"Solo derecha (estilo LuxAlgo)":"Só direita (estilo LuxAlgo)",
+"Cómo se detecta el swing":"Como o swing é detectado",
+"Se confirma con":"Confirma-se com",
+"Cierre de la vela":"Fechamento da vela",
+"Mecha (basta tocar)":"Pavio (basta tocar)",
+"Cuándo cuenta una ruptura":"Quando um rompimento conta",
+"Margen extra":"Folga extra",
+"% del precio":"% do preço",
+"Margen en % del precio":"Folga em % do preço",
+"Margen en × ATR":"Folga em × ATR",
+"Cuerpo mínimo de la vela que rompe (%)":"Corpo mínimo da vela que rompe (%)",
+"0 = sin filtro. Con 60 solo cuenta una vela con cuerpo de al menos el 60 % de su rango.":"0 = sem filtro. Com 60 só conta uma vela cujo corpo tenha pelo menos 60 % da sua amplitude.",
+"Nivel de referencia":"Nível de referência",
+"Último confirmado":"Último confirmado",
+"Swing protegido (el que lanzó el último máx./mín.)":"Swing protegido (o que deu origem à última máxima/mínima)",
+"Contra qué se mide el CHoCH":"Contra o que se mede o CHoCH",
+"Con «protegido», romper un swing intermedio no es CHoCH: hace falta romper el que originó el último extremo. Da bastantes menos CHoCH.":"Com «protegido», romper um swing intermediário não é CHoCH: é preciso romper o que originou o último extremo. Dá bem menos CHoCH.",
+"Fractalidad interna (impulsos y retrocesos de adentro)":"Fractalidade interna (impulsos e recuos internos)",
+"Secundaria · swings más chicos en el mismo temporal":"Secundária · swings menores no mesmo período",
+"Tiene que ser menor que el N del temporal de la gráfica para que se note distinto.":"Precisa ser menor que o N do período do gráfico para que se note a diferença.",
+"Terciaria · un nivel más adentro todavía":"Terciária · mais um nível para dentro",
+"Nombres de máximos y mínimos":"Nomes das máximas e mínimas",
+"Con palabras (máx. mayor…)":"Em palavras (topo mais alto…)",
+"Siglas (HH, HL, LH, LL)":"Siglas (HH, HL, LH, LL)",
+"Rótulos":"Rótulos",
+"Mini panel con la tendencia de cada temporal":"Mini painel com a tendência de cada período",
+"Dónde va el mini panel":"Onde fica o mini painel",
+"Arriba a la derecha":"Em cima à direita",
+"Abajo a la derecha":"Embaixo à direita",
+"Abajo a la izquierda":"Embaixo à esquerda",
+"▲ Alcista":"▲ Alta",
+"▼ Bajista":"▼ Baixa",
+"◆ Sin definir":"◆ Indefinida",
+"máx. mayor":"topo mais alto",
+"máx. menor":"topo mais baixo",
+"mín. mayor":"fundo mais alto",
+"mín. menor":"fundo mais baixo",
+"máx. igual":"topo igual",
+"mín. igual":"fundo igual",
+"Mayor":"Maior",
+"Menor":"Menor",
+"Igual":"Igual",
+"2ª BOS":"2ª BOS",
+"3ª BOS":"3ª BOS",
+"2ª CHoCH":"2ª CHoCH",
+"3ª CHoCH":"3ª CHoCH",
+"BOS alcista · línea":"BOS de alta · linha",
+"BOS alcista · rótulo":"BOS de alta · rótulo",
+"BOS bajista · línea":"BOS de baixa · linha",
+"BOS bajista · rótulo":"BOS de baixa · rótulo",
+"CHoCH alcista · línea":"CHoCH de alta · linha",
+"CHoCH alcista · rótulo":"CHoCH de alta · rótulo",
+"CHoCH bajista · línea":"CHoCH de baixa · linha",
+"CHoCH bajista · rótulo":"CHoCH de baixa · rótulo",
+"Rótulos de los máximos":"Rótulos nas máximas",
+"Rótulos de los mínimos":"Rótulos nas mínimas",
+"Puntos en los máximos":"Pontos nas máximas",
+"Puntos en los mínimos":"Pontos nas mínimas",
+"Nivel vigente de arriba (aún sin romper)":"Nível vigente acima (ainda não rompido)",
+"Nivel vigente de abajo (aún sin romper)":"Nível vigente abaixo (ainda não rompido)",
+"Secundaria · líneas":"Secundária · linhas",
+"Secundaria · rótulos":"Secundária · rótulos",
+"Secundaria · nivel vigente de arriba":"Secundária · nível vigente acima",
+"Secundaria · nivel vigente de abajo":"Secundária · nível vigente abaixo",
+"Terciaria · líneas":"Terciária · linhas",
+"Terciaria · rótulos":"Terciária · rótulos",
+"Terciaria · nivel vigente de arriba":"Terciária · nível vigente acima",
+"Terciaria · nivel vigente de abajo":"Terciária · nível vigente abaixo",
+"Barridas (la mecha pasa, el cierre vuelve)":"Varreduras (o pavio passa, o fechamento volta)",
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
@@ -65113,8 +65567,6 @@ DIC.fr={
 "Cerrada a mano":"Clôturée à la main",
 "Operaciones quitadas":"Opérations retirées",
 "Volver a ponerlas":"Les remettre",
-"Promedio total":"Moyenne totale",
-"(ganadas y perdidas)":"(gagnantes et perdantes)",
 "Promedio de las ganadas":"Moyenne des gagnantes",
 "Mis casas":"Mes plateformes",
 "Se ve solo lo de §. Todo el programa cambia con esta casa.":"Seul ce qui est sur § s'affiche. Toute l'application passe sur cette plateforme.",
@@ -67393,6 +67845,95 @@ DIC.fr={
 "Esas monedas no aparecen en las fuentes. Puede escribir su precio a mano.":"Ces monnaies n'apparaissent pas dans les sources. Vous pouvez écrire leur prix à la main.",
 "Arriba están todas sus compras. La fila de abajo es solo lo que le queda después de sus ventas: # @ por $# que da un precio promedio de":"Au-dessus se trouvent tous vos achats. La ligne du bas est seulement ce qui vous reste après vos ventes : # @ pour $# ce qui donne un prix moyen de",
 "Se contaron # de # (no tenía más registradas).":"# sur # ont été comptées (vous n'en aviez pas plus d'enregistrées).",
+/* v86 · estructura de mercado (BOS / CHoCH) */
+"Estructura":"Structure",
+"Estructura de mercado (BOS / CHoCH)":"Structure de marché (BOS / CHoCH)",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Es una herramienta de lectura: no da señales de compra ni de venta.":"Indique où la tendance continue (BOS : une clôture casse un swing dans le sens de la tendance) et où elle change (CHoCH : une clôture le casse à contre-sens). Les unités de temps supérieures sont tracées plus épaisses et portent leur nom. Les niveaux pas encore cassés sont en pointillés et leur prix figure sur l'échelle de droite. Dans la même unité de temps, on peut aussi afficher les impulsions et replis plus petits (« Secondaire » et « Tertiaire »). Un swing n'apparaît que N bougies après sa formation et rien n'est repeint. C'est un outil de lecture : il ne donne aucun signal d'achat ni de vente.",
+"Dibujar también el temporal de 1 día":"Dessiner aussi l'unité de temps : 1 jour",
+"Largo del swing (N) · 1 día":"Longueur du swing (N) · 1 jour",
+"Dibujar también el temporal de 4 horas":"Dessiner aussi l'unité de temps : 4 heures",
+"Largo del swing (N) · 4 horas":"Longueur du swing (N) · 4 heures",
+"Dibujar también el temporal de 1 hora":"Dessiner aussi l'unité de temps : 1 heure",
+"Largo del swing (N) · 1 hora":"Longueur du swing (N) · 1 heure",
+"Dibujar también el temporal de 15 minutos":"Dessiner aussi l'unité de temps : 15 minutes",
+"Largo del swing (N) · 15 minutos":"Longueur du swing (N) · 15 minutes",
+"Largo del swing (N) · temporal de la gráfica":"Longueur du swing (N) · unité de temps du graphique",
+"Largo del swing (N) secundario":"Longueur du swing (N) · secondaire",
+"Largo del swing (N) terciario":"Longueur du swing (N) · tertiaire",
+"Temporales (fractalidad)":"Unités de temps (fractalité)",
+"Solo se dibuja si es más grande que el temporal de la gráfica.":"Dessiné seulement s'il est plus grand que l'unité de temps du graphique.",
+"Un swing alto es la vela cuyo máximo supera al de las N velas de cada lado; se confirma N velas después. Más N = menos líneas.":"Un swing haut est la bougie dont le plus haut dépasse celui des N bougies de chaque côté ; il est confirmé N bougies plus tard. Plus N est grand, moins il y a de lignes.",
+"Método":"Méthode",
+"Simétrico: N velas a cada lado":"Symétrique : N bougies de chaque côté",
+"Solo derecha (estilo LuxAlgo)":"Côté droit seulement (style LuxAlgo)",
+"Cómo se detecta el swing":"Comment le swing est détecté",
+"Se confirma con":"Confirmé par",
+"Cierre de la vela":"Clôture de la bougie",
+"Mecha (basta tocar)":"Mèche (il suffit de toucher)",
+"Cuándo cuenta una ruptura":"Quand une cassure compte",
+"Margen extra":"Marge de sécurité",
+"% del precio":"% du prix",
+"Margen en % del precio":"Marge en % du prix",
+"Margen en × ATR":"Marge en × ATR",
+"Cuerpo mínimo de la vela que rompe (%)":"Corps minimum de la bougie qui casse (%)",
+"0 = sin filtro. Con 60 solo cuenta una vela con cuerpo de al menos el 60 % de su rango.":"0 = sans filtre. Avec 60, seule compte une bougie dont le corps fait au moins 60 % de son amplitude.",
+"Nivel de referencia":"Niveau de référence",
+"Último confirmado":"Dernier confirmé",
+"Swing protegido (el que lanzó el último máx./mín.)":"Swing protégé (celui qui a lancé le dernier haut/bas)",
+"Contra qué se mide el CHoCH":"Par rapport à quoi le CHoCH est mesuré",
+"Con «protegido», romper un swing intermedio no es CHoCH: hace falta romper el que originó el último extremo. Da bastantes menos CHoCH.":"Avec « protégé », casser un swing intermédiaire n'est pas un CHoCH : il faut casser celui qui a créé le dernier extrême. Cela donne nettement moins de CHoCH.",
+"Fractalidad interna (impulsos y retrocesos de adentro)":"Fractalité interne (impulsions et replis internes)",
+"Secundaria · swings más chicos en el mismo temporal":"Secondaire · swings plus petits dans la même unité de temps",
+"Tiene que ser menor que el N del temporal de la gráfica para que se note distinto.":"Il doit être inférieur au N de l'unité de temps du graphique pour que la différence se voie.",
+"Terciaria · un nivel más adentro todavía":"Tertiaire · encore un niveau plus fin",
+"Nombres de máximos y mínimos":"Noms des hauts et des bas",
+"Con palabras (máx. mayor…)":"En toutes lettres (sommet plus haut…)",
+"Siglas (HH, HL, LH, LL)":"Sigles (HH, HL, LH, LL)",
+"Rótulos":"Libellés",
+"Mini panel con la tendencia de cada temporal":"Mini-panneau avec la tendance de chaque unité de temps",
+"Dónde va el mini panel":"Emplacement du mini-panneau",
+"Arriba a la derecha":"En haut à droite",
+"Abajo a la derecha":"En bas à droite",
+"Abajo a la izquierda":"En bas à gauche",
+"▲ Alcista":"▲ Haussier",
+"▼ Bajista":"▼ Baissier",
+"◆ Sin definir":"◆ Indéfini",
+"máx. mayor":"sommet plus haut",
+"máx. menor":"sommet plus bas",
+"mín. mayor":"creux plus haut",
+"mín. menor":"creux plus bas",
+"máx. igual":"sommet égal",
+"mín. igual":"creux égal",
+"Mayor":"Supérieur",
+"Menor":"Inférieur",
+"Igual":"Égal",
+"2ª BOS":"2e BOS",
+"3ª BOS":"3e BOS",
+"2ª CHoCH":"2e CHoCH",
+"3ª CHoCH":"3e CHoCH",
+"BOS alcista · línea":"BOS haussier · ligne",
+"BOS alcista · rótulo":"BOS haussier · libellé",
+"BOS bajista · línea":"BOS baissier · ligne",
+"BOS bajista · rótulo":"BOS baissier · libellé",
+"CHoCH alcista · línea":"CHoCH haussier · ligne",
+"CHoCH alcista · rótulo":"CHoCH haussier · libellé",
+"CHoCH bajista · línea":"CHoCH baissier · ligne",
+"CHoCH bajista · rótulo":"CHoCH baissier · libellé",
+"Rótulos de los máximos":"Libellés sur les hauts",
+"Rótulos de los mínimos":"Libellés sur les bas",
+"Puntos en los máximos":"Points sur les hauts",
+"Puntos en los mínimos":"Points sur les bas",
+"Nivel vigente de arriba (aún sin romper)":"Niveau actif au-dessus (pas encore cassé)",
+"Nivel vigente de abajo (aún sin romper)":"Niveau actif en dessous (pas encore cassé)",
+"Secundaria · líneas":"Secondaire · lignes",
+"Secundaria · rótulos":"Secondaire · libellés",
+"Secundaria · nivel vigente de arriba":"Secondaire · niveau actif au-dessus",
+"Secundaria · nivel vigente de abajo":"Secondaire · niveau actif en dessous",
+"Terciaria · líneas":"Tertiaire · lignes",
+"Terciaria · rótulos":"Tertiaire · libellés",
+"Terciaria · nivel vigente de arriba":"Tertiaire · niveau actif au-dessus",
+"Terciaria · nivel vigente de abajo":"Tertiaire · niveau actif en dessous",
+"Barridas (la mecha pasa, el cierre vuelve)":"Balayages (la mèche dépasse, la clôture revient)",
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
@@ -71670,8 +72211,6 @@ DIC.de={
 "Cerrada a mano":"Manuell geschlossen",
 "Operaciones quitadas":"Entfernte Trades",
 "Volver a ponerlas":"Wieder einblenden",
-"Promedio total":"Gesamtdurchschnitt",
-"(ganadas y perdidas)":"(Gewinne und Verluste)",
 "Promedio de las ganadas":"Durchschnitt der Gewinne",
 "Mis casas":"Meine Börsen",
 "Se ve solo lo de §. Todo el programa cambia con esta casa.":"Angezeigt wird nur, was bei § liegt. Die ganze App wechselt zu dieser Börse.",
@@ -73950,6 +74489,95 @@ DIC.de={
 "Esas monedas no aparecen en las fuentes. Puede escribir su precio a mano.":"Diese Münzen sind in den Quellen nicht zu finden. Sie können ihren Preis von Hand eintragen.",
 "Arriba están todas sus compras. La fila de abajo es solo lo que le queda después de sus ventas: # @ por $# que da un precio promedio de":"Oben stehen alle Ihre Käufe. Die untere Zeile ist nur das, was nach Ihren Verkäufen übrig ist: # @ für $#, was einen Durchschnittspreis ergibt von",
 "Se contaron # de # (no tenía más registradas).":"Gezählt wurden # von # (mehr waren nicht erfasst).",
+/* v86 · estructura de mercado (BOS / CHoCH) */
+"Estructura":"Struktur",
+"Estructura de mercado (BOS / CHoCH)":"Marktstruktur (BOS / CHoCH)",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Es una herramienta de lectura: no da señales de compra ni de venta.":"Zeigt, wo der Trend sich fortsetzt (BOS: ein Schlusskurs bricht einen Swing in Trendrichtung) und wo er dreht (CHoCH: ein Schlusskurs bricht ihn gegen den Trend). Höhere Zeitrahmen werden dicker gezeichnet und tragen ihren Namen. Noch nicht gebrochene Niveaus erscheinen gepunktet, ihr Preis steht auf der rechten Skala. Innerhalb desselben Zeitrahmens lassen sich auch die kleineren Impulse und Rücksetzer anzeigen („Sekundär“ und „Tertiär“). Ein Swing erscheint erst N Kerzen nach seiner Bildung, nichts wird nachträglich neu gezeichnet. Es ist ein Lesewerkzeug: Es gibt keine Kauf- oder Verkaufssignale.",
+"Dibujar también el temporal de 1 día":"Auch den Zeitrahmen zeichnen: 1 Tag",
+"Largo del swing (N) · 1 día":"Swing-Länge (N) · 1 Tag",
+"Dibujar también el temporal de 4 horas":"Auch den Zeitrahmen zeichnen: 4 Stunden",
+"Largo del swing (N) · 4 horas":"Swing-Länge (N) · 4 Stunden",
+"Dibujar también el temporal de 1 hora":"Auch den Zeitrahmen zeichnen: 1 Stunde",
+"Largo del swing (N) · 1 hora":"Swing-Länge (N) · 1 Stunde",
+"Dibujar también el temporal de 15 minutos":"Auch den Zeitrahmen zeichnen: 15 Minuten",
+"Largo del swing (N) · 15 minutos":"Swing-Länge (N) · 15 Minuten",
+"Largo del swing (N) · temporal de la gráfica":"Swing-Länge (N) · Zeitrahmen des Charts",
+"Largo del swing (N) secundario":"Swing-Länge (N) · sekundär",
+"Largo del swing (N) terciario":"Swing-Länge (N) · tertiär",
+"Temporales (fractalidad)":"Zeitrahmen (Fraktalität)",
+"Solo se dibuja si es más grande que el temporal de la gráfica.":"Wird nur gezeichnet, wenn er größer ist als der Zeitrahmen des Charts.",
+"Un swing alto es la vela cuyo máximo supera al de las N velas de cada lado; se confirma N velas después. Más N = menos líneas.":"Ein Swing-Hoch ist die Kerze, deren Hoch über dem der N Kerzen auf jeder Seite liegt; es wird N Kerzen später bestätigt. Größeres N = weniger Linien.",
+"Método":"Methode",
+"Simétrico: N velas a cada lado":"Symmetrisch: N Kerzen auf jeder Seite",
+"Solo derecha (estilo LuxAlgo)":"Nur rechts (LuxAlgo-Stil)",
+"Cómo se detecta el swing":"Wie der Swing erkannt wird",
+"Se confirma con":"Bestätigt durch",
+"Cierre de la vela":"Schlusskurs der Kerze",
+"Mecha (basta tocar)":"Docht (Berühren genügt)",
+"Cuándo cuenta una ruptura":"Wann ein Ausbruch zählt",
+"Margen extra":"Zusätzlicher Puffer",
+"% del precio":"% des Preises",
+"Margen en % del precio":"Puffer in % des Preises",
+"Margen en × ATR":"Puffer in × ATR",
+"Cuerpo mínimo de la vela que rompe (%)":"Mindestkörper der brechenden Kerze (%)",
+"0 = sin filtro. Con 60 solo cuenta una vela con cuerpo de al menos el 60 % de su rango.":"0 = kein Filter. Bei 60 zählt nur eine Kerze, deren Körper mindestens 60 % ihrer Spanne ausmacht.",
+"Nivel de referencia":"Referenzniveau",
+"Último confirmado":"Zuletzt bestätigt",
+"Swing protegido (el que lanzó el último máx./mín.)":"Geschützter Swing (der, der das letzte Hoch/Tief ausgelöst hat)",
+"Contra qué se mide el CHoCH":"Woran der CHoCH gemessen wird",
+"Con «protegido», romper un swing intermedio no es CHoCH: hace falta romper el que originó el último extremo. Da bastantes menos CHoCH.":"Mit „geschützt“ ist der Bruch eines Zwischen-Swings kein CHoCH: Es muss der Swing gebrochen werden, der das letzte Extrem ausgelöst hat. Das ergibt deutlich weniger CHoCH.",
+"Fractalidad interna (impulsos y retrocesos de adentro)":"Interne Fraktalität (innere Impulse und Rücksetzer)",
+"Secundaria · swings más chicos en el mismo temporal":"Sekundär · kleinere Swings im selben Zeitrahmen",
+"Tiene que ser menor que el N del temporal de la gráfica para que se note distinto.":"Muss kleiner sein als das N des Chart-Zeitrahmens, damit der Unterschied sichtbar wird.",
+"Terciaria · un nivel más adentro todavía":"Tertiär · noch eine Ebene tiefer",
+"Nombres de máximos y mínimos":"Namen der Hochs und Tiefs",
+"Con palabras (máx. mayor…)":"In Worten (höheres Hoch…)",
+"Siglas (HH, HL, LH, LL)":"Kürzel (HH, HL, LH, LL)",
+"Rótulos":"Beschriftungen",
+"Mini panel con la tendencia de cada temporal":"Mini-Panel mit dem Trend jedes Zeitrahmens",
+"Dónde va el mini panel":"Wo das Mini-Panel steht",
+"Arriba a la derecha":"Oben rechts",
+"Abajo a la derecha":"Unten rechts",
+"Abajo a la izquierda":"Unten links",
+"▲ Alcista":"▲ Bullisch",
+"▼ Bajista":"▼ Bärisch",
+"◆ Sin definir":"◆ Unbestimmt",
+"máx. mayor":"höheres Hoch",
+"máx. menor":"tieferes Hoch",
+"mín. mayor":"höheres Tief",
+"mín. menor":"tieferes Tief",
+"máx. igual":"gleiches Hoch",
+"mín. igual":"gleiches Tief",
+"Mayor":"Höher",
+"Menor":"Tiefer",
+"Igual":"Gleich",
+"2ª BOS":"2. BOS",
+"3ª BOS":"3. BOS",
+"2ª CHoCH":"2. CHoCH",
+"3ª CHoCH":"3. CHoCH",
+"BOS alcista · línea":"Bullischer BOS · Linie",
+"BOS alcista · rótulo":"Bullischer BOS · Beschriftung",
+"BOS bajista · línea":"Bärischer BOS · Linie",
+"BOS bajista · rótulo":"Bärischer BOS · Beschriftung",
+"CHoCH alcista · línea":"Bullischer CHoCH · Linie",
+"CHoCH alcista · rótulo":"Bullischer CHoCH · Beschriftung",
+"CHoCH bajista · línea":"Bärischer CHoCH · Linie",
+"CHoCH bajista · rótulo":"Bärischer CHoCH · Beschriftung",
+"Rótulos de los máximos":"Beschriftungen an den Hochs",
+"Rótulos de los mínimos":"Beschriftungen an den Tiefs",
+"Puntos en los máximos":"Punkte an den Hochs",
+"Puntos en los mínimos":"Punkte an den Tiefs",
+"Nivel vigente de arriba (aún sin romper)":"Aktives Niveau darüber (noch nicht gebrochen)",
+"Nivel vigente de abajo (aún sin romper)":"Aktives Niveau darunter (noch nicht gebrochen)",
+"Secundaria · líneas":"Sekundär · Linien",
+"Secundaria · rótulos":"Sekundär · Beschriftungen",
+"Secundaria · nivel vigente de arriba":"Sekundär · aktives Niveau darüber",
+"Secundaria · nivel vigente de abajo":"Sekundär · aktives Niveau darunter",
+"Terciaria · líneas":"Tertiär · Linien",
+"Terciaria · rótulos":"Tertiär · Beschriftungen",
+"Terciaria · nivel vigente de arriba":"Tertiär · aktives Niveau darüber",
+"Terciaria · nivel vigente de abajo":"Tertiär · aktives Niveau darunter",
+"Barridas (la mecha pasa, el cierre vuelve)":"Sweeps (der Docht geht darüber, der Schlusskurs kehrt zurück)",
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
@@ -78227,8 +78855,6 @@ DIC.it={
 "Cerrada a mano":"Chiusa a mano",
 "Operaciones quitadas":"Operazioni tolte",
 "Volver a ponerlas":"Rimettile",
-"Promedio total":"Media totale",
-"(ganadas y perdidas)":"(vinte e perse)",
 "Promedio de las ganadas":"Media delle vinte",
 "Mis casas":"Le mie piattaforme",
 "Se ve solo lo de §. Todo el programa cambia con esta casa.":"Si vede solo ciò che è su §. Tutta l'app passa a questa piattaforma.",
@@ -80507,6 +81133,95 @@ DIC.it={
 "Esas monedas no aparecen en las fuentes. Puede escribir su precio a mano.":"Quelle monete non compaiono nelle fonti. Può scrivere il loro prezzo a mano.",
 "Arriba están todas sus compras. La fila de abajo es solo lo que le queda después de sus ventas: # @ por $# que da un precio promedio de":"Sopra ci sono tutti i suoi acquisti. La riga in basso è solo quello che le resta dopo le sue vendite: # @ per $# che dà un prezzo medio di",
 "Se contaron # de # (no tenía más registradas).":"Sono state conteggiate # su # (non ne aveva altre registrate).",
+/* v86 · estructura de mercado (BOS / CHoCH) */
+"Estructura":"Struttura",
+"Estructura de mercado (BOS / CHoCH)":"Struttura di mercato (BOS / CHoCH)",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Es una herramienta de lectura: no da señales de compra ni de venta.":"Mostra dove il trend prosegue (BOS: una chiusura rompe uno swing nella direzione del trend) e dove cambia (CHoCH: lo rompe contro il trend). I timeframe maggiori sono disegnati più spessi e con il loro nome. I livelli non ancora rotti compaiono a puntini e il loro prezzo resta sulla scala di destra. Dentro lo stesso timeframe si possono mostrare anche gli impulsi e i ritracciamenti più piccoli («Secondaria» e «Terziaria»). Uno swing compare solo N candele dopo essersi formato e nulla viene ridisegnato. È uno strumento di lettura: non dà segnali di acquisto né di vendita.",
+"Dibujar también el temporal de 1 día":"Disegna anche il timeframe: 1 giorno",
+"Largo del swing (N) · 1 día":"Lunghezza dello swing (N) · 1 giorno",
+"Dibujar también el temporal de 4 horas":"Disegna anche il timeframe: 4 ore",
+"Largo del swing (N) · 4 horas":"Lunghezza dello swing (N) · 4 ore",
+"Dibujar también el temporal de 1 hora":"Disegna anche il timeframe: 1 ora",
+"Largo del swing (N) · 1 hora":"Lunghezza dello swing (N) · 1 ora",
+"Dibujar también el temporal de 15 minutos":"Disegna anche il timeframe: 15 minuti",
+"Largo del swing (N) · 15 minutos":"Lunghezza dello swing (N) · 15 minuti",
+"Largo del swing (N) · temporal de la gráfica":"Lunghezza dello swing (N) · timeframe del grafico",
+"Largo del swing (N) secundario":"Lunghezza dello swing (N) · secondaria",
+"Largo del swing (N) terciario":"Lunghezza dello swing (N) · terziaria",
+"Temporales (fractalidad)":"Timeframe (frattalità)",
+"Solo se dibuja si es más grande que el temporal de la gráfica.":"Viene disegnato solo se è più grande del timeframe del grafico.",
+"Un swing alto es la vela cuyo máximo supera al de las N velas de cada lado; se confirma N velas después. Más N = menos líneas.":"Uno swing alto è la candela il cui massimo supera quello delle N candele per lato; viene confermato N candele dopo. Più N = meno linee.",
+"Método":"Metodo",
+"Simétrico: N velas a cada lado":"Simmetrico: N candele per lato",
+"Solo derecha (estilo LuxAlgo)":"Solo destra (stile LuxAlgo)",
+"Cómo se detecta el swing":"Come viene rilevato lo swing",
+"Se confirma con":"Si conferma con",
+"Cierre de la vela":"Chiusura della candela",
+"Mecha (basta tocar)":"Ombra (basta toccare)",
+"Cuándo cuenta una ruptura":"Quando conta una rottura",
+"Margen extra":"Margine di tolleranza",
+"% del precio":"% del prezzo",
+"Margen en % del precio":"Margine in % del prezzo",
+"Margen en × ATR":"Margine in × ATR",
+"Cuerpo mínimo de la vela que rompe (%)":"Corpo minimo della candela che rompe (%)",
+"0 = sin filtro. Con 60 solo cuenta una vela con cuerpo de al menos el 60 % de su rango.":"0 = nessun filtro. Con 60 conta solo una candela con corpo di almeno il 60 % del suo range.",
+"Nivel de referencia":"Livello di riferimento",
+"Último confirmado":"Ultimo confermato",
+"Swing protegido (el que lanzó el último máx./mín.)":"Swing protetto (quello che ha originato l'ultimo massimo/minimo)",
+"Contra qué se mide el CHoCH":"Rispetto a cosa si misura il CHoCH",
+"Con «protegido», romper un swing intermedio no es CHoCH: hace falta romper el que originó el último extremo. Da bastantes menos CHoCH.":"Con «protetto», rompere uno swing intermedio non è un CHoCH: bisogna rompere quello che ha originato l'ultimo estremo. Dà molti meno CHoCH.",
+"Fractalidad interna (impulsos y retrocesos de adentro)":"Frattalità interna (impulsi e ritracciamenti interni)",
+"Secundaria · swings más chicos en el mismo temporal":"Secondaria · swing più piccoli nello stesso timeframe",
+"Tiene que ser menor que el N del temporal de la gráfica para que se note distinto.":"Deve essere minore dell'N del timeframe del grafico perché si noti la differenza.",
+"Terciaria · un nivel más adentro todavía":"Terziaria · ancora un livello più dentro",
+"Nombres de máximos y mínimos":"Nomi di massimi e minimi",
+"Con palabras (máx. mayor…)":"A parole (massimo più alto…)",
+"Siglas (HH, HL, LH, LL)":"Sigle (HH, HL, LH, LL)",
+"Rótulos":"Etichette",
+"Mini panel con la tendencia de cada temporal":"Mini pannello con il trend di ogni timeframe",
+"Dónde va el mini panel":"Dove va il mini pannello",
+"Arriba a la derecha":"In alto a destra",
+"Abajo a la derecha":"In basso a destra",
+"Abajo a la izquierda":"In basso a sinistra",
+"▲ Alcista":"▲ Rialzista",
+"▼ Bajista":"▼ Ribassista",
+"◆ Sin definir":"◆ Non definito",
+"máx. mayor":"massimo più alto",
+"máx. menor":"massimo più basso",
+"mín. mayor":"minimo più alto",
+"mín. menor":"minimo più basso",
+"máx. igual":"massimo uguale",
+"mín. igual":"minimo uguale",
+"Mayor":"Più alto",
+"Menor":"Più basso",
+"Igual":"Uguale",
+"2ª BOS":"2ª BOS",
+"3ª BOS":"3ª BOS",
+"2ª CHoCH":"2ª CHoCH",
+"3ª CHoCH":"3ª CHoCH",
+"BOS alcista · línea":"BOS rialzista · linea",
+"BOS alcista · rótulo":"BOS rialzista · etichetta",
+"BOS bajista · línea":"BOS ribassista · linea",
+"BOS bajista · rótulo":"BOS ribassista · etichetta",
+"CHoCH alcista · línea":"CHoCH rialzista · linea",
+"CHoCH alcista · rótulo":"CHoCH rialzista · etichetta",
+"CHoCH bajista · línea":"CHoCH ribassista · linea",
+"CHoCH bajista · rótulo":"CHoCH ribassista · etichetta",
+"Rótulos de los máximos":"Etichette sui massimi",
+"Rótulos de los mínimos":"Etichette sui minimi",
+"Puntos en los máximos":"Punti sui massimi",
+"Puntos en los mínimos":"Punti sui minimi",
+"Nivel vigente de arriba (aún sin romper)":"Livello attivo sopra (non ancora rotto)",
+"Nivel vigente de abajo (aún sin romper)":"Livello attivo sotto (non ancora rotto)",
+"Secundaria · líneas":"Secondaria · linee",
+"Secundaria · rótulos":"Secondaria · etichette",
+"Secundaria · nivel vigente de arriba":"Secondaria · livello attivo sopra",
+"Secundaria · nivel vigente de abajo":"Secondaria · livello attivo sotto",
+"Terciaria · líneas":"Terziaria · linee",
+"Terciaria · rótulos":"Terziaria · etichette",
+"Terciaria · nivel vigente de arriba":"Terziaria · livello attivo sopra",
+"Terciaria · nivel vigente de abajo":"Terziaria · livello attivo sotto",
+"Barridas (la mecha pasa, el cierre vuelve)":"Sweep (l'ombra supera il livello, la chiusura rientra)",
 };
 /* NEDERLANDS · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.nl={
@@ -84774,8 +85489,6 @@ DIC.nl={
 "Cerrada a mano":"Handmatig gesloten",
 "Operaciones quitadas":"Verwijderde transacties",
 "Volver a ponerlas":"Terugzetten",
-"Promedio total":"Totaal gemiddelde",
-"(ganadas y perdidas)":"(winst en verlies)",
 "Promedio de las ganadas":"Gemiddelde van de winsten",
 "Mis casas":"Mijn exchanges",
 "Se ve solo lo de §. Todo el programa cambia con esta casa.":"Alleen wat bij § staat is zichtbaar. De hele app schakelt naar deze exchange.",
@@ -87340,6 +88053,95 @@ DIC.nl={
 "Esas monedas no aparecen en las fuentes. Puede escribir su precio a mano.":"Die munten staan niet in de bronnen. U kunt hun prijs zelf invullen.",
 "Arriba están todas sus compras. La fila de abajo es solo lo que le queda después de sus ventas: # @ por $# que da un precio promedio de":"Hierboven staan al uw aankopen. De onderste rij is alleen wat u na uw verkopen nog overhoudt: # @ voor $#, wat een gemiddelde prijs geeft van",
 "Se contaron # de # (no tenía más registradas).":"Er zijn # van # geteld (u had er niet meer vastgelegd).",
+/* v86 · estructura de mercado (BOS / CHoCH) */
+"Estructura":"Structuur",
+"Estructura de mercado (BOS / CHoCH)":"Marktstructuur (BOS / CHoCH)",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Es una herramienta de lectura: no da señales de compra ni de venta.":"Laat zien waar de trend doorgaat (BOS: een slotkoers breekt een swing in de richting van de trend) en waar hij omslaat (CHoCH: een slotkoers breekt hem tegen de trend in). Hogere tijdframes worden dikker getekend en dragen hun naam. Niveaus die nog niet zijn doorbroken zijn gestippeld en hun prijs staat op de rechterschaal. Binnen hetzelfde tijdframe kun je ook de kleinere impulsen en terugvallen tonen («Secundair» en «Tertiair»). Een swing verschijnt pas N kaarsen nadat hij zich heeft gevormd en er wordt niets herschilderd. Het is een leeshulpmiddel: het geeft geen koop- of verkoopsignalen.",
+"Dibujar también el temporal de 1 día":"Teken ook het tijdframe: 1 dag",
+"Largo del swing (N) · 1 día":"Swing-lengte (N) · 1 dag",
+"Dibujar también el temporal de 4 horas":"Teken ook het tijdframe: 4 uur",
+"Largo del swing (N) · 4 horas":"Swing-lengte (N) · 4 uur",
+"Dibujar también el temporal de 1 hora":"Teken ook het tijdframe: 1 uur",
+"Largo del swing (N) · 1 hora":"Swing-lengte (N) · 1 uur",
+"Dibujar también el temporal de 15 minutos":"Teken ook het tijdframe: 15 minuten",
+"Largo del swing (N) · 15 minutos":"Swing-lengte (N) · 15 minuten",
+"Largo del swing (N) · temporal de la gráfica":"Swing-lengte (N) · tijdframe van de grafiek",
+"Largo del swing (N) secundario":"Swing-lengte (N) · secundair",
+"Largo del swing (N) terciario":"Swing-lengte (N) · tertiair",
+"Temporales (fractalidad)":"Tijdframes (fractaliteit)",
+"Solo se dibuja si es más grande que el temporal de la gráfica.":"Wordt alleen getekend als het groter is dan het tijdframe van de grafiek.",
+"Un swing alto es la vela cuyo máximo supera al de las N velas de cada lado; se confirma N velas después. Más N = menos líneas.":"Een swinghoog is de kaars waarvan het hoogtepunt boven dat van de N kaarsen aan elke kant ligt; het wordt N kaarsen later bevestigd. Grotere N = minder lijnen.",
+"Método":"Methode",
+"Simétrico: N velas a cada lado":"Symmetrisch: N kaarsen aan elke kant",
+"Solo derecha (estilo LuxAlgo)":"Alleen rechts (LuxAlgo-stijl)",
+"Cómo se detecta el swing":"Hoe de swing wordt gedetecteerd",
+"Se confirma con":"Bevestigd door",
+"Cierre de la vela":"Slotkoers van de kaars",
+"Mecha (basta tocar)":"Lont (aanraken is genoeg)",
+"Cuándo cuenta una ruptura":"Wanneer een uitbraak telt",
+"Margen extra":"Extra buffer",
+"% del precio":"% van de prijs",
+"Margen en % del precio":"Buffer in % van de prijs",
+"Margen en × ATR":"Buffer in × ATR",
+"Cuerpo mínimo de la vela que rompe (%)":"Minimaal lichaam van de doorbrekende kaars (%)",
+"0 = sin filtro. Con 60 solo cuenta una vela con cuerpo de al menos el 60 % de su rango.":"0 = geen filter. Bij 60 telt alleen een kaars waarvan het lichaam minstens 60 % van de range is.",
+"Nivel de referencia":"Referentieniveau",
+"Último confirmado":"Laatst bevestigd",
+"Swing protegido (el que lanzó el último máx./mín.)":"Beschermde swing (die het laatste hoog/laag veroorzaakte)",
+"Contra qué se mide el CHoCH":"Waartegen de CHoCH wordt gemeten",
+"Con «protegido», romper un swing intermedio no es CHoCH: hace falta romper el que originó el último extremo. Da bastantes menos CHoCH.":"Bij «beschermd» is het breken van een tussenliggende swing geen CHoCH: je moet de swing breken die het laatste extreem veroorzaakte. Dat geeft aanzienlijk minder CHoCH.",
+"Fractalidad interna (impulsos y retrocesos de adentro)":"Interne fractaliteit (innerlijke impulsen en terugvallen)",
+"Secundaria · swings más chicos en el mismo temporal":"Secundair · kleinere swings binnen hetzelfde tijdframe",
+"Tiene que ser menor que el N del temporal de la gráfica para que se note distinto.":"Moet kleiner zijn dan de N van het tijdframe van de grafiek om verschil te zien.",
+"Terciaria · un nivel más adentro todavía":"Tertiair · nog een niveau dieper",
+"Nombres de máximos y mínimos":"Namen van toppen en dalen",
+"Con palabras (máx. mayor…)":"In woorden (hogere top…)",
+"Siglas (HH, HL, LH, LL)":"Afkortingen (HH, HL, LH, LL)",
+"Rótulos":"Labels",
+"Mini panel con la tendencia de cada temporal":"Minipaneel met de trend van elk tijdframe",
+"Dónde va el mini panel":"Waar het minipaneel staat",
+"Arriba a la derecha":"Rechtsboven",
+"Abajo a la derecha":"Rechtsonder",
+"Abajo a la izquierda":"Linksonder",
+"▲ Alcista":"▲ Bullish",
+"▼ Bajista":"▼ Bearish",
+"◆ Sin definir":"◆ Onbepaald",
+"máx. mayor":"hogere top",
+"máx. menor":"lagere top",
+"mín. mayor":"hoger dal",
+"mín. menor":"lager dal",
+"máx. igual":"gelijke top",
+"mín. igual":"gelijk dal",
+"Mayor":"Hoger",
+"Menor":"Lager",
+"Igual":"Gelijk",
+"2ª BOS":"2e BOS",
+"3ª BOS":"3e BOS",
+"2ª CHoCH":"2e CHoCH",
+"3ª CHoCH":"3e CHoCH",
+"BOS alcista · línea":"Bullish BOS · lijn",
+"BOS alcista · rótulo":"Bullish BOS · label",
+"BOS bajista · línea":"Bearish BOS · lijn",
+"BOS bajista · rótulo":"Bearish BOS · label",
+"CHoCH alcista · línea":"Bullish CHoCH · lijn",
+"CHoCH alcista · rótulo":"Bullish CHoCH · label",
+"CHoCH bajista · línea":"Bearish CHoCH · lijn",
+"CHoCH bajista · rótulo":"Bearish CHoCH · label",
+"Rótulos de los máximos":"Labels op de toppen",
+"Rótulos de los mínimos":"Labels op de dalen",
+"Puntos en los máximos":"Stippen op de toppen",
+"Puntos en los mínimos":"Stippen op de dalen",
+"Nivel vigente de arriba (aún sin romper)":"Actief niveau erboven (nog niet doorbroken)",
+"Nivel vigente de abajo (aún sin romper)":"Actief niveau eronder (nog niet doorbroken)",
+"Secundaria · líneas":"Secundair · lijnen",
+"Secundaria · rótulos":"Secundair · labels",
+"Secundaria · nivel vigente de arriba":"Secundair · actief niveau erboven",
+"Secundaria · nivel vigente de abajo":"Secundair · actief niveau eronder",
+"Terciaria · líneas":"Tertiair · lijnen",
+"Terciaria · rótulos":"Tertiair · labels",
+"Terciaria · nivel vigente de arriba":"Tertiair · actief niveau erboven",
+"Terciaria · nivel vigente de abajo":"Tertiair · actief niveau eronder",
+"Barridas (la mecha pasa, el cierre vuelve)":"Sweeps (de lont gaat erdoorheen, de slotkoers komt terug)",
 };
 /* POLSKI · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.pl={
@@ -91607,8 +92409,6 @@ DIC.pl={
 "Cerrada a mano":"Zamknięta ręcznie",
 "Operaciones quitadas":"Usunięte transakcje",
 "Volver a ponerlas":"Przywróć",
-"Promedio total":"Średnia łączna",
-"(ganadas y perdidas)":"(wygrane i przegrane)",
 "Promedio de las ganadas":"Średnia z wygranych",
 "Mis casas":"Moje giełdy",
 "Se ve solo lo de §. Todo el programa cambia con esta casa.":"Widoczne jest tylko to, co jest na §. Cała aplikacja przełącza się na tę giełdę.",
@@ -94173,6 +94973,95 @@ DIC.pl={
 "Esas monedas no aparecen en las fuentes. Puede escribir su precio a mano.":"Tych monet nie ma w źródłach. Możesz wpisać ich cenę ręcznie.",
 "Arriba están todas sus compras. La fila de abajo es solo lo que le queda después de sus ventas: # @ por $# que da un precio promedio de":"Powyżej są wszystkie zakupy. Dolny wiersz to tylko to, co zostało po sprzedażach: # @ za $#, co daje średnią cenę",
 "Se contaron # de # (no tenía más registradas).":"Policzono # z # (więcej nie było zapisanych).",
+/* v86 · estructura de mercado (BOS / CHoCH) */
+"Estructura":"Struktura",
+"Estructura de mercado (BOS / CHoCH)":"Struktura rynku (BOS / CHoCH)",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Es una herramienta de lectura: no da señales de compra ni de venta.":"Pokazuje, gdzie trend trwa (BOS: zamknięcie przełamuje swing zgodnie z trendem), a gdzie się zmienia (CHoCH: zamknięcie przełamuje go wbrew trendowi). Wyższe interwały są rysowane grubiej i opisane nazwą. Poziomy jeszcze nieprzełamane są kropkowane, a ich cena widnieje na skali po prawej. W obrębie tego samego interwału można też pokazać mniejsze impulsy i korekty („Drugorzędna” i „Trzeciorzędna”). Swing pojawia się dopiero N świec po uformowaniu i nic nie jest przerysowywane. To narzędzie do czytania wykresu: nie daje sygnałów kupna ani sprzedaży.",
+"Dibujar también el temporal de 1 día":"Rysuj także interwał: 1 dzień",
+"Largo del swing (N) · 1 día":"Długość swingu (N) · 1 dzień",
+"Dibujar también el temporal de 4 horas":"Rysuj także interwał: 4 godziny",
+"Largo del swing (N) · 4 horas":"Długość swingu (N) · 4 godziny",
+"Dibujar también el temporal de 1 hora":"Rysuj także interwał: 1 godzina",
+"Largo del swing (N) · 1 hora":"Długość swingu (N) · 1 godzina",
+"Dibujar también el temporal de 15 minutos":"Rysuj także interwał: 15 minut",
+"Largo del swing (N) · 15 minutos":"Długość swingu (N) · 15 minut",
+"Largo del swing (N) · temporal de la gráfica":"Długość swingu (N) · interwał wykresu",
+"Largo del swing (N) secundario":"Długość swingu (N) · drugorzędna",
+"Largo del swing (N) terciario":"Długość swingu (N) · trzeciorzędna",
+"Temporales (fractalidad)":"Interwały (fraktalność)",
+"Solo se dibuja si es más grande que el temporal de la gráfica.":"Rysowany tylko wtedy, gdy jest większy niż interwał wykresu.",
+"Un swing alto es la vela cuyo máximo supera al de las N velas de cada lado; se confirma N velas después. Más N = menos líneas.":"Swing szczytowy to świeca, której maksimum przewyższa maksima N świec z każdej strony; potwierdza się N świec później. Większe N = mniej linii.",
+"Método":"Metoda",
+"Simétrico: N velas a cada lado":"Symetryczny: N świec z każdej strony",
+"Solo derecha (estilo LuxAlgo)":"Tylko prawa strona (styl LuxAlgo)",
+"Cómo se detecta el swing":"Jak wykrywany jest swing",
+"Se confirma con":"Potwierdza",
+"Cierre de la vela":"Zamknięcie świecy",
+"Mecha (basta tocar)":"Knot (wystarczy dotknąć)",
+"Cuándo cuenta una ruptura":"Kiedy wybicie się liczy",
+"Margen extra":"Dodatkowy bufor",
+"% del precio":"% ceny",
+"Margen en % del precio":"Bufor w % ceny",
+"Margen en × ATR":"Bufor w × ATR",
+"Cuerpo mínimo de la vela que rompe (%)":"Minimalny korpus świecy przełamującej (%)",
+"0 = sin filtro. Con 60 solo cuenta una vela con cuerpo de al menos el 60 % de su rango.":"0 = bez filtra. Przy 60 liczy się tylko świeca, której korpus stanowi co najmniej 60 % jej zakresu.",
+"Nivel de referencia":"Poziom odniesienia",
+"Último confirmado":"Ostatni potwierdzony",
+"Swing protegido (el que lanzó el último máx./mín.)":"Chroniony swing (ten, który zapoczątkował ostatni szczyt/dołek)",
+"Contra qué se mide el CHoCH":"Względem czego mierzone jest CHoCH",
+"Con «protegido», romper un swing intermedio no es CHoCH: hace falta romper el que originó el último extremo. Da bastantes menos CHoCH.":"Przy opcji «chroniony» przełamanie pośredniego swingu nie jest CHoCH: trzeba przełamać ten, który dał początek ostatniemu ekstremum. Daje to wyraźnie mniej CHoCH.",
+"Fractalidad interna (impulsos y retrocesos de adentro)":"Fraktalność wewnętrzna (wewnętrzne impulsy i korekty)",
+"Secundaria · swings más chicos en el mismo temporal":"Drugorzędna · mniejsze swingi w tym samym interwale",
+"Tiene que ser menor que el N del temporal de la gráfica para que se note distinto.":"Musi być mniejsze niż N interwału wykresu, żeby było widać różnicę.",
+"Terciaria · un nivel más adentro todavía":"Trzeciorzędna · jeszcze poziom głębiej",
+"Nombres de máximos y mínimos":"Nazwy szczytów i dołków",
+"Con palabras (máx. mayor…)":"Słowami (wyższy szczyt…)",
+"Siglas (HH, HL, LH, LL)":"Skróty (HH, HL, LH, LL)",
+"Rótulos":"Etykiety",
+"Mini panel con la tendencia de cada temporal":"Mini panel z trendem każdego interwału",
+"Dónde va el mini panel":"Gdzie jest mini panel",
+"Arriba a la derecha":"Prawy górny róg",
+"Abajo a la derecha":"Prawy dolny róg",
+"Abajo a la izquierda":"Lewy dolny róg",
+"▲ Alcista":"▲ Wzrostowy",
+"▼ Bajista":"▼ Spadkowy",
+"◆ Sin definir":"◆ Nieokreślony",
+"máx. mayor":"wyższy szczyt",
+"máx. menor":"niższy szczyt",
+"mín. mayor":"wyższe dno",
+"mín. menor":"niższe dno",
+"máx. igual":"równy szczyt",
+"mín. igual":"równe dno",
+"Mayor":"Wyższy",
+"Menor":"Niższy",
+"Igual":"Równy",
+"2ª BOS":"2. BOS",
+"3ª BOS":"3. BOS",
+"2ª CHoCH":"2. CHoCH",
+"3ª CHoCH":"3. CHoCH",
+"BOS alcista · línea":"BOS wzrostowy · linia",
+"BOS alcista · rótulo":"BOS wzrostowy · etykieta",
+"BOS bajista · línea":"BOS spadkowy · linia",
+"BOS bajista · rótulo":"BOS spadkowy · etykieta",
+"CHoCH alcista · línea":"CHoCH wzrostowy · linia",
+"CHoCH alcista · rótulo":"CHoCH wzrostowy · etykieta",
+"CHoCH bajista · línea":"CHoCH spadkowy · linia",
+"CHoCH bajista · rótulo":"CHoCH spadkowy · etykieta",
+"Rótulos de los máximos":"Etykiety na szczytach",
+"Rótulos de los mínimos":"Etykiety na dołkach",
+"Puntos en los máximos":"Punkty na szczytach",
+"Puntos en los mínimos":"Punkty na dołkach",
+"Nivel vigente de arriba (aún sin romper)":"Aktywny poziom powyżej (jeszcze nie przebity)",
+"Nivel vigente de abajo (aún sin romper)":"Aktywny poziom poniżej (jeszcze nie przebity)",
+"Secundaria · líneas":"Drugorzędna · linie",
+"Secundaria · rótulos":"Drugorzędna · etykiety",
+"Secundaria · nivel vigente de arriba":"Drugorzędna · aktywny poziom powyżej",
+"Secundaria · nivel vigente de abajo":"Drugorzędna · aktywny poziom poniżej",
+"Terciaria · líneas":"Trzeciorzędna · linie",
+"Terciaria · rótulos":"Trzeciorzędna · etykiety",
+"Terciaria · nivel vigente de arriba":"Trzeciorzędna · aktywny poziom powyżej",
+"Terciaria · nivel vigente de abajo":"Trzeciorzędna · aktywny poziom poniżej",
+"Barridas (la mecha pasa, el cierre vuelve)":"Sweepy (knot przebija, zamknięcie wraca)",
 };
 /* TÜRKÇE · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.tr={
@@ -98440,8 +99329,6 @@ DIC.tr={
 "Cerrada a mano":"Elle kapatıldı",
 "Operaciones quitadas":"Kaldırılan işlemler",
 "Volver a ponerlas":"Geri koy",
-"Promedio total":"Genel ortalama",
-"(ganadas y perdidas)":"(kazanç ve kayıp)",
 "Promedio de las ganadas":"Kazançların ortalaması",
 "Mis casas":"Borsalarım",
 "Se ve solo lo de §. Todo el programa cambia con esta casa.":"Yalnızca §'deki varlıklar gösteriliyor. Tüm uygulama bu borsaya geçer.",
@@ -101006,6 +101893,95 @@ DIC.tr={
 "Esas monedas no aparecen en las fuentes. Puede escribir su precio a mano.":"O coinler kaynaklarda görünmüyor. Fiyatlarını elle yazabilirsiniz.",
 "Arriba están todas sus compras. La fila de abajo es solo lo que le queda después de sus ventas: # @ por $# que da un precio promedio de":"Yukarıda tüm alımlarınız var. Alttaki satır, satışlarınızdan sonra elinizde kalan kadarıdır: # @, $# karşılığında; buna göre ortalama fiyat:",
 "Se contaron # de # (no tenía más registradas).":"Sayılan: # / # (daha fazlası kayıtlı değildi).",
+/* v86 · estructura de mercado (BOS / CHoCH) */
+"Estructura":"Yapı",
+"Estructura de mercado (BOS / CHoCH)":"Piyasa yapısı (BOS / CHoCH)",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Es una herramienta de lectura: no da señales de compra ni de venta.":"Trendin nerede sürdüğünü (BOS: bir kapanış, bir swing'i trend yönünde kırar) ve nerede değiştiğini (CHoCH: kapanış onu trende karşı yönde kırar) gösterir. Daha büyük zaman dilimleri daha kalın çizilir ve adlarını taşır. Henüz kırılmamış seviyeler noktalı görünür; fiyatları sağdaki ölçekte yer alır. Aynı zaman diliminde daha küçük itkileri ve geri çekilmeleri de gösterebilirsiniz («İkincil» ve «Üçüncül»). Bir swing oluştuktan N mum sonra görünür ve hiçbir şey yeniden çizilmez. Bu bir okuma aracıdır: alım veya satım sinyali vermez.",
+"Dibujar también el temporal de 1 día":"Ayrıca şu zaman dilimini çiz: 1 gün",
+"Largo del swing (N) · 1 día":"Swing uzunluğu (N) · 1 gün",
+"Dibujar también el temporal de 4 horas":"Ayrıca şu zaman dilimini çiz: 4 saat",
+"Largo del swing (N) · 4 horas":"Swing uzunluğu (N) · 4 saat",
+"Dibujar también el temporal de 1 hora":"Ayrıca şu zaman dilimini çiz: 1 saat",
+"Largo del swing (N) · 1 hora":"Swing uzunluğu (N) · 1 saat",
+"Dibujar también el temporal de 15 minutos":"Ayrıca şu zaman dilimini çiz: 15 dakika",
+"Largo del swing (N) · 15 minutos":"Swing uzunluğu (N) · 15 dakika",
+"Largo del swing (N) · temporal de la gráfica":"Swing uzunluğu (N) · grafiğin zaman dilimi",
+"Largo del swing (N) secundario":"Swing uzunluğu (N) · İkincil",
+"Largo del swing (N) terciario":"Swing uzunluğu (N) · Üçüncül",
+"Temporales (fractalidad)":"Zaman dilimleri (fraktallık)",
+"Solo se dibuja si es más grande que el temporal de la gráfica.":"Yalnızca grafiğin zaman diliminden büyükse çizilir.",
+"Un swing alto es la vela cuyo máximo supera al de las N velas de cada lado; se confirma N velas después. Más N = menos líneas.":"Swing tepesi, yükseği her iki yandaki N mumun yükseğinden büyük olan mumdur; N mum sonra onaylanır. N büyüdükçe çizgiler azalır.",
+"Método":"Yöntem",
+"Simétrico: N velas a cada lado":"Simetrik: her iki yanda N mum",
+"Solo derecha (estilo LuxAlgo)":"Yalnızca sağ taraf (LuxAlgo tarzı)",
+"Cómo se detecta el swing":"Swing nasıl tespit edilir",
+"Se confirma con":"Onay şekli",
+"Cierre de la vela":"Mum kapanışı",
+"Mecha (basta tocar)":"Fitil (dokunması yeter)",
+"Cuándo cuenta una ruptura":"Kırılım ne zaman sayılır",
+"Margen extra":"Ek tolerans",
+"% del precio":"Fiyatın %'si",
+"Margen en % del precio":"Tolerans: fiyatın yüzdesi",
+"Margen en × ATR":"Tolerans: × ATR",
+"Cuerpo mínimo de la vela que rompe (%)":"Kıran mumun asgari gövdesi (%)",
+"0 = sin filtro. Con 60 solo cuenta una vela con cuerpo de al menos el 60 % de su rango.":"0 = filtre yok. 60'ta yalnızca gövdesi aralığının en az %60'ı olan mum sayılır.",
+"Nivel de referencia":"Referans seviyesi",
+"Último confirmado":"Son onaylanan",
+"Swing protegido (el que lanzó el último máx./mín.)":"Korumalı swing (son yüksek/düşüğü başlatan)",
+"Contra qué se mide el CHoCH":"CHoCH neye göre ölçülür",
+"Con «protegido», romper un swing intermedio no es CHoCH: hace falta romper el que originó el último extremo. Da bastantes menos CHoCH.":"«Korumalı» seçiliyken ara bir swing'i kırmak CHoCH sayılmaz: son uç noktayı başlatan swing'in kırılması gerekir. Belirgin ölçüde daha az CHoCH üretir.",
+"Fractalidad interna (impulsos y retrocesos de adentro)":"İç fraktallık (içteki itkiler ve geri çekilmeler)",
+"Secundaria · swings más chicos en el mismo temporal":"İkincil · aynı zaman diliminde daha küçük swing'ler",
+"Tiene que ser menor que el N del temporal de la gráfica para que se note distinto.":"Farkın görünmesi için grafiğin zaman dilimindeki N'den küçük olmalı.",
+"Terciaria · un nivel más adentro todavía":"Üçüncül · bir kademe daha içeride",
+"Nombres de máximos y mínimos":"Tepe ve dip adları",
+"Con palabras (máx. mayor…)":"Sözcüklerle (daha yüksek tepe…)",
+"Siglas (HH, HL, LH, LL)":"Kısaltmalar (HH, HL, LH, LL)",
+"Rótulos":"Etiketler",
+"Mini panel con la tendencia de cada temporal":"Her zaman diliminin trendini gösteren mini panel",
+"Dónde va el mini panel":"Mini panel nerede olsun",
+"Arriba a la derecha":"Sağ üst",
+"Abajo a la derecha":"Sağ alt",
+"Abajo a la izquierda":"Sol alt",
+"▲ Alcista":"▲ Yükseliş",
+"▼ Bajista":"▼ Düşüş",
+"◆ Sin definir":"◆ Belirsiz",
+"máx. mayor":"daha yüksek tepe",
+"máx. menor":"daha alçak tepe",
+"mín. mayor":"daha yüksek dip",
+"mín. menor":"daha alçak dip",
+"máx. igual":"eşit tepe",
+"mín. igual":"eşit dip",
+"Mayor":"Yüksek",
+"Menor":"Alçak",
+"Igual":"Eşit",
+"2ª BOS":"2. BOS",
+"3ª BOS":"3. BOS",
+"2ª CHoCH":"2. CHoCH",
+"3ª CHoCH":"3. CHoCH",
+"BOS alcista · línea":"Yükseliş BOS · çizgi",
+"BOS alcista · rótulo":"Yükseliş BOS · etiket",
+"BOS bajista · línea":"Düşüş BOS · çizgi",
+"BOS bajista · rótulo":"Düşüş BOS · etiket",
+"CHoCH alcista · línea":"Yükseliş CHoCH · çizgi",
+"CHoCH alcista · rótulo":"Yükseliş CHoCH · etiket",
+"CHoCH bajista · línea":"Düşüş CHoCH · çizgi",
+"CHoCH bajista · rótulo":"Düşüş CHoCH · etiket",
+"Rótulos de los máximos":"Tepelerdeki etiketler",
+"Rótulos de los mínimos":"Diplerdeki etiketler",
+"Puntos en los máximos":"Tepelerdeki noktalar",
+"Puntos en los mínimos":"Diplerdeki noktalar",
+"Nivel vigente de arriba (aún sin romper)":"Geçerli seviye (üstte) (henüz kırılmadı)",
+"Nivel vigente de abajo (aún sin romper)":"Geçerli seviye (altta) (henüz kırılmadı)",
+"Secundaria · líneas":"İkincil · çizgiler",
+"Secundaria · rótulos":"İkincil · etiketler",
+"Secundaria · nivel vigente de arriba":"İkincil · geçerli seviye (üstte)",
+"Secundaria · nivel vigente de abajo":"İkincil · geçerli seviye (altta)",
+"Terciaria · líneas":"Üçüncül · çizgiler",
+"Terciaria · rótulos":"Üçüncül · etiketler",
+"Terciaria · nivel vigente de arriba":"Üçüncül · geçerli seviye (üstte)",
+"Terciaria · nivel vigente de abajo":"Üçüncül · geçerli seviye (altta)",
+"Barridas (la mecha pasa, el cierre vuelve)":"Süpürmeler (fitil geçer, kapanış geri döner)",
 };
 /* РУССКИЙ · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ru={
@@ -105273,8 +106249,6 @@ DIC.ru={
 "Cerrada a mano":"Закрыта вручную",
 "Operaciones quitadas":"Убранные сделки",
 "Volver a ponerlas":"Вернуть",
-"Promedio total":"Общее среднее",
-"(ganadas y perdidas)":"(прибыльные и убыточные)",
 "Promedio de las ganadas":"Среднее по прибыльным",
 "Mis casas":"Мои биржи",
 "Se ve solo lo de §. Todo el programa cambia con esta casa.":"Показано только то, что на §. Всё приложение переключается на эту биржу.",
@@ -107839,6 +108813,95 @@ DIC.ru={
 "Esas monedas no aparecen en las fuentes. Puede escribir su precio a mano.":"Этих монет нет в источниках цен. Их цену можно ввести вручную.",
 "Arriba están todas sus compras. La fila de abajo es solo lo que le queda después de sus ventas: # @ por $# que da un precio promedio de":"Выше — все ваши покупки. Нижняя строка — только то, что осталось после ваших продаж: # @ за $# что даёт среднюю цену",
 "Se contaron # de # (no tenía más registradas).":"Учтено # из # (больше не было записано).",
+/* v86 · estructura de mercado (BOS / CHoCH) */
+"Estructura":"Структура",
+"Estructura de mercado (BOS / CHoCH)":"Структура рынка (BOS / CHoCH)",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Es una herramienta de lectura: no da señales de compra ni de venta.":"Показывает, где тренд продолжается (BOS: закрытие пробивает свинг по направлению тренда) и где он меняется (CHoCH: закрытие пробивает его против тренда). Старшие таймфреймы рисуются толще и подписываются. Ещё не пробитые уровни показаны пунктиром, а их цена стоит на правой шкале. В пределах того же таймфрейма можно показать и более мелкие импульсы и откаты («Вторичная» и «Третичная»). Свинг появляется только через N свечей после формирования, и ничего не перерисовывается. Это инструмент для чтения графика: он не даёт сигналов на покупку или продажу.",
+"Dibujar también el temporal de 1 día":"Рисовать также таймфрейм: 1 день",
+"Largo del swing (N) · 1 día":"Длина свинга (N) · 1 день",
+"Dibujar también el temporal de 4 horas":"Рисовать также таймфрейм: 4 часа",
+"Largo del swing (N) · 4 horas":"Длина свинга (N) · 4 часа",
+"Dibujar también el temporal de 1 hora":"Рисовать также таймфрейм: 1 час",
+"Largo del swing (N) · 1 hora":"Длина свинга (N) · 1 час",
+"Dibujar también el temporal de 15 minutos":"Рисовать также таймфрейм: 15 минут",
+"Largo del swing (N) · 15 minutos":"Длина свинга (N) · 15 минут",
+"Largo del swing (N) · temporal de la gráfica":"Длина свинга (N) · таймфрейм графика",
+"Largo del swing (N) secundario":"Длина свинга (N) · Вторичная",
+"Largo del swing (N) terciario":"Длина свинга (N) · Третичная",
+"Temporales (fractalidad)":"Таймфреймы (фрактальность)",
+"Solo se dibuja si es más grande que el temporal de la gráfica.":"Рисуется, только если он старше таймфрейма графика.",
+"Un swing alto es la vela cuyo máximo supera al de las N velas de cada lado; se confirma N velas después. Más N = menos líneas.":"Верхний свинг — свеча, максимум которой выше максимумов N свечей с каждой стороны; подтверждается через N свечей. Больше N — меньше линий.",
+"Método":"Метод",
+"Simétrico: N velas a cada lado":"Симметричный: N свечей с каждой стороны",
+"Solo derecha (estilo LuxAlgo)":"Только справа (стиль LuxAlgo)",
+"Cómo se detecta el swing":"Как определяется свинг",
+"Se confirma con":"Подтверждается",
+"Cierre de la vela":"Закрытие свечи",
+"Mecha (basta tocar)":"Тень (достаточно коснуться)",
+"Cuándo cuenta una ruptura":"Когда пробой засчитывается",
+"Margen extra":"Дополнительный запас",
+"% del precio":"% от цены",
+"Margen en % del precio":"Запас в % от цены",
+"Margen en × ATR":"Запас в × ATR",
+"Cuerpo mínimo de la vela que rompe (%)":"Минимальное тело пробивающей свечи (%)",
+"0 = sin filtro. Con 60 solo cuenta una vela con cuerpo de al menos el 60 % de su rango.":"0 = без фильтра. При 60 засчитывается только свеча, у которой тело не меньше 60 % её диапазона.",
+"Nivel de referencia":"Опорный уровень",
+"Último confirmado":"Последний подтверждённый",
+"Swing protegido (el que lanzó el último máx./mín.)":"Защищённый свинг (тот, что породил последний макс./мин.)",
+"Contra qué se mide el CHoCH":"От чего отсчитывается CHoCH",
+"Con «protegido», romper un swing intermedio no es CHoCH: hace falta romper el que originó el último extremo. Da bastantes menos CHoCH.":"С опцией «защищённый» пробой промежуточного свинга не считается CHoCH: нужно пробить тот, что породил последний экстремум. CHoCH получается заметно меньше.",
+"Fractalidad interna (impulsos y retrocesos de adentro)":"Внутренняя фрактальность (внутренние импульсы и откаты)",
+"Secundaria · swings más chicos en el mismo temporal":"Вторичная · более мелкие свинги в том же таймфрейме",
+"Tiene que ser menor que el N del temporal de la gráfica para que se note distinto.":"Должно быть меньше N таймфрейма графика, иначе разницы не будет видно.",
+"Terciaria · un nivel más adentro todavía":"Третичная · ещё на уровень глубже",
+"Nombres de máximos y mínimos":"Названия максимумов и минимумов",
+"Con palabras (máx. mayor…)":"Словами (макс. выше…)",
+"Siglas (HH, HL, LH, LL)":"Аббревиатуры (HH, HL, LH, LL)",
+"Rótulos":"Подписи",
+"Mini panel con la tendencia de cada temporal":"Мини-панель с трендом каждого таймфрейма",
+"Dónde va el mini panel":"Где находится мини-панель",
+"Arriba a la derecha":"Вверху справа",
+"Abajo a la derecha":"Внизу справа",
+"Abajo a la izquierda":"Внизу слева",
+"▲ Alcista":"▲ Бычий",
+"▼ Bajista":"▼ Медвежий",
+"◆ Sin definir":"◆ Не определён",
+"máx. mayor":"макс. выше",
+"máx. menor":"макс. ниже",
+"mín. mayor":"мин. выше",
+"mín. menor":"мин. ниже",
+"máx. igual":"макс. равный",
+"mín. igual":"мин. равный",
+"Mayor":"Выше",
+"Menor":"Ниже",
+"Igual":"Равно",
+"2ª BOS":"2-й BOS",
+"3ª BOS":"3-й BOS",
+"2ª CHoCH":"2-й CHoCH",
+"3ª CHoCH":"3-й CHoCH",
+"BOS alcista · línea":"Бычий BOS · линия",
+"BOS alcista · rótulo":"Бычий BOS · подпись",
+"BOS bajista · línea":"Медвежий BOS · линия",
+"BOS bajista · rótulo":"Медвежий BOS · подпись",
+"CHoCH alcista · línea":"Бычий CHoCH · линия",
+"CHoCH alcista · rótulo":"Бычий CHoCH · подпись",
+"CHoCH bajista · línea":"Медвежий CHoCH · линия",
+"CHoCH bajista · rótulo":"Медвежий CHoCH · подпись",
+"Rótulos de los máximos":"Подписи на максимумах",
+"Rótulos de los mínimos":"Подписи на минимумах",
+"Puntos en los máximos":"Точки на максимумах",
+"Puntos en los mínimos":"Точки на минимумах",
+"Nivel vigente de arriba (aún sin romper)":"Действующий уровень сверху (ещё не пробит)",
+"Nivel vigente de abajo (aún sin romper)":"Действующий уровень снизу (ещё не пробит)",
+"Secundaria · líneas":"Вторичная · линии",
+"Secundaria · rótulos":"Вторичная · подписи",
+"Secundaria · nivel vigente de arriba":"Вторичная · действующий уровень сверху",
+"Secundaria · nivel vigente de abajo":"Вторичная · действующий уровень снизу",
+"Terciaria · líneas":"Третичная · линии",
+"Terciaria · rótulos":"Третичная · подписи",
+"Terciaria · nivel vigente de arriba":"Третичная · действующий уровень сверху",
+"Terciaria · nivel vigente de abajo":"Третичная · действующий уровень снизу",
+"Barridas (la mecha pasa, el cierre vuelve)":"Сбор ликвидности (тень проходит, закрытие возвращается)",
 };
 /* УКРАЇНСЬКА · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.uk={
@@ -112106,8 +113169,6 @@ DIC.uk={
 "Cerrada a mano":"Закрита вручну",
 "Operaciones quitadas":"Прибрані угоди",
 "Volver a ponerlas":"Повернути",
-"Promedio total":"Загальне середнє",
-"(ganadas y perdidas)":"(прибуткові та збиткові)",
 "Promedio de las ganadas":"Середнє по прибуткових",
 "Mis casas":"Мої біржі",
 "Se ve solo lo de §. Todo el programa cambia con esta casa.":"Показано лише те, що на §. Увесь застосунок перемикається на цю біржу.",
@@ -114672,6 +115733,95 @@ DIC.uk={
 "Esas monedas no aparecen en las fuentes. Puede escribir su precio a mano.":"Цих монет немає в джерелах цін. Їхню ціну можна ввести вручну.",
 "Arriba están todas sus compras. La fila de abajo es solo lo que le queda después de sus ventas: # @ por $# que da un precio promedio de":"Вище — усі ваші покупки. Нижній рядок — це тільки те, що залишилося після ваших продажів: # @ за $#, що дає середню ціну",
 "Se contaron # de # (no tenía más registradas).":"Враховано # з # (більше не було записано).",
+/* v86 · estructura de mercado (BOS / CHoCH) */
+"Estructura":"Структура",
+"Estructura de mercado (BOS / CHoCH)":"Структура ринку (BOS / CHoCH)",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Es una herramienta de lectura: no da señales de compra ni de venta.":"Показує, де тренд триває (BOS: закриття пробиває свінг за напрямком тренду) і де він змінюється (CHoCH: закриття пробиває його проти тренду). Старші таймфрейми малюються товщими й підписуються. Ще не пробиті рівні показано пунктиром, а їхня ціна стоїть на правій шкалі. У межах того самого таймфрейму можна показати й дрібніші імпульси та відкати («Вторинна» і «Третинна»). Свінг з'являється лише через N свічок після формування, і нічого не перемальовується. Це інструмент для читання графіка: він не дає сигналів на купівлю чи продаж.",
+"Dibujar también el temporal de 1 día":"Малювати також таймфрейм: 1 день",
+"Largo del swing (N) · 1 día":"Довжина свінга (N) · 1 день",
+"Dibujar también el temporal de 4 horas":"Малювати також таймфрейм: 4 години",
+"Largo del swing (N) · 4 horas":"Довжина свінга (N) · 4 години",
+"Dibujar también el temporal de 1 hora":"Малювати також таймфрейм: 1 година",
+"Largo del swing (N) · 1 hora":"Довжина свінга (N) · 1 година",
+"Dibujar también el temporal de 15 minutos":"Малювати також таймфрейм: 15 хвилин",
+"Largo del swing (N) · 15 minutos":"Довжина свінга (N) · 15 хвилин",
+"Largo del swing (N) · temporal de la gráfica":"Довжина свінга (N) · таймфрейм графіка",
+"Largo del swing (N) secundario":"Довжина свінга (N) · Вторинна",
+"Largo del swing (N) terciario":"Довжина свінга (N) · Третинна",
+"Temporales (fractalidad)":"Таймфрейми (фрактальність)",
+"Solo se dibuja si es más grande que el temporal de la gráfica.":"Малюється, лише якщо він старший за таймфрейм графіка.",
+"Un swing alto es la vela cuyo máximo supera al de las N velas de cada lado; se confirma N velas después. Más N = menos líneas.":"Верхній свінг — свічка, максимум якої вищий за максимуми N свічок з кожного боку; підтверджується через N свічок. Більше N — менше ліній.",
+"Método":"Метод",
+"Simétrico: N velas a cada lado":"Симетричний: N свічок з кожного боку",
+"Solo derecha (estilo LuxAlgo)":"Лише праворуч (стиль LuxAlgo)",
+"Cómo se detecta el swing":"Як визначається свінг",
+"Se confirma con":"Підтверджується",
+"Cierre de la vela":"Закриття свічки",
+"Mecha (basta tocar)":"Тінь (достатньо торкнутися)",
+"Cuándo cuenta una ruptura":"Коли пробій зараховується",
+"Margen extra":"Додатковий запас",
+"% del precio":"% від ціни",
+"Margen en % del precio":"Запас у % від ціни",
+"Margen en × ATR":"Запас у × ATR",
+"Cuerpo mínimo de la vela que rompe (%)":"Мінімальне тіло свічки, що пробиває (%)",
+"0 = sin filtro. Con 60 solo cuenta una vela con cuerpo de al menos el 60 % de su rango.":"0 = без фільтра. При 60 зараховується лише свічка, тіло якої становить не менше 60 % її діапазону.",
+"Nivel de referencia":"Опорний рівень",
+"Último confirmado":"Останній підтверджений",
+"Swing protegido (el que lanzó el último máx./mín.)":"Захищений свінг (той, що породив останній макс./мін.)",
+"Contra qué se mide el CHoCH":"Відносно чого вимірюється CHoCH",
+"Con «protegido», romper un swing intermedio no es CHoCH: hace falta romper el que originó el último extremo. Da bastantes menos CHoCH.":"З опцією «захищений» пробій проміжного свінга не вважається CHoCH: потрібно пробити той, що породив останній екстремум. CHoCH стає помітно менше.",
+"Fractalidad interna (impulsos y retrocesos de adentro)":"Внутрішня фрактальність (внутрішні імпульси та відкати)",
+"Secundaria · swings más chicos en el mismo temporal":"Вторинна · дрібніші свінги в тому самому таймфреймі",
+"Tiene que ser menor que el N del temporal de la gráfica para que se note distinto.":"Має бути меншим за N таймфрейму графіка, інакше різниці не буде видно.",
+"Terciaria · un nivel más adentro todavía":"Третинна · ще на рівень глибше",
+"Nombres de máximos y mínimos":"Назви максимумів і мінімумів",
+"Con palabras (máx. mayor…)":"Словами (макс. вище…)",
+"Siglas (HH, HL, LH, LL)":"Абревіатури (HH, HL, LH, LL)",
+"Rótulos":"Підписи",
+"Mini panel con la tendencia de cada temporal":"Міні-панель із трендом кожного таймфрейму",
+"Dónde va el mini panel":"Де розташована міні-панель",
+"Arriba a la derecha":"Угорі праворуч",
+"Abajo a la derecha":"Унизу праворуч",
+"Abajo a la izquierda":"Унизу ліворуч",
+"▲ Alcista":"▲ Бичачий",
+"▼ Bajista":"▼ Ведмежий",
+"◆ Sin definir":"◆ Не визначено",
+"máx. mayor":"макс. вище",
+"máx. menor":"макс. нижче",
+"mín. mayor":"мін. вище",
+"mín. menor":"мін. нижче",
+"máx. igual":"макс. рівний",
+"mín. igual":"мін. рівний",
+"Mayor":"Вище",
+"Menor":"Нижче",
+"Igual":"Рівно",
+"2ª BOS":"2-й BOS",
+"3ª BOS":"3-й BOS",
+"2ª CHoCH":"2-й CHoCH",
+"3ª CHoCH":"3-й CHoCH",
+"BOS alcista · línea":"Бичачий BOS · лінія",
+"BOS alcista · rótulo":"Бичачий BOS · підпис",
+"BOS bajista · línea":"Ведмежий BOS · лінія",
+"BOS bajista · rótulo":"Ведмежий BOS · підпис",
+"CHoCH alcista · línea":"Бичачий CHoCH · лінія",
+"CHoCH alcista · rótulo":"Бичачий CHoCH · підпис",
+"CHoCH bajista · línea":"Ведмежий CHoCH · лінія",
+"CHoCH bajista · rótulo":"Ведмежий CHoCH · підпис",
+"Rótulos de los máximos":"Підписи на максимумах",
+"Rótulos de los mínimos":"Підписи на мінімумах",
+"Puntos en los máximos":"Точки на максимумах",
+"Puntos en los mínimos":"Точки на мінімумах",
+"Nivel vigente de arriba (aún sin romper)":"Чинний рівень зверху (ще не пробитий)",
+"Nivel vigente de abajo (aún sin romper)":"Чинний рівень знизу (ще не пробитий)",
+"Secundaria · líneas":"Вторинна · лінії",
+"Secundaria · rótulos":"Вторинна · підписи",
+"Secundaria · nivel vigente de arriba":"Вторинна · чинний рівень зверху",
+"Secundaria · nivel vigente de abajo":"Вторинна · чинний рівень знизу",
+"Terciaria · líneas":"Третинна · лінії",
+"Terciaria · rótulos":"Третинна · підписи",
+"Terciaria · nivel vigente de arriba":"Третинна · чинний рівень зверху",
+"Terciaria · nivel vigente de abajo":"Третинна · чинний рівень знизу",
+"Barridas (la mecha pasa, el cierre vuelve)":"Збір ліквідності (тінь проходить, закриття повертається)",
 };
 /* BAHASA INDONESIA · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.id={
@@ -118939,8 +120089,6 @@ DIC.id={
 "Cerrada a mano":"Ditutup manual",
 "Operaciones quitadas":"Transaksi dihapus",
 "Volver a ponerlas":"Pasang kembali",
-"Promedio total":"Rata-rata total",
-"(ganadas y perdidas)":"(untung dan rugi)",
 "Promedio de las ganadas":"Rata-rata yang untung",
 "Mis casas":"Bursa saya",
 "Se ve solo lo de §. Todo el programa cambia con esta casa.":"Hanya yang ada di § yang ditampilkan. Seluruh aplikasi beralih ke bursa ini.",
@@ -121505,6 +122653,95 @@ DIC.id={
 "Esas monedas no aparecen en las fuentes. Puede escribir su precio a mano.":"Koin-koin itu tidak ada di sumber harga. Anda bisa menulis harganya secara manual.",
 "Arriba están todas sus compras. La fila de abajo es solo lo que le queda después de sus ventas: # @ por $# que da un precio promedio de":"Di atas adalah semua pembelian Anda. Baris paling bawah hanya sisa yang Anda miliki setelah penjualan: # @ seharga $# yang menghasilkan harga rata-rata",
 "Se contaron # de # (no tenía más registradas).":"Dihitung # dari # (tidak ada catatan lebih dari itu).",
+/* v86 · estructura de mercado (BOS / CHoCH) */
+"Estructura":"Struktur",
+"Estructura de mercado (BOS / CHoCH)":"Struktur pasar (BOS / CHoCH)",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Es una herramienta de lectura: no da señales de compra ni de venta.":"Menunjukkan di mana tren berlanjut (BOS: penutupan menembus swing searah tren) dan di mana tren berubah (CHoCH: penutupan menembusnya melawan tren). Kerangka waktu yang lebih besar digambar lebih tebal dan diberi namanya. Level yang belum ditembus tampak bertitik dan harganya ada di skala sebelah kanan. Di dalam kerangka waktu yang sama, Anda juga bisa menampilkan dorongan dan koreksi yang lebih kecil («Sekunder» dan «Tersier»). Sebuah swing baru muncul N candle setelah terbentuk dan tidak ada yang digambar ulang. Ini alat bantu membaca grafik: tidak memberi sinyal beli atau jual.",
+"Dibujar también el temporal de 1 día":"Gambar juga kerangka waktu: 1 hari",
+"Largo del swing (N) · 1 día":"Panjang swing (N) · 1 hari",
+"Dibujar también el temporal de 4 horas":"Gambar juga kerangka waktu: 4 jam",
+"Largo del swing (N) · 4 horas":"Panjang swing (N) · 4 jam",
+"Dibujar también el temporal de 1 hora":"Gambar juga kerangka waktu: 1 jam",
+"Largo del swing (N) · 1 hora":"Panjang swing (N) · 1 jam",
+"Dibujar también el temporal de 15 minutos":"Gambar juga kerangka waktu: 15 menit",
+"Largo del swing (N) · 15 minutos":"Panjang swing (N) · 15 menit",
+"Largo del swing (N) · temporal de la gráfica":"Panjang swing (N) · kerangka waktu grafik",
+"Largo del swing (N) secundario":"Panjang swing (N) · sekunder",
+"Largo del swing (N) terciario":"Panjang swing (N) · tersier",
+"Temporales (fractalidad)":"Kerangka waktu (fraktalitas)",
+"Solo se dibuja si es más grande que el temporal de la gráfica.":"Hanya digambar jika lebih besar dari kerangka waktu grafik.",
+"Un swing alto es la vela cuyo máximo supera al de las N velas de cada lado; se confirma N velas después. Más N = menos líneas.":"Swing atas adalah candle yang puncaknya melebihi N candle di kedua sisinya; dikonfirmasi N candle kemudian. N lebih besar = garis lebih sedikit.",
+"Método":"Metode",
+"Simétrico: N velas a cada lado":"Simetris: N candle di setiap sisi",
+"Solo derecha (estilo LuxAlgo)":"Hanya kanan (gaya LuxAlgo)",
+"Cómo se detecta el swing":"Cara swing dideteksi",
+"Se confirma con":"Dikonfirmasi oleh",
+"Cierre de la vela":"Penutupan candle",
+"Mecha (basta tocar)":"Sumbu (cukup menyentuh)",
+"Cuándo cuenta una ruptura":"Kapan breakout dihitung",
+"Margen extra":"Selisih tambahan",
+"% del precio":"% dari harga",
+"Margen en % del precio":"Selisih dalam % dari harga",
+"Margen en × ATR":"Selisih dalam × ATR",
+"Cuerpo mínimo de la vela que rompe (%)":"Badan minimum candle yang menembus (%)",
+"0 = sin filtro. Con 60 solo cuenta una vela con cuerpo de al menos el 60 % de su rango.":"0 = tanpa filter. Dengan 60, hanya candle dengan badan minimal 60 % dari rentangnya yang dihitung.",
+"Nivel de referencia":"Level acuan",
+"Último confirmado":"Terakhir dikonfirmasi",
+"Swing protegido (el que lanzó el último máx./mín.)":"Swing terlindungi (yang melahirkan high/low terakhir)",
+"Contra qué se mide el CHoCH":"CHoCH diukur terhadap apa",
+"Con «protegido», romper un swing intermedio no es CHoCH: hace falta romper el que originó el último extremo. Da bastantes menos CHoCH.":"Dengan «terlindungi», menembus swing perantara bukan CHoCH: harus menembus swing yang melahirkan titik ekstrem terakhir. Hasilnya CHoCH jauh lebih sedikit.",
+"Fractalidad interna (impulsos y retrocesos de adentro)":"Fraktalitas internal (dorongan dan koreksi di dalam)",
+"Secundaria · swings más chicos en el mismo temporal":"Sekunder · swing lebih kecil dalam kerangka waktu yang sama",
+"Tiene que ser menor que el N del temporal de la gráfica para que se note distinto.":"Harus lebih kecil dari N kerangka waktu grafik agar terlihat berbeda.",
+"Terciaria · un nivel más adentro todavía":"Tersier · satu tingkat lebih dalam lagi",
+"Nombres de máximos y mínimos":"Nama puncak dan lembah",
+"Con palabras (máx. mayor…)":"Dengan kata (puncak lebih tinggi…)",
+"Siglas (HH, HL, LH, LL)":"Singkatan (HH, HL, LH, LL)",
+"Rótulos":"Label",
+"Mini panel con la tendencia de cada temporal":"Panel mini dengan tren tiap kerangka waktu",
+"Dónde va el mini panel":"Posisi panel mini",
+"Arriba a la derecha":"Kanan atas",
+"Abajo a la derecha":"Kanan bawah",
+"Abajo a la izquierda":"Kiri bawah",
+"▲ Alcista":"▲ Bullish",
+"▼ Bajista":"▼ Bearish",
+"◆ Sin definir":"◆ Belum jelas",
+"máx. mayor":"puncak lebih tinggi",
+"máx. menor":"puncak lebih rendah",
+"mín. mayor":"lembah lebih tinggi",
+"mín. menor":"lembah lebih rendah",
+"máx. igual":"puncak sama",
+"mín. igual":"lembah sama",
+"Mayor":"Lebih tinggi",
+"Menor":"Lebih rendah",
+"Igual":"Sama",
+"2ª BOS":"BOS ke-2",
+"3ª BOS":"BOS ke-3",
+"2ª CHoCH":"CHoCH ke-2",
+"3ª CHoCH":"CHoCH ke-3",
+"BOS alcista · línea":"BOS bullish · garis",
+"BOS alcista · rótulo":"BOS bullish · label",
+"BOS bajista · línea":"BOS bearish · garis",
+"BOS bajista · rótulo":"BOS bearish · label",
+"CHoCH alcista · línea":"CHoCH bullish · garis",
+"CHoCH alcista · rótulo":"CHoCH bullish · label",
+"CHoCH bajista · línea":"CHoCH bearish · garis",
+"CHoCH bajista · rótulo":"CHoCH bearish · label",
+"Rótulos de los máximos":"Label pada puncak",
+"Rótulos de los mínimos":"Label pada lembah",
+"Puntos en los máximos":"Titik pada puncak",
+"Puntos en los mínimos":"Titik pada lembah",
+"Nivel vigente de arriba (aún sin romper)":"Level aktif di atas (belum ditembus)",
+"Nivel vigente de abajo (aún sin romper)":"Level aktif di bawah (belum ditembus)",
+"Secundaria · líneas":"Sekunder · garis",
+"Secundaria · rótulos":"Sekunder · label",
+"Secundaria · nivel vigente de arriba":"Sekunder · level aktif di atas",
+"Secundaria · nivel vigente de abajo":"Sekunder · level aktif di bawah",
+"Terciaria · líneas":"Tersier · garis",
+"Terciaria · rótulos":"Tersier · label",
+"Terciaria · nivel vigente de arriba":"Tersier · level aktif di atas",
+"Terciaria · nivel vigente de abajo":"Tersier · level aktif di bawah",
+"Barridas (la mecha pasa, el cierre vuelve)":"Sweep (sumbu menembus, penutupan kembali)",
 };
 /* TIẾNG VIỆT · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.vi={
@@ -125772,8 +127009,6 @@ DIC.vi={
 "Cerrada a mano":"Đã đóng thủ công",
 "Operaciones quitadas":"Lệnh đã gỡ",
 "Volver a ponerlas":"Đặt lại",
-"Promedio total":"Trung bình tổng",
-"(ganadas y perdidas)":"(lãi và lỗ)",
 "Promedio de las ganadas":"Trung bình các lệnh lãi",
 "Mis casas":"Sàn của tôi",
 "Se ve solo lo de §. Todo el programa cambia con esta casa.":"Chỉ hiển thị những gì có trên §. Toàn bộ ứng dụng chuyển sang sàn này.",
@@ -128338,6 +129573,95 @@ DIC.vi={
 "Esas monedas no aparecen en las fuentes. Puede escribir su precio a mano.":"Các đồng coin đó không có trong các nguồn giá. Bạn có thể nhập giá thủ công.",
 "Arriba están todas sus compras. La fila de abajo es solo lo que le queda después de sus ventas: # @ por $# que da un precio promedio de":"Phía trên là tất cả các lần mua của bạn. Hàng dưới cùng chỉ là phần còn lại sau khi bạn bán: # @ với tổng tiền $#, cho ra giá trung bình",
 "Se contaron # de # (no tenía más registradas).":"Đã tính # trong # (bạn không có ghi nhận nhiều hơn).",
+/* v86 · estructura de mercado (BOS / CHoCH) */
+"Estructura":"Cấu trúc",
+"Estructura de mercado (BOS / CHoCH)":"Cấu trúc thị trường (BOS / CHoCH)",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Es una herramienta de lectura: no da señales de compra ni de venta.":"Cho biết xu hướng tiếp diễn ở đâu (BOS: giá đóng cửa phá một swing cùng chiều xu hướng) và đảo chiều ở đâu (CHoCH: phá nó ngược chiều xu hướng). Các khung thời gian lớn hơn được vẽ đậm hơn và có ghi tên. Những mức chưa bị phá hiện dạng chấm, giá của chúng nằm trên thang bên phải. Trong cùng một khung thời gian, bạn cũng có thể hiện các nhịp đẩy và nhịp hồi nhỏ hơn («Cấp 2» và «Cấp 3»). Một swing chỉ xuất hiện sau khi hình thành N nến và không có gì bị vẽ lại. Đây là công cụ để đọc biểu đồ: không đưa ra tín hiệu mua hay bán.",
+"Dibujar también el temporal de 1 día":"Vẽ thêm khung thời gian: 1 ngày",
+"Largo del swing (N) · 1 día":"Độ dài swing (N) · 1 ngày",
+"Dibujar también el temporal de 4 horas":"Vẽ thêm khung thời gian: 4 giờ",
+"Largo del swing (N) · 4 horas":"Độ dài swing (N) · 4 giờ",
+"Dibujar también el temporal de 1 hora":"Vẽ thêm khung thời gian: 1 giờ",
+"Largo del swing (N) · 1 hora":"Độ dài swing (N) · 1 giờ",
+"Dibujar también el temporal de 15 minutos":"Vẽ thêm khung thời gian: 15 phút",
+"Largo del swing (N) · 15 minutos":"Độ dài swing (N) · 15 phút",
+"Largo del swing (N) · temporal de la gráfica":"Độ dài swing (N) · khung thời gian của biểu đồ",
+"Largo del swing (N) secundario":"Độ dài swing (N) · cấp 2",
+"Largo del swing (N) terciario":"Độ dài swing (N) · cấp 3",
+"Temporales (fractalidad)":"Khung thời gian (phân dạng)",
+"Solo se dibuja si es más grande que el temporal de la gráfica.":"Chỉ được vẽ nếu lớn hơn khung thời gian của biểu đồ.",
+"Un swing alto es la vela cuyo máximo supera al de las N velas de cada lado; se confirma N velas después. Más N = menos líneas.":"Swing đỉnh là nến có mức cao vượt mức cao của N nến ở mỗi bên; được xác nhận sau N nến. N càng lớn thì càng ít đường.",
+"Método":"Phương pháp",
+"Simétrico: N velas a cada lado":"Đối xứng: N nến mỗi bên",
+"Solo derecha (estilo LuxAlgo)":"Chỉ bên phải (kiểu LuxAlgo)",
+"Cómo se detecta el swing":"Cách phát hiện swing",
+"Se confirma con":"Xác nhận bằng",
+"Cierre de la vela":"Giá đóng cửa của nến",
+"Mecha (basta tocar)":"Bấc nến (chỉ cần chạm)",
+"Cuándo cuenta una ruptura":"Khi nào một lần phá được tính",
+"Margen extra":"Biên độ bổ sung",
+"% del precio":"% của giá",
+"Margen en % del precio":"Biên độ theo % của giá",
+"Margen en × ATR":"Biên độ theo × ATR",
+"Cuerpo mínimo de la vela que rompe (%)":"Thân tối thiểu của nến phá vỡ (%)",
+"0 = sin filtro. Con 60 solo cuenta una vela con cuerpo de al menos el 60 % de su rango.":"0 = không lọc. Với 60, chỉ tính nến có thân bằng ít nhất 60 % biên độ của nó.",
+"Nivel de referencia":"Mức tham chiếu",
+"Último confirmado":"Gần nhất đã xác nhận",
+"Swing protegido (el que lanzó el último máx./mín.)":"Swing được bảo vệ (swing tạo ra đỉnh/đáy gần nhất)",
+"Contra qué se mide el CHoCH":"CHoCH được đo so với cái gì",
+"Con «protegido», romper un swing intermedio no es CHoCH: hace falta romper el que originó el último extremo. Da bastantes menos CHoCH.":"Với «được bảo vệ», phá một swing trung gian không phải CHoCH: phải phá swing đã tạo ra cực trị gần nhất. Cho ra ít CHoCH hơn hẳn.",
+"Fractalidad interna (impulsos y retrocesos de adentro)":"Phân dạng bên trong (nhịp đẩy và nhịp hồi bên trong)",
+"Secundaria · swings más chicos en el mismo temporal":"Cấp 2 · swing nhỏ hơn trong cùng khung thời gian",
+"Tiene que ser menor que el N del temporal de la gráfica para que se note distinto.":"Phải nhỏ hơn N của khung thời gian biểu đồ thì mới thấy khác biệt.",
+"Terciaria · un nivel más adentro todavía":"Cấp 3 · sâu thêm một cấp nữa",
+"Nombres de máximos y mínimos":"Tên các đỉnh và đáy",
+"Con palabras (máx. mayor…)":"Bằng chữ (đỉnh cao hơn…)",
+"Siglas (HH, HL, LH, LL)":"Viết tắt (HH, HL, LH, LL)",
+"Rótulos":"Nhãn",
+"Mini panel con la tendencia de cada temporal":"Bảng nhỏ hiển thị xu hướng của từng khung thời gian",
+"Dónde va el mini panel":"Vị trí bảng nhỏ",
+"Arriba a la derecha":"Trên cùng bên phải",
+"Abajo a la derecha":"Dưới cùng bên phải",
+"Abajo a la izquierda":"Dưới cùng bên trái",
+"▲ Alcista":"▲ Tăng",
+"▼ Bajista":"▼ Giảm",
+"◆ Sin definir":"◆ Chưa xác định",
+"máx. mayor":"đỉnh cao hơn",
+"máx. menor":"đỉnh thấp hơn",
+"mín. mayor":"đáy cao hơn",
+"mín. menor":"đáy thấp hơn",
+"máx. igual":"đỉnh bằng",
+"mín. igual":"đáy bằng",
+"Mayor":"Cao hơn",
+"Menor":"Thấp hơn",
+"Igual":"Bằng nhau",
+"2ª BOS":"BOS cấp 2",
+"3ª BOS":"BOS cấp 3",
+"2ª CHoCH":"CHoCH cấp 2",
+"3ª CHoCH":"CHoCH cấp 3",
+"BOS alcista · línea":"BOS tăng · đường",
+"BOS alcista · rótulo":"BOS tăng · nhãn",
+"BOS bajista · línea":"BOS giảm · đường",
+"BOS bajista · rótulo":"BOS giảm · nhãn",
+"CHoCH alcista · línea":"CHoCH tăng · đường",
+"CHoCH alcista · rótulo":"CHoCH tăng · nhãn",
+"CHoCH bajista · línea":"CHoCH giảm · đường",
+"CHoCH bajista · rótulo":"CHoCH giảm · nhãn",
+"Rótulos de los máximos":"Nhãn trên các đỉnh",
+"Rótulos de los mínimos":"Nhãn trên các đáy",
+"Puntos en los máximos":"Chấm trên các đỉnh",
+"Puntos en los mínimos":"Chấm trên các đáy",
+"Nivel vigente de arriba (aún sin romper)":"Mức đang hiệu lực phía trên (chưa bị phá)",
+"Nivel vigente de abajo (aún sin romper)":"Mức đang hiệu lực phía dưới (chưa bị phá)",
+"Secundaria · líneas":"Cấp 2 · đường",
+"Secundaria · rótulos":"Cấp 2 · nhãn",
+"Secundaria · nivel vigente de arriba":"Cấp 2 · mức đang hiệu lực phía trên",
+"Secundaria · nivel vigente de abajo":"Cấp 2 · mức đang hiệu lực phía dưới",
+"Terciaria · líneas":"Cấp 3 · đường",
+"Terciaria · rótulos":"Cấp 3 · nhãn",
+"Terciaria · nivel vigente de arriba":"Cấp 3 · mức đang hiệu lực phía trên",
+"Terciaria · nivel vigente de abajo":"Cấp 3 · mức đang hiệu lực phía dưới",
+"Barridas (la mecha pasa, el cierre vuelve)":"Quét thanh khoản (bấc vượt qua, giá đóng cửa quay lại)",
 };
 /* हिन्दी · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.hi={
@@ -132605,8 +133929,6 @@ DIC.hi={
 "Cerrada a mano":"हाथ से बंद किया",
 "Operaciones quitadas":"हटाए गए ट्रेड",
 "Volver a ponerlas":"वापस लगाएँ",
-"Promedio total":"कुल औसत",
-"(ganadas y perdidas)":"(जीत और हार)",
 "Promedio de las ganadas":"जीत का औसत",
 "Mis casas":"मेरे एक्सचेंज",
 "Se ve solo lo de §. Todo el programa cambia con esta casa.":"केवल § पर जो है वही दिख रहा है। पूरा ऐप इसी एक्सचेंज पर आ जाता है।",
@@ -135171,6 +136493,95 @@ DIC.hi={
 "Esas monedas no aparecen en las fuentes. Puede escribir su precio a mano.":"वे कॉइन कीमत के स्रोतों में नहीं मिलते. आप उनकी कीमत खुद लिख सकते हैं.",
 "Arriba están todas sus compras. La fila de abajo es solo lo que le queda después de sus ventas: # @ por $# que da un precio promedio de":"ऊपर आपकी सभी खरीद हैं। नीचे वाली पंक्ति में सिर्फ वह है जो बिक्री के बाद आपके पास बचा है: # @, $# में, यानी औसत कीमत",
 "Se contaron # de # (no tenía más registradas).":"गिना गया: # / # (इससे ज़्यादा दर्ज नहीं था)।",
+/* v86 · estructura de mercado (BOS / CHoCH) */
+"Estructura":"संरचना",
+"Estructura de mercado (BOS / CHoCH)":"बाज़ार संरचना (BOS / CHoCH)",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Es una herramienta de lectura: no da señales de compra ni de venta.":"यह दिखाता है कि ट्रेंड कहाँ जारी रहता है (BOS: क्लोज़ ट्रेंड की दिशा में किसी स्विंग को तोड़ता है) और कहाँ बदलता है (CHoCH: क्लोज़ उसे ट्रेंड के उलट तोड़ता है)। बड़े टाइमफ़्रेम ज़्यादा मोटे खिंचते हैं और उनके नाम के साथ दिखते हैं। जो स्तर अभी नहीं टूटे वे बिंदीदार दिखते हैं और उनकी कीमत दाईं ओर के स्केल पर रहती है। एक ही टाइमफ़्रेम में छोटे इम्पल्स और रिट्रेसमेंट भी दिखाए जा सकते हैं («द्वितीयक» और «तृतीयक»)। स्विंग बनने के N कैंडल बाद ही दिखता है और कुछ भी दोबारा नहीं बनाया जाता। यह पढ़ने का टूल है: यह खरीद या बिक्री का सिग्नल नहीं देता।",
+"Dibujar también el temporal de 1 día":"टाइमफ़्रेम भी दिखाएँ: 1 दिन",
+"Largo del swing (N) · 1 día":"स्विंग की लंबाई (N) · 1 दिन",
+"Dibujar también el temporal de 4 horas":"टाइमफ़्रेम भी दिखाएँ: 4 घंटे",
+"Largo del swing (N) · 4 horas":"स्विंग की लंबाई (N) · 4 घंटे",
+"Dibujar también el temporal de 1 hora":"टाइमफ़्रेम भी दिखाएँ: 1 घंटा",
+"Largo del swing (N) · 1 hora":"स्विंग की लंबाई (N) · 1 घंटा",
+"Dibujar también el temporal de 15 minutos":"टाइमफ़्रेम भी दिखाएँ: 15 मिनट",
+"Largo del swing (N) · 15 minutos":"स्विंग की लंबाई (N) · 15 मिनट",
+"Largo del swing (N) · temporal de la gráfica":"स्विंग की लंबाई (N) · चार्ट का टाइमफ़्रेम",
+"Largo del swing (N) secundario":"स्विंग की लंबाई (N) · द्वितीयक",
+"Largo del swing (N) terciario":"स्विंग की लंबाई (N) · तृतीयक",
+"Temporales (fractalidad)":"टाइमफ़्रेम (फ्रैक्टैलिटी)",
+"Solo se dibuja si es más grande que el temporal de la gráfica.":"यह तभी बनता है जब यह चार्ट के टाइमफ़्रेम से बड़ा हो।",
+"Un swing alto es la vela cuyo máximo supera al de las N velas de cada lado; se confirma N velas después. Más N = menos líneas.":"स्विंग हाई वह कैंडल है जिसका हाई दोनों ओर की N कैंडल के हाई से ऊपर हो; इसकी पुष्टि N कैंडल बाद होती है। N जितना बड़ा, रेखाएँ उतनी कम।",
+"Método":"तरीका",
+"Simétrico: N velas a cada lado":"सममित: दोनों ओर N कैंडल",
+"Solo derecha (estilo LuxAlgo)":"सिर्फ़ दाईं ओर (LuxAlgo शैली)",
+"Cómo se detecta el swing":"स्विंग कैसे पहचाना जाता है",
+"Se confirma con":"पुष्टि किससे हो",
+"Cierre de la vela":"कैंडल का क्लोज़",
+"Mecha (basta tocar)":"बत्ती (छू भर लेना काफ़ी)",
+"Cuándo cuenta una ruptura":"ब्रेक कब गिना जाता है",
+"Margen extra":"अतिरिक्त बफ़र",
+"% del precio":"कीमत का %",
+"Margen en % del precio":"बफ़र (कीमत के % में)",
+"Margen en × ATR":"बफ़र (× ATR में)",
+"Cuerpo mínimo de la vela que rompe (%)":"तोड़ने वाली कैंडल की न्यूनतम बॉडी (%)",
+"0 = sin filtro. Con 60 solo cuenta una vela con cuerpo de al menos el 60 % de su rango.":"0 = कोई फ़िल्टर नहीं। 60 पर सिर्फ़ वही कैंडल गिनी जाती है जिसकी बॉडी उसकी रेंज के कम से कम 60 % हो।",
+"Nivel de referencia":"संदर्भ स्तर",
+"Último confirmado":"आख़िरी पुष्टि वाला",
+"Swing protegido (el que lanzó el último máx./mín.)":"सुरक्षित स्विंग (जिसने आख़िरी हाई/लो बनाया)",
+"Contra qué se mide el CHoCH":"CHoCH किसके मुक़ाबले मापा जाए",
+"Con «protegido», romper un swing intermedio no es CHoCH: hace falta romper el que originó el último extremo. Da bastantes menos CHoCH.":"«सुरक्षित» चुनने पर बीच के किसी स्विंग का टूटना CHoCH नहीं माना जाता: उसी स्विंग को तोड़ना ज़रूरी है जिसने आख़िरी एक्सट्रीम बनाया। इससे CHoCH काफ़ी कम आते हैं।",
+"Fractalidad interna (impulsos y retrocesos de adentro)":"आंतरिक फ्रैक्टैलिटी (भीतरी इम्पल्स और रिट्रेसमेंट)",
+"Secundaria · swings más chicos en el mismo temporal":"द्वितीयक · उसी टाइमफ़्रेम के छोटे स्विंग",
+"Tiene que ser menor que el N del temporal de la gráfica para que se note distinto.":"फ़र्क दिखे इसके लिए यह चार्ट के टाइमफ़्रेम के N से छोटा होना चाहिए।",
+"Terciaria · un nivel más adentro todavía":"तृतीयक · एक और स्तर अंदर",
+"Nombres de máximos y mínimos":"हाई और लो के नाम",
+"Con palabras (máx. mayor…)":"शब्दों में (ऊँचा हाई…)",
+"Siglas (HH, HL, LH, LL)":"संक्षिप्त नाम (HH, HL, LH, LL)",
+"Rótulos":"लेबल",
+"Mini panel con la tendencia de cada temporal":"हर टाइमफ़्रेम का ट्रेंड दिखाने वाला मिनी पैनल",
+"Dónde va el mini panel":"मिनी पैनल कहाँ रहे",
+"Arriba a la derecha":"ऊपर दाईं ओर",
+"Abajo a la derecha":"नीचे दाईं ओर",
+"Abajo a la izquierda":"नीचे बाईं ओर",
+"▲ Alcista":"▲ तेज़ी",
+"▼ Bajista":"▼ मंदी",
+"◆ Sin definir":"◆ अनिर्धारित",
+"máx. mayor":"ऊँचा हाई",
+"máx. menor":"नीचा हाई",
+"mín. mayor":"ऊँचा लो",
+"mín. menor":"नीचा लो",
+"máx. igual":"बराबर हाई",
+"mín. igual":"बराबर लो",
+"Mayor":"ऊँचा",
+"Menor":"नीचा",
+"Igual":"बराबर",
+"2ª BOS":"दूसरा BOS",
+"3ª BOS":"तीसरा BOS",
+"2ª CHoCH":"दूसरा CHoCH",
+"3ª CHoCH":"तीसरा CHoCH",
+"BOS alcista · línea":"तेज़ी वाला BOS · रेखा",
+"BOS alcista · rótulo":"तेज़ी वाला BOS · लेबल",
+"BOS bajista · línea":"मंदी वाला BOS · रेखा",
+"BOS bajista · rótulo":"मंदी वाला BOS · लेबल",
+"CHoCH alcista · línea":"तेज़ी वाला CHoCH · रेखा",
+"CHoCH alcista · rótulo":"तेज़ी वाला CHoCH · लेबल",
+"CHoCH bajista · línea":"मंदी वाला CHoCH · रेखा",
+"CHoCH bajista · rótulo":"मंदी वाला CHoCH · लेबल",
+"Rótulos de los máximos":"हाई पर लेबल",
+"Rótulos de los mínimos":"लो पर लेबल",
+"Puntos en los máximos":"हाई पर बिंदु",
+"Puntos en los mínimos":"लो पर बिंदु",
+"Nivel vigente de arriba (aún sin romper)":"ऊपर का सक्रिय स्तर (अभी टूटा नहीं)",
+"Nivel vigente de abajo (aún sin romper)":"नीचे का सक्रिय स्तर (अभी टूटा नहीं)",
+"Secundaria · líneas":"द्वितीयक · रेखाएँ",
+"Secundaria · rótulos":"द्वितीयक · लेबल",
+"Secundaria · nivel vigente de arriba":"द्वितीयक · ऊपर का सक्रिय स्तर",
+"Secundaria · nivel vigente de abajo":"द्वितीयक · नीचे का सक्रिय स्तर",
+"Terciaria · líneas":"तृतीयक · रेखाएँ",
+"Terciaria · rótulos":"तृतीयक · लेबल",
+"Terciaria · nivel vigente de arriba":"तृतीयक · ऊपर का सक्रिय स्तर",
+"Terciaria · nivel vigente de abajo":"तृतीयक · नीचे का सक्रिय स्तर",
+"Barridas (la mecha pasa, el cierre vuelve)":"स्वीप (बत्ती पार जाती है, क्लोज़ लौट आता है)",
 };
 /* 日本語 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ja={
@@ -139438,8 +140849,6 @@ DIC.ja={
 "Cerrada a mano":"手動で決済",
 "Operaciones quitadas":"削除した取引",
 "Volver a ponerlas":"元に戻す",
-"Promedio total":"総平均",
-"(ganadas y perdidas)":"(勝ちと負け)",
 "Promedio de las ganadas":"勝ちの平均",
 "Mis casas":"マイ取引所",
 "Se ve solo lo de §. Todo el programa cambia con esta casa.":"§にあるものだけを表示しています。アプリ全体がこの取引所に切り替わります。",
@@ -142004,6 +143413,95 @@ DIC.ja={
 "Esas monedas no aparecen en las fuentes. Puede escribir su precio a mano.":"それらのコインは価格の取得先に見つかりません。価格は手入力できます。",
 "Arriba están todas sus compras. La fila de abajo es solo lo que le queda después de sus ventas: # @ por $# que da un precio promedio de":"上はすべての購入です。一番下の行は、売却後に残っている分だけです：# @ · $# → 平均取得単価",
 "Se contaron # de # (no tenía más registradas).":"# / # を計上しました（これ以上は記録がありませんでした）。",
+/* v86 · estructura de mercado (BOS / CHoCH) */
+"Estructura":"構造",
+"Estructura de mercado (BOS / CHoCH)":"マーケットストラクチャー（BOS / CHoCH）",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Es una herramienta de lectura: no da señales de compra ni de venta.":"トレンドが続く場所（BOS：終値がトレンド方向のスイングを抜ける）と、転換する場所（CHoCH：終値がトレンドと逆方向にスイングを抜ける）を示します。上位の時間足は太く描かれ、名前が付きます。まだ破られていない水準は点線で表示され、その価格は右側の価格軸に出ます。同じ時間足の中で、より小さな上昇・下落の波（「二次」と「三次」）も表示できます。スイングは形成されてからN本あとに初めて表示され、後から描き直されることはありません。読み取り用のツールで、売買シグナルは出しません。",
+"Dibujar también el temporal de 1 día":"時間足も描画：1日",
+"Largo del swing (N) · 1 día":"スイングの長さ (N) · 1日",
+"Dibujar también el temporal de 4 horas":"時間足も描画：4時間",
+"Largo del swing (N) · 4 horas":"スイングの長さ (N) · 4時間",
+"Dibujar también el temporal de 1 hora":"時間足も描画：1時間",
+"Largo del swing (N) · 1 hora":"スイングの長さ (N) · 1時間",
+"Dibujar también el temporal de 15 minutos":"時間足も描画：15分",
+"Largo del swing (N) · 15 minutos":"スイングの長さ (N) · 15分",
+"Largo del swing (N) · temporal de la gráfica":"スイングの長さ (N) · チャートの時間足",
+"Largo del swing (N) secundario":"スイングの長さ (N) · 二次",
+"Largo del swing (N) terciario":"スイングの長さ (N) · 三次",
+"Temporales (fractalidad)":"時間足（フラクタル）",
+"Solo se dibuja si es más grande que el temporal de la gráfica.":"チャートの時間足より大きい場合にのみ描画されます。",
+"Un swing alto es la vela cuyo máximo supera al de las N velas de cada lado; se confirma N velas después. Más N = menos líneas.":"スイング高値とは、左右それぞれN本のローソク足の高値を上回る高値を持つローソク足のことです。確定はN本後になります。Nが大きいほど線は少なくなります。",
+"Método":"方法",
+"Simétrico: N velas a cada lado":"左右対称：両側にN本",
+"Solo derecha (estilo LuxAlgo)":"右側のみ（LuxAlgo方式）",
+"Cómo se detecta el swing":"スイングの検出方法",
+"Se confirma con":"確定条件",
+"Cierre de la vela":"ローソク足の終値",
+"Mecha (basta tocar)":"ヒゲ（触れるだけでOK）",
+"Cuándo cuenta una ruptura":"ブレイクとみなす条件",
+"Margen extra":"追加バッファ",
+"% del precio":"価格の%",
+"Margen en % del precio":"バッファ（価格の%）",
+"Margen en × ATR":"バッファ（× ATR）",
+"Cuerpo mínimo de la vela que rompe (%)":"ブレイクする足の実体の最小値（%）",
+"0 = sin filtro. Con 60 solo cuenta una vela con cuerpo de al menos el 60 % de su rango.":"0 = フィルターなし。60にすると、実体がレンジの60 %以上あるローソク足だけが対象になります。",
+"Nivel de referencia":"基準レベル",
+"Último confirmado":"直近で確定したもの",
+"Swing protegido (el que lanzó el último máx./mín.)":"保護されたスイング（直近の高値・安値を作ったもの）",
+"Contra qué se mide el CHoCH":"CHoCHの基準",
+"Con «protegido», romper un swing intermedio no es CHoCH: hace falta romper el que originó el último extremo. Da bastantes menos CHoCH.":"「保護」を選ぶと、途中のスイングを抜けてもCHoCHにはなりません。直近の極値を作ったスイングを抜く必要があります。CHoCHはかなり少なくなります。",
+"Fractalidad interna (impulsos y retrocesos de adentro)":"内部フラクタル（内側の上昇・戻り）",
+"Secundaria · swings más chicos en el mismo temporal":"二次 · 同じ時間足内のより小さなスイング",
+"Tiene que ser menor que el N del temporal de la gráfica para que se note distinto.":"違いが分かるように、チャートの時間足のNより小さくしてください。",
+"Terciaria · un nivel más adentro todavía":"三次 · さらに一段階内側",
+"Nombres de máximos y mínimos":"高値・安値の呼び名",
+"Con palabras (máx. mayor…)":"言葉で（高値切り上げ…）",
+"Siglas (HH, HL, LH, LL)":"略称（HH, HL, LH, LL）",
+"Rótulos":"ラベル",
+"Mini panel con la tendencia de cada temporal":"各時間足のトレンドを示すミニパネル",
+"Dónde va el mini panel":"ミニパネルの位置",
+"Arriba a la derecha":"右上",
+"Abajo a la derecha":"右下",
+"Abajo a la izquierda":"左下",
+"▲ Alcista":"▲ 強気",
+"▼ Bajista":"▼ 弱気",
+"◆ Sin definir":"◆ 未定",
+"máx. mayor":"高値切り上げ",
+"máx. menor":"高値切り下げ",
+"mín. mayor":"安値切り上げ",
+"mín. menor":"安値切り下げ",
+"máx. igual":"同値の高値",
+"mín. igual":"同値の安値",
+"Mayor":"切り上げ",
+"Menor":"切り下げ",
+"Igual":"同値",
+"2ª BOS":"二次BOS",
+"3ª BOS":"三次BOS",
+"2ª CHoCH":"二次CHoCH",
+"3ª CHoCH":"三次CHoCH",
+"BOS alcista · línea":"強気のBOS · ライン",
+"BOS alcista · rótulo":"強気のBOS · ラベル",
+"BOS bajista · línea":"弱気のBOS · ライン",
+"BOS bajista · rótulo":"弱気のBOS · ラベル",
+"CHoCH alcista · línea":"強気のCHoCH · ライン",
+"CHoCH alcista · rótulo":"強気のCHoCH · ラベル",
+"CHoCH bajista · línea":"弱気のCHoCH · ライン",
+"CHoCH bajista · rótulo":"弱気のCHoCH · ラベル",
+"Rótulos de los máximos":"高値のラベル",
+"Rótulos de los mínimos":"安値のラベル",
+"Puntos en los máximos":"高値のドット",
+"Puntos en los mínimos":"安値のドット",
+"Nivel vigente de arriba (aún sin romper)":"上側の有効レベル （まだ破られていない）",
+"Nivel vigente de abajo (aún sin romper)":"下側の有効レベル （まだ破られていない）",
+"Secundaria · líneas":"二次 · ライン",
+"Secundaria · rótulos":"二次 · ラベル",
+"Secundaria · nivel vigente de arriba":"二次 · 上側の有効レベル",
+"Secundaria · nivel vigente de abajo":"二次 · 下側の有効レベル",
+"Terciaria · líneas":"三次 · ライン",
+"Terciaria · rótulos":"三次 · ラベル",
+"Terciaria · nivel vigente de arriba":"三次 · 上側の有効レベル",
+"Terciaria · nivel vigente de abajo":"三次 · 下側の有効レベル",
+"Barridas (la mecha pasa, el cierre vuelve)":"スイープ（ヒゲが抜けて終値は戻る）",
 };
 /* 한국어 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ko={
@@ -146271,8 +147769,6 @@ DIC.ko={
 "Cerrada a mano":"수동으로 종료",
 "Operaciones quitadas":"제거한 거래",
 "Volver a ponerlas":"다시 표시",
-"Promedio total":"전체 평균",
-"(ganadas y perdidas)":"(수익과 손실)",
 "Promedio de las ganadas":"수익 거래 평균",
 "Mis casas":"내 거래소",
 "Se ve solo lo de §. Todo el programa cambia con esta casa.":"§에 있는 것만 보입니다. 앱 전체가 이 거래소로 바뀝니다.",
@@ -148837,6 +150333,95 @@ DIC.ko={
 "Esas monedas no aparecen en las fuentes. Puede escribir su precio a mano.":"해당 코인들은 가격 제공처에 없습니다. 가격을 직접 입력할 수 있습니다.",
 "Arriba están todas sus compras. La fila de abajo es solo lo que le queda después de sus ventas: # @ por $# que da un precio promedio de":"위는 모든 매수 내역입니다. 맨 아래 줄은 매도 후 남아 있는 수량만입니다: # @, 총 $# → 평균 단가:",
 "Se contaron # de # (no tenía más registradas).":"반영: # / # (그 이상은 기록이 없었습니다).",
+/* v86 · estructura de mercado (BOS / CHoCH) */
+"Estructura":"구조",
+"Estructura de mercado (BOS / CHoCH)":"시장 구조 (BOS / CHoCH)",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Es una herramienta de lectura: no da señales de compra ni de venta.":"추세가 이어지는 곳(BOS: 종가가 추세 방향의 스윙을 돌파)과 바뀌는 곳(CHoCH: 종가가 추세와 반대 방향으로 스윙을 돌파)을 보여 줍니다. 상위 시간 프레임은 더 굵게 그려지고 이름이 붙습니다. 아직 깨지지 않은 레벨은 점선으로 표시되고 그 가격은 오른쪽 축에 나타납니다. 같은 시간 프레임 안에서 더 작은 상승·되돌림도 표시할 수 있습니다(\"2차\"와 \"3차\"). 스윙은 형성된 뒤 N개 캔들이 지나야 나타나며 다시 그려지는 것은 없습니다. 읽기용 도구로, 매수·매도 신호는 주지 않습니다.",
+"Dibujar también el temporal de 1 día":"시간 프레임도 그리기: 1일",
+"Largo del swing (N) · 1 día":"스윙 길이 (N) · 1일",
+"Dibujar también el temporal de 4 horas":"시간 프레임도 그리기: 4시간",
+"Largo del swing (N) · 4 horas":"스윙 길이 (N) · 4시간",
+"Dibujar también el temporal de 1 hora":"시간 프레임도 그리기: 1시간",
+"Largo del swing (N) · 1 hora":"스윙 길이 (N) · 1시간",
+"Dibujar también el temporal de 15 minutos":"시간 프레임도 그리기: 15분",
+"Largo del swing (N) · 15 minutos":"스윙 길이 (N) · 15분",
+"Largo del swing (N) · temporal de la gráfica":"스윙 길이 (N) · 차트의 시간 프레임",
+"Largo del swing (N) secundario":"스윙 길이 (N) · 2차",
+"Largo del swing (N) terciario":"스윙 길이 (N) · 3차",
+"Temporales (fractalidad)":"시간 프레임 (프랙탈)",
+"Solo se dibuja si es más grande que el temporal de la gráfica.":"차트의 시간 프레임보다 클 때만 그려집니다.",
+"Un swing alto es la vela cuyo máximo supera al de las N velas de cada lado; se confirma N velas después. Más N = menos líneas.":"스윙 고점은 양쪽 N개 캔들의 고점보다 높은 고점을 가진 캔들이며, N개 캔들 뒤에 확정됩니다. N이 클수록 선이 줄어듭니다.",
+"Método":"방식",
+"Simétrico: N velas a cada lado":"대칭: 양쪽 N개 캔들",
+"Solo derecha (estilo LuxAlgo)":"오른쪽만 (LuxAlgo 방식)",
+"Cómo se detecta el swing":"스윙 감지 방식",
+"Se confirma con":"확정 기준",
+"Cierre de la vela":"캔들 종가",
+"Mecha (basta tocar)":"꼬리 (닿기만 해도 됨)",
+"Cuándo cuenta una ruptura":"돌파로 인정되는 조건",
+"Margen extra":"추가 버퍼",
+"% del precio":"가격의 %",
+"Margen en % del precio":"버퍼 (가격의 %)",
+"Margen en × ATR":"버퍼 (× ATR)",
+"Cuerpo mínimo de la vela que rompe (%)":"돌파 캔들의 최소 몸통 (%)",
+"0 = sin filtro. Con 60 solo cuenta una vela con cuerpo de al menos el 60 % de su rango.":"0 = 필터 없음. 60이면 몸통이 범위의 60 % 이상인 캔들만 인정됩니다.",
+"Nivel de referencia":"기준 레벨",
+"Último confirmado":"마지막으로 확정된 것",
+"Swing protegido (el que lanzó el último máx./mín.)":"보호된 스윙 (직전 고점·저점을 만든 스윙)",
+"Contra qué se mide el CHoCH":"CHoCH의 기준",
+"Con «protegido», romper un swing intermedio no es CHoCH: hace falta romper el que originó el último extremo. Da bastantes menos CHoCH.":"'보호'를 선택하면 중간 스윙을 깨는 것은 CHoCH가 아닙니다. 직전 극값을 만든 스윙을 깨야 합니다. CHoCH가 훨씬 적게 나옵니다.",
+"Fractalidad interna (impulsos y retrocesos de adentro)":"내부 프랙탈 (안쪽의 상승·되돌림)",
+"Secundaria · swings más chicos en el mismo temporal":"2차 · 같은 시간 프레임 안의 더 작은 스윙",
+"Tiene que ser menor que el N del temporal de la gráfica para que se note distinto.":"차이가 보이려면 차트 시간 프레임의 N보다 작아야 합니다.",
+"Terciaria · un nivel más adentro todavía":"3차 · 한 단계 더 안쪽",
+"Nombres de máximos y mínimos":"고점·저점 이름",
+"Con palabras (máx. mayor…)":"단어로 (높은 고점…)",
+"Siglas (HH, HL, LH, LL)":"약어 (HH, HL, LH, LL)",
+"Rótulos":"레이블",
+"Mini panel con la tendencia de cada temporal":"각 시간 프레임의 추세를 보여 주는 미니 패널",
+"Dónde va el mini panel":"미니 패널 위치",
+"Arriba a la derecha":"오른쪽 위",
+"Abajo a la derecha":"오른쪽 아래",
+"Abajo a la izquierda":"왼쪽 아래",
+"▲ Alcista":"▲ 강세",
+"▼ Bajista":"▼ 약세",
+"◆ Sin definir":"◆ 미정",
+"máx. mayor":"높은 고점",
+"máx. menor":"낮은 고점",
+"mín. mayor":"높은 저점",
+"mín. menor":"낮은 저점",
+"máx. igual":"같은 고점",
+"mín. igual":"같은 저점",
+"Mayor":"높음",
+"Menor":"낮음",
+"Igual":"같음",
+"2ª BOS":"2차 BOS",
+"3ª BOS":"3차 BOS",
+"2ª CHoCH":"2차 CHoCH",
+"3ª CHoCH":"3차 CHoCH",
+"BOS alcista · línea":"강세 BOS · 선",
+"BOS alcista · rótulo":"강세 BOS · 레이블",
+"BOS bajista · línea":"약세 BOS · 선",
+"BOS bajista · rótulo":"약세 BOS · 레이블",
+"CHoCH alcista · línea":"강세 CHoCH · 선",
+"CHoCH alcista · rótulo":"강세 CHoCH · 레이블",
+"CHoCH bajista · línea":"약세 CHoCH · 선",
+"CHoCH bajista · rótulo":"약세 CHoCH · 레이블",
+"Rótulos de los máximos":"고점 레이블",
+"Rótulos de los mínimos":"저점 레이블",
+"Puntos en los máximos":"고점의 점",
+"Puntos en los mínimos":"저점의 점",
+"Nivel vigente de arriba (aún sin romper)":"위쪽 유효 레벨 (아직 깨지지 않음)",
+"Nivel vigente de abajo (aún sin romper)":"아래쪽 유효 레벨 (아직 깨지지 않음)",
+"Secundaria · líneas":"2차 · 선",
+"Secundaria · rótulos":"2차 · 레이블",
+"Secundaria · nivel vigente de arriba":"2차 · 위쪽 유효 레벨",
+"Secundaria · nivel vigente de abajo":"2차 · 아래쪽 유효 레벨",
+"Terciaria · líneas":"3차 · 선",
+"Terciaria · rótulos":"3차 · 레이블",
+"Terciaria · nivel vigente de arriba":"3차 · 위쪽 유효 레벨",
+"Terciaria · nivel vigente de abajo":"3차 · 아래쪽 유효 레벨",
+"Barridas (la mecha pasa, el cierre vuelve)":"스윕 (꼬리는 넘고 종가는 되돌아옴)",
 };
 /* 中文（简体） · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.zh={
@@ -153104,8 +154689,6 @@ DIC.zh={
 "Cerrada a mano":"手动平仓",
 "Operaciones quitadas":"已移除的交易",
 "Volver a ponerlas":"重新显示",
-"Promedio total":"总平均",
-"(ganadas y perdidas)":"(盈利和亏损)",
 "Promedio de las ganadas":"盈利平均",
 "Mis casas":"我的交易所",
 "Se ve solo lo de §. Todo el programa cambia con esta casa.":"仅显示§上的内容。整个应用都会切换到这个交易所。",
@@ -155670,6 +157253,95 @@ DIC.zh={
 "Esas monedas no aparecen en las fuentes. Puede escribir su precio a mano.":"这些币种在价格来源中找不到。您可以手动输入它们的价格。",
 "Arriba están todas sus compras. La fila de abajo es solo lo que le queda después de sus ventas: # @ por $# que da un precio promedio de":"上面是您的全部买入。最下面一行只是卖出后剩下的部分：# @，共 $#，由此得出均价为",
 "Se contaron # de # (no tenía más registradas).":"已计入 # / #（更多数量没有记录）。",
+/* v86 · estructura de mercado (BOS / CHoCH) */
+"Estructura":"结构",
+"Estructura de mercado (BOS / CHoCH)":"市场结构（BOS / CHoCH）",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Es una herramienta de lectura: no da señales de compra ni de venta.":"显示趋势在哪里延续（BOS：收盘价突破一个顺势的摆动点）以及在哪里转向（CHoCH：收盘价逆势突破该摆动点）。更大的周期画得更粗，并标有名称。尚未被突破的水平线以点线显示，其价格标在右侧价格轴上。在同一周期内，还可以显示更小的推动和回调（“次级”和“三级”）。摆动点要在形成N根K线之后才会出现，也不会被重绘。这是一个读图工具：不提供买入或卖出信号。",
+"Dibujar también el temporal de 1 día":"同时绘制周期：1天",
+"Largo del swing (N) · 1 día":"摆动长度 (N) · 1天",
+"Dibujar también el temporal de 4 horas":"同时绘制周期：4小时",
+"Largo del swing (N) · 4 horas":"摆动长度 (N) · 4小时",
+"Dibujar también el temporal de 1 hora":"同时绘制周期：1小时",
+"Largo del swing (N) · 1 hora":"摆动长度 (N) · 1小时",
+"Dibujar también el temporal de 15 minutos":"同时绘制周期：15分钟",
+"Largo del swing (N) · 15 minutos":"摆动长度 (N) · 15分钟",
+"Largo del swing (N) · temporal de la gráfica":"摆动长度 (N) · 图表周期",
+"Largo del swing (N) secundario":"摆动长度 (N) · 次级",
+"Largo del swing (N) terciario":"摆动长度 (N) · 三级",
+"Temporales (fractalidad)":"周期（分形）",
+"Solo se dibuja si es más grande que el temporal de la gráfica.":"仅当它大于图表周期时才会绘制。",
+"Un swing alto es la vela cuyo máximo supera al de las N velas de cada lado; se confirma N velas después. Más N = menos líneas.":"摆动高点是指其高点超过左右各N根K线高点的那根K线，在N根K线之后确认。N越大，线越少。",
+"Método":"方法",
+"Simétrico: N velas a cada lado":"对称：左右各N根K线",
+"Solo derecha (estilo LuxAlgo)":"仅右侧（LuxAlgo风格）",
+"Cómo se detecta el swing":"摆动点的识别方式",
+"Se confirma con":"确认方式",
+"Cierre de la vela":"K线收盘价",
+"Mecha (basta tocar)":"影线（触及即可）",
+"Cuándo cuenta una ruptura":"何时算突破",
+"Margen extra":"额外缓冲",
+"% del precio":"价格的%",
+"Margen en % del precio":"缓冲（价格的%）",
+"Margen en × ATR":"缓冲（× ATR）",
+"Cuerpo mínimo de la vela que rompe (%)":"突破K线的最小实体（%）",
+"0 = sin filtro. Con 60 solo cuenta una vela con cuerpo de al menos el 60 % de su rango.":"0 = 不过滤。设为60时，只有实体至少占其振幅60 %的K线才算数。",
+"Nivel de referencia":"参考水平线",
+"Último confirmado":"最近确认的",
+"Swing protegido (el que lanzó el último máx./mín.)":"受保护的摆动点（造成最近高点/低点的那个）",
+"Contra qué se mide el CHoCH":"CHoCH以什么为基准",
+"Con «protegido», romper un swing intermedio no es CHoCH: hace falta romper el que originó el último extremo. Da bastantes menos CHoCH.":"选择“受保护”时，突破中间的摆动点不算CHoCH：必须突破造成最近极值的那个摆动点。CHoCH会少得多。",
+"Fractalidad interna (impulsos y retrocesos de adentro)":"内部分形（内层的推动与回调）",
+"Secundaria · swings más chicos en el mismo temporal":"次级 · 同一周期内更小的摆动点",
+"Tiene que ser menor que el N del temporal de la gráfica para que se note distinto.":"必须小于图表周期的N，才看得出区别。",
+"Terciaria · un nivel más adentro todavía":"三级 · 再深一层",
+"Nombres de máximos y mínimos":"高低点的名称",
+"Con palabras (máx. mayor…)":"文字（高点抬高…）",
+"Siglas (HH, HL, LH, LL)":"缩写（HH, HL, LH, LL）",
+"Rótulos":"标签",
+"Mini panel con la tendencia de cada temporal":"显示各周期趋势的迷你面板",
+"Dónde va el mini panel":"迷你面板的位置",
+"Arriba a la derecha":"右上角",
+"Abajo a la derecha":"右下角",
+"Abajo a la izquierda":"左下角",
+"▲ Alcista":"▲ 看涨",
+"▼ Bajista":"▼ 看跌",
+"◆ Sin definir":"◆ 未确定",
+"máx. mayor":"高点抬高",
+"máx. menor":"高点降低",
+"mín. mayor":"低点抬高",
+"mín. menor":"低点降低",
+"máx. igual":"等高点",
+"mín. igual":"等低点",
+"Mayor":"更高",
+"Menor":"更低",
+"Igual":"相等",
+"2ª BOS":"二级BOS",
+"3ª BOS":"三级BOS",
+"2ª CHoCH":"二级CHoCH",
+"3ª CHoCH":"三级CHoCH",
+"BOS alcista · línea":"看涨BOS · 线",
+"BOS alcista · rótulo":"看涨BOS · 标签",
+"BOS bajista · línea":"看跌BOS · 线",
+"BOS bajista · rótulo":"看跌BOS · 标签",
+"CHoCH alcista · línea":"看涨CHoCH · 线",
+"CHoCH alcista · rótulo":"看涨CHoCH · 标签",
+"CHoCH bajista · línea":"看跌CHoCH · 线",
+"CHoCH bajista · rótulo":"看跌CHoCH · 标签",
+"Rótulos de los máximos":"高点标签",
+"Rótulos de los mínimos":"低点标签",
+"Puntos en los máximos":"高点圆点",
+"Puntos en los mínimos":"低点圆点",
+"Nivel vigente de arriba (aún sin romper)":"上方有效水平线 （尚未被突破）",
+"Nivel vigente de abajo (aún sin romper)":"下方有效水平线 （尚未被突破）",
+"Secundaria · líneas":"次级 · 线",
+"Secundaria · rótulos":"次级 · 标签",
+"Secundaria · nivel vigente de arriba":"次级 · 上方有效水平线",
+"Secundaria · nivel vigente de abajo":"次级 · 下方有效水平线",
+"Terciaria · líneas":"三级 · 线",
+"Terciaria · rótulos":"三级 · 标签",
+"Terciaria · nivel vigente de arriba":"三级 · 上方有效水平线",
+"Terciaria · nivel vigente de abajo":"三级 · 下方有效水平线",
+"Barridas (la mecha pasa, el cierre vuelve)":"扫荡（影线越过，收盘价收回）",
 };
 </script>
 </body>
