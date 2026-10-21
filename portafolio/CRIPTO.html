@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="86">
+<meta name="v" content="87">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -3027,7 +3027,7 @@ body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+8)>h2 .ic{background:linear-grad
 /* la tabla de olas del TSA (esquina de arriba a la derecha, sin fondo, como en la referencia) */
 .graf .gindt .gtbl{position:absolute;z-index:2;pointer-events:none;display:flex;flex-direction:column;gap:6px}
 .graf .gindt .gtbl.tr{top:6px;right:calc(var(--ax) + 8px);align-items:flex-end}
-.graf .gindt .gtbl.trm{top:26px;right:calc(var(--ax) + 8px);align-items:flex-end}      /* v86 · debajo del rótulo «SPOT · BINANCE» */
+.graf .gindt .gtbl.trm{top:26px;right:calc(var(--ax) + 30px);align-items:flex-end}      /* v86 · debajo del rótulo «SPOT · BINANCE» */
 .graf .gindt .gtbl.tl{top:6px;left:8px;align-items:flex-start}
 .graf .gindt .gtbl.br{bottom:6px;right:calc(var(--ax) + 8px);align-items:flex-end}
 .graf .gindt .gtbl.bl{bottom:6px;left:8px;align-items:flex-start}
@@ -3037,7 +3037,7 @@ body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+8)>h2 .ic{background:linear-grad
   .gtabt{font-size:9.5px;line-height:12px}
   .gtabt span{padding:0 4px}
   .graf .gindt .gtbl.tr, .graf .gindt .gtbl.trm{top:calc(var(--leyH) + 8px)}
-  .graf .gindt .gtbl.trm{right:calc(var(--ax) + 44px)}      /* v86 · deja sitio a la etiqueta ancha «CHoCH 83.062» de la escala */
+  .graf .gindt .gtbl.trm{right:calc(var(--ax) + 8px)}      /* v87 · en el celular la escala solo lleva el precio (etiqueta angosta) */
 }
 .gindI small.eq.ok{border-color:color-mix(in srgb,var(--ac) 55%,transparent);color:var(--acTx)}
 /* el menú «···» de la leyenda de un indicador */
@@ -19192,6 +19192,8 @@ indReg({id:"zz", al:"zigzag zig zag giros swing oscilaciones maximos minimos piv
    · Fractalidad interna: «Secundaria» y «Terciaria» = el mismo temporal con un N más chico (impulsos y retrocesos de adentro). Apagadas de fábrica.
    · Los niveles que aún no se han roto (lo que daría BOS o CHoCH ahora) salen como una raya punteada y su precio va en la escala de la derecha (no sobre las velas).
    · El mini panel dice si cada temporal va ▲ alcista, ▼ bajista o ◆ sin definir.
+   · v87: «barrida» = la mecha pasó el máximo o mínimo anterior pero ningún cuerpo cerró más allá (no es «mayor» ni «menor»); los colores de fábrica son los de las velas
+     (Ajustes → Tema); el tamaño de la letra, el grosor extra de los temporales mayores y el rótulo de la escala (nombre y precio / solo precio) se eligen en «Entradas».
    Todo lo configurable está en «Entradas» (números y reglas) y «Estilo» (qué se dibuja y de qué color).
    =================================================================== */
 function d86EstRun(O, H, L, C, opt) {
@@ -19288,6 +19290,27 @@ function d86EstRun(O, H, L, C, opt) {
   }
   return { piv: piv, ev: ev, bias: sBias, hi: sHi, lo: sLo, pr: sPr, n: n };
 }
+/* v87 · nombre de cada swing. «cierre»=true: un máximo (o mínimo) solo es «mayor» (o «menor») si algún cuerpo cerró más allá del último swing de su tipo que sí contó;
+   si solo pasó la mecha es «BARR» (barrida) y el siguiente swing se compara con el último que sí contó. Con «cierre»=false da lo mismo que el motor (HH, LH, HL, LL, EQH, EQL). */
+function d86Nombres(R, W, cierre){
+  var out=new Array(R.piv.length), ref={"1":null, "-1":null}, k;
+  R.piv.forEach(function(q){
+    out[q.id]=""; if(q.sup>=0) return;
+    var rf=ref[q.t], up=(q.t===1), nm="";
+    if(rf){
+      if(q.price===rf.price) nm= up ? "EQH" : "EQL";
+      else if(up ? q.price>rf.price : q.price<rf.price){
+        nm= up ? "HH" : "LL";
+        if(cierre){
+          var ok=false; for(k=rf.p+1;k<=q.conf && k<W.length;k++){ if(up ? W[k].c>rf.price : W[k].c<rf.price){ ok=true; break; } }
+          if(!ok) nm="BARR";
+        }
+      } else nm= up ? "LH" : "HL";
+    }
+    out[q.id]=nm; if(nm!=="BARR") ref[q.t]=q;
+  });
+  return out;
+}
 var D86_NOMSW={HH:"máx. mayor",LH:"máx. menor",HL:"mín. mayor",LL:"mín. menor",EQH:"máx. igual",EQL:"mín. igual"};
 var D86_TFNOM={"1m":"1m","3m":"3m","5m":"5m","15m":"15m","30m":"30m","1h":"1H","2h":"2H","3h":"3H","4h":"4H","6h":"6H","12h":"12H","1d":"1D","3d":"3D","1w":"1W","1M":"1M"};
 function d86Nom(tf){ return D86_TFNOM[tf]||String(tf).toUpperCase(); }
@@ -19323,9 +19346,9 @@ function d86Mapa(V, Wc, durF, base){
     }
   };
 }
-indReg({id:"est", al:"estructura de mercado bos choch cambio de estructura ruptura continuacion tendencia swing smc fractalidad voz market structure break of structure change of character trend higher high lower low fractal", sn:"Estructura", n:"Estructura de mercado (BOS / CHoCH)", g:"est", panel:false, sinTF:true, ets:true,
+indReg({id:"est", al:"estructura de mercado bos choch cambio de estructura ruptura continuacion tendencia swing smc fractalidad voz market structure break of structure change of character trend higher high lower low fractal", sn:"Estructura", n:"Estructura de mercado (BOS / CHoCH)", g:"est", panel:false, sinTF:true, ets:true, tamEn:"tam",
   nom:function(I, conE){ return tr("Estructura")+(conE ? " "+I.n : ""); },      /* en la leyenda solo el largo del swing principal: «Estructura 5» (las demás cifras estorbarían) */
-  d:"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Es una herramienta de lectura: no da señales de compra ni de venta.",
+  d:"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.",
   en:[["c1d","Dibujar también el temporal de 1 día","bool",true,null,null,"Temporales (fractalidad)","Solo se dibuja si es más grande que el temporal de la gráfica."],
       ["c4h","Dibujar también el temporal de 4 horas","bool",true,null,null,"Temporales (fractalidad)"],
       ["c1h","Dibujar también el temporal de 1 hora","bool",false,null,null,"Temporales (fractalidad)"],
@@ -19335,6 +19358,7 @@ indReg({id:"est", al:"estructura de mercado bos choch cambio de estructura ruptu
       ["n4h","Largo del swing (N) · 4 horas","int",5,1,50,"Temporales (fractalidad)"],
       ["n1h","Largo del swing (N) · 1 hora","int",5,1,50,"Temporales (fractalidad)"],
       ["n15","Largo del swing (N) · 15 minutos","int",5,1,50,"Temporales (fractalidad)"],
+      ["tfw","Grosor extra por cada temporal mayor (%)","int",18,0,100,"Temporales (fractalidad)","0 = todos con el mismo grosor que el de la gráfica."],
       ["sw","Método","sel","sym",[["sym","Simétrico: N velas a cada lado"],["leg","Solo derecha (estilo LuxAlgo)"]],null,"Cómo se detecta el swing"],
       ["brk","Se confirma con","sel","close",[["close","Cierre de la vela"],["wick","Mecha (basta tocar)"]],null,"Cuándo cuenta una ruptura"],
       ["mk","Margen extra","sel","none",[["none","Ninguno"],["pct","% del precio"],["atr","× ATR(14)"]],null,"Cuándo cuenta una ruptura"],
@@ -19347,35 +19371,41 @@ indReg({id:"est", al:"estructura de mercado bos choch cambio de estructura ruptu
       ["s3","Terciaria · un nivel más adentro todavía","bool",false,null,null,"Fractalidad interna (impulsos y retrocesos de adentro)"],
       ["n3","Largo del swing (N) terciario","int",2,1,30,"Fractalidad interna (impulsos y retrocesos de adentro)"],
       ["nom","Nombres de máximos y mínimos","sel","es",[["es","Con palabras (máx. mayor…)"],["sig","Siglas (HH, HL, LH, LL)"]],null,"Rótulos"],
+      ["nomr","Cuándo es «mayor» o «menor»","sel","close",[["close","Solo si un cuerpo cierra más allá (si no, «barrida»)"],["wick","Basta con que la mecha pase"]],null,"Rótulos","Con la mecha sola el mercado solo fue a cazar órdenes: el swing se llama «barrida» y no cambia la lectura de la estructura."],
+      ["tbar","Escribir «barrida» junto a esos swings","bool",true,null,null,"Rótulos"],
+      ["tam","Tamaño de la letra","sel","m",[["xs","Muy pequeña"],["s","Pequeña"],["m","Mediana"],["l","Grande"],["xl","Muy grande"]],null,"Rótulos"],
+      ["tagm","Rótulo en la escala de precios","sel","auto",[["auto","Automático (en el celular, solo el precio)"],["np","Nombre y precio"],["p","Solo el precio"]],null,"Rótulos","El nombre junto al precio ensancha la etiqueta y en una pantalla chica tapa las velas."],
       ["tab","Mini panel con la tendencia de cada temporal","bool",true,null,null,"Rótulos"],
       ["tpos","Dónde va el mini panel","sel","tr",[["tr","Arriba a la derecha"],["br","Abajo a la derecha"],["bl","Abajo a la izquierda"]],null,"Rótulos"]],
-  pl:[{k:"bu",n:"BOS alcista · línea",c:"#089981",e:"sg",w:1.4},
-      {k:"bd",n:"BOS bajista · línea",c:"#F23645",e:"sg",w:1.4},
-      {k:"cu",n:"CHoCH alcista · línea",c:"#089981",e:"sg",w:1.8,d:1},
-      {k:"cd",n:"CHoCH bajista · línea",c:"#F23645",e:"sg",w:1.8,d:1},
-      {k:"lcu",n:"CHoCH alcista · rótulo",c:"#089981",e:"lb",pos:"a",cole:true},
-      {k:"lcd",n:"CHoCH bajista · rótulo",c:"#F23645",e:"lb",pos:"b",cole:true},
-      {k:"lbu",n:"BOS alcista · rótulo",c:"#089981",e:"lb",pos:"a",pln:true,cole:true},
-      {k:"lbd",n:"BOS bajista · rótulo",c:"#F23645",e:"lb",pos:"b",pln:true,cole:true},
-      {k:"shi",n:"Rótulos de los máximos",c:["#089981","#F23645","#787B86"],cn:["Mayor","Menor","Igual"],e:"lb",pos:"a",pln:true,cole:true},
-      {k:"slo",n:"Rótulos de los mínimos",c:["#089981","#F23645","#787B86"],cn:["Mayor","Menor","Igual"],e:"lb",pos:"b",pln:true,cole:true},
-      {k:"pa",net:true,n:"Puntos en los máximos",c:["#089981","#F23645","#787B86"],cn:["Mayor","Menor","Igual"],e:"o",w:1},
-      {k:"pb",net:true,n:"Puntos en los mínimos",c:["#089981","#F23645","#787B86"],cn:["Mayor","Menor","Igual"],e:"o",w:1},
-      {k:"vu",n:"Nivel vigente de arriba (aún sin romper)",c:"#089981",e:"l",w:1,d:1},
-      {k:"vd",n:"Nivel vigente de abajo (aún sin romper)",c:"#F23645",e:"l",w:1,d:1},
-      {k:"g2",n:"Secundaria · líneas",c:"#787B86",e:"sg",w:1,d:1,o:60},
+  pl:[{k:"bu",n:"BOS alcista · línea",c:"@up",e:"sg",w:1.4},
+      {k:"bd",n:"BOS bajista · línea",c:"@dn",e:"sg",w:1.4},
+      {k:"cu",n:"CHoCH alcista · línea",c:"@up",e:"sg",w:1.8,d:1},
+      {k:"cd",n:"CHoCH bajista · línea",c:"@dn",e:"sg",w:1.8,d:1},
+      {k:"lcu",n:"CHoCH alcista · rótulo",c:"@up",e:"lb",pos:"a",cole:true},
+      {k:"lcd",n:"CHoCH bajista · rótulo",c:"@dn",e:"lb",pos:"b",cole:true},
+      {k:"lbu",n:"BOS alcista · rótulo",c:"@up",e:"lb",pos:"a",pln:true,cole:true},
+      {k:"lbd",n:"BOS bajista · rótulo",c:"@dn",e:"lb",pos:"b",pln:true,cole:true},
+      {k:"shi",n:"Rótulos de los máximos",c:["@up","@dn","#787B86","#FFB020"],cn:["Mayor","Menor","Igual","Barrida"],e:"lb",pos:"a",pln:true,cole:true},
+      {k:"slo",n:"Rótulos de los mínimos",c:["@up","@dn","#787B86","#FFB020"],cn:["Mayor","Menor","Igual","Barrida"],e:"lb",pos:"b",pln:true,cole:true},
+      {k:"pa",net:true,n:"Puntos en los máximos",c:["@up","@dn","#787B86","#FFB020"],cn:["Mayor","Menor","Igual","Barrida"],e:"o",w:1},
+      {k:"pb",net:true,n:"Puntos en los mínimos",c:["@up","@dn","#787B86","#FFB020"],cn:["Mayor","Menor","Igual","Barrida"],e:"o",w:1},
+      {k:"vu",n:"Nivel vigente de arriba (aún sin romper)",c:"@up",e:"l",w:1,d:1},
+      {k:"vd",n:"Nivel vigente de abajo (aún sin romper)",c:"@dn",e:"l",w:1,d:1},
+      {k:"g2u",n:"Secundaria · líneas alcistas",c:"@up",e:"sg",w:1,d:1,o:60},
+      {k:"g2d",n:"Secundaria · líneas bajistas",c:"@dn",e:"sg",w:1,d:1,o:60},
       {k:"l2",n:"Secundaria · rótulos",c:"#787B86",e:"lb",pos:"a",pln:true,cole:true,o:75},
-      {k:"v2u",net:true,n:"Secundaria · nivel vigente de arriba",c:"#089981",e:"l",w:1,d:2,o:60},
-      {k:"v2d",net:true,n:"Secundaria · nivel vigente de abajo",c:"#F23645",e:"l",w:1,d:2,o:60},
-      {k:"g3",n:"Terciaria · líneas",c:"#787B86",e:"sg",w:1,d:2,o:45},
+      {k:"v2u",net:true,n:"Secundaria · nivel vigente de arriba",c:"@up",e:"l",w:1,d:2,o:60},
+      {k:"v2d",net:true,n:"Secundaria · nivel vigente de abajo",c:"@dn",e:"l",w:1,d:2,o:60},
+      {k:"g3u",n:"Terciaria · líneas alcistas",c:"@up",e:"sg",w:1,d:2,o:45},
+      {k:"g3d",n:"Terciaria · líneas bajistas",c:"@dn",e:"sg",w:1,d:2,o:45},
       {k:"l3",n:"Terciaria · rótulos",c:"#787B86",e:"lb",pos:"a",pln:true,cole:true,o:60},
-      {k:"v3u",net:true,n:"Terciaria · nivel vigente de arriba",c:"#089981",e:"l",w:1,d:2,o:45},
-      {k:"v3d",net:true,n:"Terciaria · nivel vigente de abajo",c:"#F23645",e:"l",w:1,d:2,o:45},
+      {k:"v3u",net:true,n:"Terciaria · nivel vigente de arriba",c:"@up",e:"l",w:1,d:2,o:45},
+      {k:"v3d",net:true,n:"Terciaria · nivel vigente de abajo",c:"@dn",e:"l",w:1,d:2,o:45},
       {k:"br",n:"Barridas (la mecha pasa, el cierre vuelve)",c:"#787B86",e:"sg",w:1,d:2,on:false}],
   calc:function(V, I, E){
-    var n=V.length, P={}, TX={}, CI={}, TE={}, sg={}, VERDE="#089981", ROJO="#F23645", GRIS="#787B86", i, k;
+    var n=V.length, P={}, TX={}, CI={}, TE={}, sg={}, i, k;
     ["pa","pb","shi","slo","lbu","lbd","lcu","lcd","l2","l3","vu","vd","v2u","v2d","v3u","v3d"].forEach(function(c){ P[c]=iNaN(n); TX[c]=new Array(n); CI[c]=new Array(n); TE[c]=new Array(n); });
-    ["bu","bd","cu","cd","g2","g3","br"].forEach(function(c){ sg[c]=[]; });
+    ["bu","bd","cu","cd","g2u","g2d","g3u","g3d","br"].forEach(function(c){ sg[c]=[]; });
     if(!n) return {p:P, tx:TX, ci:CI, te:TE, sg:sg, ex:{tabla:null}};
     var msC=MS_INTER[E.inter]||0, tAhora=(E.rp && E.rp.activo) ? E.rp.T : Date.now();
     var nB= (V[n-1].t+msC>tAhora) ? n-1 : n;                  /* la vela en formación no entra al cálculo: una ruptura solo cuenta con velas ya cerradas */
@@ -19395,7 +19425,7 @@ indReg({id:"est", al:"estructura de mercado bos choch cambio de estructura ruptu
       colo.push({s:side, i:idx, p:precio}); return true;
     }
     capas.forEach(function(cap){
-      var mp=d86Mapa(V, cap.W, cap.durF, cap.base), wm= cap.base ? 1 : Math.min(2.2, 1+0.18*Math.log(cap.dur/msC)/Math.LN2);
+      var mp=d86Mapa(V, cap.W, cap.durF, cap.base), wm= cap.base ? 1 : Math.min(4, 1+((I.tfw!=null ? I.tfw : 18)/100)*Math.log(cap.dur/msC)/Math.LN2);
       cap.R.ev.forEach(function(e){
         var t0=cap.base ? 0 : cap.W[e.j].t;
         if(e.tipo==="BARRIDA"){ if(cap.base) sg.br.push({i0:e.p, p0:e.nivel, i1:e.j, p1:e.nivel, np:true}); return; }
@@ -19408,12 +19438,14 @@ indReg({id:"est", al:"estructura de mercado bos choch cambio de estructura ruptu
         if(lugar(up ? "a" : "b", xm, e.nivel, txt.length)){ P[kl][xm]=e.nivel; TX[kl][xm]=txt; }
       });
     });
-    /* rótulos y puntos de los swings (solo del temporal de la gráfica): los que un swing más extremo ya reemplazó no se muestran */
+    /* rótulos y puntos de los swings (solo del temporal de la gráfica): los que un swing más extremo ya reemplazó no se muestran.
+       v87 · «barrida»: la mecha pasó el máximo (o mínimo) anterior pero ningún cuerpo cerró más allá: no es «mayor/menor» */
+    var NM=d86Nombres(Rb, Wb, I.nomr!=="wick");
     Rb.piv.forEach(function(q){
       if(q.sup>=0) return;
-      var alto=(q.t===1), ci= (q.lab==="HH"||q.lab==="HL") ? 0 : ((q.lab==="LH"||q.lab==="LL") ? 1 : 2), kp=alto ? "pa" : "pb", kl=alto ? "shi" : "slo";
+      var nm=NM[q.id], alto=(q.t===1), ci= nm==="BARR" ? 3 : ((nm==="HH"||nm==="HL") ? 0 : ((nm==="LH"||nm==="LL") ? 1 : 2)), kp=alto ? "pa" : "pb", kl=alto ? "shi" : "slo";
       P[kp][q.p]=q.price; CI[kp][q.p]=ci;
-      if(q.lab){ P[kl][q.p]=q.price; CI[kl][q.p]=ci; TX[kl][q.p]= I.nom==="es" ? D86_NOMSW[q.lab] : q.lab; }
+      if(nm && (nm!=="BARR" || I.tbar)){ P[kl][q.p]=q.price; CI[kl][q.p]=ci; TX[kl][q.p]= nm==="BARR" ? "barrida" : (I.nom==="es" ? D86_NOMSW[nm] : nm); }
     });
     /* niveles vigentes: lo que daría BOS o CHoCH si el precio cierra más allá. La raya va del swing hasta la última vela; el precio, a la escala. */
     function vigentes(R, ku, kd, pref){
@@ -19435,7 +19467,7 @@ indReg({id:"est", al:"estructura de mercado bos choch cambio de estructura ruptu
       var Rt=d86Corre(Wb, I, Nt), ult=Rt.ev.filter(function(e){ return e.tipo!=="BARRIDA"; }).slice(-8);
       ult.forEach(function(e){
         var up=(e.dir===1), choch=(e.tipo==="CHOCH"), i0=e.p, i1=Math.max(e.p, e.j);
-        sg[tr2[2]].push({i0:i0, p0:e.nivel, i1:i1, p1:e.nivel, c: up ? VERDE : ROJO, np:true});
+        sg[tr2[2]+(up ? "u" : "d")].push({i0:i0, p0:e.nivel, i1:i1, p1:e.nivel, np:true});
         var txt=tr2[6]+" "+(choch ? "CHoCH" : "BOS"), xm= (i1-i0<8) ? Math.max(i0, i1-2) : Math.round((i0+i1)/2);
         if(lugar("a", xm, e.nivel, txt.length)){ P[tr2[3]][xm]=e.nivel; TX[tr2[3]][xm]=txt; }
       });
@@ -19444,7 +19476,7 @@ indReg({id:"est", al:"estructura de mercado bos choch cambio de estructura ruptu
     /* el mini panel: la tendencia de cada temporal, del mayor al menor */
     var filas=capas.map(function(cap){
       var b= cap.R.n>0 ? cap.R.bias[cap.R.n-1] : 0;
-      return [{t:cap.nom}, {t: b===1 ? "▲ Alcista" : (b===-1 ? "▼ Bajista" : "◆ Sin definir"), c: b===1 ? VERDE : (b===-1 ? ROJO : GRIS)}];
+      return [{t:cap.nom}, {t: b===1 ? "▲ Alcista" : (b===-1 ? "▼ Bajista" : "◆ Sin definir"), ck: b===1 ? "bu" : (b===-1 ? "bd" : null), c: b===0 ? "var(--t2)" : null}];      /* v87 · el color sale de las líneas BOS (Estilo) */
     });
     return {p:P, tx:TX, ci:CI, te:TE, sg:sg, ex:{tabla: (I.tab && filas.length) ? {pos:(I.tpos==="br"||I.tpos==="bl") ? I.tpos : "trm", f:filas} : null}};
   }});
@@ -19599,11 +19631,23 @@ function indPanel(it){
   if(c.pdin){ var on=false; indPlots(it).forEach(function(p){ if(p.on && !p.fo) on=true; }); return on; }
   return !!c.panel;
 }
+/* v87 · un color de fábrica puede ser «@up» o «@dn»: el verde y el rojo de las velas de la app (los de Ajustes → Tema), que así se mueven con ellos */
+function indTemaCol(c){
+  if(Array.isArray(c)) return c.map(indTemaCol);
+  if(c!=="@up" && c!=="@dn") return c;
+  var v="", T;
+  try{ v=document.documentElement.style.getPropertyValue(c==="@up" ? "--up" : "--dn").trim(); }catch(e){}
+  if(!/^#[0-9a-fA-F]{6}$/.test(v)){ T=(typeof BD!=="undefined" && BD && BD.tema) || {}; v=T[c==="@up" ? "up" : "dn"]; }
+  return /^#[0-9a-fA-F]{6}$/.test(v||"") ? v : (c==="@up" ? "#16D98A" : "#FF4D6A");
+}
+/* v87 · tamaño de los rótulos: solo lo usa el indicador que declara «tamEn» (la clave de su entrada); los demás quedan en 1 */
+var IND_FS={xs:0.8, s:0.9, m:1, l:1.2, xl:1.45};
+function indFs(it){ var c=IND66[it.id]; if(!c || !c.tamEn) return 1; var v=indEn(it)[c.tamEn]; return IND_FS[v]||1; }
 function indPlots(it){
-  var c=IND66[it.id], st=it.st||{};
+  var c=IND66[it.id], st=it.st||{}, fs=indFs(it);
   return c.pl.map(function(p){
     var s=st[p.k]||{};
-    return {k:p.k, n:p.n, c:(s.c!=null?s.c:p.c), cd:p.c, e:s.e||p.e||"l", ed:p.e||"l", w:(s.w!=null?s.w:(p.w||1)), d:(s.d!=null?s.d:(p.d||0)),
+    return {k:p.k, n:p.n, c:indTemaCol(s.c!=null?s.c:p.c), cd:indTemaCol(p.c), fs:fs, e:s.e||p.e||"l", ed:p.e||"l", w:(s.w!=null?s.w:(p.w||1)), d:(s.d!=null?s.d:(p.d||0)),
             o:(s.o!=null?s.o:(p.o!=null?p.o:100)), on:(s.on!=null?s.on:(p.on!==false)), cn:p.cn, ov:p.ov, pos:p.pos, cin:p.cin, fo:p.fo, net:p.net, pln:p.pln, cole:p.cole};      /* v86 · net: esta traza no pone etiqueta en la escala */
   });
 }
@@ -20043,28 +20087,28 @@ function indTrazo(p, S, ctx){
       var vl=v[i]; if(!iOk(vl)) continue;
       var t=(tx && tx[i]!=null) ? String(tx[i]) : "";
       if(!t) continue;
-      var xl=X(i), yl=Y(vl), cl=colorIdx(i), arriba=(p.pos==="a");
+      var xl=X(i), yl=Y(vl), cl=colorIdx(i), arriba=(p.pos==="a"), fz=p.fs||1;      /* v87 · fz: tamaño de la letra elegido */
       if(yl<-30 || yl>H+30) continue;
       t=tr(t);
       if(p.cole && ctx.colis){                          /* v86 · un rótulo que caería encima de otro ya puesto (por prioridad de orden) no se dibuja */
-        var wr, ci2, ya0= arriba ? yl-5-15 : yl+4, hit=false, q3;
-        if(p.pln||p.plano){ wr=4; for(ci2=0;ci2<t.length;ci2++) wr+= t.charCodeAt(ci2)>=0x2E80 ? 9.8 : 5.4; } else wr=t.length*5.4+9;      /* los ideogramas ocupan casi el doble de ancho */
-        for(q3=0;q3<ctx.colis.length;q3++){ var rr=ctx.colis[q3]; if(xl-wr/2<rr.x1 && xl+wr/2>rr.x0 && ya0<rr.y1 && ya0+15>rr.y0){ hit=true; break; } }
+        var wr, ci2, ya0= arriba ? yl-5-15*fz : yl+4, hit=false, q3;
+        if(p.pln||p.plano){ wr=4; for(ci2=0;ci2<t.length;ci2++) wr+= (t.charCodeAt(ci2)>=0x2E80 ? 9.8 : 5.4)*fz; } else wr=(t.length*5.4+9)*fz;      /* los ideogramas ocupan casi el doble de ancho */
+        for(q3=0;q3<ctx.colis.length;q3++){ var rr=ctx.colis[q3]; if(xl-wr/2<rr.x1 && xl+wr/2>rr.x0 && ya0<rr.y1 && ya0+15*fz>rr.y0){ hit=true; break; } }
         if(hit) continue;
-        ctx.colis.push({x0:xl-wr/2-1, x1:xl+wr/2+1, y0:ya0-1, y1:ya0+16});
+        ctx.colis.push({x0:xl-wr/2-1, x1:xl+wr/2+1, y0:ya0-1, y1:ya0+16*fz});
       }
       if(p.plano || p.pln){                              /* v70 · texto suelto (varias líneas) como en la referencia, sin caja */
-        var ls=t.split("\n"), lh=11.5, y0= arriba ? yl-6-(ls.length-1)*lh : yl+6+9.5;
-        out+='<text text-anchor="middle" font-size="9.5" font-weight="700" fill="'+cl+'" fill-opacity="'+op+'" stroke="var(--b0)" stroke-width="2.4" stroke-linejoin="round" paint-order="stroke" translate="no">'+
+        var ls=t.split("\n"), lh=11.5*fz, y0= arriba ? yl-6-(ls.length-1)*lh : yl+6+9.5*fz;
+        out+='<text text-anchor="middle" font-size="'+f(9.5*fz)+'" font-weight="700" fill="'+cl+'" fill-opacity="'+op+'" stroke="var(--b0)" stroke-width="2.4" stroke-linejoin="round" paint-order="stroke" translate="no">'+
              ls.map(function(q2,k2){ return '<tspan x="'+f(xl)+'" y="'+f(y0+k2*lh)+'">'+esc(q2)+'</tspan>'; }).join("")+'</text>';
         continue;
       }
       if(t.length<=1){
-        out+='<text x="'+f(xl)+'" y="'+f(arriba?yl-4:yl+11)+'" text-anchor="middle" font-size="11" font-weight="800" fill="'+cl+'" fill-opacity="'+op+'" translate="no">'+esc(t)+'</text>';
+        out+='<text x="'+f(xl)+'" y="'+f(arriba?yl-4:yl+11*fz)+'" text-anchor="middle" font-size="'+f(11*fz)+'" font-weight="800" fill="'+cl+'" fill-opacity="'+op+'" translate="no">'+esc(t)+'</text>';
       } else {
-        var wb=t.length*5.4+9, yb=arriba? yl-5-14 : yl+5;
-        out+='<g translate="no"><rect x="'+f(xl-wb/2)+'" y="'+f(yb)+'" width="'+f(wb)+'" height="14" rx="3" fill="'+cl+'" fill-opacity="'+op+'"/>'+
-             '<text x="'+f(xl)+'" y="'+f(yb+10.2)+'" text-anchor="middle" font-size="8.5" font-weight="800" fill="'+indTinta(cl)+'">'+esc(t)+'</text></g>';
+        var wb=(t.length*5.4+9)*fz, yb=arriba? yl-5-14*fz : yl+5;
+        out+='<g translate="no"><rect x="'+f(xl-wb/2)+'" y="'+f(yb)+'" width="'+f(wb)+'" height="'+f(14*fz)+'" rx="3" fill="'+cl+'" fill-opacity="'+op+'"/>'+
+             '<text x="'+f(xl)+'" y="'+f(yb+10.2*fz)+'" text-anchor="middle" font-size="'+f(8.5*fz)+'" font-weight="800" fill="'+indTinta(cl)+'">'+esc(t)+'</text></g>';
       }
     }
     return out;
@@ -20297,6 +20341,10 @@ function indEtDe(p, res, it, ix, w, sobrePrecio, Y){
   var S=res.p && res.p[p.k]; if(!S) return null;
   var x=S[ix]; if(!iOk(x)) return null;
   var c=indColorDe(p, res.ci && res.ci[p.k], ix), pre=(res.te && res.te[p.k] && res.te[p.k][ix]!=null) ? String(res.te[p.k][ix]) : "";     /* v86 · res.te: texto que va delante del precio en la escala («CHoCH 83.062») */
+  if(pre){                                           /* v87 · «tagm»: con el nombre delante la etiqueta se ensancha y, en un celular, se mete sobre las velas */
+    var tm=IND66[it.id] && IND66[it.id].tamEn ? indEn(it).tagm : undefined;
+    if(tm==="p" || (tm==="auto" && typeof window!=="undefined" && window.innerWidth<=560)) pre="";
+  }
   return {y:Y(x), txt:(pre ? esc(tr(pre))+" " : "")+indFmt(x, it, sobrePrecio), bg:c, fg:indTinta(c), ancho:!!pre};
 }
 function indTicks(lo, hi, alto){
@@ -20410,6 +20458,19 @@ function indPane(E, g, ph, base){
 }
 /* las tablas que dibujan algunos indicadores (la de olas del TSA): texto sin fondo, en una esquina, como las tablas de Pine.
    Cada celda: {t:texto fijo (se traduce), x:cifra o texto que se agrega tal cual, c:color} */
+/* v87 · una celda de la mini tabla puede llevar «ck» (la clave de un trazo): toma el color que ese trazo tenga en Estilo */
+function indTablaCol(it, tb){
+  if(!tb || !tb.f) return tb;
+  var hay=false, by={};
+  tb.f.forEach(function(fila){ fila.forEach(function(c){ if(c && c.ck) hay=true; }); });
+  if(!hay) return tb;
+  indPlots(it).forEach(function(p){ by[p.k]=p; });
+  return {pos:tb.pos, f:tb.f.map(function(fila){ return fila.map(function(c){
+    var p= c && c.ck ? by[c.ck] : null; if(!p) return c;
+    var o={}, q; for(q in c) o[q]=c[q];
+    o.c=indCol(Array.isArray(p.c) ? p.c[0] : p.c); return o;
+  }); })};
+}
 function indTablasHTML(arr){
   if(!arr || !arr.length) return "";
   var por={tr:"", tl:"", br:"", bl:"", trm:""}, h="";
@@ -20462,14 +20523,14 @@ function indPintar(E, W, H){
       if(it.oc && !enGr[it.u]) ley.push(indLeyenda(E, it, null, ix, false));
       /* sus trazos «sobre el precio» (la línea dinámica del TSA) */
       if(res) s+=indGU(it, indDibujarItem(E, it, res, ctx, "fo"));
-      if(res && res.ex && res.ex.tabla) tablas.push(res.ex.tabla);
+      if(res && res.ex && res.ex.tabla) tablas.push(indTablaCol(it, res.ex.tabla));
       return;
     }
     if(it.oc){ ley.push(indLeyenda(E, it, null, ix, false)); return; }
     if(it.v74){ if(!ley.v74){ ley.v74=1; var lv74=patTodosLeyenda74(); if(lv74) ley.push(lv74); } if(res && cat.perfil && typeof indPerfil==="function") s+=indPerfil(E, it, cat, ctx); return; }      /* v74 · pto 39: las de «todos» no llenan la leyenda */
     ley.push(indLeyenda(E, it, res, ix, true));
     if(!res) return;
-    if(res.ex && res.ex.tabla) tablas.push(res.ex.tabla);
+    if(res.ex && res.ex.tabla) tablas.push(indTablaCol(it, res.ex.tabla));
     if(cat.perfil && typeof indPerfil==="function"){
       s+=indPerfil(E, it, cat, ctx);
       return;
@@ -54646,6 +54707,25 @@ DIC.en={
 "Terciaria · nivel vigente de arriba":"Tertiary · active level above",
 "Terciaria · nivel vigente de abajo":"Tertiary · active level below",
 "Barridas (la mecha pasa, el cierre vuelve)":"Sweeps (the wick passes the level, the close comes back)",
+"barrida":"sweep",
+"Barrida":"Sweep",
+"Grosor extra por cada temporal mayor (%)":"Extra thickness per higher timeframe (%)",
+"0 = todos con el mismo grosor que el de la gráfica.":"0 = all the same thickness as the chart's timeframe.",
+"Cuándo es «mayor» o «menor»":"When it counts as “higher” or “lower”",
+"Solo si un cuerpo cierra más allá (si no, «barrida»)":"Only if a body closes beyond it (otherwise “sweep”)",
+"Basta con que la mecha pase":"A wick passing is enough",
+"Con la mecha sola el mercado solo fue a cazar órdenes: el swing se llama «barrida» y no cambia la lectura de la estructura.":"With just the wick, the market only went hunting for orders: the swing is called “sweep” and does not change how the structure reads.",
+"Escribir «barrida» junto a esos swings":"Write “sweep” next to those swings",
+"Rótulo en la escala de precios":"Label on the price scale",
+"Automático (en el celular, solo el precio)":"Automatic (on a phone, price only)",
+"Nombre y precio":"Name and price",
+"Solo el precio":"Price only",
+"El nombre junto al precio ensancha la etiqueta y en una pantalla chica tapa las velas.":"The name next to the price widens the label and, on a small screen, covers the candles.",
+"Secundaria · líneas alcistas":"Secondary · bullish lines",
+"Secundaria · líneas bajistas":"Secondary · bearish lines",
+"Terciaria · líneas alcistas":"Tertiary · bullish lines",
+"Terciaria · líneas bajistas":"Tertiary · bearish lines",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Shows where the trend continues (BOS: a close breaks a swing in the trend's direction) and where it changes (CHoCH: a close breaks one against it). Higher timeframes are drawn thicker and carry their name. Levels not yet broken appear dotted, and their price sits on the right-hand scale. Within the same timeframe you can also show the smaller impulses and pullbacks (\"Secondary\" and \"Tertiary\"). A swing only appears N candles after it forms, and nothing is repainted. If the wick passes the previous high or low but no candle body closes beyond it, that swing is called “sweep”, not “higher” or “lower”. It is a reading tool: it gives no buy or sell signals.",
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC.pt={
@@ -61290,6 +61370,25 @@ DIC.pt={
 "Terciaria · nivel vigente de arriba":"Terciária · nível vigente acima",
 "Terciaria · nivel vigente de abajo":"Terciária · nível vigente abaixo",
 "Barridas (la mecha pasa, el cierre vuelve)":"Varreduras (o pavio passa, o fechamento volta)",
+"barrida":"varredura",
+"Barrida":"Varredura",
+"Grosor extra por cada temporal mayor (%)":"Espessura extra por cada período maior (%)",
+"0 = todos con el mismo grosor que el de la gráfica.":"0 = todos com a mesma espessura do período do gráfico.",
+"Cuándo es «mayor» o «menor»":"Quando conta como «mais alto» ou «mais baixo»",
+"Solo si un cuerpo cierra más allá (si no, «barrida»)":"Só se um corpo fechar além (senão, «varredura»)",
+"Basta con que la mecha pase":"Basta o pavio passar",
+"Con la mecha sola el mercado solo fue a cazar órdenes: el swing se llama «barrida» y no cambia la lectura de la estructura.":"Só com o pavio, o mercado apenas foi caçar ordens: o swing se chama «varredura» e não muda a leitura da estrutura.",
+"Escribir «barrida» junto a esos swings":"Escrever «varredura» junto a esses swings",
+"Rótulo en la escala de precios":"Rótulo na escala de preços",
+"Automático (en el celular, solo el precio)":"Automático (no celular, só o preço)",
+"Nombre y precio":"Nome e preço",
+"Solo el precio":"Só o preço",
+"El nombre junto al precio ensancha la etiqueta y en una pantalla chica tapa las velas.":"O nome junto ao preço alarga o rótulo e, numa tela pequena, cobre as velas.",
+"Secundaria · líneas alcistas":"Secundária · linhas de alta",
+"Secundaria · líneas bajistas":"Secundária · linhas de baixa",
+"Terciaria · líneas alcistas":"Terciária · linhas de alta",
+"Terciaria · líneas bajistas":"Terciária · linhas de baixa",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Mostra onde a tendência continua (BOS: o fechamento rompe um swing a favor) e onde muda (CHoCH: rompe-o contra). Os períodos maiores são desenhados mais grossos e com o seu nome. Os níveis ainda não rompidos aparecem pontilhados e o preço fica na escala da direita. Dentro do mesmo período também dá para mostrar os impulsos e recuos menores («Secundária» e «Terciária»). Um swing só aparece N velas depois de se formar e nada é repintado. Se o pavio passa a máxima ou a mínima anterior mas nenhum corpo fecha além dela, esse swing se chama «varredura», e não «mais alto» ou «mais baixo». É uma ferramenta de leitura: não dá sinais de compra nem de venda.",
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC.fr={
@@ -67934,6 +68033,25 @@ DIC.fr={
 "Terciaria · nivel vigente de arriba":"Tertiaire · niveau actif au-dessus",
 "Terciaria · nivel vigente de abajo":"Tertiaire · niveau actif en dessous",
 "Barridas (la mecha pasa, el cierre vuelve)":"Balayages (la mèche dépasse, la clôture revient)",
+"barrida":"balayage",
+"Barrida":"Balayage",
+"Grosor extra por cada temporal mayor (%)":"Épaisseur supplémentaire par unité de temps supérieure (%)",
+"0 = todos con el mismo grosor que el de la gráfica.":"0 = tous de la même épaisseur que l'unité de temps du graphique.",
+"Cuándo es «mayor» o «menor»":"Quand compte-t-il comme « plus haut » ou « plus bas »",
+"Solo si un cuerpo cierra más allá (si no, «barrida»)":"Seulement si un corps clôture au-delà (sinon « balayage »)",
+"Basta con que la mecha pase":"Il suffit que la mèche dépasse",
+"Con la mecha sola el mercado solo fue a cazar órdenes: el swing se llama «barrida» y no cambia la lectura de la estructura.":"Avec la seule mèche, le marché est juste allé chercher des ordres : le swing s'appelle « balayage » et ne change pas la lecture de la structure.",
+"Escribir «barrida» junto a esos swings":"Écrire « balayage » près de ces swings",
+"Rótulo en la escala de precios":"Étiquette sur l'échelle des prix",
+"Automático (en el celular, solo el precio)":"Automatique (sur mobile, seulement le prix)",
+"Nombre y precio":"Nom et prix",
+"Solo el precio":"Le prix seulement",
+"El nombre junto al precio ensancha la etiqueta y en una pantalla chica tapa las velas.":"Le nom à côté du prix élargit l'étiquette et, sur un petit écran, masque les bougies.",
+"Secundaria · líneas alcistas":"Secondaire · lignes haussières",
+"Secundaria · líneas bajistas":"Secondaire · lignes baissières",
+"Terciaria · líneas alcistas":"Tertiaire · lignes haussières",
+"Terciaria · líneas bajistas":"Tertiaire · lignes baissières",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Indique où la tendance continue (BOS : une clôture casse un swing dans le sens de la tendance) et où elle change (CHoCH : une clôture le casse à contre-sens). Les unités de temps supérieures sont tracées plus épaisses et portent leur nom. Les niveaux pas encore cassés sont en pointillés et leur prix figure sur l'échelle de droite. Dans la même unité de temps, on peut aussi afficher les impulsions et replis plus petits (« Secondaire » et « Tertiaire »). Un swing n'apparaît que N bougies après sa formation et rien n'est repeint. Si la mèche dépasse le haut ou le bas précédent mais qu'aucun corps ne clôture au-delà, ce swing s'appelle « balayage », et non « plus haut » ou « plus bas ». C'est un outil de lecture : il ne donne aucun signal d'achat ni de vente.",
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC.de={
@@ -74578,6 +74696,25 @@ DIC.de={
 "Terciaria · nivel vigente de arriba":"Tertiär · aktives Niveau darüber",
 "Terciaria · nivel vigente de abajo":"Tertiär · aktives Niveau darunter",
 "Barridas (la mecha pasa, el cierre vuelve)":"Sweeps (der Docht geht darüber, der Schlusskurs kehrt zurück)",
+"barrida":"sweep",
+"Barrida":"Sweep",
+"Grosor extra por cada temporal mayor (%)":"Zusätzliche Dicke je höherem Zeitrahmen (%)",
+"0 = todos con el mismo grosor que el de la gráfica.":"0 = alle gleich dick wie der Zeitrahmen des Charts.",
+"Cuándo es «mayor» o «menor»":"Wann es als „höher“ oder „tiefer“ zählt",
+"Solo si un cuerpo cierra más allá (si no, «barrida»)":"Nur wenn ein Kerzenkörper darüber hinaus schließt (sonst „Sweep“)",
+"Basta con que la mecha pase":"Es genügt, wenn der Docht darüber hinausgeht",
+"Con la mecha sola el mercado solo fue a cazar órdenes: el swing se llama «barrida» y no cambia la lectura de la estructura.":"Mit dem Docht allein hat der Markt nur Orders abgegriffen: Der Swing heißt „Sweep“ und ändert die Lesart der Struktur nicht.",
+"Escribir «barrida» junto a esos swings":"„Sweep“ neben diese Swings schreiben",
+"Rótulo en la escala de precios":"Beschriftung auf der Preisskala",
+"Automático (en el celular, solo el precio)":"Automatisch (auf dem Handy nur der Preis)",
+"Nombre y precio":"Name und Preis",
+"Solo el precio":"Nur der Preis",
+"El nombre junto al precio ensancha la etiqueta y en una pantalla chica tapa las velas.":"Der Name neben dem Preis verbreitert die Beschriftung und verdeckt auf einem kleinen Bildschirm die Kerzen.",
+"Secundaria · líneas alcistas":"Sekundär · Aufwärts-Linien",
+"Secundaria · líneas bajistas":"Sekundär · Abwärts-Linien",
+"Terciaria · líneas alcistas":"Tertiär · Aufwärts-Linien",
+"Terciaria · líneas bajistas":"Tertiär · Abwärts-Linien",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Zeigt, wo der Trend sich fortsetzt (BOS: ein Schlusskurs bricht einen Swing in Trendrichtung) und wo er dreht (CHoCH: ein Schlusskurs bricht ihn gegen den Trend). Höhere Zeitrahmen werden dicker gezeichnet und tragen ihren Namen. Noch nicht gebrochene Niveaus erscheinen gepunktet, ihr Preis steht auf der rechten Skala. Innerhalb desselben Zeitrahmens lassen sich auch die kleineren Impulse und Rücksetzer anzeigen („Sekundär“ und „Tertiär“). Ein Swing erscheint erst N Kerzen nach seiner Bildung, nichts wird nachträglich neu gezeichnet. Geht der Docht über das vorherige Hoch oder Tief hinaus, aber kein Kerzenkörper schließt darüber hinaus, heißt dieser Swing „Sweep“, nicht „höher“ oder „tiefer“. Es ist ein Lesewerkzeug: Es gibt keine Kauf- oder Verkaufssignale.",
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC.it={
@@ -81222,6 +81359,25 @@ DIC.it={
 "Terciaria · nivel vigente de arriba":"Terziaria · livello attivo sopra",
 "Terciaria · nivel vigente de abajo":"Terziaria · livello attivo sotto",
 "Barridas (la mecha pasa, el cierre vuelve)":"Sweep (l'ombra supera il livello, la chiusura rientra)",
+"barrida":"sweep",
+"Barrida":"Sweep",
+"Grosor extra por cada temporal mayor (%)":"Spessore extra per ogni timeframe maggiore (%)",
+"0 = todos con el mismo grosor que el de la gráfica.":"0 = tutti con lo stesso spessore del timeframe del grafico.",
+"Cuándo es «mayor» o «menor»":"Quando conta come «più alto» o «più basso»",
+"Solo si un cuerpo cierra más allá (si no, «barrida»)":"Solo se un corpo chiude oltre (altrimenti «sweep»)",
+"Basta con que la mecha pase":"Basta che l'ombra superi",
+"Con la mecha sola el mercado solo fue a cazar órdenes: el swing se llama «barrida» y no cambia la lectura de la estructura.":"Con la sola ombra il mercato è andato solo a caccia di ordini: lo swing si chiama «sweep» e non cambia la lettura della struttura.",
+"Escribir «barrida» junto a esos swings":"Scrivere «sweep» accanto a quegli swing",
+"Rótulo en la escala de precios":"Etichetta sulla scala dei prezzi",
+"Automático (en el celular, solo el precio)":"Automatico (su telefono, solo il prezzo)",
+"Nombre y precio":"Nome e prezzo",
+"Solo el precio":"Solo il prezzo",
+"El nombre junto al precio ensancha la etiqueta y en una pantalla chica tapa las velas.":"Il nome accanto al prezzo allarga l'etichetta e, su uno schermo piccolo, copre le candele.",
+"Secundaria · líneas alcistas":"Secondaria · linee rialziste",
+"Secundaria · líneas bajistas":"Secondaria · linee ribassiste",
+"Terciaria · líneas alcistas":"Terziaria · linee rialziste",
+"Terciaria · líneas bajistas":"Terziaria · linee ribassiste",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Mostra dove il trend prosegue (BOS: una chiusura rompe uno swing nella direzione del trend) e dove cambia (CHoCH: lo rompe contro il trend). I timeframe maggiori sono disegnati più spessi e con il loro nome. I livelli non ancora rotti compaiono a puntini e il loro prezzo resta sulla scala di destra. Dentro lo stesso timeframe si possono mostrare anche gli impulsi e i ritracciamenti più piccoli («Secondaria» e «Terziaria»). Uno swing compare solo N candele dopo essersi formato e nulla viene ridisegnato. Se l'ombra supera il massimo o il minimo precedente ma nessun corpo chiude oltre, quello swing si chiama «sweep», non «più alto» o «più basso». È uno strumento di lettura: non dà segnali di acquisto né di vendita.",
 };
 /* NEDERLANDS · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.nl={
@@ -88142,6 +88298,25 @@ DIC.nl={
 "Terciaria · nivel vigente de arriba":"Tertiair · actief niveau erboven",
 "Terciaria · nivel vigente de abajo":"Tertiair · actief niveau eronder",
 "Barridas (la mecha pasa, el cierre vuelve)":"Sweeps (de lont gaat erdoorheen, de slotkoers komt terug)",
+"barrida":"sweep",
+"Barrida":"Sweep",
+"Grosor extra por cada temporal mayor (%)":"Extra dikte per hoger tijdframe (%)",
+"0 = todos con el mismo grosor que el de la gráfica.":"0 = allemaal even dik als het tijdframe van de grafiek.",
+"Cuándo es «mayor» o «menor»":"Wanneer het als «hoger» of «lager» telt",
+"Solo si un cuerpo cierra más allá (si no, «barrida»)":"Alleen als een kaarslichaam erbuiten sluit (anders «sweep»)",
+"Basta con que la mecha pase":"Het is genoeg als de lont erdoorheen gaat",
+"Con la mecha sola el mercado solo fue a cazar órdenes: el swing se llama «barrida» y no cambia la lectura de la estructura.":"Met alleen de lont ging de markt slechts orders ophalen: de swing heet «sweep» en verandert de lezing van de structuur niet.",
+"Escribir «barrida» junto a esos swings":"«Sweep» bij die swings schrijven",
+"Rótulo en la escala de precios":"Label op de prijsschaal",
+"Automático (en el celular, solo el precio)":"Automatisch (op een telefoon alleen de prijs)",
+"Nombre y precio":"Naam en prijs",
+"Solo el precio":"Alleen de prijs",
+"El nombre junto al precio ensancha la etiqueta y en una pantalla chica tapa las velas.":"De naam naast de prijs maakt het label breder en bedekt op een klein scherm de kaarsen.",
+"Secundaria · líneas alcistas":"Secundair · stijgende lijnen",
+"Secundaria · líneas bajistas":"Secundair · dalende lijnen",
+"Terciaria · líneas alcistas":"Tertiair · stijgende lijnen",
+"Terciaria · líneas bajistas":"Tertiair · dalende lijnen",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Laat zien waar de trend doorgaat (BOS: een slotkoers breekt een swing in de richting van de trend) en waar hij omslaat (CHoCH: een slotkoers breekt hem tegen de trend in). Hogere tijdframes worden dikker getekend en dragen hun naam. Niveaus die nog niet zijn doorbroken zijn gestippeld en hun prijs staat op de rechterschaal. Binnen hetzelfde tijdframe kun je ook de kleinere impulsen en terugvallen tonen («Secundair» en «Tertiair»). Een swing verschijnt pas N kaarsen nadat hij zich heeft gevormd en er wordt niets herschilderd. Als de lont het vorige hoogste of laagste punt passeert maar geen kaarslichaam daarbuiten sluit, heet die swing «sweep», niet «hoger» of «lager». Het is een leeshulpmiddel: het geeft geen koop- of verkoopsignalen.",
 };
 /* POLSKI · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.pl={
@@ -95062,6 +95237,25 @@ DIC.pl={
 "Terciaria · nivel vigente de arriba":"Trzeciorzędna · aktywny poziom powyżej",
 "Terciaria · nivel vigente de abajo":"Trzeciorzędna · aktywny poziom poniżej",
 "Barridas (la mecha pasa, el cierre vuelve)":"Sweepy (knot przebija, zamknięcie wraca)",
+"barrida":"sweep",
+"Barrida":"Sweep",
+"Grosor extra por cada temporal mayor (%)":"Dodatkowa grubość na każdy wyższy interwał (%)",
+"0 = todos con el mismo grosor que el de la gráfica.":"0 = wszystkie tak samo grube jak interwał wykresu.",
+"Cuándo es «mayor» o «menor»":"Kiedy liczy się jako „wyższy” lub „niższy”",
+"Solo si un cuerpo cierra más allá (si no, «barrida»)":"Tylko gdy ciało świecy zamknie się poza nim (inaczej „sweep”)",
+"Basta con que la mecha pase":"Wystarczy, że knot przekroczy",
+"Con la mecha sola el mercado solo fue a cazar órdenes: el swing se llama «barrida» y no cambia la lectura de la estructura.":"Przy samym knocie rynek tylko polował na zlecenia: swing nazywa się „sweep” i nie zmienia odczytu struktury.",
+"Escribir «barrida» junto a esos swings":"Pisać „sweep” przy tych swingach",
+"Rótulo en la escala de precios":"Etykieta na skali cen",
+"Automático (en el celular, solo el precio)":"Automatycznie (na telefonie tylko cena)",
+"Nombre y precio":"Nazwa i cena",
+"Solo el precio":"Tylko cena",
+"El nombre junto al precio ensancha la etiqueta y en una pantalla chica tapa las velas.":"Nazwa obok ceny poszerza etykietę, a na małym ekranie zakrywa świece.",
+"Secundaria · líneas alcistas":"Drugorzędna · linie wzrostowe",
+"Secundaria · líneas bajistas":"Drugorzędna · linie spadkowe",
+"Terciaria · líneas alcistas":"Trzeciorzędna · linie wzrostowe",
+"Terciaria · líneas bajistas":"Trzeciorzędna · linie spadkowe",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Pokazuje, gdzie trend trwa (BOS: zamknięcie przełamuje swing zgodnie z trendem), a gdzie się zmienia (CHoCH: zamknięcie przełamuje go wbrew trendowi). Wyższe interwały są rysowane grubiej i opisane nazwą. Poziomy jeszcze nieprzełamane są kropkowane, a ich cena widnieje na skali po prawej. W obrębie tego samego interwału można też pokazać mniejsze impulsy i korekty („Drugorzędna” i „Trzeciorzędna”). Swing pojawia się dopiero N świec po uformowaniu i nic nie jest przerysowywane. Jeśli knot przekracza poprzedni szczyt lub dołek, ale żadne ciało świecy nie zamyka się poza nim, taki swing nazywa się „sweep”, a nie „wyższy” czy „niższy”. To narzędzie do czytania wykresu: nie daje sygnałów kupna ani sprzedaży.",
 };
 /* TÜRKÇE · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.tr={
@@ -101982,6 +102176,25 @@ DIC.tr={
 "Terciaria · nivel vigente de arriba":"Üçüncül · geçerli seviye (üstte)",
 "Terciaria · nivel vigente de abajo":"Üçüncül · geçerli seviye (altta)",
 "Barridas (la mecha pasa, el cierre vuelve)":"Süpürmeler (fitil geçer, kapanış geri döner)",
+"barrida":"süpürme",
+"Barrida":"Süpürme",
+"Grosor extra por cada temporal mayor (%)":"Her büyük zaman dilimi için ek kalınlık (%)",
+"0 = todos con el mismo grosor que el de la gráfica.":"0 = hepsi grafiğin zaman dilimiyle aynı kalınlıkta.",
+"Cuándo es «mayor» o «menor»":"Ne zaman «daha yüksek» ya da «daha alçak» sayılır",
+"Solo si un cuerpo cierra más allá (si no, «barrida»)":"Yalnızca bir gövde ötesinde kapanırsa (aksi halde «süpürme»)",
+"Basta con que la mecha pase":"Fitilin geçmesi yeter",
+"Con la mecha sola el mercado solo fue a cazar órdenes: el swing se llama «barrida» y no cambia la lectura de la estructura.":"Yalnızca fitille piyasa sadece emirleri avlamaya gitti: swing «süpürme» olarak adlandırılır ve yapının okunuşunu değiştirmez.",
+"Escribir «barrida» junto a esos swings":"Bu swing'lerin yanına «süpürme» yaz",
+"Rótulo en la escala de precios":"Fiyat ölçeğindeki etiket",
+"Automático (en el celular, solo el precio)":"Otomatik (telefonda yalnızca fiyat)",
+"Nombre y precio":"Ad ve fiyat",
+"Solo el precio":"Yalnızca fiyat",
+"El nombre junto al precio ensancha la etiqueta y en una pantalla chica tapa las velas.":"Fiyatın yanındaki ad etiketi genişletir ve küçük ekranda mumları kapatır.",
+"Secundaria · líneas alcistas":"İkincil · yükseliş çizgileri",
+"Secundaria · líneas bajistas":"İkincil · düşüş çizgileri",
+"Terciaria · líneas alcistas":"Üçüncül · yükseliş çizgileri",
+"Terciaria · líneas bajistas":"Üçüncül · düşüş çizgileri",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Trendin nerede sürdüğünü (BOS: bir kapanış, bir swing'i trend yönünde kırar) ve nerede değiştiğini (CHoCH: kapanış onu trende karşı yönde kırar) gösterir. Daha büyük zaman dilimleri daha kalın çizilir ve adlarını taşır. Henüz kırılmamış seviyeler noktalı görünür; fiyatları sağdaki ölçekte yer alır. Aynı zaman diliminde daha küçük itkileri ve geri çekilmeleri de gösterebilirsiniz («İkincil» ve «Üçüncül»). Bir swing oluştuktan N mum sonra görünür ve hiçbir şey yeniden çizilmez. Fitil önceki tepeyi ya da dibi geçse de hiçbir mum gövdesi onun ötesinde kapanmazsa, o swing «daha yüksek» ya da «daha alçak» değil, «süpürme» olarak adlandırılır. Bu bir okuma aracıdır: alım veya satım sinyali vermez.",
 };
 /* РУССКИЙ · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ru={
@@ -108902,6 +109115,25 @@ DIC.ru={
 "Terciaria · nivel vigente de arriba":"Третичная · действующий уровень сверху",
 "Terciaria · nivel vigente de abajo":"Третичная · действующий уровень снизу",
 "Barridas (la mecha pasa, el cierre vuelve)":"Сбор ликвидности (тень проходит, закрытие возвращается)",
+"barrida":"свип",
+"Barrida":"Свип",
+"Grosor extra por cada temporal mayor (%)":"Доп. толщина за каждый старший таймфрейм (%)",
+"0 = todos con el mismo grosor que el de la gráfica.":"0 = все одной толщины с таймфреймом графика.",
+"Cuándo es «mayor» o «menor»":"Когда считается «выше» или «ниже»",
+"Solo si un cuerpo cierra más allá (si no, «barrida»)":"Только если тело свечи закрылось за ним (иначе «свип»)",
+"Basta con que la mecha pase":"Достаточно, чтобы вышла тень",
+"Con la mecha sola el mercado solo fue a cazar órdenes: el swing se llama «barrida» y no cambia la lectura de la estructura.":"С одной лишь тенью рынок просто сходил за ордерами: свинг называется «свип» и не меняет прочтение структуры.",
+"Escribir «barrida» junto a esos swings":"Подписывать такие свинги «свип»",
+"Rótulo en la escala de precios":"Подпись на шкале цен",
+"Automático (en el celular, solo el precio)":"Авто (на телефоне только цена)",
+"Nombre y precio":"Название и цена",
+"Solo el precio":"Только цена",
+"El nombre junto al precio ensancha la etiqueta y en una pantalla chica tapa las velas.":"Название рядом с ценой расширяет подпись и на маленьком экране закрывает свечи.",
+"Secundaria · líneas alcistas":"Вторичная · бычьи линии",
+"Secundaria · líneas bajistas":"Вторичная · медвежьи линии",
+"Terciaria · líneas alcistas":"Третичная · бычьи линии",
+"Terciaria · líneas bajistas":"Третичная · медвежьи линии",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Показывает, где тренд продолжается (BOS: закрытие пробивает свинг по направлению тренда) и где он меняется (CHoCH: закрытие пробивает его против тренда). Старшие таймфреймы рисуются толще и подписываются. Ещё не пробитые уровни показаны пунктиром, а их цена стоит на правой шкале. В пределах того же таймфрейма можно показать и более мелкие импульсы и откаты («Вторичная» и «Третичная»). Свинг появляется только через N свечей после формирования, и ничего не перерисовывается. Если тень выходит за прежний максимум или минимум, но ни одно тело свечи не закрывается за ним, такой свинг называется «свип», а не «выше» или «ниже». Это инструмент для чтения графика: он не даёт сигналов на покупку или продажу.",
 };
 /* УКРАЇНСЬКА · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.uk={
@@ -115822,6 +116054,25 @@ DIC.uk={
 "Terciaria · nivel vigente de arriba":"Третинна · чинний рівень зверху",
 "Terciaria · nivel vigente de abajo":"Третинна · чинний рівень знизу",
 "Barridas (la mecha pasa, el cierre vuelve)":"Збір ліквідності (тінь проходить, закриття повертається)",
+"barrida":"свіп",
+"Barrida":"Свіп",
+"Grosor extra por cada temporal mayor (%)":"Додаткова товщина за кожен старший таймфрейм (%)",
+"0 = todos con el mismo grosor que el de la gráfica.":"0 = усі однієї товщини з таймфреймом графіка.",
+"Cuándo es «mayor» o «menor»":"Коли вважається «вище» чи «нижче»",
+"Solo si un cuerpo cierra más allá (si no, «barrida»)":"Лише якщо тіло свічки закрилося за ним (інакше «свіп»)",
+"Basta con que la mecha pase":"Достатньо, щоб вийшла тінь",
+"Con la mecha sola el mercado solo fue a cazar órdenes: el swing se llama «barrida» y no cambia la lectura de la estructura.":"Лише з тінню ринок просто сходив по ордери: свінг називається «свіп» і не змінює прочитання структури.",
+"Escribir «barrida» junto a esos swings":"Підписувати такі свінги «свіп»",
+"Rótulo en la escala de precios":"Підпис на шкалі цін",
+"Automático (en el celular, solo el precio)":"Авто (на телефоні лише ціна)",
+"Nombre y precio":"Назва і ціна",
+"Solo el precio":"Лише ціна",
+"El nombre junto al precio ensancha la etiqueta y en una pantalla chica tapa las velas.":"Назва поруч із ціною розширює підпис і на маленькому екрані закриває свічки.",
+"Secundaria · líneas alcistas":"Вторинна · бичачі лінії",
+"Secundaria · líneas bajistas":"Вторинна · ведмежі лінії",
+"Terciaria · líneas alcistas":"Третинна · бичачі лінії",
+"Terciaria · líneas bajistas":"Третинна · ведмежі лінії",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Показує, де тренд триває (BOS: закриття пробиває свінг за напрямком тренду) і де він змінюється (CHoCH: закриття пробиває його проти тренду). Старші таймфрейми малюються товщими й підписуються. Ще не пробиті рівні показано пунктиром, а їхня ціна стоїть на правій шкалі. У межах того самого таймфрейму можна показати й дрібніші імпульси та відкати («Вторинна» і «Третинна»). Свінг з'являється лише через N свічок після формування, і нічого не перемальовується. Якщо тінь виходить за попередній максимум або мінімум, але жодне тіло свічки не закривається за ним, такий свінг називається «свіп», а не «вище» чи «нижче». Це інструмент для читання графіка: він не дає сигналів на купівлю чи продаж.",
 };
 /* BAHASA INDONESIA · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.id={
@@ -122742,6 +122993,25 @@ DIC.id={
 "Terciaria · nivel vigente de arriba":"Tersier · level aktif di atas",
 "Terciaria · nivel vigente de abajo":"Tersier · level aktif di bawah",
 "Barridas (la mecha pasa, el cierre vuelve)":"Sweep (sumbu menembus, penutupan kembali)",
+"barrida":"sweep",
+"Barrida":"Sweep",
+"Grosor extra por cada temporal mayor (%)":"Ketebalan tambahan per kerangka waktu lebih besar (%)",
+"0 = todos con el mismo grosor que el de la gráfica.":"0 = semuanya setebal kerangka waktu grafik.",
+"Cuándo es «mayor» o «menor»":"Kapan dihitung «lebih tinggi» atau «lebih rendah»",
+"Solo si un cuerpo cierra más allá (si no, «barrida»)":"Hanya jika badan candle menutup di luarnya (jika tidak, «sweep»)",
+"Basta con que la mecha pase":"Cukup jika sumbu melewatinya",
+"Con la mecha sola el mercado solo fue a cazar órdenes: el swing se llama «barrida» y no cambia la lectura de la estructura.":"Dengan sumbu saja, pasar hanya memburu order: swing disebut «sweep» dan tidak mengubah pembacaan struktur.",
+"Escribir «barrida» junto a esos swings":"Tulis «sweep» di samping swing itu",
+"Rótulo en la escala de precios":"Label di skala harga",
+"Automático (en el celular, solo el precio)":"Otomatis (di ponsel, hanya harga)",
+"Nombre y precio":"Nama dan harga",
+"Solo el precio":"Hanya harga",
+"El nombre junto al precio ensancha la etiqueta y en una pantalla chica tapa las velas.":"Nama di samping harga memperlebar label dan di layar kecil menutupi candle.",
+"Secundaria · líneas alcistas":"Sekunder · garis bullish",
+"Secundaria · líneas bajistas":"Sekunder · garis bearish",
+"Terciaria · líneas alcistas":"Tersier · garis bullish",
+"Terciaria · líneas bajistas":"Tersier · garis bearish",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Menunjukkan di mana tren berlanjut (BOS: penutupan menembus swing searah tren) dan di mana tren berubah (CHoCH: penutupan menembusnya melawan tren). Kerangka waktu yang lebih besar digambar lebih tebal dan diberi namanya. Level yang belum ditembus tampak bertitik dan harganya ada di skala sebelah kanan. Di dalam kerangka waktu yang sama, Anda juga bisa menampilkan dorongan dan koreksi yang lebih kecil («Sekunder» dan «Tersier»). Sebuah swing baru muncul N candle setelah terbentuk dan tidak ada yang digambar ulang. Jika sumbu melewati puncak atau lembah sebelumnya tetapi tidak ada badan candle yang menutup di luarnya, swing itu disebut «sweep», bukan «lebih tinggi» atau «lebih rendah». Ini alat bantu membaca grafik: tidak memberi sinyal beli atau jual.",
 };
 /* TIẾNG VIỆT · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.vi={
@@ -129662,6 +129932,25 @@ DIC.vi={
 "Terciaria · nivel vigente de arriba":"Cấp 3 · mức đang hiệu lực phía trên",
 "Terciaria · nivel vigente de abajo":"Cấp 3 · mức đang hiệu lực phía dưới",
 "Barridas (la mecha pasa, el cierre vuelve)":"Quét thanh khoản (bấc vượt qua, giá đóng cửa quay lại)",
+"barrida":"quét",
+"Barrida":"Quét",
+"Grosor extra por cada temporal mayor (%)":"Độ dày thêm cho mỗi khung thời gian lớn hơn (%)",
+"0 = todos con el mismo grosor que el de la gráfica.":"0 = tất cả dày bằng khung thời gian của biểu đồ.",
+"Cuándo es «mayor» o «menor»":"Khi nào tính là «cao hơn» hay «thấp hơn»",
+"Solo si un cuerpo cierra más allá (si no, «barrida»)":"Chỉ khi một thân nến đóng cửa vượt qua (nếu không là «quét»)",
+"Basta con que la mecha pase":"Chỉ cần bấc nến vượt qua",
+"Con la mecha sola el mercado solo fue a cazar órdenes: el swing se llama «barrida» y no cambia la lectura de la estructura.":"Chỉ với bấc nến, thị trường chỉ đi quét lệnh: swing được gọi là «quét» và không thay đổi cách đọc cấu trúc.",
+"Escribir «barrida» junto a esos swings":"Ghi «quét» cạnh các swing đó",
+"Rótulo en la escala de precios":"Nhãn trên thang giá",
+"Automático (en el celular, solo el precio)":"Tự động (trên điện thoại chỉ hiện giá)",
+"Nombre y precio":"Tên và giá",
+"Solo el precio":"Chỉ giá",
+"El nombre junto al precio ensancha la etiqueta y en una pantalla chica tapa las velas.":"Tên cạnh giá làm nhãn rộng ra và trên màn hình nhỏ sẽ che mất các nến.",
+"Secundaria · líneas alcistas":"Cấp 2 · đường tăng",
+"Secundaria · líneas bajistas":"Cấp 2 · đường giảm",
+"Terciaria · líneas alcistas":"Cấp 3 · đường tăng",
+"Terciaria · líneas bajistas":"Cấp 3 · đường giảm",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Cho biết xu hướng tiếp diễn ở đâu (BOS: giá đóng cửa phá một swing cùng chiều xu hướng) và đảo chiều ở đâu (CHoCH: phá nó ngược chiều xu hướng). Các khung thời gian lớn hơn được vẽ đậm hơn và có ghi tên. Những mức chưa bị phá hiện dạng chấm, giá của chúng nằm trên thang bên phải. Trong cùng một khung thời gian, bạn cũng có thể hiện các nhịp đẩy và nhịp hồi nhỏ hơn («Cấp 2» và «Cấp 3»). Một swing chỉ xuất hiện sau khi hình thành N nến và không có gì bị vẽ lại. Nếu bấc nến vượt qua đỉnh hoặc đáy trước đó nhưng không có thân nến nào đóng cửa vượt qua, swing đó được gọi là «quét», chứ không phải «cao hơn» hay «thấp hơn». Đây là công cụ để đọc biểu đồ: không đưa ra tín hiệu mua hay bán.",
 };
 /* हिन्दी · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.hi={
@@ -136582,6 +136871,25 @@ DIC.hi={
 "Terciaria · nivel vigente de arriba":"तृतीयक · ऊपर का सक्रिय स्तर",
 "Terciaria · nivel vigente de abajo":"तृतीयक · नीचे का सक्रिय स्तर",
 "Barridas (la mecha pasa, el cierre vuelve)":"स्वीप (बत्ती पार जाती है, क्लोज़ लौट आता है)",
+"barrida":"स्वीप",
+"Barrida":"स्वीप",
+"Grosor extra por cada temporal mayor (%)":"हर बड़े टाइमफ़्रेम के लिए अतिरिक्त मोटाई (%)",
+"0 = todos con el mismo grosor que el de la gráfica.":"0 = सभी चार्ट के टाइमफ़्रेम जितने ही मोटे।",
+"Cuándo es «mayor» o «menor»":"कब «ऊँचा» या «नीचा» माना जाए",
+"Solo si un cuerpo cierra más allá (si no, «barrida»)":"केवल तब जब कोई कैंडल बॉडी उसके आगे क्लोज़ हो (वरना «स्वीप»)",
+"Basta con que la mecha pase":"बत्ती का पार जाना ही काफ़ी है",
+"Con la mecha sola el mercado solo fue a cazar órdenes: el swing se llama «barrida» y no cambia la lectura de la estructura.":"सिर्फ़ बत्ती से बाज़ार बस ऑर्डर बटोरने गया: उस स्विंग को «स्वीप» कहते हैं और इससे संरचना की पढ़त नहीं बदलती।",
+"Escribir «barrida» junto a esos swings":"उन स्विंग के पास «स्वीप» लिखें",
+"Rótulo en la escala de precios":"प्राइस स्केल पर लेबल",
+"Automático (en el celular, solo el precio)":"ऑटो (फ़ोन पर सिर्फ़ कीमत)",
+"Nombre y precio":"नाम और कीमत",
+"Solo el precio":"सिर्फ़ कीमत",
+"El nombre junto al precio ensancha la etiqueta y en una pantalla chica tapa las velas.":"कीमत के साथ नाम लेबल को चौड़ा कर देता है और छोटी स्क्रीन पर कैंडल को ढक देता है।",
+"Secundaria · líneas alcistas":"द्वितीयक · तेज़ी की रेखाएँ",
+"Secundaria · líneas bajistas":"द्वितीयक · मंदी की रेखाएँ",
+"Terciaria · líneas alcistas":"तृतीयक · तेज़ी की रेखाएँ",
+"Terciaria · líneas bajistas":"तृतीयक · मंदी की रेखाएँ",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"यह दिखाता है कि ट्रेंड कहाँ जारी रहता है (BOS: क्लोज़ ट्रेंड की दिशा में किसी स्विंग को तोड़ता है) और कहाँ बदलता है (CHoCH: क्लोज़ उसे ट्रेंड के उलट तोड़ता है)। बड़े टाइमफ़्रेम ज़्यादा मोटे खिंचते हैं और उनके नाम के साथ दिखते हैं। जो स्तर अभी नहीं टूटे वे बिंदीदार दिखते हैं और उनकी कीमत दाईं ओर के स्केल पर रहती है। एक ही टाइमफ़्रेम में छोटे इम्पल्स और रिट्रेसमेंट भी दिखाए जा सकते हैं («द्वितीयक» और «तृतीयक»)। स्विंग बनने के N कैंडल बाद ही दिखता है और कुछ भी दोबारा नहीं बनाया जाता। अगर बत्ती पिछले हाई या लो को पार कर जाए पर कोई कैंडल बॉडी उससे आगे क्लोज़ न हो, तो उस स्विंग को «स्वीप» कहा जाता है, «ऊँचा» या «नीचा» नहीं। यह पढ़ने का टूल है: यह खरीद या बिक्री का सिग्नल नहीं देता।",
 };
 /* 日本語 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ja={
@@ -143502,6 +143810,25 @@ DIC.ja={
 "Terciaria · nivel vigente de arriba":"三次 · 上側の有効レベル",
 "Terciaria · nivel vigente de abajo":"三次 · 下側の有効レベル",
 "Barridas (la mecha pasa, el cierre vuelve)":"スイープ（ヒゲが抜けて終値は戻る）",
+"barrida":"スイープ",
+"Barrida":"スイープ",
+"Grosor extra por cada temporal mayor (%)":"上位の時間足ごとの追加の太さ（％）",
+"0 = todos con el mismo grosor que el de la gráfica.":"0 = すべてチャートの時間足と同じ太さ。",
+"Cuándo es «mayor» o «menor»":"「切り上げ」「切り下げ」とみなす条件",
+"Solo si un cuerpo cierra más allá (si no, «barrida»)":"実体がその先で終わったときだけ（それ以外は「スイープ」）",
+"Basta con que la mecha pase":"ヒゲが抜けるだけでOK",
+"Con la mecha sola el mercado solo fue a cazar órdenes: el swing se llama «barrida» y no cambia la lectura de la estructura.":"ヒゲだけなら、相場は注文を狩りに行っただけです。そのスイングは「スイープ」と呼ばれ、構造の読み方は変わりません。",
+"Escribir «barrida» junto a esos swings":"そのスイングの横に「スイープ」と表示",
+"Rótulo en la escala de precios":"価格軸のラベル",
+"Automático (en el celular, solo el precio)":"自動（スマホでは価格のみ）",
+"Nombre y precio":"名前と価格",
+"Solo el precio":"価格のみ",
+"El nombre junto al precio ensancha la etiqueta y en una pantalla chica tapa las velas.":"価格の横に名前があるとラベルが広がり、小さな画面ではローソク足を隠します。",
+"Secundaria · líneas alcistas":"二次 · 強気ライン",
+"Secundaria · líneas bajistas":"二次 · 弱気ライン",
+"Terciaria · líneas alcistas":"三次 · 強気ライン",
+"Terciaria · líneas bajistas":"三次 · 弱気ライン",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"トレンドが続く場所（BOS：終値がトレンド方向のスイングを抜ける）と、転換する場所（CHoCH：終値がトレンドと逆方向にスイングを抜ける）を示します。上位の時間足は太く描かれ、名前が付きます。まだ破られていない水準は点線で表示され、その価格は右側の価格軸に出ます。同じ時間足の中で、より小さな上昇・下落の波（「二次」と「三次」）も表示できます。スイングは形成されてからN本あとに初めて表示され、後から描き直されることはありません。ヒゲが直前の高値や安値を抜けても、実体がその先で終わらなければ、そのスイングは「切り上げ」「切り下げ」ではなく「スイープ」と呼ばれます。読み取り用のツールで、売買シグナルは出しません。",
 };
 /* 한국어 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.ko={
@@ -150422,6 +150749,25 @@ DIC.ko={
 "Terciaria · nivel vigente de arriba":"3차 · 위쪽 유효 레벨",
 "Terciaria · nivel vigente de abajo":"3차 · 아래쪽 유효 레벨",
 "Barridas (la mecha pasa, el cierre vuelve)":"스윕 (꼬리는 넘고 종가는 되돌아옴)",
+"barrida":"스윕",
+"Barrida":"스윕",
+"Grosor extra por cada temporal mayor (%)":"상위 시간 프레임마다 추가 굵기(%)",
+"0 = todos con el mismo grosor que el de la gráfica.":"0 = 모두 차트의 시간 프레임과 같은 굵기.",
+"Cuándo es «mayor» o «menor»":"'높은/낮은'으로 보는 조건",
+"Solo si un cuerpo cierra más allá (si no, «barrida»)":"몸통이 그 너머에서 마감할 때만 (아니면 '스윕')",
+"Basta con que la mecha pase":"꼬리가 넘기만 해도 됨",
+"Con la mecha sola el mercado solo fue a cazar órdenes: el swing se llama «barrida» y no cambia la lectura de la estructura.":"꼬리만 넘었다면 시장은 주문을 사냥하러 갔을 뿐입니다. 그 스윙은 '스윕'이라 부르며 구조 해석은 바뀌지 않습니다.",
+"Escribir «barrida» junto a esos swings":"해당 스윙 옆에 '스윕' 표시",
+"Rótulo en la escala de precios":"가격 축 라벨",
+"Automático (en el celular, solo el precio)":"자동(휴대폰에서는 가격만)",
+"Nombre y precio":"이름과 가격",
+"Solo el precio":"가격만",
+"El nombre junto al precio ensancha la etiqueta y en una pantalla chica tapa las velas.":"가격 옆의 이름은 라벨을 넓혀 작은 화면에서는 캔들을 가립니다.",
+"Secundaria · líneas alcistas":"2차 · 상승 선",
+"Secundaria · líneas bajistas":"2차 · 하락 선",
+"Terciaria · líneas alcistas":"3차 · 상승 선",
+"Terciaria · líneas bajistas":"3차 · 하락 선",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"추세가 이어지는 곳(BOS: 종가가 추세 방향의 스윙을 돌파)과 바뀌는 곳(CHoCH: 종가가 추세와 반대 방향으로 스윙을 돌파)을 보여 줍니다. 상위 시간 프레임은 더 굵게 그려지고 이름이 붙습니다. 아직 깨지지 않은 레벨은 점선으로 표시되고 그 가격은 오른쪽 축에 나타납니다. 같은 시간 프레임 안에서 더 작은 상승·되돌림도 표시할 수 있습니다(\"2차\"와 \"3차\"). 스윙은 형성된 뒤 N개 캔들이 지나야 나타나며 다시 그려지는 것은 없습니다. 꼬리가 이전 고점이나 저점을 넘어도 몸통이 그 너머에서 마감하지 않으면, 그 스윙은 '높은/낮은'이 아니라 '스윕'이라고 부릅니다. 읽기용 도구로, 매수·매도 신호는 주지 않습니다.",
 };
 /* 中文（简体） · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC.zh={
@@ -157342,6 +157688,25 @@ DIC.zh={
 "Terciaria · nivel vigente de arriba":"三级 · 上方有效水平线",
 "Terciaria · nivel vigente de abajo":"三级 · 下方有效水平线",
 "Barridas (la mecha pasa, el cierre vuelve)":"扫荡（影线越过，收盘价收回）",
+"barrida":"扫荡",
+"Barrida":"扫荡",
+"Grosor extra por cada temporal mayor (%)":"每升一级周期增加的粗细（%）",
+"0 = todos con el mismo grosor que el de la gráfica.":"0 = 全部与图表周期一样粗。",
+"Cuándo es «mayor» o «menor»":"何时算“抬高”或“降低”",
+"Solo si un cuerpo cierra más allá (si no, «barrida»)":"仅当有K线实体收在其外（否则为“扫荡”）",
+"Basta con que la mecha pase":"影线越过即可",
+"Con la mecha sola el mercado solo fue a cazar órdenes: el swing se llama «barrida» y no cambia la lectura de la estructura.":"只有影线越过时，市场只是去扫取挂单：该摆动点称为“扫荡”，不会改变对结构的判断。",
+"Escribir «barrida» junto a esos swings":"在这些摆动点旁标注“扫荡”",
+"Rótulo en la escala de precios":"价格轴上的标签",
+"Automático (en el celular, solo el precio)":"自动（手机上只显示价格）",
+"Nombre y precio":"名称和价格",
+"Solo el precio":"仅价格",
+"El nombre junto al precio ensancha la etiqueta y en una pantalla chica tapa las velas.":"价格旁的名称会让标签变宽，在小屏幕上会遮住K线。",
+"Secundaria · líneas alcistas":"次级 · 看涨线",
+"Secundaria · líneas bajistas":"次级 · 看跌线",
+"Terciaria · líneas alcistas":"三级 · 看涨线",
+"Terciaria · líneas bajistas":"三级 · 看跌线",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"显示趋势在哪里延续（BOS：收盘价突破一个顺势的摆动点）以及在哪里转向（CHoCH：收盘价逆势突破该摆动点）。更大的周期画得更粗，并标有名称。尚未被突破的水平线以点线显示，其价格标在右侧价格轴上。在同一周期内，还可以显示更小的推动和回调（“次级”和“三级”）。摆动点要在形成N根K线之后才会出现，也不会被重绘。如果影线越过前一个高点或低点，但没有任何K线实体收在其外，该摆动点就称为“扫荡”，而不是“抬高”或“降低”。这是一个读图工具：不提供买入或卖出信号。",
 };
 </script>
 </body>
