@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="83">
+<meta name="v" content="84">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -5119,6 +5119,12 @@ html .filaRn78 .rn78.card79 .gci:not(.on) .gcs:not(.on){opacity:.5}
   .graf.grande .gpTab .gpgrid{grid-template-columns:repeat(5,minmax(0,1fr))}
   .graf.grande .gpTab{width:min(460px,calc(100% - 16px))}
 }
+
+/* v84 · §168 · botón ✛ de la gráfica (tercero junto a + y −): un dedo mueve la cruz (encendido) o corre la gráfica (apagado) */
+.graf .gzoom button[hidden]{display:none}
+.graf .gzoom button.cruz84 svg{width:20px;height:20px;display:block;pointer-events:none}
+.graf .gzoom button.cruz84.on{border-color:var(--ac);color:var(--acTx);background:color-mix(in srgb,var(--ac) 16%,var(--b2))}
+@media (hover:none){ .graf .gzoom button.cruz84:not(.on):hover{border-color:var(--ln);color:var(--tx)} }
 </style>
 </head>
 <body>
@@ -7100,7 +7106,8 @@ function montarGrafica(cont, op){
       '<button type="button" class="gahora" title="Volver al momento de ahora">'+
         '⟶ ahora</button>'+
       '<div class="gzoom"><button type="button" data-zoom="mas" title="Acercar" aria-label="Acercar">+</button>'+
-        '<button type="button" data-zoom="menos" title="Alejar" aria-label="Alejar">−</button></div>'+
+        '<button type="button" data-zoom="menos" title="Alejar" aria-label="Alejar">−</button>'+
+        '<button type="button" class="cruz84" data-cruz83="1" title="Solo la cruz" aria-label="Solo la cruz" aria-pressed="false" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/></svg></button></div>'+
       '<div class="gtiempo" translate="no"></div>'+
       '<div class="gejeP"></div><div class="gejeT"></div>'+
       '<button type="button" class="gauto" title="Escala automática" aria-label="Escala automática" hidden>A</button>'+
@@ -7399,6 +7406,10 @@ function montarGrafica(cont, op){
       zoomarGrafica(estado, (estado.cuantas||VENTANA)*f);
       if(f>1) cargarAntes(estado);
     };
+    b.onpointerdown=function(ev){ ev.stopPropagation(); };
+  });
+  cont.querySelectorAll("[data-cruz83]").forEach(function(b){      /* v84 · §168: ✛ */
+    b.onclick=function(ev){ ev.stopPropagation(); cruz84Tocar(estado); };
     b.onpointerdown=function(ev){ ev.stopPropagation(); };
   });
   if(zona){
@@ -24196,7 +24207,7 @@ function ajustesVentana68(E){
       h+=t68("Dibujos");
       h+=fsw68("Quitar siempre los dibujos bloqueados", "data-aqb", !!a.qBloq, "Al usar «Quitar objetos» también se van los dibujos con candado.");
       h+=fsw68("Compartir los dibujos entre Spot, Futuros y Backtesting", "data-adib", !!a.dibComp, "Apagado: cada pantalla tiene sus propios dibujos.");      /* v75 · pto 63 */
-      h+=fsw68("Dibujar con la cruz", "data-acruz", a.cruzDedo!==false, "Al dibujar, en el teléfono: un dedo mueve solo la cruz y un toque pone el punto; dos dedos mueven la gráfica.");      h+=ajDedo83();      /* v83 · §163 */      /* v74 · pto 40 */
+      /* v84 · §168: «Dibujar con la cruz» y «Un dedo sobre la gráfica» ahora viven en Escalas y líneas › Cruz del puntero (todo lo de la cruz junto) */
       h+=f68("Color de lo elegido", selAj68("data-ares", [["","Neutro (blanco pálido)"],["tema","Color del tema"]], (a.resalte==="tema")?"tema":""));      /* v74 · pto 57 */
       h+=(typeof ajOps80==="function") ? ajOps80(E) : "";      /* v80 · operaciones en la gráfica */
       h+=t68("Mensajes");      /* v74 · pto 56 */
@@ -31431,6 +31442,9 @@ function est81Controles(k, colorBase){
   if(k==="cruz"){
     var m=e.modo||"s";
     h+=f68("Mostrar", seg68("data-e81m", [["s",tr("Siempre")],["m",tr("Al mantener")],["n",tr("Nunca")]], m));
+    h+=ajDedo83();      /* v84 · §168: lo que hace un dedo (antes en Lienzo) */
+    h+=f68("Dibujar con la cruz", sw68('data-acruz="1"', (BD.ajustes||{}).cruzDedo!==false));      /* v84 · §168 (antes en Lienzo) */
+    h+='<div class="v68nota">'+esc(tr("Al dibujar, en el teléfono: un dedo mueve solo la cruz y un toque pone el punto; dos dedos mueven la gráfica."))+'</div>';
   }
   h+=f68("Color", colores68(EST81.pal, estOk81(e.c)?e.c:"", "data-e81c"));
   h+=f68("Grosor", seg68("data-e81w", [1,2,3,4,5,6].map(function(n){ return [n,String(n)]; }), e.w||""));
@@ -31468,7 +31482,7 @@ function ajEstClic81(t, aplicar, pintar, E){
   if((b=t.closest("[data-e81w]"))){ var kw=t.closest("[data-e81b]"); if(kw){ estPon81(kw.getAttribute("data-e81b"), "w", +b.getAttribute("data-e81w")); aplicar(); pintar(); } return true; }
   if((b=t.closest("[data-e81d]"))){ var kd=t.closest("[data-e81b]"); if(kd){ estPon81(kd.getAttribute("data-e81b"), "d", +b.getAttribute("data-e81d")); aplicar(); pintar(); } return true; }
   if((b=t.closest("[data-e81m]"))){ var km=t.closest("[data-e81b]"); if(km){ estPon81(km.getAttribute("data-e81b"), "modo", b.getAttribute("data-e81m")); try{ if(typeof cruz81Cambio==="function") cruz81Cambio(E); }catch(e){} aplicar(); pintar(); } return true; }
-  if((b=t.closest("[data-e81r]"))){ var S=est81Todo(); delete S[b.getAttribute("data-e81r")]; try{ if(b.getAttribute("data-e81r")==="cruz" && typeof cruz81Cambio==="function") cruz81Cambio(E); }catch(e){} aplicar(); pintar(); return true; }
+  if((b=t.closest("[data-e81r]"))){ var S=est81Todo(); delete S[b.getAttribute("data-e81r")]; try{ if(b.getAttribute("data-e81r")==="cruz"){ if(BD.ajustes){ delete BD.ajustes.dedo83; delete BD.ajustes.cruzDedo; } window._dedoAnt84=null; if(typeof cruz81Cambio==="function") cruz81Cambio(E); } }catch(e){} aplicar(); pintar(); return true; }
   return false;
 }
 /* los controles que mandan «input» seguido (el deslizador y el selector de color) */
@@ -31829,6 +31843,53 @@ function ajDedoCambio83(t){
   if(v==="c" || v==="g") BD.ajustes.dedo83=v; else delete BD.ajustes.dedo83;
 }
 if(typeof AJ68_CLAVES!=="undefined" && AJ68_CLAVES.indexOf("dedo83")<0) AJ68_CLAVES.push("dedo83");      /* «Cancelar» lo devuelve y «Por defecto» lo restablece */
+
+/* ===================================================================
+   v84 · BOTÓN ✛ EN LA GRÁFICA: UN DEDO MUEVE LA CRUZ  o  UN DEDO CORRE LA GRÁFICA  (Luis, 20 oct 18:56, §168; eligió la opción B)
+   «Moverme por todo lado está perfecto… pero la cruz punteada, la que me ubica, está tiesa, bloqueada, no se mueve.»
+   Causa (v83, modo «Gráfica y cruz»): la cruz va con el dedo en la pantalla Y la gráfica corre el mismo tramo, así que la cruz queda siempre sobre
+   la MISMA vela (la fecha de abajo no cambia). Con un solo dedo no pueden pasar a la vez «la gráfica corre» y «la cruz recorre las velas».
+   Solución (opción B de Luis): un botón ✛ pegado a los de acercar y alejar (+ −), solo en el teléfono y solo con la cruz «Siempre» y sin herramienta:
+     · ✛ ENCENDIDO  = un dedo mueve SOLO la cruz y recorre las velas (la fecha y el precio cambian), la gráfica queda quieta (= modo «c», la v82);
+     · ✛ APAGADO    = un dedo corre la gráfica y los indicadores (= modo «a», la v83, de fábrica);
+     · DOS dedos    = siempre acercar / alejar y mover la gráfica (no cambia).
+   Un SOLO ajuste: el botón lee y escribe BD.ajustes.dedo83, el mismo que Ajustes › Lienzo › «Un dedo sobre la gráfica» (que sigue con sus tres
+   opciones). No se agrega ningún ajuste nuevo; el botón es solo el atajo de ese. Si en Ajustes estaba «Solo la gráfica» (g), apagar el ✛
+   en la misma sesión lo devuelve a «g»; después de cerrar la app, a «Gráfica y cruz» (a).
+   Sin textos nuevos: el botón se llama «Solo la cruz» (ya traducido a los 16 idiomas).
+   =================================================================== */
+var MQ84=null;
+/* ¿hay pantalla táctil? (en la PC con ratón el botón no hace falta: ahí el ratón mueve la cruz solo) */
+function cruz84Tactil(){
+  try{ if(!MQ84) MQ84=window.matchMedia("(any-pointer:coarse)"); return !!MQ84.matches; }catch(e){ return false; }
+}
+/* ¿esta gráfica puede usar el ✛ ahora? Mismas condiciones en que un dedo maneja la cruz: cruz «Siempre», sin herramienta de dibujo ni tijeras */
+function cruz84Visible(E){ return !!(E && cruz84Tactil() && typeof cruz82Base==="function" && cruz82Base(E)); }
+/* pone al día el botón de UNA gráfica: si se ve y si está encendido (= «Solo la cruz») */
+function cruz84Boton(E){
+  var c=E && E.cont; if(!c || !c.querySelector) return;
+  var b=c.querySelector("[data-cruz83]"); if(!b) return;
+  var oculto=!cruz84Visible(E), on=(dedo83Modo()==="c");
+  if(b.hidden!==oculto) b.hidden=oculto;
+  if(b.classList.contains("on")!==on){ b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false"); }
+}
+/* tocar el ✛: enciende «Solo la cruz» o vuelve a lo que había (de fábrica «Gráfica y cruz») */
+function cruz84Tocar(E){
+  var A=BD.ajustes || (BD.ajustes={}), m=dedo83Modo();
+  if(m==="c"){ if(window._dedoAnt84==="g") A.dedo83="g"; else delete A.dedo83; }
+  else { window._dedoAnt84=m; A.dedo83="c"; }
+  try{ tocar(A); }catch(e){}
+  try{ guardar(); }catch(e){}
+  var on=(dedo83Modo()==="c");
+  [].forEach.call(document.querySelectorAll("[data-cruz83]"), function(b){ b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false"); });
+  try{ if(E) cruz84Boton(E); }catch(e){}
+}
+/* el botón se pone al día en cada dibujo (al elegir una herramienta, cambiar el modo de la cruz en Ajustes, cambiar de pantalla…) */
+if(typeof dibujar==="function" && !window._dibujar84){
+  window._dibujar84=true;
+  var _dib84=dibujar;
+  dibujar=function(E){ var r=_dib84.apply(this, arguments); try{ cruz84Boton(arguments[0]); }catch(e){} return r; };
+}
 
 /* ===================================================================
    v83 · LA PRÁCTICA, EL ZOOM CON UNA CAJA Y LA BARRA «LARGO · CORTO · ABRIR»  (Luis, 20 oct 18:16–18:22, §164–§166)
