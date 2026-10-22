@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="87">
+<meta name="v" content="89">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -2330,6 +2330,17 @@ body.conCerrojo #aviso{z-index:10001}
 .pest .pIc svg{width:14px;height:14px}
 .capo{display:flex;justify-content:flex-end;padding:9px 12px 0}
 .filtHist{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+/* v88 · el historial por meses: una franja por mes que se abre y se cierra (Luis, 21 oct 22:13) */
+.hmes{margin:0 0 8px}
+.hmes .hmesT{width:100%;display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:12px;border:1px solid var(--ln);background:var(--b2);color:var(--tx);font:inherit;font-weight:800;font-size:13.5px;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hmes .hmesT:hover{border-color:color-mix(in srgb,var(--ac) 45%,var(--ln))}
+.hmes .hmesT .car{flex:none;font-size:12px;color:var(--t2);transition:transform .15s}
+.hmes.ab .hmesT .car{transform:rotate(180deg)}
+.hmes .hmesN{flex:none;text-transform:capitalize}
+.hmes .hmesT .chip{flex:none}
+.hmes .hmesR{margin-left:auto;font-weight:800;font-variant-numeric:tabular-nums}
+.hmes .hmesB{display:none;padding-top:8px}
+.hmes.ab .hmesB{display:block}
 .filtHist .pill{flex:1 1 100%}
 .buscaFila{display:flex;gap:8px;align-items:center;margin-bottom:4px}
 .buscaFila .busca{flex:1;min-width:0;margin:0}
@@ -2547,6 +2558,41 @@ body[data-v="dat"] #cuerpo>.caja:nth-of-type(8n+8)>h2 .ic{background:linear-grad
 .graf .gahora{bottom:calc(var(--txh) + 10px)}
 /* los + / − van abajo, al centro: a la izquierda están las manijas de las líneas, y a la derecha sus nombres */
 .graf .gzoom{left:calc((100% - var(--ax)) / 2);transform:translateX(-50%)}
+
+/* =====================================================================
+   v88 · LAS FAVORITAS FLOTANTES (Luis, 21 oct 22:18–22:20)
+   Un punto chico con el logo de la moneda que está viendo. Nada de estrella ni de número: el punto ya le dice
+   en qué moneda está. Al tocarlo salen sus favoritas con su precio; al tocar una, la gráfica cambia y se cierra solo.
+   Se arrastra adonde no estorbe y se queda ahí. No le quita ni un pixel de alto a la gráfica: va flotando encima.
+   ===================================================================== */
+.graf .gfav88{position:absolute;z-index:8;left:auto;right:calc(var(--ax) + 10px);top:46px}      /* debajo del rótulo del mercado, para no taparlo */
+.graf .gfav88[hidden]{display:none}
+.gfav88 .gfbt{width:38px;height:38px;padding:0;border-radius:50%;border:1px solid color-mix(in srgb,var(--ln) 80%,transparent);
+  background:color-mix(in srgb,var(--b1) 78%,transparent);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+  display:grid;place-items:center;cursor:pointer;box-shadow:0 5px 16px rgba(0,0,0,.4);opacity:.86;transition:opacity .15s,border-color .15s;
+  -webkit-tap-highlight-color:transparent;touch-action:none}
+.gfav88 .gfbt:hover,.gfav88.ab .gfbt{opacity:1;border-color:color-mix(in srgb,var(--ac) 55%,var(--ln))}
+.gfav88 .gfbt .ic{width:26px;height:26px;pointer-events:none}
+.gfav88 .gfbt.arr{cursor:grabbing}
+@media (pointer:coarse){ .gfav88 .gfbt{width:44px;height:44px} .gfav88 .gfbt .ic{width:30px;height:30px} }
+.gfav88 .gfp{display:none;position:absolute;top:calc(100% + 7px);right:0;min-width:214px;max-width:min(78vw,280px);
+  max-height:min(56vh,420px);overflow-y:auto;padding:6px;border-radius:14px;border:1px solid var(--ln);background:var(--b1);
+  box-shadow:0 18px 44px rgba(0,0,0,.6);-webkit-overflow-scrolling:touch}
+.gfav88.ab .gfp{display:block}
+.gfav88.izq .gfp{right:auto;left:0}
+.gfav88.abajo .gfp{top:auto;bottom:calc(100% + 7px)}
+.gfav88 .gfr{width:100%;display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:10px;border:0;background:none;
+  color:var(--tx);font:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.gfav88 .gfr:hover{background:var(--b2)}
+.gfav88 .gfr.on{background:color-mix(in srgb,var(--ac) 16%,transparent)}
+.gfav88 .gfr .ic{width:22px;height:22px;flex:none}
+.gfav88 .gfr .gft{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px;line-height:1.15}
+.gfav88 .gfr .gft b{font-size:12.5px;font-weight:800}
+.gfav88 .gfr .gft i{font-style:normal;font-size:10.5px;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gfav88 .gfr .gfx{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:1px;line-height:1.15;font-variant-numeric:tabular-nums}
+.gfav88 .gfr .gfx .pr{font-size:12px;font-weight:800}
+.gfav88 .gfr .gfx em{font-style:normal;font-size:10.5px;font-weight:800}
+.gfav88 .gfv{padding:7px 9px 3px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--t2)}
 
 /* =====================================================================
    v66 · LA GRÁFICA CON PESTAÑAS (Luis, 14 oct): una ruedita para el tiempo y cuatro pestañas
@@ -5065,8 +5111,13 @@ html .filaRn78 .rn78.card79 .gci:not(.on) .gcs:not(.on){opacity:.5}
 .favT68.favL81{position:relative;display:flex!important;align-items:center;gap:8px;padding:6px 7px 6px 10px!important;margin:0 0 10px!important;border-radius:14px!important;z-index:30}
 .favL81 .st{display:inline-grid;place-items:center;flex:none;color:var(--fav2);filter:drop-shadow(0 0 6px color-mix(in srgb,var(--fav2) 55%,transparent))}
 .favL81 .chip.v{flex:none;font-size:11.5px}
-.favL81 .favP81{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:9px;padding:5px 10px 5px 7px;min-height:46px;border-radius:12px;border:1px solid color-mix(in srgb,var(--fav2) 55%,var(--ln));background:var(--b0);color:var(--tx);font:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+/* v88 · la píldora se ve igual que siempre, pero por dentro son DOS botones: la moneda (abre su gráfica) y la flechita (abre la lista).
+   Antes era un solo botón y tocar la moneda que ya estaba puesta volvía a desplegar la lista en vez de enseñarla (Luis, 21 oct 22:07). */
+.favL81 .favP81{flex:1 1 0;min-width:0;display:flex;align-items:center;min-height:46px;border-radius:12px;border:1px solid color-mix(in srgb,var(--fav2) 55%,var(--ln));background:var(--b0);color:var(--tx);overflow:hidden}
 .favL81.ab .favP81{border-color:var(--fav2)}
+.favL81 .favV81{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:9px;padding:5px 4px 5px 7px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.favL81 .favC81{flex:none;align-self:stretch;width:34px;padding:0;border:0;border-left:1px solid color-mix(in srgb,var(--fav2) 28%,var(--ln));background:none;color:inherit;display:grid;place-items:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.favL81 .favV81:active,.favL81 .favC81:active{background:color-mix(in srgb,var(--fav2) 12%,transparent)}
 .favL81 .favP81 .ic{width:30px;height:30px;flex:none}
 .favL81 .tx{display:flex;flex-direction:column;align-items:flex-start;gap:2px;line-height:1.1;min-width:0;flex:1 1 auto}
 .favL81 .tx b{font-size:13.5px;font-weight:800}
@@ -5089,6 +5140,9 @@ html .filaRn78 .rn78.card79 .gci:not(.on) .gcs:not(.on){opacity:.5}
 .favL81 .favAg81{width:100%;min-height:44px;margin-top:2px;border-radius:12px;border:1px dashed color-mix(in srgb,var(--fav2) 55%,var(--ln));background:none;color:var(--fav2);font:inherit;font-weight:800;cursor:pointer}
 /* Ajustes de la aplicación › Mis favoritas */
 .fav81ops{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+/* v88 · la casilla del punto flotante, en la misma caja de las favoritas */
+.fav81sw{display:flex;align-items:center;gap:10px;margin-top:12px;padding:12px 14px;border-radius:12px;border:1px solid var(--ln);background:var(--b0);font-weight:700;cursor:pointer}
+.fav81sw input{width:18px;height:18px;flex:none;accent-color:var(--ac);cursor:pointer}
 .fav81o{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--ln);background:var(--b0);color:var(--tx);font:inherit;font-weight:700;text-align:left;cursor:pointer}
 .fav81o i{flex:none;font-style:normal;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:13px;background:#3C8DFF;color:#fff;opacity:0}
 .fav81o.on{border-color:#3C8DFF;box-shadow:0 0 0 1px #3C8DFF inset}
@@ -7115,6 +7169,7 @@ function montarGrafica(cont, op){
       '<div class="gejeP"></div><div class="gejeT"></div>'+
       '<button type="button" class="gauto" title="Escala automática" aria-label="Escala automática" hidden>A</button>'+
       '<div class="gcargando">Trayendo la gráfica…</div>'+
+      '<div class="gfav88" hidden></div>'+      /* v88 · las favoritas flotantes (Luis, 21 oct 22:18) */
     '</div>'+
     /* v66 · la barra: una ruedita para el tiempo y cuatro pestañas. Cada pestaña abre su panel solo
        cuando se toca (Luis: «como en 3D View, con sus pestañas para no tener todo amontonado»). */
@@ -7556,6 +7611,31 @@ function quitarTrazo(E, id){
   if(E.sel===id) E.sel=null;
   dibujar(E);
 }
+/* =====================================================================
+   v88 · CADA HERRAMIENTA RECUERDA CÓMO LA DEJÓ (Luis, 21 oct 22:11)
+   «Cuando yo pulso en la flecha… todo el tiempo es el color genérico. Si vuelvo a seleccionar, nuevamente sale el
+    color genérico. Uno sobreentiende que tiene que quedar grabado el anterior color que ocupó el usuario.»
+   Se guarda el color, el grosor y el tipo de raya POR HERRAMIENTA (la flecha por su lado, el rectángulo por el suyo),
+   y el dibujo siguiente de esa herramienta nace así. Viaja entre sus equipos como el resto de los ajustes.
+   Un solo sitio: lo escriben trEstiloGuardar88() y lo leen trEstiloNuevo88().
+   ===================================================================== */
+function trEstilo88(){ var A=BD.ajustes||(BD.ajustes={}); if(!A.trEstilo||typeof A.trEstilo!=="object") A.trEstilo={}; return A.trEstilo; }
+function trEstiloNuevo88(z){
+  var e=trEstilo88()[z.tipo]; if(!e) return z;
+  if(colorOk(e.c)) z.c=e.c;
+  if(+e.w>=1 && +e.w<=6) z.w=+e.w;
+  if(e.d===0||e.d===1||e.d===2) z.d=e.d;
+  if(e.fo!=null && z.tipo==="rect") z.fo=e.fo;
+  return z;
+}
+function trEstiloGuardar88(z){
+  if(!z || !z.tipo || z.tipo==="regla" || z.tipo==="pos") return;      /* la regla y las posiciones tienen su propio color */
+  var e=trEstilo88(), g=e[z.tipo]||(e[z.tipo]={});
+  if(colorOk(z.c)) g.c=z.c;
+  g.w=anchoTrazo(z); g.d=(+z.d||0);
+  if(z.tipo==="rect" && z.fo!=null) g.fo=z.fo;
+  try{ tocar(BD.ajustes); guardar(); }catch(err){}
+}
 function colorTrazo(z){ return colorOk(z.c) ? z.c : PALETA_TRAZO[0]; }
 function anchoTrazo(z){ var w=+z.w; return (w>=1&&w<=6) ? w : 2; }      /* v81 · §157: hasta 6 */
 function rayaTrazo(z){
@@ -7619,8 +7699,8 @@ function rangoMedio(E){
 }
 function nuevoTrazoUno(E, tipo, pt){
   var base={id:idTrazo(), c:PALETA_TRAZO[0], w:2, d:0};
-  if(tipo==="horiz"){ base.tipo="horiz"; base.t1=pt.t; base.p1=pt.p; return base; }
-  if(tipo==="vert"){ base.tipo="vert"; base.t1=pt.t; base.p1=pt.p; return base; }
+  if(tipo==="horiz"){ base.tipo="horiz"; base.t1=pt.t; base.p1=pt.p; return trEstiloNuevo88(base); }      /* v88 */
+  if(tipo==="vert"){ base.tipo="vert"; base.t1=pt.t; base.p1=pt.p; return trEstiloNuevo88(base); }
   /* largo / corto: una caja de la referencia, con el stop a unas cuantas velas y el objetivo al doble */
   var largo=(tipo==="largo"), p=pt.p, ms=msInter(E);
   var d=rangoMedio(E)*2.5;
@@ -7766,7 +7846,7 @@ function terminarCreacion(E, b){
   E.crea=null; E.herr=null;
   var z={id:tipo==="regla"?"regla":idTrazo(), tipo:tipo, t1:c.a.t, p1:c.a.p, t2:b.t, p2:b.p};
   if(c.pk) z.pk=c.pk;
-  if(tipo!=="regla"){ z.c=PALETA_TRAZO[0]; z.w=2; z.d=0; agregarTrazo(E, z); }
+  if(tipo!=="regla"){ z.c=PALETA_TRAZO[0]; z.w=2; z.d=0; trEstiloNuevo88(z); agregarTrazo(E, z); }      /* v88 · nace con el color y el grosor que usted dejó la última vez en esta herramienta */
   else E.regla=z;
   E.sel=z.id;
   dibujar(E);
@@ -7990,7 +8070,12 @@ function dibujoDe(E, z, sel, W, H, previa){
     R.svg+='<rect x="'+rx.toFixed(1)+'" y="'+ry.toFixed(1)+'" width="'+rw.toFixed(1)+'" height="'+rh.toFixed(1)+
            '" rx="2" fill="'+col+'" fill-opacity="'+(z.fo!=null?z.fo:0.13)+'" stroke="'+col+'" stroke-width="'+w+'"'+da+'/>';
     if(!previa){
-      if(sel) R.partes.push({z:id,k:"in",m:"c",t:"c",x:rx,y:ry,w:rw,h:rh});
+      /* v88 · Luis, 21 oct 22:42: «en muchos dibujos la tecla Suprimir no los elimina». El rectángulo era el caso: solo se
+         podía agarrar por el borde fino, así que tocándolo por dentro no se elegía y Suprimir no tenía qué borrar.
+         Ahora, si tiene relleno, TODO el rectángulo se toca (como en la referencia). Si usted le pone el relleno en cero,
+         vuelve a ser solo el borde y se puede tocar lo que haya debajo. */
+      var foR=(z.fo!=null ? +z.fo : 0.13);
+      if(sel || foR>0) R.partes.push({z:id,k:"in",m:"c",t:"c",x:rx,y:ry,w:rw,h:rh});
       R.partes=R.partes.concat(bordesCaja(id,rx,ry,rx+rw,ry+rh,"e"));
     }
     cuadritos([["p1",a1,b1,"nwse"],["p2",a2,b2,"nwse"],["a",a2,b1,"nesw"],["b",a1,b2,"nesw"]]);
@@ -9940,7 +10025,24 @@ function patClamp(x,a,b){ return Math.max(a, Math.min(b, x)); }
 /* v71 · BANDERA Y BANDERÍN — las dos medidas que deciden si una consolidación cuelga de verdad del mástil (TODO en este único lugar):
    huecoVelas / huecoFrac : la figura tiene que empezar como mucho a 3 velas (o al 30 % del ancho del mástil, lo que sea mayor) de la punta del mástil.
    devuelveMax            : la consolidación no puede devolver más de la mitad (50 %) de lo que recorrió el mástil. */
-var PAT_BAN71={huecoVelas:3, huecoFrac:0.3, devuelveMax:0.5};
+/* v88 · las medidas de la bandera y el banderín, TODAS aquí (antes tres de ellas estaban sueltas dentro del código y no se
+   podían ni ver ni ajustar). Con las de antes, en 2.600 velas de cinco monedas no salía NI UNA bandera: el mástil tenía que
+   medir el doble que el trapo y además ser muy empinado, y casi nada lo cumple.
+     mastilVeces  · cuántas veces más alto que el trapo tiene que ser el mástil
+     anchoVeces   · cuánto puede durar el trapo comparado con el mástil
+     mastilPend   · lo empinado que tiene que ser el mástil, en rangos medios de vela por vela
+   Murphy y Edwards-Magee piden «un tirón fuerte y una pausa corta», sin dar cifras; estas son de medición propia. */
+/* v89 · TODAS las medidas de la bandera y el banderín, juntas y a la vista:
+   huecoVelas / huecoFrac : cuánto puede separarse la pausa del final del mástil
+   devuelveMax            : cuánto del mástil puede devolver la pausa (0.5 = la mitad)
+   mastilVeces            : el mástil mide al menos esto por el alto de la pausa
+   anchoVeces             : la pausa dura como máximo esto por el ancho del mástil
+   mastilPend             : empinada mínima del mástil, en ATR por vela
+   minVelas               : velas mínimas de la pausa (las figuras de dos líneas piden 15;
+                            una bandera de libro dura de 5 a 15, así que con 15 nunca entraba)
+   sepAtr                 : separación mínima entre las dos líneas, en ATR (las otras figuras
+                            piden 3.5; una bandera es apretada por definición, ese 3.5 la mataba) */
+var PAT_BAN71={huecoVelas:3, huecoFrac:0.3, devuelveMax:0.5, mastilVeces:2, anchoVeces:1.7, mastilPend:0.7, minVelas:6, sepAtr:1.2};
 function patLinea(x1,y1,x2,y2){
   if(x2<x1){ var tx=x1,ty=y1; x1=x2; y1=y2; x2=tx; y2=ty; }
   var b=(x2-x1)>1e-9 ? (y2-y1)/(x2-x1) : 0;
@@ -9958,12 +10060,12 @@ function patTendenciaPrevia(C, x0, L){
 /* el «mástil» de una bandera o banderín: la pierna fuerte justo antes del patrón */
 function patMastil(C, xL, ancho, altoPat){
   var m0=patMastilV(C, xL, Math.max(10, Math.round(ancho*2)));
-  if(m0 && (m0.h/Math.max(1,m0.w))>=0.7*C.atr) return m0;
+  if(m0 && (m0.h/Math.max(1,m0.w))>=PAT_BAN71.mastilPend*C.atr) return m0;      /* v88 */
   /* el mástil es la pierna FUERTE justo antes de la figura: si mirando tan atrás se mezcla con un tramo lento, se prueba con ventanas más cortas (la más larga que sí sea rápida) */
   var cs=[Math.round(ancho*1.5), Math.round(ancho), Math.round(ancho*0.7), Math.round(ancho*0.5)], k, vistos={};
   for(k=0;k<cs.length;k++){
     var L=Math.max(8,cs[k]); if(vistos[L]) continue; vistos[L]=1;
-    var m=patMastilV(C, xL, L); if(m && (m.h/Math.max(1,m.w))>=0.7*C.atr) return m;
+    var m=patMastilV(C, xL, L); if(m && (m.h/Math.max(1,m.w))>=PAT_BAN71.mastilPend*C.atr) return m;      /* v88 */
   }
   return m0;
 }
@@ -10059,7 +10161,7 @@ function patClasificarPar(C, A, B, ids, sinMast){
       if(ext71!==null && (mast.dir>0 ? (mast.p1-ext71) : (ext71-mast.p1))/altoM71>PAT_BAN71.devuelveMax) banOk71=false;
     }
   }
-  var penR=(banOk71 && mast && mast.h>=2*hmax && span<=1.7*Math.max(mast.w,6) && (mast.h/Math.max(1,mast.w))>=0.7*C.atr);
+  var penR=(banOk71 && mast && mast.h>=PAT_BAN71.mastilVeces*hmax && span<=PAT_BAN71.anchoVeces*Math.max(mast.w,6) && (mast.h/Math.max(1,mast.w))>=PAT_BAN71.mastilPend*C.atr);      /* v88 · las tres medidas viven en PAT_BAN71 */
   /* la misma zona puede leerse de dos formas (canal bajista = bandera alcista; cuña descendente = banderín alcista):
      sin mástil (sinMast) se lee como canal/cuña; con mástil, como bandera/banderín; el buscador entrega las dos */
   function elegir(pen){
@@ -10736,6 +10838,98 @@ function patAjustarLinea(C, w, tipo){
    banderas, rectángulo…) antes de dar una figura por válida. Un solo ajuste global (BD.ajustes.patSens,
    0 a 100, 50 = lo de siempre) que mueve los mínimos de calidad que ya existían; 100 = más sensible
    (los marca antes, con menos toques), 0 = más estricto (pide más toques para no marcar de más). */
+/* ===================================================================
+   v89 · QUE CADA PATRÓN APRENDA DE SUS PROPIOS ERRORES
+   En la misma gráfica que estás mirando, cada patrón ya lleva su marca: cuántas veces cumplió
+   y cuántas falló (eso lo calcula la app sola cuando la figura queda atrás en el tiempo).
+   Aquí esa marca se usa: el patrón que viene fallando se pone MÁS exigente con las figuras
+   nuevas, y el que viene cumpliendo se queda como está. Nunca al revés, y nunca toca una
+   figura que ya tiene resultado — la historia no se reescribe, solo se filtra lo que viene.
+   Las cuatro perillas, juntas y a la vista:
+     minCasos : por debajo de esto NO se ajusta nada (con pocas figuras el porcentaje es azar)
+     malo     : acierto por debajo de esto = viene fallando
+     bueno    : acierto por encima de esto = no se le toca nada
+     subeMax  : cuánto puede subirle la exigencia como mucho */
+var PAT_AFINA89={minCasos:10, malo:0.40, bueno:0.55, subeMax:0.25};
+function patAfinaEncendido89(){
+  try{ return (BD.ajustes||{}).patAfina89!==false; }catch(e){ return true; }
+}
+/* cuánto hay que subirle la vara a este patrón, visto su historial en esta gráfica */
+function patAfinaSube89(ok, mal){
+  var n=ok+mal;
+  if(n<PAT_AFINA89.minCasos) return 0;
+  var r=ok/n;
+  if(r>=PAT_AFINA89.bueno) return 0;
+  if(r>=PAT_AFINA89.malo) return PAT_AFINA89.subeMax*0.4*(PAT_AFINA89.bueno-r)/Math.max(1e-9,PAT_AFINA89.bueno-PAT_AFINA89.malo);
+  return PAT_AFINA89.subeMax*(0.4+0.6*(PAT_AFINA89.malo-r)/Math.max(1e-9,PAT_AFINA89.malo));
+}
+/* LA LIBRETA: lo que cada patrón lleva acertado y fallado, guardada en este aparato.
+   Una fila por patrón + moneda + temporalidad, y se REEMPLAZA cada vez que se vuelve a mirar esa
+   gráfica (así no se cuenta dos veces la misma figura). El total de un patrón es la suma de sus filas,
+   de todas las monedas y temporalidades que el usuario haya visto: por eso la libreta engorda sola
+   mientras él usa la app, y con el tiempo el porcentaje deja de ser azar.
+   Va aparte de los ajustes porque es lo aprendido en este aparato, no una preferencia. */
+var PAT_REC89_MAX=500, PAT_REC89=null, PAT_REC89_SUCIO=false, PAT_REC89_T=0;
+function patRec89(){
+  if(PAT_REC89) return PAT_REC89;
+  try{ PAT_REC89=JSON.parse(localStorage.getItem("patRec89")||"{}")||{}; }catch(e){ PAT_REC89={}; }
+  return PAT_REC89;
+}
+function patRecGuardar89(){
+  if(!PAT_REC89_SUCIO) return;
+  var ahora=Date.now(); if(ahora-PAT_REC89_T<20000) return;            /* como mucho cada 20 s: no estorba */
+  PAT_REC89_T=ahora; PAT_REC89_SUCIO=false;
+  try{
+    var R=patRec89(), ks=Object.keys(R);
+    if(ks.length>PAT_REC89_MAX){                                        /* se van las filas más viejas */
+      ks.sort(function(a,b){ return (R[a].t||0)-(R[b].t||0); });
+      ks.slice(0, ks.length-PAT_REC89_MAX).forEach(function(k){ delete R[k]; });
+    }
+    localStorage.setItem("patRec89", JSON.stringify(R));
+  }catch(e){}
+}
+/* anota lo visto en ESTA gráfica (reemplaza la fila, no suma) */
+function patRecAnota89(E, out){
+  var mon=""; try{ mon=String((E&&E.op&&E.op.sym)||"").toUpperCase(); }catch(eM){}
+  var tf=(E&&E.inter)||"", R=patRec89(), vis={};
+  out.forEach(function(f){
+    if(f.forming || !f.id) return;
+    if(f.res!=="cumplio" && f.res!=="fallo") return;
+    var a=vis[f.id]||(vis[f.id]={ok:0,mal:0});
+    if(f.res==="cumplio") a.ok++; else a.mal++;
+  });
+  Object.keys(vis).forEach(function(id){
+    var k=id+"|"+mon+"|"+tf, v=vis[id], an=R[k];
+    if(!an || an.ok!==v.ok || an.mal!==v.mal){ R[k]={ok:v.ok, mal:v.mal, t:Date.now()}; PAT_REC89_SUCIO=true; }
+  });
+  patRecGuardar89();
+  return vis;
+}
+/* el total de un patrón, de todas las gráficas donde se lo haya visto */
+function patRecTotal89(id){
+  var R=patRec89(), ok=0, mal=0, pre=id+"|";
+  Object.keys(R).forEach(function(k){ if(k.indexOf(pre)===0){ ok+=R[k].ok||0; mal+=R[k].mal||0; } });
+  return {ok:ok, mal:mal};
+}
+/* se aplica sobre lo que se va a dibujar: solo a las figuras SIN resultado todavía */
+function patAfinar89(E, out){
+  if(!out || !out.length) return out;
+  var vis=patRecAnota89(E, out);                               /* la libreta se llena aunque el ajuste esté apagado */
+  if(!patAfinaEncendido89()) return out;
+  var sube={};
+  Object.keys(vis).forEach(function(id){
+    var t=patRecTotal89(id);                                   /* lo de siempre, no solo lo de esta pantalla */
+    sube[id]=patAfinaSube89(t.ok, t.mal);
+  });
+  return out.filter(function(f){
+    if(f.res==="cumplio" || f.res==="fallo") return true;      /* lo ya juzgado se queda: la historia no se toca */
+    var s=sube[f.id];
+    if(s===undefined){ var t2=patRecTotal89(f.id); s=patAfinaSube89(t2.ok, t2.mal); }
+    if(!s) return true;
+    f.afina89=s;                                               /* para poder explicarlo en la ficha */
+    return (f.cal!=null ? f.cal : 1) >= patSensAjuste(0.6)+s;
+  });
+}
 function patSensAjuste(base){
   var s=50; try{ var v=(BD.ajustes||{}).patSens; if(v!=null && isFinite(v)) s=Math.max(0,Math.min(100,+v)); }catch(e){}
   var d=(50-s)/50*0.15;
@@ -10772,9 +10966,10 @@ function patBanderasMastil(C, res, minCalBase){
   var q, T, k;
   for(q=pv.length-1;q>=Math.max(0,pv.length-7);q--){
     var P=pv[q]; if(P.prov) continue;
-    var e=P.i; if(last-e<12 || last-e>150) continue;                    /* la consolidación mide al menos 15 velas (regla de siempre): con menos no habrá figura */
+    var e=P.i, minV84=Math.max(4, PAT_BAN71.minVelas);                  /* v89 · la pausa mínima sale de PAT_BAN71, no de un número suelto */
+    if(last-e<minV84 || last-e>150) continue;
     var mejor=null;
-    for(T=last; T>=Math.max(e+12,last-12); T--){                        /* hasta donde llega la consolidación: hoy, o unas velas antes si el precio ya salió */
+    for(T=last; T>=Math.max(e+minV84,last-12); T--){                      /* hasta donde llega la consolidación: hoy, o unas velas antes si el precio ya salió */
       var hs=[], ls=[];
       for(k=e;k<=T;k++){
         var vk=V[k], esH=(k===T)||(k>e && vk.h>=V[k-1].h && vk.h>=V[k+1].h), esL=(k===T)||(k>e && vk.b<=V[k-1].b && vk.b<=V[k+1].b);
@@ -10789,7 +10984,8 @@ function patBanderasMastil(C, res, minCalBase){
       if(!f || !/^ban_/.test(f.id)) continue;
       var minF=patSensAjuste((Lu.tq+Ll.tq>=5 && Math.max(Lu.tq,Ll.tq)>=3) ? 0.7 : 0.6);
       if(f.cal<minF) continue;
-      if((f.x1-f.x0)<15 || Math.max(Math.abs(A.y1-B.y1),Math.abs(A.y2-B.y2))<3.5*C.atr) continue;
+      var esBan84=/^ban_/.test(f.id);      /* v89 · la bandera tiene sus propias medidas: es corta y apretada */
+      if((f.x1-f.x0)<(esBan84?PAT_BAN71.minVelas:15) || Math.max(Math.abs(A.y1-B.y1),Math.abs(A.y2-B.y2))<(esBan84?PAT_BAN71.sepAtr:3.5)*C.atr) continue;
       if(!mejor || f.cal>mejor.cal+0.001) mejor=f;                       /* a igual calidad se queda la que llega más cerca de hoy (se probó primero) */
     }
     if(mejor){ mejor.escala=3; mejor.scan=true; mejor.anticipa=true; out.push(mejor); }
@@ -10835,7 +11031,8 @@ function patEscanear(V, opt){
         if(corta && !/^ban_/.test(f.id)) return;
         var minF=patSensAjuste(corta?0.6:0.7);
         if(f.cal<minF) return;
-        if((f.x1-f.x0)<15 || Math.max(Math.abs(Lu.y1-Ll.y1),Math.abs(Lu.y2-Ll.y2))<3.5*C.atr) return;
+        var esBan84b=/^ban_/.test(f.id);      /* v89 · igual que arriba: la bandera mide distinto */
+        if((f.x1-f.x0)<(esBan84b?PAT_BAN71.minVelas:15) || Math.max(Math.abs(Lu.y1-Ll.y1),Math.abs(Lu.y2-Ll.y2))<(esBan84b?PAT_BAN71.sepAtr:3.5)*C.atr) return;
         f.escala=k; f.scan=true; res.push(f);
         if(f.otra){                                       /* la misma zona leída sin mástil (canal / cuña) */
           var f2=patClasificarPar(C,Lu,Ll,[],true);
@@ -11585,11 +11782,19 @@ function patGuiaEscanearVelas(C, resultados){
     var atr=C.atr;
     if(V[j].h>mx && V[j].h-mx<=0.8*atr && kx<=j-5 && !u2b[1]){
       var bajo=1e300; for(k=kx;k<j;k++) if(V[k].b<bajo) bajo=V[k].b;
-      if(mx-bajo>=2*atr){ ev=patGuiaEval("dos_b",[{x:kx,y:mx},{x:j,y:V[j].h}],C); if(ev&&ev.cumple&&!(ev.ojo||[]).length){ nuevo("dos_b", ev, [kx,j], [mx,V[j].h], 0); u2b[1]=1; } }
+      if(mx-bajo>=2*atr){ ev=patGuiaEval("dos_b",[{x:kx,y:mx},{x:j,y:V[j].h}],C); if(ev&&ev.cumple&&!(ev.ojo||[]).length){ nuevo("dos_b", ev, [kx,j], [mx,V[j].h], 0);
+        /* v89 · el 2B sí tiene lado: si la falsa ruptura fue POR ARRIBA, el aviso es de bajada, y lo que se
+           espera es volver al suelo del rango que se rompió en falso (Sperandeo; y es la confirmación que ya
+           dice la ficha: «que el cierre vuelva dentro del rango anterior»). Sin esto nunca anotaba si acertó. */
+        var f2b=resultados[resultados.length-1]; if(f2b){ f2b.b="b"; f2b.obj={abj:bajo}; }
+        u2b[1]=1; } }
     }
     if(V[j].b<mn && mn-V[j].b<=0.8*atr && kn<=j-5 && !u2b["-1"]){
       var alto=-1e300; for(k=kn;k<j;k++) if(V[k].h>alto) alto=V[k].h;
-      if(alto-mn>=2*atr){ ev=patGuiaEval("dos_b",[{x:kn,y:mn},{x:j,y:V[j].b}],C); if(ev&&ev.cumple&&!(ev.ojo||[]).length){ nuevo("dos_b", ev, [kn,j], [mn,V[j].b], 0); u2b["-1"]=1; } }
+      if(alto-mn>=2*atr){ ev=patGuiaEval("dos_b",[{x:kn,y:mn},{x:j,y:V[j].b}],C); if(ev&&ev.cumple&&!(ev.ojo||[]).length){ nuevo("dos_b", ev, [kn,j], [mn,V[j].b], 0);
+        /* v89 · falsa ruptura POR ABAJO: el aviso es de subida, y lo que se espera es volver al techo del rango */
+        var f2bA=resultados[resultados.length-1]; if(f2bA){ f2bA.b="a"; f2bA.obj={arr:alto}; }
+        u2b["-1"]=1; } }
     }
   }
 }
@@ -13604,10 +13809,25 @@ function patResultadoDe(f, V){
   var ob=f.obj||{}, d=0, T=null;
   if(typeof ob.abj==="number" && typeof ob.arr!=="number"){ d=-1; T=ob.abj; }
   else if(typeof ob.arr==="number" && typeof ob.abj!=="number"){ d=1; T=ob.arr; }
-  if(!d || !(T>0)) return null;
   var ys=[]; (f.puntos||[]).forEach(function(q){ ys.push(q.y); });
   (f.lineas||[]).forEach(function(l){ if(l.r!=="cuello" && l.r!=="g"){ ys.push(l.y1); ys.push(l.y2); } });
   if(!ys.length) return null;
+  /* v89 · UNA FIGURA CON DIRECCIÓN SIEMPRE SE MIDE.
+     Antes, la que no traía objetivo propio no anotaba nunca si acertó o falló, así que nunca podía
+     aprender de sus errores. Si tiene lado (alcista o bajista) y no trae objetivo, se le aplica la regla
+     de medida de toda la vida: se proyecta la altura de la figura desde el borde por donde rompe, y se
+     invalida al otro borde. Es la misma cuenta que ya usan las figuras que sí traen objetivo. */
+  if(!d || !(T>0)){
+    var lado89=(typeof PAT66!=="undefined" && PAT66[f.id]) ? PAT66[f.id].b : null;
+    var dd89= (f.b==="a" || lado89==="a") ? 1 : ((f.b==="b" || lado89==="b") ? -1 : 0);
+    if(!dd89) return null;
+    var alto89=Math.max.apply(null,ys), bajo89=Math.min.apply(null,ys), H89=alto89-bajo89;
+    if(!(H89>0)) return null;
+    d=dd89;
+    T= d>0 ? alto89+H89 : bajo89-H89;
+    if(!(T>0)) return null;
+    f.objAuto89=true;                       /* para saber que el objetivo es el de la regla general, no uno del libro */
+  }
   var inval = d<0 ? Math.max.apply(null,ys) : Math.min.apply(null,ys);
   var k0=Math.floor(f.x1)+1, n=V.length;
   var hor=Math.max(60, Math.round(3*Math.max(10,(f.x1-f.x0))));
@@ -14812,6 +15032,7 @@ function patFamTodo(E, fam, I, vis){
   out=out.concat(patVelasDepurar(vh));
   /* una figura que se está formando y se encima con otra ya completa del mismo patrón (comparten puntos) no se dibuja dos veces */
   out=out.filter(function(f){ return !f.forming || f.vela || !out.some(function(g){ return !g.forming && !g.vela && g.id===f.id && f.x0<g.x1; }); });
+  out=patAfinar89(E, out);                                     /* v89 · el patrón que viene fallando se pone más exigente con lo nuevo */
   var st={cumplio:0, fallo:0};
   out.forEach(function(f){ if(f.forming) return; if(f.res==="cumplio") st.cumplio++; else if(f.res==="fallo") st.fallo++; });
   return {res:out, listo:listo, stats:st};
@@ -15239,6 +15460,14 @@ function patSensHTML(){
     h+='<button type="button" data-patsens="'+o[0]+'" style="padding:5px 12px;border-radius:999px;border:1px solid '+(on?'var(--ac)':'var(--b3)')+';background:'+(on?'var(--ac)':'transparent')+';color:'+(on?'var(--b0)':'var(--tx)')+';font-size:12px;font-weight:700;cursor:pointer">'+esc(o[1])+'</button>';
   });
   h+='</span></div>';
+  /* v89 · el interruptor de «que aprenda de sus errores», junto al de exigencia: todo lo que decide
+     cuán fácil marca un patrón vive en el mismo sitio, no repartido por la app */
+  var ap=patAfinaEncendido89();
+  h+='<div class="gpsens" style="display:flex;align-items:center;gap:8px;margin:-4px 0 10px;flex-wrap:wrap">'+
+     '<span class="gpq" style="flex:0 0 auto">'+esc(tr("Que aprenda de sus errores"))+'</span>'+
+     '<button type="button" data-patafina="'+(ap?0:1)+'" style="padding:5px 12px;border-radius:999px;border:1px solid '+(ap?'var(--ac)':'var(--b3)')+';background:'+(ap?'var(--ac)':'transparent')+';color:'+(ap?'var(--b0)':'var(--tx)')+';font-size:12px;font-weight:700;cursor:pointer">'+esc(ap?tr("Sí"):tr("No"))+'</button>'+
+     '<span class="gpq" style="flex:1 1 180px;opacity:.75;font-size:11px">'+esc(tr("En esta gráfica, el patrón que viene fallando se vuelve más exigente con las figuras nuevas. Nunca cambia las que ya tienen resultado."))+'</span>'+
+     '</div>';
   return h;
 }
 function patCajaBusqueda(E, modo){
@@ -15413,6 +15642,16 @@ function enganchaPatrones(E, p){
   p.addEventListener("click", function(ev){
     if(E.pop==="pat" && typeof patTodosClic74==="function" && patTodosClic74(E, p, ev)) return;      /* v74 · pto 39 */
     /* v69 (punto 13 de Luis) · el control de sensibilidad del buscador: se guarda y se vuelve a buscar/dibujar todo */
+    /* v89 · el interruptor de «que aprenda de sus errores» */
+    var ta=ev.target.closest("[data-patafina]");
+    if(ta && E.pop==="pat"){
+      BD.ajustes=BD.ajustes||{};
+      BD.ajustes.patAfina89=(+ta.getAttribute("data-patafina")===1);
+      try{ guardar(); }catch(eA){}
+      E.patBus=null;
+      pintarPatrones(E,p); dibujar(E);
+      return;
+    }
     var ts=ev.target.closest("[data-patsens]");
     if(ts && E.pop==="pat"){
       var ns=+ts.getAttribute("data-patsens");
@@ -19240,10 +19479,13 @@ function d86EstRun(O, H, L, C, opt) {
         piv.push(q); lista.push(price); last = q;
         if (t === 1) {
           hi = q;
-          if (bias === 1 && lo !== null && (ext === null || price > ext.price)) { ext = q; prot = lo; }
+          /* v88 · «vivo(lo)» en vez de «lo !== null»: antes el nivel protegido podía quedar apuntando a un mínimo YA ROTO,
+             y como un nivel roto no vuelve a contar, el programa se quedaba sin nivel protegido y no marcaba un solo
+             cambio de estructura nunca más. En Dogecoin eso se tragó cinco meses de caída seguida. */
+          if (bias === 1 && vivo(lo) && (ext === null || price > ext.price)) { ext = q; prot = lo; }
         } else {
           lo = q;
-          if (bias === -1 && hi !== null && (ext === null || price < ext.price)) { ext = q; prot = hi; }
+          if (bias === -1 && vivo(hi) && (ext === null || price < ext.price)) { ext = q; prot = hi; }
         }
       }
     }
@@ -19256,6 +19498,9 @@ function d86EstRun(O, H, L, C, opt) {
     var cd = vivo(lo) && okc && pasaDn(lo.price);
     var cpu = false, cpd = false;
     if (choch === 'protegido') {
+      /* v88 · si el nivel protegido se quedó sin valer (lo rompió un movimiento de adentro), se vuelve a tomar el último
+         máximo o mínimo que SIGUE EN PIE, el del lado que toca según la tendencia. Sin esto el motor se quedaba ciego. */
+      if (!vivo(prot)) prot = bias === 1 ? (vivo(lo) ? lo : null) : bias === -1 ? (vivo(hi) ? hi : null) : null;
       cpu = bias === -1 && vivo(prot) && prot.t === 1 && okc && pasaUp(prot.price);
       cpd = bias === 1 && vivo(prot) && prot.t === -1 && okc && pasaDn(prot.price);
     }
@@ -19280,10 +19525,18 @@ function d86EstRun(O, H, L, C, opt) {
         prot.x = true; if (cd) lo.x = true; bias = -1; prot = hi; ext = null;
       } else if (cu) {
         hi.x = true;
-        if (bias !== -1) { ev.push({ tipo: 'BOS', dir: 1, nivel: hi.price, p: hi.p, j: j, primera: bias === 0 }); if (bias === 0) { bias = 1; prot = lo; ext = null; } }
+        if (bias !== -1) {
+          ev.push({ tipo: 'BOS', dir: 1, nivel: hi.price, p: hi.p, j: j, primera: bias === 0 });
+          if (bias === 0) { bias = 1; ext = null; }
+          if (vivo(lo)) prot = lo;      /* v88 · tras romper un máximo, lo que hay que defender es el último mínimo en pie, no uno de hace meses */
+        }
       } else if (cd) {
         lo.x = true;
-        if (bias !== 1) { ev.push({ tipo: 'BOS', dir: -1, nivel: lo.price, p: lo.p, j: j, primera: bias === 0 }); if (bias === 0) { bias = -1; prot = hi; ext = null; } }
+        if (bias !== 1) {
+          ev.push({ tipo: 'BOS', dir: -1, nivel: lo.price, p: lo.p, j: j, primera: bias === 0 });
+          if (bias === 0) { bias = -1; ext = null; }
+          if (vivo(hi)) prot = hi;
+        }
       }
     }
     sBias[j] = bias; sHi[j] = vivo(hi) ? hi.id : -1; sLo[j] = vivo(lo) ? lo.id : -1; sPr[j] = vivo(prot) ? prot.id : -1;
@@ -19347,29 +19600,33 @@ function d86Mapa(V, Wc, durF, base){
   };
 }
 indReg({id:"est", al:"estructura de mercado bos choch cambio de estructura ruptura continuacion tendencia swing smc fractalidad voz market structure break of structure change of character trend higher high lower low fractal", sn:"Estructura", n:"Estructura de mercado (BOS / CHoCH)", g:"est", panel:false, sinTF:true, ets:true, tamEn:"tam",
-  nom:function(I, conE){ return tr("Estructura")+(conE ? " "+I.n : ""); },      /* en la leyenda solo el largo del swing principal: «Estructura 5» (las demás cifras estorbarían) */
-  d:"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.",
+  nom:function(I, conE){ return tr("Estructura de mercado"); },      /* v88 · «Estructura» a secas no decía nada (Luis, 21 oct 22:04) y el número de al lado tampoco (22:33). En la leyenda va el nombre y nada más: los precios ya están dibujados en la gráfica y en la escala de la derecha, y repetirlos aquí solo estorba (con una moneda de muchos decimales, la fila se haría larguísima). */
+  d:"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un máximo o un mínimo solo aparece cuando ya pasaron las velas de su lado derecho, y nunca se vuelve a pintar después. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.",
   en:[["c1d","Dibujar también el temporal de 1 día","bool",true,null,null,"Temporales (fractalidad)","Solo se dibuja si es más grande que el temporal de la gráfica."],
       ["c4h","Dibujar también el temporal de 4 horas","bool",true,null,null,"Temporales (fractalidad)"],
       ["c1h","Dibujar también el temporal de 1 hora","bool",false,null,null,"Temporales (fractalidad)"],
       ["c15","Dibujar también el temporal de 15 minutos","bool",false,null,null,"Temporales (fractalidad)"],
-      ["n","Largo del swing (N) · temporal de la gráfica","int",5,1,50,"Temporales (fractalidad)","Un swing alto es la vela cuyo máximo supera al de las N velas de cada lado; se confirma N velas después. Más N = menos líneas."],
-      ["n1d","Largo del swing (N) · 1 día","int",5,1,50,"Temporales (fractalidad)"],
-      ["n4h","Largo del swing (N) · 4 horas","int",5,1,50,"Temporales (fractalidad)"],
-      ["n1h","Largo del swing (N) · 1 hora","int",5,1,50,"Temporales (fractalidad)"],
-      ["n15","Largo del swing (N) · 15 minutos","int",5,1,50,"Temporales (fractalidad)"],
+      ["n","Velas a cada lado · temporal de la gráfica","int",5,1,50,"Temporales (fractalidad)","Cuántas velas tienen que quedar más abajo a cada lado para que una vela cuente como máximo (y más arriba, para un mínimo). Con más velas salen menos líneas, pero más firmes."],
+      ["n1d","Velas a cada lado · 1 día","int",5,1,50,"Temporales (fractalidad)"],
+      ["n4h","Velas a cada lado · 4 horas","int",5,1,50,"Temporales (fractalidad)"],
+      ["n1h","Velas a cada lado · 1 hora","int",5,1,50,"Temporales (fractalidad)"],
+      ["n15","Velas a cada lado · 15 minutos","int",5,1,50,"Temporales (fractalidad)"],
       ["tfw","Grosor extra por cada temporal mayor (%)","int",18,0,100,"Temporales (fractalidad)","0 = todos con el mismo grosor que el de la gráfica."],
-      ["sw","Método","sel","sym",[["sym","Simétrico: N velas a cada lado"],["leg","Solo derecha (estilo LuxAlgo)"]],null,"Cómo se detecta el swing"],
+      ["sw","Método","sel","sym",[["sym","Las mismas velas a los dos lados"],["leg","Solo las velas de la derecha"]],null,"Cómo se detecta el swing"],
       ["brk","Se confirma con","sel","close",[["close","Cierre de la vela"],["wick","Mecha (basta tocar)"]],null,"Cuándo cuenta una ruptura"],
       ["mk","Margen extra","sel","none",[["none","Ninguno"],["pct","% del precio"],["atr","× ATR(14)"]],null,"Cuándo cuenta una ruptura"],
       ["mvp","Margen en % del precio","float",0.1,0,20,"Cuándo cuenta una ruptura"],
       ["mva","Margen en × ATR","float",0.3,0,10,"Cuándo cuenta una ruptura"],
       ["body","Cuerpo mínimo de la vela que rompe (%)","int",0,0,100,"Cuándo cuenta una ruptura","0 = sin filtro. Con 60 solo cuenta una vela con cuerpo de al menos el 60 % de su rango."],
-      ["choch","Nivel de referencia","sel","ultimo",[["ultimo","Último confirmado"],["protegido","Swing protegido (el que lanzó el último máx./mín.)"]],null,"Contra qué se mide el CHoCH","Con «protegido», romper un swing intermedio no es CHoCH: hace falta romper el que originó el último extremo. Da bastantes menos CHoCH."],
+      /* v88 · Luis, 21 oct 22:42: «hay demasiados CHoCH… tienes que buscar la manera que quede más técnico».
+         Probado en Bitcoin, Ethereum, Solana, XRP y Dogecoin, en 1 día y en 4 horas: el nivel que sostenía la tendencia
+         da la MITAD de cambios de estructura que el último mínimo cualquiera, y es lo que dice la teoría. Pasa a ser el de fábrica.
+         El nombre de antes («Nivel de referencia · Último confirmado / Swing protegido») no se entendía. */
+      ["choch","Cuándo cambia la tendencia","sel","protegido",[["protegido","Cuando se rompe el que la sostenía"],["ultimo","Cuando se rompe cualquiera anterior"]],null,"Cuándo cuenta un cambio de estructura","En una subida, el mínimo que la sostiene es el último antes del máximo más alto. Si el precio solo rompe un mínimo pequeño de un rebote, eso es movimiento de adentro y no cambia la lectura. Con la otra opción salen cerca del doble de cambios."],
       ["s2","Secundaria · swings más chicos en el mismo temporal","bool",false,null,null,"Fractalidad interna (impulsos y retrocesos de adentro)"],
-      ["n2","Largo del swing (N) secundario","int",3,1,30,"Fractalidad interna (impulsos y retrocesos de adentro)","Tiene que ser menor que el N del temporal de la gráfica para que se note distinto."],
+      ["n2","Velas a cada lado · secundaria","int",3,1,30,"Fractalidad interna (impulsos y retrocesos de adentro)","Tiene que ser menor que el del temporal de la gráfica para que se note distinto."],
       ["s3","Terciaria · un nivel más adentro todavía","bool",false,null,null,"Fractalidad interna (impulsos y retrocesos de adentro)"],
-      ["n3","Largo del swing (N) terciario","int",2,1,30,"Fractalidad interna (impulsos y retrocesos de adentro)"],
+      ["n3","Velas a cada lado · terciaria","int",2,1,30,"Fractalidad interna (impulsos y retrocesos de adentro)"],
       ["nom","Nombres de máximos y mínimos","sel","es",[["es","Con palabras (máx. mayor…)"],["sig","Siglas (HH, HL, LH, LL)"]],null,"Rótulos"],
       ["nomr","Cuándo es «mayor» o «menor»","sel","close",[["close","Solo si un cuerpo cierra más allá (si no, «barrida»)"],["wick","Basta con que la mecha pase"]],null,"Rótulos","Con la mecha sola el mercado solo fue a cazar órdenes: el swing se llama «barrida» y no cambia la lectura de la estructura."],
       ["tbar","Escribir «barrida» junto a esos swings","bool",true,null,null,"Rótulos"],
@@ -19387,20 +19644,20 @@ indReg({id:"est", al:"estructura de mercado bos choch cambio de estructura ruptu
       {k:"lbd",n:"BOS bajista · rótulo",c:"@dn",e:"lb",pos:"b",pln:true,cole:true},
       {k:"shi",n:"Rótulos de los máximos",c:["@up","@dn","#787B86","#FFB020"],cn:["Mayor","Menor","Igual","Barrida"],e:"lb",pos:"a",pln:true,cole:true},
       {k:"slo",n:"Rótulos de los mínimos",c:["@up","@dn","#787B86","#FFB020"],cn:["Mayor","Menor","Igual","Barrida"],e:"lb",pos:"b",pln:true,cole:true},
-      {k:"pa",net:true,n:"Puntos en los máximos",c:["@up","@dn","#787B86","#FFB020"],cn:["Mayor","Menor","Igual","Barrida"],e:"o",w:1},
-      {k:"pb",net:true,n:"Puntos en los mínimos",c:["@up","@dn","#787B86","#FFB020"],cn:["Mayor","Menor","Igual","Barrida"],e:"o",w:1},
-      {k:"vu",n:"Nivel vigente de arriba (aún sin romper)",c:"@up",e:"l",w:1,d:1},
-      {k:"vd",n:"Nivel vigente de abajo (aún sin romper)",c:"@dn",e:"l",w:1,d:1},
+      {k:"pa",net:true,sv:true,n:"Puntos en los máximos",c:["@up","@dn","#787B86","#FFB020"],cn:["Mayor","Menor","Igual","Barrida"],e:"o",w:1},
+      {k:"pb",net:true,sv:true,n:"Puntos en los mínimos",c:["@up","@dn","#787B86","#FFB020"],cn:["Mayor","Menor","Igual","Barrida"],e:"o",w:1},
+      {k:"vu",sv:true,n:"Nivel vigente de arriba (aún sin romper)",c:"@up",e:"l",w:1,d:1},
+      {k:"vd",sv:true,n:"Nivel vigente de abajo (aún sin romper)",c:"@dn",e:"l",w:1,d:1},
       {k:"g2u",n:"Secundaria · líneas alcistas",c:"@up",e:"sg",w:1,d:1,o:60},
       {k:"g2d",n:"Secundaria · líneas bajistas",c:"@dn",e:"sg",w:1,d:1,o:60},
       {k:"l2",n:"Secundaria · rótulos",c:"#787B86",e:"lb",pos:"a",pln:true,cole:true,o:75},
-      {k:"v2u",net:true,n:"Secundaria · nivel vigente de arriba",c:"@up",e:"l",w:1,d:2,o:60},
-      {k:"v2d",net:true,n:"Secundaria · nivel vigente de abajo",c:"@dn",e:"l",w:1,d:2,o:60},
+      {k:"v2u",net:true,sv:true,n:"Secundaria · nivel vigente de arriba",c:"@up",e:"l",w:1,d:2,o:60},
+      {k:"v2d",net:true,sv:true,n:"Secundaria · nivel vigente de abajo",c:"@dn",e:"l",w:1,d:2,o:60},
       {k:"g3u",n:"Terciaria · líneas alcistas",c:"@up",e:"sg",w:1,d:2,o:45},
       {k:"g3d",n:"Terciaria · líneas bajistas",c:"@dn",e:"sg",w:1,d:2,o:45},
       {k:"l3",n:"Terciaria · rótulos",c:"#787B86",e:"lb",pos:"a",pln:true,cole:true,o:60},
-      {k:"v3u",net:true,n:"Terciaria · nivel vigente de arriba",c:"@up",e:"l",w:1,d:2,o:45},
-      {k:"v3d",net:true,n:"Terciaria · nivel vigente de abajo",c:"@dn",e:"l",w:1,d:2,o:45},
+      {k:"v3u",net:true,sv:true,n:"Terciaria · nivel vigente de arriba",c:"@up",e:"l",w:1,d:2,o:45},
+      {k:"v3d",net:true,sv:true,n:"Terciaria · nivel vigente de abajo",c:"@dn",e:"l",w:1,d:2,o:45},
       {k:"br",n:"Barridas (la mecha pasa, el cierre vuelve)",c:"#787B86",e:"sg",w:1,d:2,on:false}],
   calc:function(V, I, E){
     var n=V.length, P={}, TX={}, CI={}, TE={}, sg={}, i, k;
@@ -19640,6 +19897,18 @@ function indTemaCol(c){
   if(!/^#[0-9a-fA-F]{6}$/.test(v)){ T=(typeof BD!=="undefined" && BD && BD.tema) || {}; v=T[c==="@up" ? "up" : "dn"]; }
   return /^#[0-9a-fA-F]{6}$/.test(v||"") ? v : (c==="@up" ? "#16D98A" : "#FF4D6A");
 }
+/* v88 · ancho real (px) de un texto en negrita del tamaño dado, medido con la letra de la app; si no se puede medir, estima ~0.52 em por letra (los ideogramas, 1 em) */
+var IND_ANCHO={}, IND_CV=null, IND_FAM="";
+function indAnchoTxt(t, px){
+  var k=px+"|"+t, w=IND_ANCHO[k], i;
+  if(w!==undefined) return w;
+  try{
+    if(!IND_CV){ IND_CV=document.createElement("canvas").getContext("2d"); IND_FAM=getComputedStyle(document.body).fontFamily||"sans-serif"; }
+    IND_CV.font="700 "+px+"px "+IND_FAM; w=IND_CV.measureText(t).width;
+  }catch(e){ w=0; }
+  if(!(w>0)){ w=0; for(i=0;i<t.length;i++) w+= t.charCodeAt(i)>=0x2E80 ? px : px*0.52; }
+  IND_ANCHO[k]=w; return w;
+}
 /* v87 · tamaño de los rótulos: solo lo usa el indicador que declara «tamEn» (la clave de su entrada); los demás quedan en 1 */
 var IND_FS={xs:0.8, s:0.9, m:1, l:1.2, xl:1.45};
 function indFs(it){ var c=IND66[it.id]; if(!c || !c.tamEn) return 1; var v=indEn(it)[c.tamEn]; return IND_FS[v]||1; }
@@ -19648,7 +19917,7 @@ function indPlots(it){
   return c.pl.map(function(p){
     var s=st[p.k]||{};
     return {k:p.k, n:p.n, c:indTemaCol(s.c!=null?s.c:p.c), cd:indTemaCol(p.c), fs:fs, e:s.e||p.e||"l", ed:p.e||"l", w:(s.w!=null?s.w:(p.w||1)), d:(s.d!=null?s.d:(p.d||0)),
-            o:(s.o!=null?s.o:(p.o!=null?p.o:100)), on:(s.on!=null?s.on:(p.on!==false)), cn:p.cn, ov:p.ov, pos:p.pos, cin:p.cin, fo:p.fo, net:p.net, pln:p.pln, cole:p.cole};      /* v86 · net: esta traza no pone etiqueta en la escala */
+            o:(s.o!=null?s.o:(p.o!=null?p.o:100)), on:(s.on!=null?s.on:(p.on!==false)), cn:p.cn, ov:p.ov, pos:p.pos, cin:p.cin, fo:p.fo, net:p.net, pln:p.pln, cole:p.cole, sv:p.sv, lp:p.lp};      /* v86 · net: esta traza no pone etiqueta en la escala. v88 · sv: no escribe su número en la leyenda (el de un punto suelto sería una raya); lp: lo que va delante del número en la leyenda */
   });
 }
 function indLevels(it, I){
@@ -20092,10 +20361,10 @@ function indTrazo(p, S, ctx){
       t=tr(t);
       if(p.cole && ctx.colis){                          /* v86 · un rótulo que caería encima de otro ya puesto (por prioridad de orden) no se dibuja */
         var wr, ci2, ya0= arriba ? yl-5-15*fz : yl+4, hit=false, q3;
-        if(p.pln||p.plano){ wr=4; for(ci2=0;ci2<t.length;ci2++) wr+= (t.charCodeAt(ci2)>=0x2E80 ? 9.8 : 5.4)*fz; } else wr=(t.length*5.4+9)*fz;      /* los ideogramas ocupan casi el doble de ancho */
+        if(p.pln||p.plano) wr=indAnchoTxt(t, 9.5*fz)+1; else wr=(t.length*5.4+9)*fz;      /* v88 · el ancho del texto suelto se MIDE (antes se estimaba de más y tapaba el nombre de un swing aunque no chocara con nada) */
         for(q3=0;q3<ctx.colis.length;q3++){ var rr=ctx.colis[q3]; if(xl-wr/2<rr.x1 && xl+wr/2>rr.x0 && ya0<rr.y1 && ya0+15*fz>rr.y0){ hit=true; break; } }
         if(hit) continue;
-        ctx.colis.push({x0:xl-wr/2-1, x1:xl+wr/2+1, y0:ya0-1, y1:ya0+16*fz});
+        ctx.colis.push({x0:xl-wr/2-0.5, x1:xl+wr/2+0.5, y0:ya0-1, y1:ya0+16*fz});
       }
       if(p.plano || p.pln){                              /* v70 · texto suelto (varias líneas) como en la referencia, sin caja */
         var ls=t.split("\n"), lh=11.5*fz, y0= arriba ? yl-6-(ls.length-1)*lh : yl+6+9.5*fz;
@@ -20260,12 +20529,13 @@ function indLeyenda(E, it, res, ix, conValores, enPanel){
   if(conValores && it.lin!==false && (indLeyG("val") || E.indSel===it.u) && !it.oc && res && res.p){
     var hay=res._hay||(res._hay={});
     pls.forEach(function(p){
-      if(!p.on || p.e==="bx" || p.e==="sg" || p.e==="nv" || p.e==="lb" || p.e==="tu" || p.e==="td" || p.e==="bg") return;
+      if(!p.on || p.sv || p.e==="bx" || p.e==="sg" || p.e==="nv" || p.e==="lb" || p.e==="tu" || p.e==="td" || p.e==="bg") return;      /* v88 · «sv»: trazas sueltas (los puntos de un máximo, un nivel de adentro) que en la leyenda solo sabrían escribir una raya */
       var S=res.p[p.k]; if(!S) return;
       if(hay[p.k]===undefined){ hay[p.k]=false; for(var q=0;q<S.length;q++) if(S[q]!==undefined && iOk(S[q])){ hay[p.k]=true; break; } }
       if(!hay[p.k]) return;
       var x=S[ix];
-      vals+='<i style="color:'+indColLey(E, indColorDe(p, res.ci && res.ci[p.k], ix))+'">'+(iOk(x)?indFmt(x, it, (!indPanel(it) || p.fo) && !p.ov):"—")+'</i>';
+      if(p.lp && !iOk(x)) return;                                                 /* v88 · un nivel con nombre («▲ 1,4466») desaparece si todavía no tiene precio, en vez de quedar en una raya */
+      vals+='<i style="color:'+indColLey(E, indColorDe(p, res.ci && res.ci[p.k], ix))+'">'+(p.lp?esc(tr(p.lp))+" ":"")+(iOk(x)?indFmt(x, it, (!indPanel(it) || p.fo) && !p.ov):"—")+'</i>';
     });
   }
   if(cat.fam && (E.indSel===it.u || E.indHover!=null) && !it.oc && typeof patFamResumen==="function"){ var rs=patFamResumen(E, it); if(rs) vals+='<i style="color:var(--t2)" translate="no">'+rs+'</i>'; }
@@ -24422,7 +24692,21 @@ function sel68Abrir(s){
     var x=ev.clientX, y=ev.clientY, hit=null;
     if(!(x||y)) return;
     if((V68 && Date.now()-V68.t0<450) || (typeof HIS!=="undefined" && HIS && Date.now()-HIS.t0<450)) return;      /* el clic del doble toque que abrió la ventana */
-    [].forEach.call(c.querySelectorAll("select"), function(s){ var r=s.getBoundingClientRect(); if(r.width && x>=r.left && x<=r.right && y>=r.top && y<=r.bottom) hit=s; });
+    /* v88 · Luis, 21 oct 22:31: «pongo Aceptar y queda como trabado». Aquí estaba.
+       El desplegable lleva pointer-events:none a propósito (para que no salga el menú del sistema sino el nuestro), así que
+       antes se miraba solo si el punto del clic caía dentro de su rectángulo. Pero la lista de ajustes se desplaza, y un
+       desplegable que quedó por debajo de la fila de «Cancelar / Aceptar» sigue teniendo su rectángulo ahí: no se ve, pero
+       se quedaba con el clic. Resultado: en vez de cerrarse la hoja se abría el menú de ese desplegable escondido
+       («Simétrico: N velas a cada lado»), que es justo lo que a él le salía.
+       Ahora, además del rectángulo, se mira QUÉ HAY DE VERDAD pintado en ese punto: tiene que ser el desplegable o su
+       propia fila. Si lo que está encima es el botón «Aceptar», el clic es del botón y se le deja pasar. */
+    var enc=document.elementFromPoint(x, y);
+    if(!enc || !c.contains(enc)) return;
+    [].forEach.call(c.querySelectorAll("select"), function(s){
+      var r=s.getBoundingClientRect(); if(!(r.width && x>=r.left && x<=r.right && y>=r.top && y<=r.bottom)) return;
+      var fila=s.parentNode;
+      if(enc===s || (fila && (enc===fila || fila.contains(enc)))) hit=s;
+    });
     if(!hit) return;
     ev.stopPropagation(); ev.preventDefault();
     if(window._s68skip && Date.now()-window._s68skip<600){ window._s68skip=0; return; }
@@ -24691,7 +24975,7 @@ function favPoner68(){
 function favBadge68(raiz){
   var L=favsLista67();
   [].forEach.call((raiz||document).querySelectorAll(".ic[data-sym]"), function(ic){
-    if(ic.closest(".favC, .favL81, .mfic, .v68w, .hindSheet, .gcw, .conRueda .gsym, .opIc")) return;      /* en la rueda de monedas la estrella ya va en su fila */
+    if(ic.closest(".favC, .favL81, .mfic, .v68w, .hindSheet, .gcw, .conRueda .gsym, .opIc, .gfav88")) return;      /* v88 · en el punto flotante la estrella sobra: ahí TODAS son favoritas */      /* en la rueda de monedas la estrella ya va en su fila */
     var p=ic.parentNode; if(!p || p.nodeType!==1) return;
     var sym=ic.getAttribute("data-sym"), fav=L.indexOf(String(sym).toUpperCase())>=0;
     var b=ic.nextElementSibling; if(b && !(b.classList && b.classList.contains("fvb68"))) b=null;
@@ -24779,6 +25063,7 @@ function ruedaMon68(E){
   cont.classList.add("conRueda");
   try{ buscaLupa74(E, w, cambiar); }catch(eB74){}      /* v74 · pto 53 */
   var wl=w.firstChild, tmr=null, acc=0, tW=0, mano=false, cambiando=false;
+  E.cambSym88=function(s){ cambiar(s); };      /* v88 · las favoritas flotantes cambian de moneda por el mismo camino que la rueda */
   function alto(){ return wl.firstChild ? wl.firstChild.offsetHeight : 0; }
   function indice(){ var h=alto(); return h ? Math.max(0, Math.min(lista.length-1, Math.round(wl.scrollTop/h))) : 0; }
   function sincronizar(){
@@ -24805,6 +25090,7 @@ function ruedaMon68(E){
   function cambiar(s){
     if(cambiando || !E.cont || !document.body.contains(E.cont)) return;
     cambiando=true;
+    E._cambSym88=null;
     var ampl=!!E.grande, sitio=E.sitio;
     var foco=!!(document.activeElement && w.contains(document.activeElement));
     /* la ficha de una moneda que ya tiene lleva más cosas (tarjetas, compras): se rehace completa */
@@ -29871,7 +30157,7 @@ function rotular79(){
     try{ dentro=!!ctaDentro(); }catch(e){}
     if(s.classList.contains("vd") && h) x=h;
     else if(/…|\.\.\./.test(t)) x="…";
-    else x=dentro ? tr("Enviar") : tr("Guardar");
+    else x=tr("Guardar");      /* v88 · también aquí: «Enviar» sonaba a mandar dinero */
     s.setAttribute("data-c79", x);
   }
   /* con rótulos largos (p. ej. «Aktualisieren») en un teléfono angosto no caben junto al título: los botones bajan a su fila */
@@ -32369,10 +32655,16 @@ function favFilas81(){
 }
 function favLista81(){
   var L=favsLista67(), s=favAct81(), px=favPx81(s);
+  /* v88 · Luis, 21 oct 22:07: la moneda que ya está puesta y la flechita hacen cosas distintas. Tocar la moneda ABRE SU GRÁFICA
+     (antes volvía a desplegar la lista y había que buscar en ella la misma moneda que ya estaba a la vista); la flechita de al
+     lado es la que abre y cierra la lista. La píldora sigue viéndose igual: por dentro son dos botones dentro del mismo marco. */
   return '<div class="favT68 favL81'+(FAV81.ab?" ab":"")+'" id="favT68"><span class="st">'+estrella67(true)+'</span>'+
-    '<button type="button" class="favP81" data-fv81="t" aria-haspopup="listbox" aria-expanded="'+(FAV81.ab?"true":"false")+'" title="'+esc(tr("Mis favoritas"))+'">'+icono(s,30)+
-      '<span class="tx"><b translate="no">'+esc(s)+'</b><i translate="no">'+esc(nombreDe(s))+'</i></span>'+
-      '<span class="px">'+px.pr+px.ch+'</span><span class="car" aria-hidden="true">▾</span></button>'+
+    '<div class="favP81">'+
+      '<button type="button" class="favV81" data-fv81="ver" title="'+esc(tr("Ver esta moneda"))+'">'+icono(s,30)+
+        '<span class="tx"><b translate="no">'+esc(s)+'</b><i translate="no">'+esc(nombreDe(s))+'</i></span>'+
+        '<span class="px">'+px.pr+px.ch+'</span></button>'+
+      '<button type="button" class="favC81" data-fv81="t" aria-haspopup="listbox" aria-expanded="'+(FAV81.ab?"true":"false")+'" title="'+esc(tr("Mis favoritas"))+'" aria-label="'+esc(tr("Mis favoritas"))+'"><span class="car" aria-hidden="true">▾</span></button>'+
+    '</div>'+
     '<span class="chip v">'+L.length+'</span>'+
     '<button type="button" class="favMas81" data-fvmas aria-label="'+esc(tr("Agregar"))+'" title="'+esc(tr("Agregar"))+'"></button>'+
     '<div class="favD81" role="listbox">'+(FAV81.ab ? favFilas81() : "")+'</div></div>';
@@ -32411,6 +32703,9 @@ function favEnganchaFilas81(t){
 function favEnganchar81(){
   var t=document.getElementById("favT68"); if(!t || !t.classList.contains("favL81")) return;
   var p=t.querySelector('[data-fv81="t"]'); if(p) p.onclick=function(){ favAbrir81(!FAV81.ab); };
+  /* v88 · tocar la moneda que ya está puesta la ENSEÑA; antes solo volvía a abrir la lista y había que buscarla ahí dentro */
+  var v=t.querySelector('[data-fv81="ver"]');
+  if(v) v.onclick=function(){ if(FAV81.ab) favAbrir81(false); favAccion68(favAct81()); };
   if(FAV81.ab) favEnganchaFilas81(t);
 }
 (function(){
@@ -32440,7 +32735,12 @@ function favCaja81(){
     '<div class="fav81ops" role="radiogroup">'+
       '<button type="button" role="radio" aria-checked="'+(m==="fila")+'" class="fav81o'+(m==="fila"?" on":"")+'" data-fv81m="fila"><span>'+esc(tr("En fila · se desliza de lado"))+'</span><i aria-hidden="true">✓</i></button>'+
       '<button type="button" role="radio" aria-checked="'+(m==="lista")+'" class="fav81o'+(m==="lista"?" on":"")+'" data-fv81m="lista"><span>'+esc(tr("Lista desplegable · se abre al tocarla"))+'</span><i aria-hidden="true">✓</i></button>'+
-    '</div></div></div>';
+    '</div>'+
+    /* v88 · el punto flotante de la gráfica vive aquí mismo, con lo demás de las favoritas: todo en un solo sitio */
+    '<label class="fav81sw"><input type="checkbox" id="fav88Sw"'+(gf88On()?" checked":"")+'><span>'+
+      esc(tr("Un punto en la gráfica para saltar entre sus favoritas"))+'</span></label>'+
+    '<div class="fcalc">'+esc(tr("Sale con el logo de la moneda que está viendo. Se arrastra adonde quiera y no tapa la gráfica."))+'</div>'+
+    '</div></div>';
 }
 function favEngancharDat81(){
   var c=document.getElementById("fav81Caja"); if(!c) return;
@@ -32454,11 +32754,146 @@ function favEngancharDat81(){
       var p=document.getElementById("fav81Pill"); if(p) p.textContent=favTxt81(m);
     };
   });
+  /* v88 · el punto flotante de la gráfica */
+  var sw=c.querySelector("#fav88Sw");
+  if(sw) sw.onchange=function(){
+    var A=BD.ajustes||(BD.ajustes={});
+    if(sw.checked) delete A.favFlot; else A.favFlot=false;
+    try{ tocar(A); guardar(); }catch(e){}
+    try{ if(typeof GRAF!=="undefined" && GRAF && GRAF.cont){ GF88.ab=false; var cj=GRAF.cont.querySelector(".gfav88"); if(cj) cj._f88=null; gf88Pintar(GRAF); } }catch(e2){}
+  };
 }
 (function(){
   if(typeof engancharDat!=="function") return;
   var ed0=engancharDat;
   engancharDat=function(box){ var r=ed0.apply(this, arguments); try{ favEngancharDat81(); }catch(e){} return r; };
+})();
+
+/* ===================================================================
+   v88 · LAS FAVORITAS FLOTANTES DE LA GRÁFICA  (Luis, 21 oct 22:18–22:20)
+   «Me gustaría que esto tenga alguna ventana flotante acerca de todos sus favoritos… algo que no sature,
+    que pulse y salen todos sus favoritos… totalmente amigable y fácil para el usuario.»
+   · Es un punto chico con EL LOGO DE LA MONEDA QUE ESTÁ VIENDO. Sin estrella y sin número: él los descartó.
+     Así el punto ya sirve para algo (le dice en qué moneda está) y no es un adorno.
+   · Se toca y salen sus favoritas con su precio y su variación en vivo; la que está viendo sale marcada.
+     Toca una y la gráfica cambia a esa moneda, y el panel se cierra solo. Tocar fuera o Escape también lo cierra.
+   · Se arrastra adonde no estorbe y se queda ahí (también en el teléfono). Si lo arrastra, no se cuenta como toque.
+   · De fábrica viene puesto. Se apaga en Ajustes › Mis favoritas, junto a lo demás de las favoritas: todo en un sitio.
+   · No le quita ni un pixel de alto a la gráfica: va flotando por encima, como pidió.
+   =================================================================== */
+var GF88={ab:false, arr:false};
+function gf88On(){ var a=BD.ajustes||{}; return a.favFlot!==false; }                 /* de fábrica, puesto */
+function gf88Pos(){ var p=(BD.ajustes||{}).favFlotPos; return (p && p.x!=null && p.y!=null) ? p : null; }
+function gf88Sym(E){ try{ return String((E&&E.op&&E.op.sym)||"").toUpperCase(); }catch(e){ return ""; } }
+/* el precio y la variación de una moneda, del mercado de ESTA gráfica (como en la tira de favoritas) */
+function gf88Px(E, s){
+  var merc=null; try{ merc=(typeof mercadoDe73==="function") ? mercadoDe73(E.op) : null; }catch(e){}
+  if(merc && typeof txtPr79==="function") return {
+    pr:'<span class="pr mono" translate="no" data-px79="'+merc+'" data-k="pr" data-s="'+esc(s)+'">'+esc(txtPr79(merc,s))+'</span>',
+    ch:'<em class="'+clCh79(merc,s)+'" translate="no" data-px79="'+merc+'" data-k="ch" data-s="'+esc(s)+'">'+esc(txtCh79(merc,s))+'</em>'};
+  var pr=(typeof precioDe==="function")?precioDe(s):null, ch=(typeof cambioDe==="function")?cambioDe(s):null;
+  return {pr:'<span class="pr mono" translate="no">'+(pr!=null?precio(pr):"—")+'</span>',
+          ch:'<em class="'+(typeof cl==="function"?cl(ch):"")+'" translate="no">'+(ch!=null?pct(ch,1):"")+'</em>'};
+}
+function gf88HTML(E){
+  var act=gf88Sym(E), L=favsLista67();
+  var filas=L.map(function(s){
+    var px=gf88Px(E,s);
+    return '<button type="button" class="gfr'+(s===act?" on":"")+'" data-gf88s="'+esc(s)+'" role="option" aria-selected="'+(s===act?"true":"false")+'">'+
+      icono(s,22)+'<span class="gft"><b translate="no">'+esc(s)+'</b><i translate="no">'+esc(nombreDe(s))+'</i></span>'+
+      '<span class="gfx">'+px.pr+px.ch+'</span></button>';
+  }).join("");
+  if(!filas) filas='<div class="gfv">'+esc(tr("Todavía no tiene favoritas"))+'</div>';
+  return '<button type="button" class="gfbt" data-gf88="t" aria-haspopup="listbox" aria-expanded="'+(GF88.ab?"true":"false")+'" title="'+esc(tr("Mis favoritas"))+'" aria-label="'+esc(tr("Mis favoritas"))+'">'+
+      (act?icono(act,26):'<span class="ic"></span>')+'</button>'+
+    '<div class="gfp" role="listbox"><div class="gfv">'+esc(tr("Mis favoritas"))+'</div>'+filas+'</div>';
+}
+/* se vuelve a pintar solo si cambió algo (la moneda, las favoritas o si está abierto): dibujar() pasa muchas veces */
+function gf88Pintar(E){
+  if(!E || !E.cont) return;
+  var caja=E.cont.querySelector(".gfav88"); if(!caja) return;
+  if(!gf88On() || !E.op || E.op.soloVer===false && false){ caja.hidden=true; return; }
+  if(!gf88On()){ caja.hidden=true; return; }
+  caja.hidden=false;
+  var firma=gf88Sym(E)+"|"+favsLista67().join(",")+"|"+(GF88.ab?1:0);
+  if(caja._f88!==firma){
+    caja._f88=firma;
+    caja.innerHTML=gf88HTML(E);
+    gf88Enganchar(E, caja);
+  }
+  caja.classList.toggle("ab", GF88.ab);
+  var p=gf88Pos();
+  if(p){ caja.style.left=p.x+"px"; caja.style.top=p.y+"px"; caja.style.right="auto"; }
+  gf88Lado(caja);
+}
+/* el panel se abre hacia el lado donde hay sitio, para que no se salga de la gráfica */
+function gf88Lado(caja){
+  try{
+    var z=caja.parentNode, rz=z.getBoundingClientRect(), rb=caja.getBoundingClientRect();
+    caja.classList.toggle("izq", (rb.left-rz.left) < 150);
+    caja.classList.toggle("abajo", (rz.bottom-rb.bottom) < 170 && (rb.top-rz.top) > 170);
+  }catch(e){}
+}
+function gf88Abrir(E, ab){
+  GF88.ab=!!ab;
+  var caja=E && E.cont ? E.cont.querySelector(".gfav88") : null; if(!caja) return;
+  caja.classList.toggle("ab", GF88.ab);
+  var b=caja.querySelector(".gfbt"); if(b) b.setAttribute("aria-expanded", GF88.ab?"true":"false");
+  if(GF88.ab){ caja._f88=null; gf88Pintar(E); gf88Lado(caja); }
+}
+function gf88Enganchar(E, caja){
+  var b=caja.querySelector(".gfbt");
+  if(b){
+    /* arrastrar para moverlo; si no se movió, es un toque y abre */
+    b.addEventListener("pointerdown", function(ev){
+      if(ev.pointerType==="mouse" && ev.button!==0) return;
+      var z=caja.parentNode, rz=z.getBoundingClientRect(), rb=caja.getBoundingClientRect();
+      var dx=ev.clientX-rb.left, dy=ev.clientY-rb.top, movido=false;
+      try{ b.setPointerCapture(ev.pointerId); }catch(e){}
+      function mv(e){
+        if(!movido && Math.abs(e.clientX-ev.clientX)<4 && Math.abs(e.clientY-ev.clientY)<4) return;
+        if(!movido){ movido=true; GF88.arr=true; b.classList.add("arr"); gf88Abrir(E,false); }
+        var x=Math.max(2, Math.min(rz.width-rb.width-2, e.clientX-rz.left-dx));
+        var y=Math.max(2, Math.min(rz.height-rb.height-2, e.clientY-rz.top-dy));
+        caja.style.left=x+"px"; caja.style.top=y+"px"; caja.style.right="auto";
+        var A=BD.ajustes||(BD.ajustes={}); A.favFlotPos={x:Math.round(x), y:Math.round(y)};
+      }
+      function up(){
+        b.removeEventListener("pointermove",mv); b.removeEventListener("pointerup",up); b.removeEventListener("pointercancel",up);
+        b.classList.remove("arr");
+        if(movido){ try{ tocar(BD.ajustes); guardar(); }catch(e){} gf88Lado(caja); setTimeout(function(){ GF88.arr=false; }, 60); }
+        else gf88Abrir(E, !GF88.ab);
+      }
+      b.addEventListener("pointermove",mv); b.addEventListener("pointerup",up); b.addEventListener("pointercancel",up);
+      ev.preventDefault(); ev.stopPropagation();
+    });
+  }
+  [].forEach.call(caja.querySelectorAll("[data-gf88s]"), function(r){
+    r.onclick=function(ev){
+      ev.stopPropagation();
+      var s=r.getAttribute("data-gf88s");
+      gf88Abrir(E,false);
+      if(s===gf88Sym(E)) return;                                      /* ya la está viendo: no se rehace la gráfica por gusto */
+      if(typeof E.cambSym88==="function"){ E.cambSym88(s); return; }  /* el mismo camino que la rueda de monedas */
+      if(typeof monedaGraf67==="function") monedaGraf67(s);
+    };
+  });
+  caja.addEventListener("pointerdown", function(ev){ ev.stopPropagation(); });
+}
+(function(){
+  if(window._gf88) return; window._gf88=true;
+  /* tocar fuera o Escape lo cierran, como la lista de arriba */
+  document.addEventListener("pointerdown", function(ev){
+    if(!GF88.ab || GF88.arr) return;
+    var G=(typeof GRAF!=="undefined")?GRAF:null, caja=(G&&G.cont)?G.cont.querySelector(".gfav88"):null;
+    if(caja && ev.target && caja.contains(ev.target)) return;
+    if(G) gf88Abrir(G,false);
+  }, true);
+  document.addEventListener("keydown", function(ev){
+    if(ev.key!=="Escape" || !GF88.ab) return;
+    var G=(typeof GRAF!=="undefined")?GRAF:null; if(!G) return;
+    ev.stopImmediatePropagation(); gf88Abrir(G,false);
+  }, true);
 })();
 
 /*V76>>*/
@@ -32678,6 +33113,7 @@ function dibujar(estado){
   calcularEscala(estado);
   var v=velasVisibles(estado);
   estado.ultimoPintado=Date.now();
+  try{ gf88Pintar(estado); }catch(e88){ if(window.console) console.error(e88); }      /* v88 · las favoritas flotantes */
   var svg=cont.querySelector(".gsvg");
   var zona=cont.querySelector(".gzona");
   var txhT=(typeof indLayout==="function") ? indLayout(estado) : TXH; estado.txhTot=txhT;
@@ -33080,7 +33516,7 @@ function enganchaBarra(E, b){
     if(t.hasAttribute("data-gc")) z.c=t.getAttribute("data-gc");
     else if(t.hasAttribute("data-gw")) z.w=(anchoTrazo(z)%6)+1;
     else if(t.hasAttribute("data-gd")) z.d=((+z.d||0)+1)%3;
-    guardarTrazos(); pintarTrazos(E);
+    guardarTrazos(); trEstiloGuardar88(z); pintarTrazos(E);      /* v88 · lo que elija aquí queda de serie para el próximo dibujo de esa herramienta */
   });
   /* el selector de color del sistema avisa mientras se elige: la figura cambia en vivo */
   b.addEventListener("input", function(ev){
@@ -33089,7 +33525,9 @@ function enganchaBarra(E, b){
     z.c=t.value; pintarTrazos(E);
   });
   b.addEventListener("change", function(ev){
-    var t=ev.target; if(t.hasAttribute && t.hasAttribute("data-gp")) guardarTrazos();
+    var t=ev.target; if(!t.hasAttribute || !t.hasAttribute("data-gp")) return;
+    guardarTrazos();
+    var z=E.sel?buscarTrazo(E,E.sel):null; if(z) trEstiloGuardar88(z);      /* v88 */
   });
 }
 /* ---- v66 · los paneles de las pestañas: se abren solo al tocarlas ---- */
@@ -39479,6 +39917,35 @@ function consejoFut(T){
 }
 var FUT_lado="TODO", FUT_cuantos=30, FUT_res="TODO";
 var FUT_PEST="ab";   /* v54 · qué pestaña está elegida en el teléfono: "ab" abiertas · "hi" historial */
+/* ---------------------------------------------------------------------
+   v88 · EL HISTORIAL, POR MESES (Luis, 21 oct 22:13)
+   «Cada vez que yo abra más y más operaciones se va a desplegar todito… de alguna forma esto debe tener filtros,
+    la opción de desplegar, que se vayan guardando por mes.»
+   Las operaciones se juntan por el mes en que se cerraron. Cada mes es una franja que se abre y se cierra, con su
+   cuenta y su resultado a la vista. De fábrica se abre solo el mes de arriba (el más reciente) y los demás van
+   cerrados, así una lista de cien operaciones cabe en una pantalla. Lo que usted abra se recuerda.
+   Los filtros de siempre (Largos/Cortos, Acertadas/Fallidas) y el total de abajo no cambian: siguen mandando.
+   --------------------------------------------------------------------- */
+var HIST_MES={};      /* "fut|2026-10" → true si esa franja está abierta */
+var MES_LARGO=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+function histMesNom(ym){
+  var p=String(ym||"").split("-");
+  return (MES_LARGO[(+p[1])-1]||"") + " " + (p[0]||"");
+}
+function histMesAb(k, ym, esElPrimero){
+  var q=k+"|"+ym;
+  return (HIST_MES[q]===undefined) ? !!esElPrimero : !!HIST_MES[q];
+}
+/* junta la lista que ya pasó por los filtros en grupos de un mes, de arriba (lo más nuevo) hacia abajo */
+function histPorMes(lista){
+  var G=[], ult=null;
+  lista.forEach(function(e){
+    var ym=String((e.f&&e.f.fecha)||"").slice(0,7) || "—";
+    if(!ult || ult.ym!==ym){ ult={ym:ym, filas:[], gan:0, margen:0}; G.push(ult); }
+    ult.filas.push(e); ult.gan+=(e.gan||0); ult.margen+=(e.margen||0);
+  });
+  return G;
+}
 function tablaHistorial(F,k,T,sinTitulo){
   var lista=F.cerradas.filter(function(e){
       if(FUT_lado!=="TODO"&&e.f.lado!==FUT_lado) return false;
@@ -39512,8 +39979,18 @@ function tablaHistorial(F,k,T,sinTitulo){
       '<span class="chip g">'+lista.length+'</span><span class="sp"></span>'+FILTROS+
       '<button class="b sm" data-xls="'+k+'">Excel</button></h2><div class="cp">';
   if(!ver.length) h+='<div class="mut" style="text-align:center;padding:18px">No hay operaciones cerradas aquí.</div>';
+  /* v88 · una franja por mes; dentro de cada una, las operaciones de siempre */
+  histPorMes(ver).forEach(function(G, gi){
+  var abierto=histMesAb(k, G.ym, gi===0);
+  h+='<div class="hmes'+(abierto?" ab":"")+'">'+
+       '<button type="button" class="hmesT" data-hmes="'+esc(G.ym)+'" data-hmesk="'+esc(k)+'" aria-expanded="'+(abierto?"true":"false")+'">'+
+         '<span class="car" aria-hidden="true">▾</span>'+
+         '<b class="hmesN">'+esc(histMesNom(G.ym))+'</b>'+
+         '<span class="chip g">'+G.filas.length+'</span>'+
+         '<span class="hmesR '+cl(G.gan)+'">'+(G.gan>=0?"+":"−")+usdF(G.gan).replace("-","")+'</span>'+
+       '</button><div class="hmesB">';
   if(esTel()) h+='<div class="histTel">';
-  ver.forEach(function(e){
+  G.filas.forEach(function(e){
     if(esTel()){ h+=filaCerradaCorta(e,k); return; }
     var f=e.f, n=planCuantos(f);
     var p=String(f.fecha||"").split("-");
@@ -39538,6 +40015,8 @@ function tablaHistorial(F,k,T,sinTitulo){
     '</div>';
   });
   if(esTel()) h+='</div>';
+  h+='</div></div>';      /* v88 · cierra .hmesB y .hmes */
+  });
   if(ver.length && esTel()){
     /* v58 · el total del teléfono, en cuadros con su nombre (antes era una tira suelta) */
     var sm2=ver.reduce(function(a,e){ return a+e.margen; },0), sg2=ver.reduce(function(a,e){ return a+(e.gan||0); },0);
@@ -39742,6 +40221,18 @@ function engancharAmbito(c, A){
   });
   var mas=c.querySelector("#fuMas");
   if(mas) mas.onclick=function(){ FUT_cuantos+=50; A.pinta(); };
+  /* v88 · abrir y cerrar el mes del historial. No se vuelve a pintar la pantalla entera: solo se abre esa franja,
+     así no se pierde dónde estaba usted mirando ni parpadea la lista. */
+  c.querySelectorAll("[data-hmes]").forEach(function(b){
+    b.onclick=function(){
+      var caja=b.closest(".hmes"); if(!caja) return;
+      var ab=!caja.classList.contains("ab");
+      caja.classList.toggle("ab", ab);
+      b.setAttribute("aria-expanded", ab?"true":"false");
+      HIST_MES[b.getAttribute("data-hmesk")+"|"+b.getAttribute("data-hmes")]=ab;
+      try{ guardar(); }catch(e){}
+    };
+  });
   c.querySelectorAll("[data-cerrarop]").forEach(function(b){
     b.onclick=function(){ cerrarOperacion(b.getAttribute("data-cerrarop"), b.getAttribute("data-amb")); };
   });
@@ -43475,16 +43966,16 @@ function guardarYSincronizar(){
       ". Entre con su cuenta de Google y no lo perderá aunque cambie de teléfono.");
     return;
   }
-  if(b){ b.disabled=true; b.textContent="Enviando…"; }
+  if(b){ b.disabled=true; b.textContent="Guardando…"; }
   subirACuenta(true).then(function(){
     if(b) b.disabled=false;
     GUARDADO_HORA=horaYa();
     pintarBotonGuardar();
-    aviso("Guardado y enviado · "+GUARDADO_HORA+".");
+    aviso("Guardado · "+GUARDADO_HORA+".");
   }).catch(function(e){
     if(b) b.disabled=false;
     pintarBotonGuardar();
-    aviso("Guardado aquí, pero no se pudo mandar a su cuenta. "+
+    aviso("Guardado aquí, pero sus otros equipos no se pudieron poner al día. "+
           (typeof mensajeCuenta==="function"?mensajeCuenta(e):"Vuelva a intentarlo."), true);
     try{ anotarSync("falló el guardar y enviar", (e&&e.message)||""); }catch(_){}
   });
@@ -43496,18 +43987,19 @@ function pintarBotonGuardar(){
   var dentro=false; try{ dentro=ctaDentro(); }catch(e){}
   if(!GUARDADO_HORA){
     b.className="b sm ac";
-    /* antes decía «ENVIAR A LA COMPUTADORA», que es mentira para quien solo
-       tiene el teléfono. Su cuenta es verdad siempre. */
-    b.textContent = dentro ? "ENVIAR A MI CUENTA" : "GUARDAR COPIA";
+    /* v88 · antes decía «ENVIAR A MI CUENTA» y Luis (21 oct 22:05) tenía razón: parece que uno manda DINERO a su cuenta,
+       y aquí no hay plata de por medio, solo sus datos. Dice «GUARDAR» siempre; lo que hace por dentro no cambia
+       (con sesión abierta sube los cambios a su cuenta, sin sesión escribe la copia). El para qué va en el título. */
+    b.textContent = "GUARDAR";
     b.title = dentro
-      ? "Todo se guarda automáticamente. Este botón manda los cambios a su cuenta ahora mismo, sin esperar."
+      ? "Todo se guarda automáticamente. Este botón guarda ahora mismo, sin esperar, y deja sus datos al día en sus otros equipos."
       : (RESP.handle ? "Todo se guarda automáticamente. Este botón además escribe una copia en su carpeta de respaldo."
                      : "Todo se guarda automáticamente. Este botón además le da una copia de sus datos para guardarla aparte.");
     return;
   }
   b.className="b sm vd";
-  b.textContent=(dentro?"Enviado ":"Guardado ")+GUARDADO_HORA;
-  b.title=dentro?"Enviado a su cuenta.":"Copia guardada.";
+  b.textContent="Guardado "+GUARDADO_HORA;      /* el traductor lo pisa solo: deja el castellano guardado y lo cambia con el número adentro */
+  b.title=dentro?"Guardado y al día en sus otros equipos.":"Copia guardada.";
 }
 
 /* =====================================================================
@@ -48058,7 +48550,7 @@ function engancharIdioma(box){
    # = un número que el programa pone · @ = el símbolo de una moneda
    Se respeta el orden de los huecos tal como salen en español.
    ===================================================================== */
-DIC.en={
+DIC.en={"Que aprenda de sus errores":"Let it learn from its mistakes","En esta gráfica, el patrón que viene fallando se vuelve más exigente con las figuras nuevas. Nunca cambia las que ya tienen resultado.":"On this chart, a pattern that has been failing becomes stricter with new figures. It never changes the ones that already have a result.",
 "Canal alcista":"Ascending channel",
 "Dos líneas paralelas que suben: el precio rebota entre la de abajo (apoyo) y la de arriba (techo del canal).":"Two parallel lines sloping up: price bounces between the lower one (support) and the upper one (the channel's ceiling).",
 "La altura del canal, desde la línea que rompa":"The height of the channel, measured from the line it breaks",
@@ -54726,9 +55218,48 @@ DIC.en={
 "Terciaria · líneas alcistas":"Tertiary · bullish lines",
 "Terciaria · líneas bajistas":"Tertiary · bearish lines",
 "Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Shows where the trend continues (BOS: a close breaks a swing in the trend's direction) and where it changes (CHoCH: a close breaks one against it). Higher timeframes are drawn thicker and carry their name. Levels not yet broken appear dotted, and their price sits on the right-hand scale. Within the same timeframe you can also show the smaller impulses and pullbacks (\"Secondary\" and \"Tertiary\"). A swing only appears N candles after it forms, and nothing is repainted. If the wick passes the previous high or low but no candle body closes beyond it, that swing is called “sweep”, not “higher” or “lower”. It is a reading tool: it gives no buy or sell signals.",
+"Estructura de mercado":"Market structure",
+"Velas a cada lado · temporal de la gráfica":"Candles on each side · chart timeframe",
+"Velas a cada lado · 1 día":"Candles on each side · 1 day",
+"Velas a cada lado · 4 horas":"Candles on each side · 4 hours",
+"Velas a cada lado · 1 hora":"Candles on each side · 1 hour",
+"Velas a cada lado · 15 minutos":"Candles on each side · 15 minutes",
+"Velas a cada lado · secundaria":"Candles on each side · secondary",
+"Velas a cada lado · terciaria":"Candles on each side · tertiary",
+"Cuántas velas tienen que quedar más abajo a cada lado para que una vela cuente como máximo (y más arriba, para un mínimo). Con más velas salen menos líneas, pero más firmes.":"How many candles on each side must be lower for a candle to count as a high (and higher, for a low). More candles means fewer lines, but firmer ones.",
+"Tiene que ser menor que el del temporal de la gráfica para que se note distinto.":"It has to be smaller than the chart timeframe's for it to look different.",
+"Las mismas velas a los dos lados":"The same candles on both sides",
+"Solo las velas de la derecha":"Only the candles on the right",
+"Cuándo cambia la tendencia":"When the trend changes",
+"Cuando se rompe el que la sostenía":"When the one holding it up is broken",
+"Cuando se rompe cualquiera anterior":"When any earlier one is broken",
+"Cuándo cuenta un cambio de estructura":"When a change of structure counts",
+"En una subida, el mínimo que la sostiene es el último antes del máximo más alto. Si el precio solo rompe un mínimo pequeño de un rebote, eso es movimiento de adentro y no cambia la lectura. Con la otra opción salen cerca del doble de cambios.":"In an uptrend, the low that holds it up is the last one before the highest high. If price only breaks a small low from a pullback, that is inner movement and does not change the reading. The other option gives roughly twice as many changes.",
+"GUARDAR":"SAVE",
+"Guardando…":"Saving…",
+"Guardado y al día en sus otros equipos.":"Saved and up to date on your other devices.",
+"Todo se guarda automáticamente. Este botón guarda ahora mismo, sin esperar, y deja sus datos al día en sus otros equipos.":"Everything saves by itself. This button saves right now, without waiting, and brings your other devices up to date.",
+"Guardado aquí, pero sus otros equipos no se pudieron poner al día. ":"Saved here, but your other devices could not be brought up to date. ",
+"Ver esta moneda":"See this coin",
+"Todavía no tiene favoritas":"You don't have favorites yet",
+"Un punto en la gráfica para saltar entre sus favoritas":"A dot on the chart to jump between your favorites",
+"Sale con el logo de la moneda que está viendo. Se arrastra adonde quiera y no tapa la gráfica.":"It shows the logo of the coin you are looking at. Drag it wherever you like; it does not cover the chart.",
+"enero":"January",
+"febrero":"February",
+"marzo":"March",
+"abril":"April",
+"mayo":"May",
+"junio":"June",
+"julio":"July",
+"agosto":"August",
+"septiembre":"September",
+"octubre":"October",
+"noviembre":"November",
+"diciembre":"December",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un máximo o un mínimo solo aparece cuando ya pasaron las velas de su lado derecho, y nunca se vuelve a pintar después. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Shows where the trend continues (BOS: a close breaks a swing in the trend's direction) and where it changes (CHoCH: a close breaks one against it). Higher timeframes are drawn thicker and carry their name. Levels not yet broken appear dotted, and their price sits on the right-hand scale. Within the same timeframe you can also show the smaller impulses and pullbacks (\"Secondary\" and \"Tertiary\"). A high or a low only appears once the candles on its right side have gone by, and it is never repainted afterwards. If the wick passes the previous high or low but no candle body closes beyond it, that swing is called “sweep”, not “higher” or “lower”. It is a reading tool: it gives no buy or sell signals.",
 };
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
-DIC.pt={
+DIC.pt={"Que aprenda de sus errores":"Que aprenda com os seus erros","En esta gráfica, el patrón que viene fallando se vuelve más exigente con las figuras nuevas. Nunca cambia las que ya tienen resultado.":"Neste gráfico, o padrão que vem falhando fica mais exigente com as figuras novas. Nunca altera as que já têm resultado.",
 "Canal alcista":"Canal ascendente",
 "Dos líneas paralelas que suben: el precio rebota entre la de abajo (apoyo) y la de arriba (techo del canal).":"Duas linhas paralelas que sobem: o preço rebate entre a de baixo (suporte) e a de cima (teto do canal).",
 "La altura del canal, desde la línea que rompa":"A altura do canal, a partir da linha que romper",
@@ -61389,9 +61920,48 @@ DIC.pt={
 "Terciaria · líneas alcistas":"Terciária · linhas de alta",
 "Terciaria · líneas bajistas":"Terciária · linhas de baixa",
 "Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Mostra onde a tendência continua (BOS: o fechamento rompe um swing a favor) e onde muda (CHoCH: rompe-o contra). Os períodos maiores são desenhados mais grossos e com o seu nome. Os níveis ainda não rompidos aparecem pontilhados e o preço fica na escala da direita. Dentro do mesmo período também dá para mostrar os impulsos e recuos menores («Secundária» e «Terciária»). Um swing só aparece N velas depois de se formar e nada é repintado. Se o pavio passa a máxima ou a mínima anterior mas nenhum corpo fecha além dela, esse swing se chama «varredura», e não «mais alto» ou «mais baixo». É uma ferramenta de leitura: não dá sinais de compra nem de venda.",
+"Estructura de mercado":"Estrutura de mercado",
+"Velas a cada lado · temporal de la gráfica":"Velas de cada lado · período do gráfico",
+"Velas a cada lado · 1 día":"Velas de cada lado · 1 dia",
+"Velas a cada lado · 4 horas":"Velas de cada lado · 4 horas",
+"Velas a cada lado · 1 hora":"Velas de cada lado · 1 hora",
+"Velas a cada lado · 15 minutos":"Velas de cada lado · 15 minutos",
+"Velas a cada lado · secundaria":"Velas de cada lado · secundária",
+"Velas a cada lado · terciaria":"Velas de cada lado · terciária",
+"Cuántas velas tienen que quedar más abajo a cada lado para que una vela cuente como máximo (y más arriba, para un mínimo). Con más velas salen menos líneas, pero más firmes.":"Quantas velas de cada lado precisam ficar mais baixas para que uma vela conte como máxima (e mais altas, para uma mínima). Com mais velas saem menos linhas, porém mais firmes.",
+"Tiene que ser menor que el del temporal de la gráfica para que se note distinto.":"Precisa ser menor que o do período do gráfico para ficar diferente.",
+"Las mismas velas a los dos lados":"As mesmas velas dos dois lados",
+"Solo las velas de la derecha":"Só as velas da direita",
+"Cuándo cambia la tendencia":"Quando a tendência muda",
+"Cuando se rompe el que la sostenía":"Quando se rompe o que a sustentava",
+"Cuando se rompe cualquiera anterior":"Quando se rompe qualquer um anterior",
+"Cuándo cuenta un cambio de estructura":"Quando conta uma mudança de estrutura",
+"En una subida, el mínimo que la sostiene es el último antes del máximo más alto. Si el precio solo rompe un mínimo pequeño de un rebote, eso es movimiento de adentro y no cambia la lectura. Con la otra opción salen cerca del doble de cambios.":"Numa alta, a mínima que a sustenta é a última antes da máxima mais alta. Se o preço só rompe uma mínima pequena de um repique, isso é movimento interno e não muda a leitura. Com a outra opção saem quase o dobro de mudanças.",
+"GUARDAR":"GUARDAR",
+"Guardando…":"Salvando…",
+"Guardado y al día en sus otros equipos.":"Salvo e atualizado nos seus outros aparelhos.",
+"Todo se guarda automáticamente. Este botón guarda ahora mismo, sin esperar, y deja sus datos al día en sus otros equipos.":"Tudo é salvo sozinho. Este botão salva agora mesmo, sem esperar, e deixa os seus outros aparelhos atualizados.",
+"Guardado aquí, pero sus otros equipos no se pudieron poner al día. ":"Salvo aqui, mas os seus outros aparelhos não puderam ser atualizados. ",
+"Ver esta moneda":"Ver esta moeda",
+"Todavía no tiene favoritas":"Você ainda não tem favoritas",
+"Un punto en la gráfica para saltar entre sus favoritas":"Um ponto no gráfico para saltar entre as suas favoritas",
+"Sale con el logo de la moneda que está viendo. Se arrastra adonde quiera y no tapa la gráfica.":"Aparece com o logo da moeda que você está vendo. Arraste para onde quiser; não cobre o gráfico.",
+"enero":"janeiro",
+"febrero":"fevereiro",
+"marzo":"março",
+"abril":"abril",
+"mayo":"maio",
+"junio":"junho",
+"julio":"julho",
+"agosto":"agosto",
+"septiembre":"setembro",
+"octubre":"outubro",
+"noviembre":"novembro",
+"diciembre":"dezembro",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un máximo o un mínimo solo aparece cuando ya pasaron las velas de su lado derecho, y nunca se vuelve a pintar después. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Mostra onde a tendência continua (BOS: o fechamento rompe um swing a favor) e onde muda (CHoCH: rompe-o contra). Os períodos maiores são desenhados mais grossos e com o seu nome. Os níveis ainda não rompidos aparecem pontilhados e o preço fica na escala da direita. Dentro do mesmo período também dá para mostrar os impulsos e recuos menores («Secundária» e «Terciária»). Uma máxima ou uma mínima só aparece quando já passaram as velas do seu lado direito, e nunca é repintada depois. Se o pavio passa a máxima ou a mínima anterior mas nenhum corpo fecha além dela, esse swing se chama «varredura», e não «mais alto» ou «mais baixo». É uma ferramenta de leitura: não dá sinais de compra nem de venda.",
 };
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
-DIC.fr={
+DIC.fr={"Que aprenda de sus errores":"Qu'il apprenne de ses erreurs","En esta gráfica, el patrón que viene fallando se vuelve más exigente con las figuras nuevas. Nunca cambia las que ya tienen resultado.":"Sur ce graphique, une figure qui échoue souvent devient plus exigeante pour les nouvelles. Elle ne change jamais celles qui ont déjà un résultat.",
 "Canal alcista":"Canal ascendant",
 "Dos líneas paralelas que suben: el precio rebota entre la de abajo (apoyo) y la de arriba (techo del canal).":"Deux lignes parallèles qui montent : le prix rebondit entre celle du bas (support) et celle du haut (plafond du canal).",
 "La altura del canal, desde la línea que rompa":"La hauteur du canal, à partir de la ligne qui cède",
@@ -68052,9 +68622,48 @@ DIC.fr={
 "Terciaria · líneas alcistas":"Tertiaire · lignes haussières",
 "Terciaria · líneas bajistas":"Tertiaire · lignes baissières",
 "Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Indique où la tendance continue (BOS : une clôture casse un swing dans le sens de la tendance) et où elle change (CHoCH : une clôture le casse à contre-sens). Les unités de temps supérieures sont tracées plus épaisses et portent leur nom. Les niveaux pas encore cassés sont en pointillés et leur prix figure sur l'échelle de droite. Dans la même unité de temps, on peut aussi afficher les impulsions et replis plus petits (« Secondaire » et « Tertiaire »). Un swing n'apparaît que N bougies après sa formation et rien n'est repeint. Si la mèche dépasse le haut ou le bas précédent mais qu'aucun corps ne clôture au-delà, ce swing s'appelle « balayage », et non « plus haut » ou « plus bas ». C'est un outil de lecture : il ne donne aucun signal d'achat ni de vente.",
+"Estructura de mercado":"Structure du marché",
+"Velas a cada lado · temporal de la gráfica":"Bougies de chaque côté · unité de temps du graphique",
+"Velas a cada lado · 1 día":"Bougies de chaque côté · 1 jour",
+"Velas a cada lado · 4 horas":"Bougies de chaque côté · 4 heures",
+"Velas a cada lado · 1 hora":"Bougies de chaque côté · 1 heure",
+"Velas a cada lado · 15 minutos":"Bougies de chaque côté · 15 minutes",
+"Velas a cada lado · secundaria":"Bougies de chaque côté · secondaire",
+"Velas a cada lado · terciaria":"Bougies de chaque côté · tertiaire",
+"Cuántas velas tienen que quedar más abajo a cada lado para que una vela cuente como máximo (y más arriba, para un mínimo). Con más velas salen menos líneas, pero más firmes.":"Combien de bougies de chaque côté doivent être plus basses pour qu'une bougie compte comme un sommet (et plus hautes, pour un creux). Avec plus de bougies, il y a moins de lignes, mais plus solides.",
+"Tiene que ser menor que el del temporal de la gráfica para que se note distinto.":"Il doit être plus petit que celui de l'unité de temps du graphique pour se distinguer.",
+"Las mismas velas a los dos lados":"Les mêmes bougies des deux côtés",
+"Solo las velas de la derecha":"Seulement les bougies de droite",
+"Cuándo cambia la tendencia":"Quand la tendance change",
+"Cuando se rompe el que la sostenía":"Quand celui qui la soutenait est cassé",
+"Cuando se rompe cualquiera anterior":"Quand n'importe lequel d'avant est cassé",
+"Cuándo cuenta un cambio de estructura":"Quand un changement de structure compte",
+"En una subida, el mínimo que la sostiene es el último antes del máximo más alto. Si el precio solo rompe un mínimo pequeño de un rebote, eso es movimiento de adentro y no cambia la lectura. Con la otra opción salen cerca del doble de cambios.":"Dans une hausse, le creux qui la soutient est le dernier avant le plus haut sommet. Si le prix ne casse qu'un petit creux de repli, c'est un mouvement interne et cela ne change pas la lecture. L'autre option donne près de deux fois plus de changements.",
+"GUARDAR":"ENREGISTRER",
+"Guardando…":"Enregistrement…",
+"Guardado y al día en sus otros equipos.":"Enregistré et à jour sur vos autres appareils.",
+"Todo se guarda automáticamente. Este botón guarda ahora mismo, sin esperar, y deja sus datos al día en sus otros equipos.":"Tout est enregistré tout seul. Ce bouton enregistre tout de suite, sans attendre, et met vos autres appareils à jour.",
+"Guardado aquí, pero sus otros equipos no se pudieron poner al día. ":"Enregistré ici, mais vos autres appareils n'ont pas pu être mis à jour. ",
+"Ver esta moneda":"Voir cette crypto",
+"Todavía no tiene favoritas":"Vous n'avez pas encore de favoris",
+"Un punto en la gráfica para saltar entre sus favoritas":"Un point sur le graphique pour passer d'un favori à l'autre",
+"Sale con el logo de la moneda que está viendo. Se arrastra adonde quiera y no tapa la gráfica.":"Il affiche le logo de la crypto que vous regardez. Déplacez-le où vous voulez, il ne masque pas le graphique.",
+"enero":"janvier",
+"febrero":"février",
+"marzo":"mars",
+"abril":"avril",
+"mayo":"mai",
+"junio":"juin",
+"julio":"juillet",
+"agosto":"août",
+"septiembre":"septembre",
+"octubre":"octobre",
+"noviembre":"novembre",
+"diciembre":"décembre",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un máximo o un mínimo solo aparece cuando ya pasaron las velas de su lado derecho, y nunca se vuelve a pintar después. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Indique où la tendance continue (BOS : une clôture casse un swing dans le sens de la tendance) et où elle change (CHoCH : une clôture le casse à contre-sens). Les unités de temps supérieures sont tracées plus épaisses et portent leur nom. Les niveaux pas encore cassés sont en pointillés et leur prix figure sur l'échelle de droite. Dans la même unité de temps, on peut aussi afficher les impulsions et replis plus petits (« Secondaire » et « Tertiaire »). Un sommet ou un creux n'apparaît qu'une fois passées les bougies de son côté droit, et il n'est jamais redessiné ensuite. Si la mèche dépasse le haut ou le bas précédent mais qu'aucun corps ne clôture au-delà, ce swing s'appelle « balayage », et non « plus haut » ou « plus bas ». C'est un outil de lecture : il ne donne aucun signal d'achat ni de vente.",
 };
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
-DIC.de={
+DIC.de={"Que aprenda de sus errores":"Aus eigenen Fehlern lernen","En esta gráfica, el patrón que viene fallando se vuelve más exigente con las figuras nuevas. Nunca cambia las que ya tienen resultado.":"In diesem Chart wird ein Muster, das oft scheitert, bei neuen Figuren strenger. Bereits bewertete Figuren bleiben unverändert.",
 "Canal alcista":"Aufwärtskanal",
 "Dos líneas paralelas que suben: el precio rebota entre la de abajo (apoyo) y la de arriba (techo del canal).":"Zwei parallele, ansteigende Linien: Der Kurs prallt zwischen der unteren (Unterstützung) und der oberen (Kanaldecke) ab.",
 "La altura del canal, desde la línea que rompa":"Die Höhe des Kanals, gemessen ab der durchbrochenen Linie",
@@ -74715,9 +75324,48 @@ DIC.de={
 "Terciaria · líneas alcistas":"Tertiär · Aufwärts-Linien",
 "Terciaria · líneas bajistas":"Tertiär · Abwärts-Linien",
 "Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Zeigt, wo der Trend sich fortsetzt (BOS: ein Schlusskurs bricht einen Swing in Trendrichtung) und wo er dreht (CHoCH: ein Schlusskurs bricht ihn gegen den Trend). Höhere Zeitrahmen werden dicker gezeichnet und tragen ihren Namen. Noch nicht gebrochene Niveaus erscheinen gepunktet, ihr Preis steht auf der rechten Skala. Innerhalb desselben Zeitrahmens lassen sich auch die kleineren Impulse und Rücksetzer anzeigen („Sekundär“ und „Tertiär“). Ein Swing erscheint erst N Kerzen nach seiner Bildung, nichts wird nachträglich neu gezeichnet. Geht der Docht über das vorherige Hoch oder Tief hinaus, aber kein Kerzenkörper schließt darüber hinaus, heißt dieser Swing „Sweep“, nicht „höher“ oder „tiefer“. Es ist ein Lesewerkzeug: Es gibt keine Kauf- oder Verkaufssignale.",
+"Estructura de mercado":"Marktstruktur",
+"Velas a cada lado · temporal de la gráfica":"Kerzen auf jeder Seite · Zeitrahmen des Charts",
+"Velas a cada lado · 1 día":"Kerzen auf jeder Seite · 1 Tag",
+"Velas a cada lado · 4 horas":"Kerzen auf jeder Seite · 4 Stunden",
+"Velas a cada lado · 1 hora":"Kerzen auf jeder Seite · 1 Stunde",
+"Velas a cada lado · 15 minutos":"Kerzen auf jeder Seite · 15 Minuten",
+"Velas a cada lado · secundaria":"Kerzen auf jeder Seite · sekundär",
+"Velas a cada lado · terciaria":"Kerzen auf jeder Seite · tertiär",
+"Cuántas velas tienen que quedar más abajo a cada lado para que una vela cuente como máximo (y más arriba, para un mínimo). Con más velas salen menos líneas, pero más firmes.":"Wie viele Kerzen auf jeder Seite tiefer liegen müssen, damit eine Kerze als Hoch zählt (und höher für ein Tief). Mehr Kerzen heißt weniger Linien, dafür festere.",
+"Tiene que ser menor que el del temporal de la gráfica para que se note distinto.":"Er muss kleiner sein als der des Chart-Zeitrahmens, damit er sich abhebt.",
+"Las mismas velas a los dos lados":"Gleich viele Kerzen auf beiden Seiten",
+"Solo las velas de la derecha":"Nur die Kerzen rechts",
+"Cuándo cambia la tendencia":"Wann der Trend dreht",
+"Cuando se rompe el que la sostenía":"Wenn der Punkt bricht, der ihn getragen hat",
+"Cuando se rompe cualquiera anterior":"Wenn irgendein früherer bricht",
+"Cuándo cuenta un cambio de estructura":"Wann ein Strukturwechsel zählt",
+"En una subida, el mínimo que la sostiene es el último antes del máximo más alto. Si el precio solo rompe un mínimo pequeño de un rebote, eso es movimiento de adentro y no cambia la lectura. Con la otra opción salen cerca del doble de cambios.":"In einem Aufwärtstrend ist das tragende Tief das letzte vor dem höchsten Hoch. Bricht der Kurs nur ein kleines Tief eines Rücklaufs, ist das innere Bewegung und ändert die Lesart nicht. Die andere Option liefert fast doppelt so viele Wechsel.",
+"GUARDAR":"SPEICHERN",
+"Guardando…":"Wird gespeichert…",
+"Guardado y al día en sus otros equipos.":"Gespeichert und auf Ihren anderen Geräten aktuell.",
+"Todo se guarda automáticamente. Este botón guarda ahora mismo, sin esperar, y deja sus datos al día en sus otros equipos.":"Alles wird von selbst gespeichert. Diese Schaltfläche speichert sofort, ohne zu warten, und bringt Ihre anderen Geräte auf den neuesten Stand.",
+"Guardado aquí, pero sus otros equipos no se pudieron poner al día. ":"Hier gespeichert, aber Ihre anderen Geräte konnten nicht aktualisiert werden. ",
+"Ver esta moneda":"Diese Münze ansehen",
+"Todavía no tiene favoritas":"Sie haben noch keine Favoriten",
+"Un punto en la gráfica para saltar entre sus favoritas":"Ein Punkt im Chart, um zwischen Favoriten zu springen",
+"Sale con el logo de la moneda que está viendo. Se arrastra adonde quiera y no tapa la gráfica.":"Er zeigt das Logo der Münze, die Sie gerade ansehen. Ziehen Sie ihn, wohin Sie möchten; er verdeckt den Chart nicht.",
+"enero":"Januar",
+"febrero":"Februar",
+"marzo":"März",
+"abril":"April",
+"mayo":"Mai",
+"junio":"Juni",
+"julio":"Juli",
+"agosto":"August",
+"septiembre":"September",
+"octubre":"Oktober",
+"noviembre":"November",
+"diciembre":"Dezember",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un máximo o un mínimo solo aparece cuando ya pasaron las velas de su lado derecho, y nunca se vuelve a pintar después. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Zeigt, wo der Trend sich fortsetzt (BOS: ein Schlusskurs bricht einen Swing in Trendrichtung) und wo er dreht (CHoCH: ein Schlusskurs bricht ihn gegen den Trend). Höhere Zeitrahmen werden dicker gezeichnet und tragen ihren Namen. Noch nicht gebrochene Niveaus erscheinen gepunktet, ihr Preis steht auf der rechten Skala. Innerhalb desselben Zeitrahmens lassen sich auch die kleineren Impulse und Rücksetzer anzeigen („Sekundär“ und „Tertiär“). Ein Hoch oder ein Tief erscheint erst, wenn die Kerzen auf seiner rechten Seite vorbei sind, und wird danach nie neu gezeichnet. Geht der Docht über das vorherige Hoch oder Tief hinaus, aber kein Kerzenkörper schließt darüber hinaus, heißt dieser Swing „Sweep“, nicht „höher“ oder „tiefer“. Es ist ein Lesewerkzeug: Es gibt keine Kauf- oder Verkaufssignale.",
 };
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
-DIC.it={
+DIC.it={"Que aprenda de sus errores":"Che impari dai suoi errori","En esta gráfica, el patrón que viene fallando se vuelve más exigente con las figuras nuevas. Nunca cambia las que ya tienen resultado.":"Su questo grafico, uno schema che sta fallendo diventa più esigente con le figure nuove. Non cambia mai quelle che hanno già un esito.",
 "Canal alcista":"Canale rialzista",
 "Dos líneas paralelas que suben: el precio rebota entre la de abajo (apoyo) y la de arriba (techo del canal).":"Due linee parallele che salgono: il prezzo rimbalza tra quella in basso (supporto) e quella in alto (tetto del canale).",
 "La altura del canal, desde la línea que rompa":"L'altezza del canale, a partire dalla linea che rompe",
@@ -81378,9 +82026,48 @@ DIC.it={
 "Terciaria · líneas alcistas":"Terziaria · linee rialziste",
 "Terciaria · líneas bajistas":"Terziaria · linee ribassiste",
 "Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Mostra dove il trend prosegue (BOS: una chiusura rompe uno swing nella direzione del trend) e dove cambia (CHoCH: lo rompe contro il trend). I timeframe maggiori sono disegnati più spessi e con il loro nome. I livelli non ancora rotti compaiono a puntini e il loro prezzo resta sulla scala di destra. Dentro lo stesso timeframe si possono mostrare anche gli impulsi e i ritracciamenti più piccoli («Secondaria» e «Terziaria»). Uno swing compare solo N candele dopo essersi formato e nulla viene ridisegnato. Se l'ombra supera il massimo o il minimo precedente ma nessun corpo chiude oltre, quello swing si chiama «sweep», non «più alto» o «più basso». È uno strumento di lettura: non dà segnali di acquisto né di vendita.",
+"Estructura de mercado":"Struttura di mercato",
+"Velas a cada lado · temporal de la gráfica":"Candele su ogni lato · timeframe del grafico",
+"Velas a cada lado · 1 día":"Candele su ogni lato · 1 giorno",
+"Velas a cada lado · 4 horas":"Candele su ogni lato · 4 ore",
+"Velas a cada lado · 1 hora":"Candele su ogni lato · 1 ora",
+"Velas a cada lado · 15 minutos":"Candele su ogni lato · 15 minuti",
+"Velas a cada lado · secundaria":"Candele su ogni lato · secondaria",
+"Velas a cada lado · terciaria":"Candele su ogni lato · terziaria",
+"Cuántas velas tienen que quedar más abajo a cada lado para que una vela cuente como máximo (y más arriba, para un mínimo). Con más velas salen menos líneas, pero más firmes.":"Quante candele su ogni lato devono stare più in basso perché una candela conti come massimo (e più in alto, per un minimo). Con più candele escono meno linee, ma più solide.",
+"Tiene que ser menor que el del temporal de la gráfica para que se note distinto.":"Deve essere minore di quello del timeframe del grafico perché si noti la differenza.",
+"Las mismas velas a los dos lados":"Le stesse candele da entrambi i lati",
+"Solo las velas de la derecha":"Solo le candele a destra",
+"Cuándo cambia la tendencia":"Quando cambia la tendenza",
+"Cuando se rompe el que la sostenía":"Quando si rompe quello che la sosteneva",
+"Cuando se rompe cualquiera anterior":"Quando si rompe uno qualsiasi precedente",
+"Cuándo cuenta un cambio de estructura":"Quando conta un cambio di struttura",
+"En una subida, el mínimo que la sostiene es el último antes del máximo más alto. Si el precio solo rompe un mínimo pequeño de un rebote, eso es movimiento de adentro y no cambia la lectura. Con la otra opción salen cerca del doble de cambios.":"In un rialzo, il minimo che lo sostiene è l'ultimo prima del massimo più alto. Se il prezzo rompe solo un minimo piccolo di un ritracciamento, è movimento interno e non cambia la lettura. Con l'altra opzione escono quasi il doppio di cambi.",
+"GUARDAR":"SALVA",
+"Guardando…":"Salvataggio…",
+"Guardado y al día en sus otros equipos.":"Salvato e aggiornato sui suoi altri dispositivi.",
+"Todo se guarda automáticamente. Este botón guarda ahora mismo, sin esperar, y deja sus datos al día en sus otros equipos.":"Tutto si salva da solo. Questo pulsante salva subito, senza aspettare, e aggiorna i suoi altri dispositivi.",
+"Guardado aquí, pero sus otros equipos no se pudieron poner al día. ":"Salvato qui, ma i suoi altri dispositivi non si sono potuti aggiornare. ",
+"Ver esta moneda":"Vedi questa moneta",
+"Todavía no tiene favoritas":"Non ha ancora preferite",
+"Un punto en la gráfica para saltar entre sus favoritas":"Un punto sul grafico per saltare tra le preferite",
+"Sale con el logo de la moneda que está viendo. Se arrastra adonde quiera y no tapa la gráfica.":"Mostra il logo della moneta che sta guardando. Lo trascini dove vuole: non copre il grafico.",
+"enero":"gennaio",
+"febrero":"febbraio",
+"marzo":"marzo",
+"abril":"aprile",
+"mayo":"maggio",
+"junio":"giugno",
+"julio":"luglio",
+"agosto":"agosto",
+"septiembre":"settembre",
+"octubre":"ottobre",
+"noviembre":"novembre",
+"diciembre":"dicembre",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un máximo o un mínimo solo aparece cuando ya pasaron las velas de su lado derecho, y nunca se vuelve a pintar después. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Mostra dove il trend prosegue (BOS: una chiusura rompe uno swing nella direzione del trend) e dove cambia (CHoCH: lo rompe contro il trend). I timeframe maggiori sono disegnati più spessi e con il loro nome. I livelli non ancora rotti compaiono a puntini e il loro prezzo resta sulla scala di destra. Dentro lo stesso timeframe si possono mostrare anche gli impulsi e i ritracciamenti più piccoli («Secondaria» e «Terziaria»). Un massimo o un minimo compare solo quando sono passate le candele del suo lato destro, e non viene mai ridisegnato dopo. Se l'ombra supera il massimo o il minimo precedente ma nessun corpo chiude oltre, quello swing si chiama «sweep», non «più alto» o «più basso». È uno strumento di lettura: non dà segnali di acquisto né di vendita.",
 };
 /* NEDERLANDS · v38 · # = número que pone el programa · @ = símbolo de una moneda */
-DIC.nl={
+DIC.nl={"Que aprenda de sus errores":"Laat het van zijn fouten leren","En esta gráfica, el patrón que viene fallando se vuelve más exigente con las figuras nuevas. Nunca cambia las que ya tienen resultado.":"Op deze grafiek wordt een patroon dat blijft falen strenger voor nieuwe figuren. Het verandert nooit de figuren die al een uitkomst hebben.",
 "Canal alcista":"Stijgend kanaal",
 "Dos líneas paralelas que suben: el precio rebota entre la de abajo (apoyo) y la de arriba (techo del canal).":"Twee evenwijdige lijnen die stijgen: de koers kaatst tussen de onderste (ondersteuning) en de bovenste (plafond van het kanaal).",
 "La altura del canal, desde la línea que rompa":"De hoogte van het kanaal, gemeten vanaf de lijn die breekt",
@@ -88317,9 +89004,48 @@ DIC.nl={
 "Terciaria · líneas alcistas":"Tertiair · stijgende lijnen",
 "Terciaria · líneas bajistas":"Tertiair · dalende lijnen",
 "Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Laat zien waar de trend doorgaat (BOS: een slotkoers breekt een swing in de richting van de trend) en waar hij omslaat (CHoCH: een slotkoers breekt hem tegen de trend in). Hogere tijdframes worden dikker getekend en dragen hun naam. Niveaus die nog niet zijn doorbroken zijn gestippeld en hun prijs staat op de rechterschaal. Binnen hetzelfde tijdframe kun je ook de kleinere impulsen en terugvallen tonen («Secundair» en «Tertiair»). Een swing verschijnt pas N kaarsen nadat hij zich heeft gevormd en er wordt niets herschilderd. Als de lont het vorige hoogste of laagste punt passeert maar geen kaarslichaam daarbuiten sluit, heet die swing «sweep», niet «hoger» of «lager». Het is een leeshulpmiddel: het geeft geen koop- of verkoopsignalen.",
+"Estructura de mercado":"Marktstructuur",
+"Velas a cada lado · temporal de la gráfica":"Kaarsen aan elke kant · tijdframe van de grafiek",
+"Velas a cada lado · 1 día":"Kaarsen aan elke kant · 1 dag",
+"Velas a cada lado · 4 horas":"Kaarsen aan elke kant · 4 uur",
+"Velas a cada lado · 1 hora":"Kaarsen aan elke kant · 1 uur",
+"Velas a cada lado · 15 minutos":"Kaarsen aan elke kant · 15 minuten",
+"Velas a cada lado · secundaria":"Kaarsen aan elke kant · secundair",
+"Velas a cada lado · terciaria":"Kaarsen aan elke kant · tertiair",
+"Cuántas velas tienen que quedar más abajo a cada lado para que una vela cuente como máximo (y más arriba, para un mínimo). Con más velas salen menos líneas, pero más firmes.":"Hoeveel kaarsen aan elke kant lager moeten liggen om een kaars als top te laten tellen (en hoger, voor een bodem). Meer kaarsen betekent minder lijnen, maar steviger.",
+"Tiene que ser menor que el del temporal de la gráfica para que se note distinto.":"Hij moet kleiner zijn dan die van het tijdframe van de grafiek om verschil te zien.",
+"Las mismas velas a los dos lados":"Evenveel kaarsen aan beide kanten",
+"Solo las velas de la derecha":"Alleen de kaarsen rechts",
+"Cuándo cambia la tendencia":"Wanneer de trend draait",
+"Cuando se rompe el que la sostenía":"Wanneer degene die hem droeg wordt gebroken",
+"Cuando se rompe cualquiera anterior":"Wanneer een willekeurige eerdere wordt gebroken",
+"Cuándo cuenta un cambio de estructura":"Wanneer een structuurwijziging telt",
+"En una subida, el mínimo que la sostiene es el último antes del máximo más alto. Si el precio solo rompe un mínimo pequeño de un rebote, eso es movimiento de adentro y no cambia la lectura. Con la otra opción salen cerca del doble de cambios.":"In een stijging is de bodem die hem draagt de laatste vóór de hoogste top. Breekt de prijs alleen een kleine bodem van een terugval, dan is dat binnenbeweging en verandert de lezing niet. De andere optie geeft bijna twee keer zoveel wisselingen.",
+"GUARDAR":"OPSLAAN",
+"Guardando…":"Opslaan…",
+"Guardado y al día en sus otros equipos.":"Opgeslagen en bijgewerkt op uw andere apparaten.",
+"Todo se guarda automáticamente. Este botón guarda ahora mismo, sin esperar, y deja sus datos al día en sus otros equipos.":"Alles wordt vanzelf opgeslagen. Deze knop slaat nu meteen op en brengt uw andere apparaten bij.",
+"Guardado aquí, pero sus otros equipos no se pudieron poner al día. ":"Hier opgeslagen, maar uw andere apparaten konden niet worden bijgewerkt. ",
+"Ver esta moneda":"Deze munt bekijken",
+"Todavía no tiene favoritas":"U heeft nog geen favorieten",
+"Un punto en la gráfica para saltar entre sus favoritas":"Een stip op de grafiek om tussen favorieten te springen",
+"Sale con el logo de la moneda que está viendo. Se arrastra adonde quiera y no tapa la gráfica.":"Hij toont het logo van de munt die u bekijkt. Sleep hem waarheen u wilt; hij bedekt de grafiek niet.",
+"enero":"januari",
+"febrero":"februari",
+"marzo":"maart",
+"abril":"april",
+"mayo":"mei",
+"junio":"juni",
+"julio":"juli",
+"agosto":"augustus",
+"septiembre":"september",
+"octubre":"oktober",
+"noviembre":"november",
+"diciembre":"december",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un máximo o un mínimo solo aparece cuando ya pasaron las velas de su lado derecho, y nunca se vuelve a pintar después. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Laat zien waar de trend doorgaat (BOS: een slotkoers breekt een swing in de richting van de trend) en waar hij omslaat (CHoCH: een slotkoers breekt hem tegen de trend in). Hogere tijdframes worden dikker getekend en dragen hun naam. Niveaus die nog niet zijn doorbroken zijn gestippeld en hun prijs staat op de rechterschaal. Binnen hetzelfde tijdframe kun je ook de kleinere impulsen en terugvallen tonen («Secundair» en «Tertiair»). Een top of een bodem verschijnt pas als de kaarsen aan de rechterkant voorbij zijn, en wordt daarna nooit opnieuw getekend. Als de lont het vorige hoogste of laagste punt passeert maar geen kaarslichaam daarbuiten sluit, heet die swing «sweep», niet «hoger» of «lager». Het is een leeshulpmiddel: het geeft geen koop- of verkoopsignalen.",
 };
 /* POLSKI · v38 · # = número que pone el programa · @ = símbolo de una moneda */
-DIC.pl={
+DIC.pl={"Que aprenda de sus errores":"Niech uczy się na swoich błędach","En esta gráfica, el patrón que viene fallando se vuelve más exigente con las figuras nuevas. Nunca cambia las que ya tienen resultado.":"Na tym wykresie formacja, która często zawodzi, staje się bardziej wymagająca wobec nowych figur. Nigdy nie zmienia tych, które mają już wynik.",
 "Canal alcista":"Kanał wzrostowy",
 "Dos líneas paralelas que suben: el precio rebota entre la de abajo (apoyo) y la de arriba (techo del canal).":"Dwie równoległe linie biegnące w górę: cena odbija się między dolną (wsparcie) a górną (sufit kanału).",
 "La altura del canal, desde la línea que rompa":"Wysokość kanału, liczona od linii, którą przebije",
@@ -95256,9 +95982,48 @@ DIC.pl={
 "Terciaria · líneas alcistas":"Trzeciorzędna · linie wzrostowe",
 "Terciaria · líneas bajistas":"Trzeciorzędna · linie spadkowe",
 "Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Pokazuje, gdzie trend trwa (BOS: zamknięcie przełamuje swing zgodnie z trendem), a gdzie się zmienia (CHoCH: zamknięcie przełamuje go wbrew trendowi). Wyższe interwały są rysowane grubiej i opisane nazwą. Poziomy jeszcze nieprzełamane są kropkowane, a ich cena widnieje na skali po prawej. W obrębie tego samego interwału można też pokazać mniejsze impulsy i korekty („Drugorzędna” i „Trzeciorzędna”). Swing pojawia się dopiero N świec po uformowaniu i nic nie jest przerysowywane. Jeśli knot przekracza poprzedni szczyt lub dołek, ale żadne ciało świecy nie zamyka się poza nim, taki swing nazywa się „sweep”, a nie „wyższy” czy „niższy”. To narzędzie do czytania wykresu: nie daje sygnałów kupna ani sprzedaży.",
+"Estructura de mercado":"Struktura rynku",
+"Velas a cada lado · temporal de la gráfica":"Świece po każdej stronie · interwał wykresu",
+"Velas a cada lado · 1 día":"Świece po każdej stronie · 1 dzień",
+"Velas a cada lado · 4 horas":"Świece po każdej stronie · 4 godziny",
+"Velas a cada lado · 1 hora":"Świece po każdej stronie · 1 godzina",
+"Velas a cada lado · 15 minutos":"Świece po każdej stronie · 15 minut",
+"Velas a cada lado · secundaria":"Świece po każdej stronie · drugorzędna",
+"Velas a cada lado · terciaria":"Świece po każdej stronie · trzeciorzędna",
+"Cuántas velas tienen que quedar más abajo a cada lado para que una vela cuente como máximo (y más arriba, para un mínimo). Con más velas salen menos líneas, pero más firmes.":"Ile świec po każdej stronie musi być niżej, aby świeca liczyła się jako szczyt (i wyżej, dla dołka). Więcej świec to mniej linii, ale pewniejszych.",
+"Tiene que ser menor que el del temporal de la gráfica para que se note distinto.":"Musi być mniejszy niż dla interwału wykresu, żeby było widać różnicę.",
+"Las mismas velas a los dos lados":"Tyle samo świec po obu stronach",
+"Solo las velas de la derecha":"Tylko świece po prawej",
+"Cuándo cambia la tendencia":"Kiedy zmienia się trend",
+"Cuando se rompe el que la sostenía":"Gdy pęka ten, który ją podtrzymywał",
+"Cuando se rompe cualquiera anterior":"Gdy pęka którykolwiek wcześniejszy",
+"Cuándo cuenta un cambio de estructura":"Kiedy liczy się zmiana struktury",
+"En una subida, el mínimo que la sostiene es el último antes del máximo más alto. Si el precio solo rompe un mínimo pequeño de un rebote, eso es movimiento de adentro y no cambia la lectura. Con la otra opción salen cerca del doble de cambios.":"We wzroście dołek, który go podtrzymuje, to ostatni przed najwyższym szczytem. Jeśli cena przebije tylko mały dołek korekty, to ruch wewnętrzny i odczyt się nie zmienia. Druga opcja daje blisko dwa razy więcej zmian.",
+"GUARDAR":"ZAPISZ",
+"Guardando…":"Zapisywanie…",
+"Guardado y al día en sus otros equipos.":"Zapisane i aktualne na pozostałych urządzeniach.",
+"Todo se guarda automáticamente. Este botón guarda ahora mismo, sin esperar, y deja sus datos al día en sus otros equipos.":"Wszystko zapisuje się samo. Ten przycisk zapisuje od razu, bez czekania, i aktualizuje pozostałe urządzenia.",
+"Guardado aquí, pero sus otros equipos no se pudieron poner al día. ":"Zapisane tutaj, ale pozostałych urządzeń nie udało się zaktualizować. ",
+"Ver esta moneda":"Zobacz tę monetę",
+"Todavía no tiene favoritas":"Nie masz jeszcze ulubionych",
+"Un punto en la gráfica para saltar entre sus favoritas":"Kropka na wykresie do przeskakiwania między ulubionymi",
+"Sale con el logo de la moneda que está viendo. Se arrastra adonde quiera y no tapa la gráfica.":"Pokazuje logo monety, którą oglądasz. Przeciągnij go, gdzie chcesz — nie zasłania wykresu.",
+"enero":"styczeń",
+"febrero":"luty",
+"marzo":"marzec",
+"abril":"kwiecień",
+"mayo":"maj",
+"junio":"czerwiec",
+"julio":"lipiec",
+"agosto":"sierpień",
+"septiembre":"wrzesień",
+"octubre":"październik",
+"noviembre":"listopad",
+"diciembre":"grudzień",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un máximo o un mínimo solo aparece cuando ya pasaron las velas de su lado derecho, y nunca se vuelve a pintar después. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Pokazuje, gdzie trend trwa (BOS: zamknięcie przełamuje swing zgodnie z trendem), a gdzie się zmienia (CHoCH: zamknięcie przełamuje go wbrew trendowi). Wyższe interwały są rysowane grubiej i opisane nazwą. Poziomy jeszcze nieprzełamane są kropkowane, a ich cena widnieje na skali po prawej. W obrębie tego samego interwału można też pokazać mniejsze impulsy i korekty („Drugorzędna” i „Trzeciorzędna”). Szczyt albo dołek pojawia się dopiero, gdy miną świece po jego prawej stronie, i nigdy nie jest potem przerysowywany. Jeśli knot przekracza poprzedni szczyt lub dołek, ale żadne ciało świecy nie zamyka się poza nim, taki swing nazywa się „sweep”, a nie „wyższy” czy „niższy”. To narzędzie do czytania wykresu: nie daje sygnałów kupna ani sprzedaży.",
 };
 /* TÜRKÇE · v38 · # = número que pone el programa · @ = símbolo de una moneda */
-DIC.tr={
+DIC.tr={"Que aprenda de sus errores":"Hatalarından öğrensin","En esta gráfica, el patrón que viene fallando se vuelve más exigente con las figuras nuevas. Nunca cambia las que ya tienen resultado.":"Bu grafikte, başarısız olan bir formasyon yeni şekillere karşı daha seçici olur. Sonucu belli olanlara asla dokunmaz.",
 "Canal alcista":"Yükselen kanal",
 "Dos líneas paralelas que suben: el precio rebota entre la de abajo (apoyo) y la de arriba (techo del canal).":"Yukarı giden iki paralel çizgi: fiyat alttakiyle (destek) üsttekinin (kanalın tavanı) arasında sekiyor.",
 "La altura del canal, desde la línea que rompa":"Kanalın yüksekliği, kırılan çizgiden itibaren",
@@ -102195,9 +102960,48 @@ DIC.tr={
 "Terciaria · líneas alcistas":"Üçüncül · yükseliş çizgileri",
 "Terciaria · líneas bajistas":"Üçüncül · düşüş çizgileri",
 "Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Trendin nerede sürdüğünü (BOS: bir kapanış, bir swing'i trend yönünde kırar) ve nerede değiştiğini (CHoCH: kapanış onu trende karşı yönde kırar) gösterir. Daha büyük zaman dilimleri daha kalın çizilir ve adlarını taşır. Henüz kırılmamış seviyeler noktalı görünür; fiyatları sağdaki ölçekte yer alır. Aynı zaman diliminde daha küçük itkileri ve geri çekilmeleri de gösterebilirsiniz («İkincil» ve «Üçüncül»). Bir swing oluştuktan N mum sonra görünür ve hiçbir şey yeniden çizilmez. Fitil önceki tepeyi ya da dibi geçse de hiçbir mum gövdesi onun ötesinde kapanmazsa, o swing «daha yüksek» ya da «daha alçak» değil, «süpürme» olarak adlandırılır. Bu bir okuma aracıdır: alım veya satım sinyali vermez.",
+"Estructura de mercado":"Piyasa yapısı",
+"Velas a cada lado · temporal de la gráfica":"Her iki yandaki mum · grafiğin zaman dilimi",
+"Velas a cada lado · 1 día":"Her iki yandaki mum · 1 gün",
+"Velas a cada lado · 4 horas":"Her iki yandaki mum · 4 saat",
+"Velas a cada lado · 1 hora":"Her iki yandaki mum · 1 saat",
+"Velas a cada lado · 15 minutos":"Her iki yandaki mum · 15 dakika",
+"Velas a cada lado · secundaria":"Her iki yandaki mum · ikincil",
+"Velas a cada lado · terciaria":"Her iki yandaki mum · üçüncül",
+"Cuántas velas tienen que quedar más abajo a cada lado para que una vela cuente como máximo (y más arriba, para un mínimo). Con más velas salen menos líneas, pero más firmes.":"Bir mumun tepe sayılması için her iki yanda kaç mumun daha alçak olması gerektiği (dip için daha yüksek). Daha çok mum, daha az ama daha sağlam çizgi demektir.",
+"Tiene que ser menor que el del temporal de la gráfica para que se note distinto.":"Farkın görülmesi için grafiğin zaman diliminkinden küçük olmalı.",
+"Las mismas velas a los dos lados":"İki yanda da aynı sayıda mum",
+"Solo las velas de la derecha":"Yalnızca sağdaki mumlar",
+"Cuándo cambia la tendencia":"Trend ne zaman değişir",
+"Cuando se rompe el que la sostenía":"Onu ayakta tutan kırıldığında",
+"Cuando se rompe cualquiera anterior":"Önceki herhangi biri kırıldığında",
+"Cuándo cuenta un cambio de estructura":"Yapı değişikliği ne zaman sayılır",
+"En una subida, el mínimo que la sostiene es el último antes del máximo más alto. Si el precio solo rompe un mínimo pequeño de un rebote, eso es movimiento de adentro y no cambia la lectura. Con la otra opción salen cerca del doble de cambios.":"Yükselişte onu ayakta tutan dip, en yüksek tepeden önceki son diptir. Fiyat yalnızca bir geri çekilmenin küçük dibini kırarsa bu iç harekettir ve okumayı değiştirmez. Diğer seçenek neredeyse iki kat fazla değişim verir.",
+"GUARDAR":"KAYDET",
+"Guardando…":"Kaydediliyor…",
+"Guardado y al día en sus otros equipos.":"Kaydedildi ve diğer cihazlarınızda güncel.",
+"Todo se guarda automáticamente. Este botón guarda ahora mismo, sin esperar, y deja sus datos al día en sus otros equipos.":"Her şey kendiliğinden kaydedilir. Bu düğme beklemeden hemen kaydeder ve diğer cihazlarınızı günceller.",
+"Guardado aquí, pero sus otros equipos no se pudieron poner al día. ":"Burada kaydedildi, ama diğer cihazlarınız güncellenemedi. ",
+"Ver esta moneda":"Bu coin'i gör",
+"Todavía no tiene favoritas":"Henüz favoriniz yok",
+"Un punto en la gráfica para saltar entre sus favoritas":"Favorileriniz arasında geçmek için grafikte bir nokta",
+"Sale con el logo de la moneda que está viendo. Se arrastra adonde quiera y no tapa la gráfica.":"Baktığınız coin'in logosuyla çıkar. İstediğiniz yere sürükleyin; grafiği kapatmaz.",
+"enero":"Ocak",
+"febrero":"Şubat",
+"marzo":"Mart",
+"abril":"Nisan",
+"mayo":"Mayıs",
+"junio":"Haziran",
+"julio":"Temmuz",
+"agosto":"Ağustos",
+"septiembre":"Eylül",
+"octubre":"Ekim",
+"noviembre":"Kasım",
+"diciembre":"Aralık",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un máximo o un mínimo solo aparece cuando ya pasaron las velas de su lado derecho, y nunca se vuelve a pintar después. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Trendin nerede sürdüğünü (BOS: bir kapanış, bir swing'i trend yönünde kırar) ve nerede değiştiğini (CHoCH: kapanış onu trende karşı yönde kırar) gösterir. Daha büyük zaman dilimleri daha kalın çizilir ve adlarını taşır. Henüz kırılmamış seviyeler noktalı görünür; fiyatları sağdaki ölçekte yer alır. Aynı zaman diliminde daha küçük itkileri ve geri çekilmeleri de gösterebilirsiniz («İkincil» ve «Üçüncül»). Bir tepe ya da dip, sağ yanındaki mumlar geçtikten sonra görünür ve sonradan asla yeniden çizilmez. Fitil önceki tepeyi ya da dibi geçse de hiçbir mum gövdesi onun ötesinde kapanmazsa, o swing «daha yüksek» ya da «daha alçak» değil, «süpürme» olarak adlandırılır. Bu bir okuma aracıdır: alım veya satım sinyali vermez.",
 };
 /* РУССКИЙ · v38 · # = número que pone el programa · @ = símbolo de una moneda */
-DIC.ru={
+DIC.ru={"Que aprenda de sus errores":"Пусть учится на своих ошибках","En esta gráfica, el patrón que viene fallando se vuelve más exigente con las figuras nuevas. Nunca cambia las que ya tienen resultado.":"На этом графике фигура, которая часто не срабатывает, становится строже к новым. Уже оценённые никогда не меняются.",
 "Canal alcista":"Восходящий канал",
 "Dos líneas paralelas que suben: el precio rebota entre la de abajo (apoyo) y la de arriba (techo del canal).":"Две параллельные линии вверх: цена отскакивает между нижней (поддержка) и верхней (потолок канала).",
 "La altura del canal, desde la línea que rompa":"Высота канала, отложенная от пробитой линии",
@@ -109134,9 +109938,48 @@ DIC.ru={
 "Terciaria · líneas alcistas":"Третичная · бычьи линии",
 "Terciaria · líneas bajistas":"Третичная · медвежьи линии",
 "Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Показывает, где тренд продолжается (BOS: закрытие пробивает свинг по направлению тренда) и где он меняется (CHoCH: закрытие пробивает его против тренда). Старшие таймфреймы рисуются толще и подписываются. Ещё не пробитые уровни показаны пунктиром, а их цена стоит на правой шкале. В пределах того же таймфрейма можно показать и более мелкие импульсы и откаты («Вторичная» и «Третичная»). Свинг появляется только через N свечей после формирования, и ничего не перерисовывается. Если тень выходит за прежний максимум или минимум, но ни одно тело свечи не закрывается за ним, такой свинг называется «свип», а не «выше» или «ниже». Это инструмент для чтения графика: он не даёт сигналов на покупку или продажу.",
+"Estructura de mercado":"Структура рынка",
+"Velas a cada lado · temporal de la gráfica":"Свечей с каждой стороны · таймфрейм графика",
+"Velas a cada lado · 1 día":"Свечей с каждой стороны · 1 день",
+"Velas a cada lado · 4 horas":"Свечей с каждой стороны · 4 часа",
+"Velas a cada lado · 1 hora":"Свечей с каждой стороны · 1 час",
+"Velas a cada lado · 15 minutos":"Свечей с каждой стороны · 15 минут",
+"Velas a cada lado · secundaria":"Свечей с каждой стороны · вторичная",
+"Velas a cada lado · terciaria":"Свечей с каждой стороны · третичная",
+"Cuántas velas tienen que quedar más abajo a cada lado para que una vela cuente como máximo (y más arriba, para un mínimo). Con más velas salen menos líneas, pero más firmes.":"Сколько свечей с каждой стороны должны быть ниже, чтобы свеча считалась максимумом (и выше — для минимума). Больше свечей — меньше линий, но надёжнее.",
+"Tiene que ser menor que el del temporal de la gráfica para que se note distinto.":"Должно быть меньше, чем у таймфрейма графика, чтобы отличалось.",
+"Las mismas velas a los dos lados":"Одинаково свечей с обеих сторон",
+"Solo las velas de la derecha":"Только свечи справа",
+"Cuándo cambia la tendencia":"Когда меняется тренд",
+"Cuando se rompe el que la sostenía":"Когда пробит тот, что её держал",
+"Cuando se rompe cualquiera anterior":"Когда пробит любой предыдущий",
+"Cuándo cuenta un cambio de estructura":"Когда засчитывается смена структуры",
+"En una subida, el mínimo que la sostiene es el último antes del máximo más alto. Si el precio solo rompe un mínimo pequeño de un rebote, eso es movimiento de adentro y no cambia la lectura. Con la otra opción salen cerca del doble de cambios.":"В росте минимум, который его держит, — последний перед самым высоким максимумом. Если цена пробивает лишь небольшой минимум отката, это внутреннее движение и прочтение не меняется. Другой вариант даёт почти вдвое больше смен.",
+"GUARDAR":"СОХРАНИТЬ",
+"Guardando…":"Сохранение…",
+"Guardado y al día en sus otros equipos.":"Сохранено и обновлено на ваших других устройствах.",
+"Todo se guarda automáticamente. Este botón guarda ahora mismo, sin esperar, y deja sus datos al día en sus otros equipos.":"Всё сохраняется само. Эта кнопка сохраняет прямо сейчас, не дожидаясь, и обновляет ваши другие устройства.",
+"Guardado aquí, pero sus otros equipos no se pudieron poner al día. ":"Сохранено здесь, но обновить ваши другие устройства не удалось. ",
+"Ver esta moneda":"Посмотреть эту монету",
+"Todavía no tiene favoritas":"У вас пока нет избранных",
+"Un punto en la gráfica para saltar entre sus favoritas":"Точка на графике, чтобы переключаться между избранными",
+"Sale con el logo de la moneda que está viendo. Se arrastra adonde quiera y no tapa la gráfica.":"Показывает логотип монеты, которую вы смотрите. Перетащите куда хотите — график он не закрывает.",
+"enero":"январь",
+"febrero":"февраль",
+"marzo":"март",
+"abril":"апрель",
+"mayo":"май",
+"junio":"июнь",
+"julio":"июль",
+"agosto":"август",
+"septiembre":"сентябрь",
+"octubre":"октябрь",
+"noviembre":"ноябрь",
+"diciembre":"декабрь",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un máximo o un mínimo solo aparece cuando ya pasaron las velas de su lado derecho, y nunca se vuelve a pintar después. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Показывает, где тренд продолжается (BOS: закрытие пробивает свинг по направлению тренда) и где он меняется (CHoCH: закрытие пробивает его против тренда). Старшие таймфреймы рисуются толще и подписываются. Ещё не пробитые уровни показаны пунктиром, а их цена стоит на правой шкале. В пределах того же таймфрейма можно показать и более мелкие импульсы и откаты («Вторичная» и «Третичная»). Максимум или минимум появляется только после того, как прошли свечи справа от него, и потом никогда не перерисовывается. Если тень выходит за прежний максимум или минимум, но ни одно тело свечи не закрывается за ним, такой свинг называется «свип», а не «выше» или «ниже». Это инструмент для чтения графика: он не даёт сигналов на покупку или продажу.",
 };
 /* УКРАЇНСЬКА · v38 · # = número que pone el programa · @ = símbolo de una moneda */
-DIC.uk={
+DIC.uk={"Que aprenda de sus errores":"Хай вчиться на своїх помилках","En esta gráfica, el patrón que viene fallando se vuelve más exigente con las figuras nuevas. Nunca cambia las que ya tienen resultado.":"На цьому графіку фігура, яка часто не спрацьовує, стає суворішою до нових. Уже оцінені ніколи не змінюються.",
 "Canal alcista":"Висхідний канал",
 "Dos líneas paralelas que suben: el precio rebota entre la de abajo (apoyo) y la de arriba (techo del canal).":"Дві паралельні лінії вгору: ціна відбивається між нижньою (підтримка) і верхньою (стеля каналу).",
 "La altura del canal, desde la línea que rompa":"Висота каналу, відкладена від пробитої лінії",
@@ -116073,9 +116916,48 @@ DIC.uk={
 "Terciaria · líneas alcistas":"Третинна · бичачі лінії",
 "Terciaria · líneas bajistas":"Третинна · ведмежі лінії",
 "Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Показує, де тренд триває (BOS: закриття пробиває свінг за напрямком тренду) і де він змінюється (CHoCH: закриття пробиває його проти тренду). Старші таймфрейми малюються товщими й підписуються. Ще не пробиті рівні показано пунктиром, а їхня ціна стоїть на правій шкалі. У межах того самого таймфрейму можна показати й дрібніші імпульси та відкати («Вторинна» і «Третинна»). Свінг з'являється лише через N свічок після формування, і нічого не перемальовується. Якщо тінь виходить за попередній максимум або мінімум, але жодне тіло свічки не закривається за ним, такий свінг називається «свіп», а не «вище» чи «нижче». Це інструмент для читання графіка: він не дає сигналів на купівлю чи продаж.",
+"Estructura de mercado":"Структура ринку",
+"Velas a cada lado · temporal de la gráfica":"Свічок з кожного боку · таймфрейм графіка",
+"Velas a cada lado · 1 día":"Свічок з кожного боку · 1 день",
+"Velas a cada lado · 4 horas":"Свічок з кожного боку · 4 години",
+"Velas a cada lado · 1 hora":"Свічок з кожного боку · 1 година",
+"Velas a cada lado · 15 minutos":"Свічок з кожного боку · 15 хвилин",
+"Velas a cada lado · secundaria":"Свічок з кожного боку · вторинна",
+"Velas a cada lado · terciaria":"Свічок з кожного боку · третинна",
+"Cuántas velas tienen que quedar más abajo a cada lado para que una vela cuente como máximo (y más arriba, para un mínimo). Con más velas salen menos líneas, pero más firmes.":"Скільки свічок з кожного боку мають бути нижчими, щоб свічка вважалася максимумом (і вищими — для мінімуму). Більше свічок — менше ліній, але надійніших.",
+"Tiene que ser menor que el del temporal de la gráfica para que se note distinto.":"Має бути меншим, ніж у таймфрейму графіка, щоб відрізнялося.",
+"Las mismas velas a los dos lados":"Однаково свічок з обох боків",
+"Solo las velas de la derecha":"Лише свічки праворуч",
+"Cuándo cambia la tendencia":"Коли змінюється тренд",
+"Cuando se rompe el que la sostenía":"Коли пробито той, що її тримав",
+"Cuando se rompe cualquiera anterior":"Коли пробито будь-який попередній",
+"Cuándo cuenta un cambio de estructura":"Коли зараховується зміна структури",
+"En una subida, el mínimo que la sostiene es el último antes del máximo más alto. Si el precio solo rompe un mínimo pequeño de un rebote, eso es movimiento de adentro y no cambia la lectura. Con la otra opción salen cerca del doble de cambios.":"У зростанні мінімум, що його тримає, — останній перед найвищим максимумом. Якщо ціна пробиває лише невеликий мінімум відкату, це внутрішній рух і прочитання не змінюється. Інший варіант дає майже вдвічі більше змін.",
+"GUARDAR":"ЗБЕРЕГТИ",
+"Guardando…":"Збереження…",
+"Guardado y al día en sus otros equipos.":"Збережено й оновлено на ваших інших пристроях.",
+"Todo se guarda automáticamente. Este botón guarda ahora mismo, sin esperar, y deja sus datos al día en sus otros equipos.":"Усе зберігається саме. Ця кнопка зберігає просто зараз, не чекаючи, і оновлює ваші інші пристрої.",
+"Guardado aquí, pero sus otros equipos no se pudieron poner al día. ":"Збережено тут, але оновити ваші інші пристрої не вдалося. ",
+"Ver esta moneda":"Переглянути цю монету",
+"Todavía no tiene favoritas":"У вас поки немає обраних",
+"Un punto en la gráfica para saltar entre sus favoritas":"Крапка на графіку, щоб перемикатися між обраними",
+"Sale con el logo de la moneda que está viendo. Se arrastra adonde quiera y no tapa la gráfica.":"Показує логотип монети, яку ви дивитеся. Перетягніть куди хочете — графік він не закриває.",
+"enero":"січень",
+"febrero":"лютий",
+"marzo":"березень",
+"abril":"квітень",
+"mayo":"травень",
+"junio":"червень",
+"julio":"липень",
+"agosto":"серпень",
+"septiembre":"вересень",
+"octubre":"жовтень",
+"noviembre":"листопад",
+"diciembre":"грудень",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un máximo o un mínimo solo aparece cuando ya pasaron las velas de su lado derecho, y nunca se vuelve a pintar después. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Показує, де тренд триває (BOS: закриття пробиває свінг за напрямком тренду) і де він змінюється (CHoCH: закриття пробиває його проти тренду). Старші таймфрейми малюються товщими й підписуються. Ще не пробиті рівні показано пунктиром, а їхня ціна стоїть на правій шкалі. У межах того самого таймфрейму можна показати й дрібніші імпульси та відкати («Вторинна» і «Третинна»). Максимум або мінімум з'являється лише після того, як минули свічки праворуч від нього, і потім ніколи не перемальовується. Якщо тінь виходить за попередній максимум або мінімум, але жодне тіло свічки не закривається за ним, такий свінг називається «свіп», а не «вище» чи «нижче». Це інструмент для читання графіка: він не дає сигналів на купівлю чи продаж.",
 };
 /* BAHASA INDONESIA · v38 · # = número que pone el programa · @ = símbolo de una moneda */
-DIC.id={
+DIC.id={"Que aprenda de sus errores":"Biarkan belajar dari kesalahannya","En esta gráfica, el patrón que viene fallando se vuelve más exigente con las figuras nuevas. Nunca cambia las que ya tienen resultado.":"Pada grafik ini, pola yang sering gagal menjadi lebih ketat terhadap bentuk baru. Yang sudah punya hasil tidak pernah diubah.",
 "Canal alcista":"Kanal naik",
 "Dos líneas paralelas que suben: el precio rebota entre la de abajo (apoyo) y la de arriba (techo del canal).":"Dua garis sejajar yang naik: harga memantul antara garis bawah (support) dan garis atas (atap kanal).",
 "La altura del canal, desde la línea que rompa":"Tinggi kanal, dihitung dari garis yang ditembus",
@@ -123012,9 +123894,48 @@ DIC.id={
 "Terciaria · líneas alcistas":"Tersier · garis bullish",
 "Terciaria · líneas bajistas":"Tersier · garis bearish",
 "Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Menunjukkan di mana tren berlanjut (BOS: penutupan menembus swing searah tren) dan di mana tren berubah (CHoCH: penutupan menembusnya melawan tren). Kerangka waktu yang lebih besar digambar lebih tebal dan diberi namanya. Level yang belum ditembus tampak bertitik dan harganya ada di skala sebelah kanan. Di dalam kerangka waktu yang sama, Anda juga bisa menampilkan dorongan dan koreksi yang lebih kecil («Sekunder» dan «Tersier»). Sebuah swing baru muncul N candle setelah terbentuk dan tidak ada yang digambar ulang. Jika sumbu melewati puncak atau lembah sebelumnya tetapi tidak ada badan candle yang menutup di luarnya, swing itu disebut «sweep», bukan «lebih tinggi» atau «lebih rendah». Ini alat bantu membaca grafik: tidak memberi sinyal beli atau jual.",
+"Estructura de mercado":"Struktur pasar",
+"Velas a cada lado · temporal de la gráfica":"Candle di tiap sisi · kerangka waktu grafik",
+"Velas a cada lado · 1 día":"Candle di tiap sisi · 1 hari",
+"Velas a cada lado · 4 horas":"Candle di tiap sisi · 4 jam",
+"Velas a cada lado · 1 hora":"Candle di tiap sisi · 1 jam",
+"Velas a cada lado · 15 minutos":"Candle di tiap sisi · 15 menit",
+"Velas a cada lado · secundaria":"Candle di tiap sisi · sekunder",
+"Velas a cada lado · terciaria":"Candle di tiap sisi · tersier",
+"Cuántas velas tienen que quedar más abajo a cada lado para que una vela cuente como máximo (y más arriba, para un mínimo). Con más velas salen menos líneas, pero más firmes.":"Berapa candle di tiap sisi yang harus lebih rendah agar sebuah candle dihitung sebagai puncak (dan lebih tinggi, untuk lembah). Makin banyak candle, makin sedikit garis, tapi makin kuat.",
+"Tiene que ser menor que el del temporal de la gráfica para que se note distinto.":"Harus lebih kecil daripada milik kerangka waktu grafik agar terlihat beda.",
+"Las mismas velas a los dos lados":"Jumlah candle sama di kedua sisi",
+"Solo las velas de la derecha":"Hanya candle di sebelah kanan",
+"Cuándo cambia la tendencia":"Kapan tren berubah",
+"Cuando se rompe el que la sostenía":"Saat yang menopangnya ditembus",
+"Cuando se rompe cualquiera anterior":"Saat salah satu yang sebelumnya ditembus",
+"Cuándo cuenta un cambio de estructura":"Kapan perubahan struktur dihitung",
+"En una subida, el mínimo que la sostiene es el último antes del máximo más alto. Si el precio solo rompe un mínimo pequeño de un rebote, eso es movimiento de adentro y no cambia la lectura. Con la otra opción salen cerca del doble de cambios.":"Dalam tren naik, lembah yang menopangnya adalah yang terakhir sebelum puncak tertinggi. Kalau harga hanya menembus lembah kecil dari koreksi, itu gerak di dalam dan tidak mengubah pembacaan. Opsi satunya memberi hampir dua kali lipat perubahan.",
+"GUARDAR":"SIMPAN",
+"Guardando…":"Menyimpan…",
+"Guardado y al día en sus otros equipos.":"Tersimpan dan terbarui di perangkat Anda yang lain.",
+"Todo se guarda automáticamente. Este botón guarda ahora mismo, sin esperar, y deja sus datos al día en sus otros equipos.":"Semuanya tersimpan sendiri. Tombol ini menyimpan sekarang juga, tanpa menunggu, dan memperbarui perangkat Anda yang lain.",
+"Guardado aquí, pero sus otros equipos no se pudieron poner al día. ":"Tersimpan di sini, tetapi perangkat Anda yang lain tidak bisa diperbarui. ",
+"Ver esta moneda":"Lihat koin ini",
+"Todavía no tiene favoritas":"Anda belum punya favorit",
+"Un punto en la gráfica para saltar entre sus favoritas":"Titik di grafik untuk berpindah antar favorit",
+"Sale con el logo de la moneda que está viendo. Se arrastra adonde quiera y no tapa la gráfica.":"Muncul dengan logo koin yang sedang Anda lihat. Seret ke mana saja; tidak menutupi grafik.",
+"enero":"Januari",
+"febrero":"Februari",
+"marzo":"Maret",
+"abril":"April",
+"mayo":"Mei",
+"junio":"Juni",
+"julio":"Juli",
+"agosto":"Agustus",
+"septiembre":"September",
+"octubre":"Oktober",
+"noviembre":"November",
+"diciembre":"Desember",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un máximo o un mínimo solo aparece cuando ya pasaron las velas de su lado derecho, y nunca se vuelve a pintar después. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Menunjukkan di mana tren berlanjut (BOS: penutupan menembus swing searah tren) dan di mana tren berubah (CHoCH: penutupan menembusnya melawan tren). Kerangka waktu yang lebih besar digambar lebih tebal dan diberi namanya. Level yang belum ditembus tampak bertitik dan harganya ada di skala sebelah kanan. Di dalam kerangka waktu yang sama, Anda juga bisa menampilkan dorongan dan koreksi yang lebih kecil («Sekunder» dan «Tersier»). Sebuah puncak atau lembah baru muncul setelah candle di sisi kanannya berlalu, dan tidak pernah digambar ulang sesudahnya. Jika sumbu melewati puncak atau lembah sebelumnya tetapi tidak ada badan candle yang menutup di luarnya, swing itu disebut «sweep», bukan «lebih tinggi» atau «lebih rendah». Ini alat bantu membaca grafik: tidak memberi sinyal beli atau jual.",
 };
 /* TIẾNG VIỆT · v38 · # = número que pone el programa · @ = símbolo de una moneda */
-DIC.vi={
+DIC.vi={"Que aprenda de sus errores":"Để nó học từ lỗi của chính nó","En esta gráfica, el patrón que viene fallando se vuelve más exigente con las figuras nuevas. Nunca cambia las que ya tienen resultado.":"Trên biểu đồ này, mẫu hình hay thất bại sẽ khắt khe hơn với các hình mới. Không bao giờ thay đổi những hình đã có kết quả.",
 "Canal alcista":"Kênh tăng",
 "Dos líneas paralelas que suben: el precio rebota entre la de abajo (apoyo) y la de arriba (techo del canal).":"Hai đường song song đi lên: giá bật qua lại giữa đường dưới (hỗ trợ) và đường trên (trần kênh).",
 "La altura del canal, desde la línea que rompa":"Chiều cao của kênh, tính từ đường bị phá vỡ",
@@ -129951,9 +130872,48 @@ DIC.vi={
 "Terciaria · líneas alcistas":"Cấp 3 · đường tăng",
 "Terciaria · líneas bajistas":"Cấp 3 · đường giảm",
 "Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Cho biết xu hướng tiếp diễn ở đâu (BOS: giá đóng cửa phá một swing cùng chiều xu hướng) và đảo chiều ở đâu (CHoCH: phá nó ngược chiều xu hướng). Các khung thời gian lớn hơn được vẽ đậm hơn và có ghi tên. Những mức chưa bị phá hiện dạng chấm, giá của chúng nằm trên thang bên phải. Trong cùng một khung thời gian, bạn cũng có thể hiện các nhịp đẩy và nhịp hồi nhỏ hơn («Cấp 2» và «Cấp 3»). Một swing chỉ xuất hiện sau khi hình thành N nến và không có gì bị vẽ lại. Nếu bấc nến vượt qua đỉnh hoặc đáy trước đó nhưng không có thân nến nào đóng cửa vượt qua, swing đó được gọi là «quét», chứ không phải «cao hơn» hay «thấp hơn». Đây là công cụ để đọc biểu đồ: không đưa ra tín hiệu mua hay bán.",
+"Estructura de mercado":"Cấu trúc thị trường",
+"Velas a cada lado · temporal de la gráfica":"Nến mỗi bên · khung thời gian biểu đồ",
+"Velas a cada lado · 1 día":"Nến mỗi bên · 1 ngày",
+"Velas a cada lado · 4 horas":"Nến mỗi bên · 4 giờ",
+"Velas a cada lado · 1 hora":"Nến mỗi bên · 1 giờ",
+"Velas a cada lado · 15 minutos":"Nến mỗi bên · 15 phút",
+"Velas a cada lado · secundaria":"Nến mỗi bên · thứ cấp",
+"Velas a cada lado · terciaria":"Nến mỗi bên · cấp ba",
+"Cuántas velas tienen que quedar más abajo a cada lado para que una vela cuente como máximo (y más arriba, para un mínimo). Con más velas salen menos líneas, pero más firmes.":"Bao nhiêu nến mỗi bên phải thấp hơn để một nến được tính là đỉnh (và cao hơn, với đáy). Càng nhiều nến thì càng ít đường, nhưng chắc hơn.",
+"Tiene que ser menor que el del temporal de la gráfica para que se note distinto.":"Phải nhỏ hơn của khung thời gian biểu đồ thì mới thấy khác.",
+"Las mismas velas a los dos lados":"Số nến bằng nhau ở hai bên",
+"Solo las velas de la derecha":"Chỉ các nến bên phải",
+"Cuándo cambia la tendencia":"Khi nào xu hướng đổi",
+"Cuando se rompe el que la sostenía":"Khi cái đang đỡ nó bị phá",
+"Cuando se rompe cualquiera anterior":"Khi bất kỳ cái trước đó bị phá",
+"Cuándo cuenta un cambio de estructura":"Khi nào tính là đổi cấu trúc",
+"En una subida, el mínimo que la sostiene es el último antes del máximo más alto. Si el precio solo rompe un mínimo pequeño de un rebote, eso es movimiento de adentro y no cambia la lectura. Con la otra opción salen cerca del doble de cambios.":"Trong xu hướng tăng, đáy đỡ nó là đáy cuối trước đỉnh cao nhất. Nếu giá chỉ phá một đáy nhỏ của nhịp hồi thì đó là chuyển động bên trong và không đổi cách đọc. Lựa chọn kia cho gần gấp đôi số lần đổi.",
+"GUARDAR":"LƯU",
+"Guardando…":"Đang lưu…",
+"Guardado y al día en sus otros equipos.":"Đã lưu và cập nhật trên các thiết bị khác của bạn.",
+"Todo se guarda automáticamente. Este botón guarda ahora mismo, sin esperar, y deja sus datos al día en sus otros equipos.":"Mọi thứ tự lưu. Nút này lưu ngay lập tức, không cần chờ, và cập nhật các thiết bị khác của bạn.",
+"Guardado aquí, pero sus otros equipos no se pudieron poner al día. ":"Đã lưu ở đây, nhưng không cập nhật được các thiết bị khác của bạn. ",
+"Ver esta moneda":"Xem đồng này",
+"Todavía no tiene favoritas":"Bạn chưa có mục yêu thích",
+"Un punto en la gráfica para saltar entre sus favoritas":"Một chấm trên biểu đồ để chuyển giữa các mục yêu thích",
+"Sale con el logo de la moneda que está viendo. Se arrastra adonde quiera y no tapa la gráfica.":"Hiện logo của đồng bạn đang xem. Kéo tới đâu tùy ý; nó không che biểu đồ.",
+"enero":"Tháng 1",
+"febrero":"Tháng 2",
+"marzo":"Tháng 3",
+"abril":"Tháng 4",
+"mayo":"Tháng 5",
+"junio":"Tháng 6",
+"julio":"Tháng 7",
+"agosto":"Tháng 8",
+"septiembre":"Tháng 9",
+"octubre":"Tháng 10",
+"noviembre":"Tháng 11",
+"diciembre":"Tháng 12",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un máximo o un mínimo solo aparece cuando ya pasaron las velas de su lado derecho, y nunca se vuelve a pintar después. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"Cho biết xu hướng tiếp diễn ở đâu (BOS: giá đóng cửa phá một swing cùng chiều xu hướng) và đảo chiều ở đâu (CHoCH: phá nó ngược chiều xu hướng). Các khung thời gian lớn hơn được vẽ đậm hơn và có ghi tên. Những mức chưa bị phá hiện dạng chấm, giá của chúng nằm trên thang bên phải. Trong cùng một khung thời gian, bạn cũng có thể hiện các nhịp đẩy và nhịp hồi nhỏ hơn («Cấp 2» và «Cấp 3»). Một đỉnh hay một đáy chỉ xuất hiện khi các nến bên phải nó đã qua, và sau đó không bao giờ bị vẽ lại. Nếu bấc nến vượt qua đỉnh hoặc đáy trước đó nhưng không có thân nến nào đóng cửa vượt qua, swing đó được gọi là «quét», chứ không phải «cao hơn» hay «thấp hơn». Đây là công cụ để đọc biểu đồ: không đưa ra tín hiệu mua hay bán.",
 };
 /* हिन्दी · v38 · # = número que pone el programa · @ = símbolo de una moneda */
-DIC.hi={
+DIC.hi={"Que aprenda de sus errores":"अपनी गलतियों से सीखे","En esta gráfica, el patrón que viene fallando se vuelve más exigente con las figuras nuevas. Nunca cambia las que ya tienen resultado.":"इस चार्ट पर, जो पैटर्न बार-बार विफल हो रहा है वह नई आकृतियों के लिए अधिक सख़्त हो जाता है। जिनका परिणाम आ चुका है उन्हें कभी नहीं बदलता।",
 "Canal alcista":"ऊपर चढ़ता चैनल",
 "Dos líneas paralelas que suben: el precio rebota entre la de abajo (apoyo) y la de arriba (techo del canal).":"ऊपर चढ़ती दो समानांतर रेखाएँ: भाव नीचे वाली (सपोर्ट) और ऊपर वाली (चैनल की छत) के बीच उछलता रहता है।",
 "La altura del canal, desde la línea que rompa":"चैनल की ऊँचाई, जिस रेखा को तोड़े वहीं से नापी जाती है",
@@ -136890,9 +137850,48 @@ DIC.hi={
 "Terciaria · líneas alcistas":"तृतीयक · तेज़ी की रेखाएँ",
 "Terciaria · líneas bajistas":"तृतीयक · मंदी की रेखाएँ",
 "Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"यह दिखाता है कि ट्रेंड कहाँ जारी रहता है (BOS: क्लोज़ ट्रेंड की दिशा में किसी स्विंग को तोड़ता है) और कहाँ बदलता है (CHoCH: क्लोज़ उसे ट्रेंड के उलट तोड़ता है)। बड़े टाइमफ़्रेम ज़्यादा मोटे खिंचते हैं और उनके नाम के साथ दिखते हैं। जो स्तर अभी नहीं टूटे वे बिंदीदार दिखते हैं और उनकी कीमत दाईं ओर के स्केल पर रहती है। एक ही टाइमफ़्रेम में छोटे इम्पल्स और रिट्रेसमेंट भी दिखाए जा सकते हैं («द्वितीयक» और «तृतीयक»)। स्विंग बनने के N कैंडल बाद ही दिखता है और कुछ भी दोबारा नहीं बनाया जाता। अगर बत्ती पिछले हाई या लो को पार कर जाए पर कोई कैंडल बॉडी उससे आगे क्लोज़ न हो, तो उस स्विंग को «स्वीप» कहा जाता है, «ऊँचा» या «नीचा» नहीं। यह पढ़ने का टूल है: यह खरीद या बिक्री का सिग्नल नहीं देता।",
+"Estructura de mercado":"मार्केट स्ट्रक्चर",
+"Velas a cada lado · temporal de la gráfica":"हर तरफ़ कैंडल · चार्ट का टाइमफ़्रेम",
+"Velas a cada lado · 1 día":"हर तरफ़ कैंडल · 1 दिन",
+"Velas a cada lado · 4 horas":"हर तरफ़ कैंडल · 4 घंटे",
+"Velas a cada lado · 1 hora":"हर तरफ़ कैंडल · 1 घंटा",
+"Velas a cada lado · 15 minutos":"हर तरफ़ कैंडल · 15 मिनट",
+"Velas a cada lado · secundaria":"हर तरफ़ कैंडल · द्वितीयक",
+"Velas a cada lado · terciaria":"हर तरफ़ कैंडल · तृतीयक",
+"Cuántas velas tienen que quedar más abajo a cada lado para que una vela cuente como máximo (y más arriba, para un mínimo). Con más velas salen menos líneas, pero más firmes.":"किसी कैंडल को हाई माने जाने के लिए हर तरफ़ कितनी कैंडल नीची होनी चाहिए (और लो के लिए ऊँची)। ज़्यादा कैंडल यानी कम रेखाएँ, पर ज़्यादा पक्की।",
+"Tiene que ser menor que el del temporal de la gráfica para que se note distinto.":"फ़र्क़ दिखने के लिए यह चार्ट के टाइमफ़्रेम वाले से कम होना चाहिए।",
+"Las mismas velas a los dos lados":"दोनों तरफ़ बराबर कैंडल",
+"Solo las velas de la derecha":"सिर्फ़ दाईं तरफ़ की कैंडल",
+"Cuándo cambia la tendencia":"ट्रेंड कब बदलता है",
+"Cuando se rompe el que la sostenía":"जो उसे थामे था, वह टूटे तब",
+"Cuando se rompe cualquiera anterior":"पिछला कोई भी टूटे तब",
+"Cuándo cuenta un cambio de estructura":"स्ट्रक्चर का बदलाव कब गिना जाए",
+"En una subida, el mínimo que la sostiene es el último antes del máximo más alto. Si el precio solo rompe un mínimo pequeño de un rebote, eso es movimiento de adentro y no cambia la lectura. Con la otra opción salen cerca del doble de cambios.":"तेज़ी में उसे थामने वाला लो सबसे ऊँचे हाई से पहले का आख़िरी लो होता है। अगर भाव सिर्फ़ किसी पुलबैक का छोटा लो तोड़े, तो वह भीतर की हलचल है और पढ़त नहीं बदलती। दूसरे विकल्प में लगभग दोगुने बदलाव आते हैं।",
+"GUARDAR":"सेव करें",
+"Guardando…":"सेव हो रहा है…",
+"Guardado y al día en sus otros equipos.":"सेव हुआ और आपके बाकी डिवाइस पर अपडेट है।",
+"Todo se guarda automáticamente. Este botón guarda ahora mismo, sin esperar, y deja sus datos al día en sus otros equipos.":"सब कुछ अपने आप सेव होता है। यह बटन अभी, बिना रुके सेव करता है और आपके बाकी डिवाइस को अपडेट कर देता है।",
+"Guardado aquí, pero sus otros equipos no se pudieron poner al día. ":"यहाँ सेव हो गया, पर आपके बाकी डिवाइस अपडेट नहीं हो सके। ",
+"Ver esta moneda":"यह सिक्का देखें",
+"Todavía no tiene favoritas":"अभी आपकी कोई फ़ेवरिट नहीं है",
+"Un punto en la gráfica para saltar entre sus favoritas":"अपनी फ़ेवरिट के बीच जाने के लिए चार्ट पर एक बिंदु",
+"Sale con el logo de la moneda que está viendo. Se arrastra adonde quiera y no tapa la gráfica.":"जिस सिक्के को आप देख रहे हैं उसका लोगो दिखता है। जहाँ चाहें खींच लें, यह चार्ट नहीं ढकता।",
+"enero":"जनवरी",
+"febrero":"फ़रवरी",
+"marzo":"मार्च",
+"abril":"अप्रैल",
+"mayo":"मई",
+"junio":"जून",
+"julio":"जुलाई",
+"agosto":"अगस्त",
+"septiembre":"सितंबर",
+"octubre":"अक्तूबर",
+"noviembre":"नवंबर",
+"diciembre":"दिसंबर",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un máximo o un mínimo solo aparece cuando ya pasaron las velas de su lado derecho, y nunca se vuelve a pintar después. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"यह दिखाता है कि ट्रेंड कहाँ जारी रहता है (BOS: क्लोज़ ट्रेंड की दिशा में किसी स्विंग को तोड़ता है) और कहाँ बदलता है (CHoCH: क्लोज़ उसे ट्रेंड के उलट तोड़ता है)। बड़े टाइमफ़्रेम ज़्यादा मोटे खिंचते हैं और उनके नाम के साथ दिखते हैं। जो स्तर अभी नहीं टूटे वे बिंदीदार दिखते हैं और उनकी कीमत दाईं ओर के स्केल पर रहती है। एक ही टाइमफ़्रेम में छोटे इम्पल्स और रिट्रेसमेंट भी दिखाए जा सकते हैं («द्वितीयक» और «तृतीयक»)। कोई हाई या लो तभी दिखता है जब उसकी दाईं तरफ़ की कैंडल बीत चुकी हों, और उसके बाद वह कभी दोबारा नहीं बनाया जाता। अगर बत्ती पिछले हाई या लो को पार कर जाए पर कोई कैंडल बॉडी उससे आगे क्लोज़ न हो, तो उस स्विंग को «स्वीप» कहा जाता है, «ऊँचा» या «नीचा» नहीं। यह पढ़ने का टूल है: यह खरीद या बिक्री का सिग्नल नहीं देता।",
 };
 /* 日本語 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
-DIC.ja={
+DIC.ja={"Que aprenda de sus errores":"自分の失敗から学ばせる","En esta gráfica, el patrón que viene fallando se vuelve más exigente con las figuras nuevas. Nunca cambia las que ya tienen resultado.":"このチャートでは、外れ続けている形は新しい図形に対して厳しくなります。すでに結果が出た図形は変えません。",
 "Canal alcista":"上昇チャネル",
 "Dos líneas paralelas que suben: el precio rebota entre la de abajo (apoyo) y la de arriba (techo del canal).":"上向きの平行な2本の線。価格は下の線（サポート）と上の線（チャネルの天井）の間で跳ね返ります。",
 "La altura del canal, desde la línea que rompa":"チャネルの高さを、抜けたラインから測ります",
@@ -143829,9 +144828,48 @@ DIC.ja={
 "Terciaria · líneas alcistas":"三次 · 強気ライン",
 "Terciaria · líneas bajistas":"三次 · 弱気ライン",
 "Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"トレンドが続く場所（BOS：終値がトレンド方向のスイングを抜ける）と、転換する場所（CHoCH：終値がトレンドと逆方向にスイングを抜ける）を示します。上位の時間足は太く描かれ、名前が付きます。まだ破られていない水準は点線で表示され、その価格は右側の価格軸に出ます。同じ時間足の中で、より小さな上昇・下落の波（「二次」と「三次」）も表示できます。スイングは形成されてからN本あとに初めて表示され、後から描き直されることはありません。ヒゲが直前の高値や安値を抜けても、実体がその先で終わらなければ、そのスイングは「切り上げ」「切り下げ」ではなく「スイープ」と呼ばれます。読み取り用のツールで、売買シグナルは出しません。",
+"Estructura de mercado":"マーケット構造",
+"Velas a cada lado · temporal de la gráfica":"両側のローソク足 · チャートの時間足",
+"Velas a cada lado · 1 día":"両側のローソク足 · 1日",
+"Velas a cada lado · 4 horas":"両側のローソク足 · 4時間",
+"Velas a cada lado · 1 hora":"両側のローソク足 · 1時間",
+"Velas a cada lado · 15 minutos":"両側のローソク足 · 15分",
+"Velas a cada lado · secundaria":"両側のローソク足 · 二次",
+"Velas a cada lado · terciaria":"両側のローソク足 · 三次",
+"Cuántas velas tienen que quedar más abajo a cada lado para que una vela cuente como máximo (y más arriba, para un mínimo). Con más velas salen menos líneas, pero más firmes.":"あるローソク足を高値とみなすために、両側で何本が安くなければならないか（安値なら高くなければならないか）。本数を増やすほど線は減りますが、確かになります。",
+"Tiene que ser menor que el del temporal de la gráfica para que se note distinto.":"違いが出るよう、チャートの時間足の値より小さくしてください。",
+"Las mismas velas a los dos lados":"両側とも同じ本数",
+"Solo las velas de la derecha":"右側のローソク足だけ",
+"Cuándo cambia la tendencia":"トレンドが変わるとき",
+"Cuando se rompe el que la sostenía":"支えていた水準が抜けたとき",
+"Cuando se rompe cualquiera anterior":"直前のどれかが抜けたとき",
+"Cuándo cuenta un cambio de estructura":"構造転換とみなす条件",
+"En una subida, el mínimo que la sostiene es el último antes del máximo más alto. Si el precio solo rompe un mínimo pequeño de un rebote, eso es movimiento de adentro y no cambia la lectura. Con la otra opción salen cerca del doble de cambios.":"上昇では、それを支える安値は最高値の直前の安値です。価格が押し目の小さな安値を抜けただけなら、それは内部の動きで読み方は変わりません。もう一方の設定では転換がおよそ2倍になります。",
+"GUARDAR":"保存",
+"Guardando…":"保存中…",
+"Guardado y al día en sus otros equipos.":"保存し、他の端末にも反映しました。",
+"Todo se guarda automáticamente. Este botón guarda ahora mismo, sin esperar, y deja sus datos al día en sus otros equipos.":"すべて自動で保存されます。このボタンは待たずに今すぐ保存し、他の端末も最新にします。",
+"Guardado aquí, pero sus otros equipos no se pudieron poner al día. ":"ここには保存しましたが、他の端末を最新にできませんでした。",
+"Ver esta moneda":"このコインを見る",
+"Todavía no tiene favoritas":"まだお気に入りがありません",
+"Un punto en la gráfica para saltar entre sus favoritas":"お気に入りを切り替えるためのチャート上の点",
+"Sale con el logo de la moneda que está viendo. Se arrastra adonde quiera y no tapa la gráfica.":"いま見ているコインのロゴが出ます。好きな場所へドラッグでき、チャートを隠しません。",
+"enero":"1月",
+"febrero":"2月",
+"marzo":"3月",
+"abril":"4月",
+"mayo":"5月",
+"junio":"6月",
+"julio":"7月",
+"agosto":"8月",
+"septiembre":"9月",
+"octubre":"10月",
+"noviembre":"11月",
+"diciembre":"12月",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un máximo o un mínimo solo aparece cuando ya pasaron las velas de su lado derecho, y nunca se vuelve a pintar después. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"トレンドが続く場所（BOS：終値がトレンド方向のスイングを抜ける）と、転換する場所（CHoCH：終値がトレンドと逆方向にスイングを抜ける）を示します。上位の時間足は太く描かれ、名前が付きます。まだ破られていない水準は点線で表示され、その価格は右側の価格軸に出ます。同じ時間足の中で、より小さな上昇・下落の波（「二次」と「三次」）も表示できます。高値や安値は、その右側のローソク足が出そろってから初めて表示され、あとから描き直されることはありません。ヒゲが直前の高値や安値を抜けても、実体がその先で終わらなければ、そのスイングは「切り上げ」「切り下げ」ではなく「スイープ」と呼ばれます。読み取り用のツールで、売買シグナルは出しません。",
 };
 /* 한국어 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
-DIC.ko={
+DIC.ko={"Que aprenda de sus errores":"자기 실수에서 배우게 하기","En esta gráfica, el patrón que viene fallando se vuelve más exigente con las figuras nuevas. Nunca cambia las que ya tienen resultado.":"이 차트에서 계속 빗나가는 패턴은 새 도형에 더 엄격해집니다. 이미 결과가 난 도형은 바꾸지 않습니다.",
 "Canal alcista":"상승 채널",
 "Dos líneas paralelas que suben: el precio rebota entre la de abajo (apoyo) y la de arriba (techo del canal).":"위로 향하는 평행선 두 개입니다. 가격이 아래 선(지지)과 위 선(채널 천장) 사이에서 튕깁니다.",
 "La altura del canal, desde la línea que rompa":"채널의 높이를, 이탈한 선에서부터 잽니다",
@@ -150768,9 +151806,48 @@ DIC.ko={
 "Terciaria · líneas alcistas":"3차 · 상승 선",
 "Terciaria · líneas bajistas":"3차 · 하락 선",
 "Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"추세가 이어지는 곳(BOS: 종가가 추세 방향의 스윙을 돌파)과 바뀌는 곳(CHoCH: 종가가 추세와 반대 방향으로 스윙을 돌파)을 보여 줍니다. 상위 시간 프레임은 더 굵게 그려지고 이름이 붙습니다. 아직 깨지지 않은 레벨은 점선으로 표시되고 그 가격은 오른쪽 축에 나타납니다. 같은 시간 프레임 안에서 더 작은 상승·되돌림도 표시할 수 있습니다(\"2차\"와 \"3차\"). 스윙은 형성된 뒤 N개 캔들이 지나야 나타나며 다시 그려지는 것은 없습니다. 꼬리가 이전 고점이나 저점을 넘어도 몸통이 그 너머에서 마감하지 않으면, 그 스윙은 '높은/낮은'이 아니라 '스윕'이라고 부릅니다. 읽기용 도구로, 매수·매도 신호는 주지 않습니다.",
+"Estructura de mercado":"시장 구조",
+"Velas a cada lado · temporal de la gráfica":"양쪽 캔들 수 · 차트 시간 프레임",
+"Velas a cada lado · 1 día":"양쪽 캔들 수 · 1일",
+"Velas a cada lado · 4 horas":"양쪽 캔들 수 · 4시간",
+"Velas a cada lado · 1 hora":"양쪽 캔들 수 · 1시간",
+"Velas a cada lado · 15 minutos":"양쪽 캔들 수 · 15분",
+"Velas a cada lado · secundaria":"양쪽 캔들 수 · 2차",
+"Velas a cada lado · terciaria":"양쪽 캔들 수 · 3차",
+"Cuántas velas tienen que quedar más abajo a cada lado para que una vela cuente como máximo (y más arriba, para un mínimo). Con más velas salen menos líneas, pero más firmes.":"어떤 캔들을 고점으로 보려면 양쪽에서 몇 개가 더 낮아야 하는지(저점이면 더 높아야 하는지). 캔들 수를 늘리면 선은 줄지만 더 단단해집니다.",
+"Tiene que ser menor que el del temporal de la gráfica para que se note distinto.":"차이가 보이도록 차트 시간 프레임의 값보다 작아야 합니다.",
+"Las mismas velas a los dos lados":"양쪽 같은 개수",
+"Solo las velas de la derecha":"오른쪽 캔들만",
+"Cuándo cambia la tendencia":"추세가 바뀌는 시점",
+"Cuando se rompe el que la sostenía":"추세를 받치던 지점이 깨질 때",
+"Cuando se rompe cualquiera anterior":"앞선 아무 지점이나 깨질 때",
+"Cuándo cuenta un cambio de estructura":"구조 전환으로 보는 조건",
+"En una subida, el mínimo que la sostiene es el último antes del máximo más alto. Si el precio solo rompe un mínimo pequeño de un rebote, eso es movimiento de adentro y no cambia la lectura. Con la otra opción salen cerca del doble de cambios.":"상승에서 추세를 받치는 저점은 최고점 직전의 저점입니다. 가격이 되돌림의 작은 저점만 깨뜨렸다면 그것은 내부 움직임이며 해석은 바뀌지 않습니다. 다른 옵션은 전환이 약 두 배로 늘어납니다.",
+"GUARDAR":"저장",
+"Guardando…":"저장 중…",
+"Guardado y al día en sus otros equipos.":"저장했고 다른 기기에도 최신 상태입니다.",
+"Todo se guarda automáticamente. Este botón guarda ahora mismo, sin esperar, y deja sus datos al día en sus otros equipos.":"모든 것이 자동으로 저장됩니다. 이 버튼은 기다리지 않고 지금 바로 저장하고 다른 기기도 최신으로 맞춥니다.",
+"Guardado aquí, pero sus otros equipos no se pudieron poner al día. ":"여기에는 저장했지만 다른 기기는 최신으로 맞추지 못했습니다. ",
+"Ver esta moneda":"이 코인 보기",
+"Todavía no tiene favoritas":"아직 즐겨찾기가 없습니다",
+"Un punto en la gráfica para saltar entre sus favoritas":"즐겨찾기 사이를 오가는 차트 위의 점",
+"Sale con el logo de la moneda que está viendo. Se arrastra adonde quiera y no tapa la gráfica.":"지금 보고 있는 코인의 로고가 나옵니다. 원하는 곳으로 끌 수 있고 차트를 가리지 않습니다.",
+"enero":"1월",
+"febrero":"2월",
+"marzo":"3월",
+"abril":"4월",
+"mayo":"5월",
+"junio":"6월",
+"julio":"7월",
+"agosto":"8월",
+"septiembre":"9월",
+"octubre":"10월",
+"noviembre":"11월",
+"diciembre":"12월",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un máximo o un mínimo solo aparece cuando ya pasaron las velas de su lado derecho, y nunca se vuelve a pintar después. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"추세가 이어지는 곳(BOS: 종가가 추세 방향의 스윙을 돌파)과 바뀌는 곳(CHoCH: 종가가 추세와 반대 방향으로 스윙을 돌파)을 보여 줍니다. 상위 시간 프레임은 더 굵게 그려지고 이름이 붙습니다. 아직 깨지지 않은 레벨은 점선으로 표시되고 그 가격은 오른쪽 축에 나타납니다. 같은 시간 프레임 안에서 더 작은 상승·되돌림도 표시할 수 있습니다(\"2차\"와 \"3차\"). 고점이나 저점은 오른쪽 캔들이 모두 지나간 뒤에야 나타나며, 그 뒤로는 다시 그려지지 않습니다. 꼬리가 이전 고점이나 저점을 넘어도 몸통이 그 너머에서 마감하지 않으면, 그 스윙은 '높은/낮은'이 아니라 '스윕'이라고 부릅니다. 읽기용 도구로, 매수·매도 신호는 주지 않습니다.",
 };
 /* 中文（简体） · v38 · # = número que pone el programa · @ = símbolo de una moneda */
-DIC.zh={
+DIC.zh={"Que aprenda de sus errores":"让它从自己的错误中学习","En esta gráfica, el patrón que viene fallando se vuelve más exigente con las figuras nuevas. Nunca cambia las que ya tienen resultado.":"在这张图上，一直失手的形态会对新图形更严格。已经有结果的图形绝不改动。",
 "Canal alcista":"上升通道",
 "Dos líneas paralelas que suben: el precio rebota entre la de abajo (apoyo) y la de arriba (techo del canal).":"两条向上的平行线：价格在下方线（支撑）与上方线（通道顶部）之间来回反弹。",
 "La altura del canal, desde la línea que rompa":"通道的高度，从被突破的那条线开始量",
@@ -157707,6 +158784,45 @@ DIC.zh={
 "Terciaria · líneas alcistas":"三级 · 看涨线",
 "Terciaria · líneas bajistas":"三级 · 看跌线",
 "Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un swing solo aparece N velas después de formarse y nada se repinta. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"显示趋势在哪里延续（BOS：收盘价突破一个顺势的摆动点）以及在哪里转向（CHoCH：收盘价逆势突破该摆动点）。更大的周期画得更粗，并标有名称。尚未被突破的水平线以点线显示，其价格标在右侧价格轴上。在同一周期内，还可以显示更小的推动和回调（“次级”和“三级”）。摆动点要在形成N根K线之后才会出现，也不会被重绘。如果影线越过前一个高点或低点，但没有任何K线实体收在其外，该摆动点就称为“扫荡”，而不是“抬高”或“降低”。这是一个读图工具：不提供买入或卖出信号。",
+"Estructura de mercado":"市场结构",
+"Velas a cada lado · temporal de la gráfica":"两侧K线根数 · 图表周期",
+"Velas a cada lado · 1 día":"两侧K线根数 · 1天",
+"Velas a cada lado · 4 horas":"两侧K线根数 · 4小时",
+"Velas a cada lado · 1 hora":"两侧K线根数 · 1小时",
+"Velas a cada lado · 15 minutos":"两侧K线根数 · 15分钟",
+"Velas a cada lado · secundaria":"两侧K线根数 · 二级",
+"Velas a cada lado · terciaria":"两侧K线根数 · 三级",
+"Cuántas velas tienen que quedar más abajo a cada lado para que una vela cuente como máximo (y más arriba, para un mínimo). Con más velas salen menos líneas, pero más firmes.":"一根K线要算作高点，两侧需要有多少根更低（低点则需更高）。根数越多，线越少，但越可靠。",
+"Tiene que ser menor que el del temporal de la gráfica para que se note distinto.":"要小于图表周期的数值，才看得出区别。",
+"Las mismas velas a los dos lados":"两侧根数相同",
+"Solo las velas de la derecha":"只看右侧的K线",
+"Cuándo cambia la tendencia":"趋势何时改变",
+"Cuando se rompe el que la sostenía":"当支撑它的那个被跌破时",
+"Cuando se rompe cualquiera anterior":"当之前任意一个被跌破时",
+"Cuándo cuenta un cambio de estructura":"何时算作结构转变",
+"En una subida, el mínimo que la sostiene es el último antes del máximo más alto. Si el precio solo rompe un mínimo pequeño de un rebote, eso es movimiento de adentro y no cambia la lectura. Con la otra opción salen cerca del doble de cambios.":"上涨中，支撑它的低点是最高点之前的最后一个低点。如果价格只跌破回调的小低点，那是内部波动，不改变判读。另一个选项产生的转变约为两倍。",
+"GUARDAR":"保存",
+"Guardando…":"保存中…",
+"Guardado y al día en sus otros equipos.":"已保存，并已同步到您的其他设备。",
+"Todo se guarda automáticamente. Este botón guarda ahora mismo, sin esperar, y deja sus datos al día en sus otros equipos.":"所有内容都会自动保存。此按钮立即保存，无需等待，并让您的其他设备保持最新。",
+"Guardado aquí, pero sus otros equipos no se pudieron poner al día. ":"已在本机保存，但无法同步到您的其他设备。",
+"Ver esta moneda":"查看这个币种",
+"Todavía no tiene favoritas":"您还没有收藏的币种",
+"Un punto en la gráfica para saltar entre sus favoritas":"图表上的一个圆点，用来切换收藏的币种",
+"Sale con el logo de la moneda que está viendo. Se arrastra adonde quiera y no tapa la gráfica.":"显示您正在查看的币种图标。可随意拖动，不会遮住图表。",
+"enero":"1月",
+"febrero":"2月",
+"marzo":"3月",
+"abril":"4月",
+"mayo":"5月",
+"junio":"6月",
+"julio":"7月",
+"agosto":"8月",
+"septiembre":"9月",
+"octubre":"10月",
+"noviembre":"11月",
+"diciembre":"12月",
+"Dice dónde la tendencia sigue (BOS: el cierre rompe un swing a favor) y dónde cambia (CHoCH: lo rompe en contra), con los temporales mayores dibujados más gruesos y con su nombre. Los niveles que aún no se han roto salen punteados y su precio queda en la escala de la derecha. Dentro del mismo temporal se pueden mostrar los impulsos y retrocesos más chicos («Secundaria» y «Terciaria»). Un máximo o un mínimo solo aparece cuando ya pasaron las velas de su lado derecho, y nunca se vuelve a pintar después. Si la mecha pasa el máximo o el mínimo anterior pero ningún cuerpo cierra más allá, ese swing se llama «barrida», no «mayor» ni «menor». Es una herramienta de lectura: no da señales de compra ni de venta.":"显示趋势在哪里延续（BOS：收盘价突破一个顺势的摆动点）以及在哪里转向（CHoCH：收盘价逆势突破该摆动点）。更大的周期画得更粗，并标有名称。尚未被突破的水平线以点线显示，其价格标在右侧价格轴上。在同一周期内，还可以显示更小的推动和回调（“次级”和“三级”）。高点或低点要等到其右侧的K线走完才会出现，之后也绝不会被重绘。如果影线越过前一个高点或低点，但没有任何K线实体收在其外，该摆动点就称为“扫荡”，而不是“抬高”或“降低”。这是一个读图工具：不提供买入或卖出信号。",
 };
 </script>
 </body>
