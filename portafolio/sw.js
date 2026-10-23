@@ -30,7 +30,7 @@
      · y ninguna petición puede tener la pantalla parada más de 8 segundos.
    ===================================================================== */
 var VER = "84";
-var CAJA = "cripto-v93";
+var CAJA = "cripto-v94";
 var ARRANQUE = "./CRIPTO.html";
 var ARCHIVOS = ["./", "./index.html", "./CRIPTO.html", "./manifest.webmanifest", "./icono-192.png", "./icono-512.png", "./icono-mask-192.png", "./icono-mask-512.png", "./privacidad.html"];
 var ESPERA = 8000;          /* lo máximo que internet puede tener la pantalla parada */
