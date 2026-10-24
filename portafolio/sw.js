@@ -1,5 +1,5 @@
 /* =====================================================================
-   AYUDANTE DEL TELÉFONO · Mi Portafolio Cripto v90
+   AYUDANTE DEL TELÉFONO · Mi Portafolio Cripto v95
    Guarda el programa para que abra sin internet y, cuando usted publica
    una versión nueva, la trae solo la próxima vez que lo abra con internet.
 
@@ -29,7 +29,11 @@
        y solo entonces se baja el programa entero;
      · y ninguna petición puede tener la pantalla parada más de 8 segundos.
    ===================================================================== */
-var VER = "84";
+/* v95 · SE ACABO LA CONSTANTE ESCRITA A MANO.
+   Aqui habia `var VER = "84"` y la aplicacion publicada ya decia 94: el
+   ayudante creia siempre que habia version nueva y se bajaba los 17 MB en
+   CADA apertura. Ahora la version se le pregunta a la copia guardada
+   (ver `versionGuardada`), que no se puede olvidar de subir nadie. */
 var CAJA = "cripto-v94";
 var ARRANQUE = "./CRIPTO.html";
 var ARCHIVOS = ["./", "./index.html", "./CRIPTO.html", "./manifest.webmanifest", "./icono-192.png", "./icono-512.png", "./icono-mask-192.png", "./icono-mask-512.png", "./privacidad.html"];
@@ -41,8 +45,14 @@ var MARCA = "./__version__";  /* apunte interno, no es un archivo de verdad */
    ayudante nuevo los pedía normal, el navegador le daba la copia VIEJA de su
    propio almacén y el ayudante la guardaba en su caja nueva. A partir de ahí
    la caja nueva tenía el programa viejo dentro y ya no se arreglaba solo.
-   Con cache:"reload" se obliga a pedirlos a GitHub de verdad. */
-function pedirDeVerdad(u){ return new Request(u, {cache:"reload"}); }
+   Con cache:"no-cache" (v95; antes era "reload") se obliga a PREGUNTARLE a
+   GitHub, en vez de darse por bueno lo que el navegador tenga guardado. */
+/* v95 · "reload" bajaba el archivo entero aunque el navegador lo tuviera
+   recien bajado (CRIPTO.html se bajaba dos veces en la primera apertura).
+   "no-cache" PREGUNTA: manda peticion condicional, GitHub contesta 304 sin
+   cuerpo y se usa la copia del navegador, ya validada. Si no la tiene, se
+   baja igual que antes. */
+function pedirDeVerdad(u){ return new Request(u, {cache:"no-cache"}); }
 
 /* una promesa con reloj: si tarda más de la cuenta, se da por fallada.
    Sin esto, una conexión medio muerta deja la pantalla parada sin fin. */
@@ -65,7 +75,8 @@ self.addEventListener("install", function (ev) {
           if (r && r.ok) return c.put(u, r);
         }).catch(function () { /* si falta alguno, no se cae */ });
       })).then(function(){
-        return c.put(MARCA, new Response(VER));
+        /* v95 · se apunta la version QUE SE BAJO, no una escrita a mano */
+        return versionGuardada().then(function (v) { return c.put(MARCA, new Response(v)); });
       });
     })
   );
@@ -105,6 +116,16 @@ function soloElPrincipio(r){
     return new TextDecoder().decode(u);
   });
 }
+/* v95 · la version de LO QUE YA ESTA GUARDADO, leida de los primeros 2 kB
+   de la copia guardada del propio programa. Sin internet y sin bajar nada. */
+function versionGuardada(){
+  return caches.open(CAJA).then(function (c) { return c.match(ARRANQUE); })
+    .then(function (r) { return r ? soloElPrincipio(r) : ""; })
+    .then(function (txt) {
+      var m = String(txt).match(/name="v"\s+content="([^"]+)"/);
+      return m ? m[1] : "";
+    }).catch(function () { return ""; });
+}
 function versionPublicada(){
   return conTope(fetch(new Request(ARRANQUE, {
     cache: "no-store", headers: { Range: "bytes=0-2047" }
@@ -128,9 +149,15 @@ function traerseLoNuevo(){
 var repaso = null, repasoHasta = 0;
 function repasar(){
   if (repaso || Date.now() < repasoHasta) return;
-  repaso = versionPublicada().then(function (hay) {
-    if (!hay || hay === VER) return;
-    return traerseLoNuevo();
+  repaso = Promise.all([versionPublicada(), versionGuardada()]).then(function (d) {
+    var hay = d[0], tengo = d[1];
+    /* si no se pudo preguntar, o lo guardado ya es lo publicado: NO se baja nada */
+    if (!hay || hay === tengo) return;
+    return traerseLoNuevo().then(function () {
+      return caches.open(CAJA).then(function (c) {
+        return c.put(MARCA, new Response(hay));   /* apunte: lo que se bajo */
+      });
+    });
   }).catch(function () {}).then(function () {
     repaso = null; repasoHasta = Date.now() + 600000;
   });
