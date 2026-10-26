@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="97">
+<meta name="v" content="98">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -1671,6 +1671,9 @@ body.conCerrojo #aviso{z-index:10001}
 @media(max-width:900px){.pc97m{bottom:84px;right:10px;width:min(340px,calc(100vw - 20px))}}
 body.conPc97 #velo{z-index:10000}
 body.conPc97 #aviso{z-index:10001}
+.nota.pc97ok{background:color-mix(in srgb,var(--up) 13%,transparent);border-color:color-mix(in srgb,var(--up) 38%,transparent)}
+.nota.pc97ok b{color:var(--upTx)}
+.pc97prev .pc97m{position:static;width:auto;box-shadow:none;padding:12px 38px 10px 12px}
 @keyframes cjEntra{from{opacity:0}to{opacity:1}}
 .cjCaja{width:100%;max-width:360px;text-align:center}
 .cjIco{width:88px;height:88px;margin:0 auto 20px;position:relative;filter:drop-shadow(0 14px 26px rgba(40,90,255,.34))}
@@ -50380,6 +50383,34 @@ function pc97AvisoCorreo(){
          '<div style="display:flex;gap:9px;flex-wrap:wrap;margin:0 0 12px"><button type="button" class="b" data-pc97="reenviar">'+esc(tr("Reenviar"))+'</button></div>';
 }
 function pc97Q(id){ return (PC97.box && PC97.box.querySelector("#"+id)) || document.getElementById(id); }
+/* ---------- las dos mitades de la caja, para pintarlas de verdad o «de muestra» (solo el dueño las ve de muestra) ---------- */
+function pc97OfertaHtml(demo){
+  var h='<p class="pc97p">'+esc(tr("La misma aplicación en pantalla grande, con sus datos al día: menú lateral, ventanas amplias y atajos de teclado. Se entra con la misma cuenta de Google. Incluye todo lo de Pro."))+'</p>'+
+     '<p class="pc97p"><b>'+esc(tr("Precio"))+':</b> '+esc(PC97.precio ? PC97.precio+" · "+tr("pago único") : tr("lo muestra Google Play al comprar."))+'</p>';
+  if(!demo && !pc97Sesion()){
+    return h+'<div class="nota ojo">'+esc(tr("Para comprar, entre primero con su cuenta de Google: el plan queda atado a esa cuenta."))+'</div>'+
+       '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:10px"><button type="button" class="b ac" data-pc97="entrar">'+esc(tr("Entrar con Google"))+'</button></div>';
+  }
+  var correo=(typeof correoTapado==="function") ? correoTapado((pc97Sesion() && CTA.correo) || "persona@gmail.com") : "";
+  return h+'<div class="nota pc97ok"><b>'+esc(tr("Correo de su plan"))+'</b><br>'+esc(correo)+'</div>'+
+     '<div class="nota ojo"><b>'+esc(tr("Un solo correo de Google"))+'</b><br>'+esc(tr("Su plan queda atado a este correo. En la computadora entre con ese mismo correo: es el de la cuenta de Google de su teléfono. Con otro correo no se activa, aunque le pase la aplicación a otra persona."))+'</div>'+
+     '<p class="pc97c" style="margin-top:12px">'+esc(tr("Al comprar, le mandamos por correo el enlace para abrir la versión para PC. Revise también la bandeja de spam."))+'</p>'+
+     '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:10px"><button type="button" class="b ac" data-pc97="comprar"'+(PC97.ocupado?' disabled':'')+'>'+esc(tr("Comprar"))+'</button></div>';
+}
+function pc97CompradoHtml(E, recien){
+  var h="";
+  if(recien) h+=pc97AvisoCorreo();
+  h+='<p class="pc97p">'+esc(tr("Ya tiene la versión para PC."))+'</p>'+
+     '<p class="pc97p">'+esc(tr("Ábrala en su computadora con este enlace e inicie sesión con la misma cuenta de Google."))+'</p>'+
+     '<div class="pc97url"><input type="text" readonly value="'+esc(pc97Enlace())+'" aria-label="'+esc(tr("Enlace"))+'"><button type="button" class="b sm" data-pc97="copiar">'+esc(tr("Copiar enlace"))+'</button></div>'+
+     '<div class="fsec">'+esc(tr("Mis computadoras"))+'</div><div class="pc97eq">'+
+     (E.equipos||[]).map(function(e){
+       return '<div class="pc97e"><span><b>'+esc(e.nombre||"PC")+'</b>'+(e.visto?' <i>'+esc(haceCuanto(e.visto))+'</i>':'')+'</span>'+
+              '<button type="button" class="b sm" data-pc97="quitar" data-eq="'+esc(e.id)+'">'+esc(tr("Quitar"))+'</button></div>';
+     }).join("")+(E.equipos && E.equipos.length ? '' : '<p class="mut">'+esc(tr("Todavía no la ha abierto en ninguna computadora."))+'</p>')+'</div>'+
+     '<p class="mut">'+esc(tr("Puede usarla en dos computadoras a la vez."))+'</p>';
+  return h;
+}
 function pc97Pintar(){
   var cp=pc97Q("pc97Cp"); if(!cp) return;
   var chip=pc97Q("pc97Chip"), dueno=pc97Dueno(), lista=pc97Lista();
@@ -50388,34 +50419,28 @@ function pc97Pintar(){
   if(dueno){
     h+='<div class="nota'+(lista?'':' ojo')+'"><b>Solo usted ve esta caja.</b> '+
        (lista ? (PC97.todos ? 'La versión para PC está <b>encendida para todos</b>.' : 'La versión para PC está conectada pero <b>apagada para el público</b>: solo usted la ve.')
-              : 'La versión para PC <b>todavía no está conectada</b> (falta el servidor y el producto en Google Play). Nadie más ve nada de esto.')+'</div>'+
+              : (pc97Leer("cripto-pc97-prac")==="1"
+                  ? 'La versión para PC <b>todavía no cobra</b> (falta conectar el servidor y el producto en Google Play). Nadie más ve nada de esto. Lo que ve abajo es lo que verá la gente después de comprar.'
+                  : 'La versión para PC <b>todavía no cobra</b> (falta conectar el servidor y el producto en Google Play). Nadie más ve nada de esto. Abajo está la pantalla de compra tal como la verá la gente; pulse Comprar para practicar (no cobra nada).'))+'</div>'+
        '<div style="display:flex;gap:9px;flex-wrap:wrap;margin:10px 0"><button type="button" class="b" data-pc97="previa">Ver cómo se verán las pantallas</button></div>';
   }
-  if(!lista){ cp.innerHTML=h; if(chip){ chip.textContent="en preparación"; chip.className="chip s"; } return; }
+  if(!lista){
+    if(dueno && pc97Leer("cripto-pc97-prac")==="1"){   /* compra de PRÁCTICA (solo el dueño): no se cobra ni se manda nada */
+      h+='<div class="nota ojo"><b>Compra de práctica.</b> No se cobró nada ni se mandó ningún correo; sirve para probar cómo queda.</div>'+
+         pc97CompradoHtml({tiene:true, equipos:[]}, PC97.recien)+
+         '<div style="display:flex;gap:9px;flex-wrap:wrap;margin:12px 0 0"><button type="button" class="b" data-pc97="pracBorrar">Borrar la compra de práctica</button></div>';
+      cp.innerHTML=h; if(chip){ chip.textContent="práctica"; chip.className="chip a"; } return;
+    }
+    if(dueno) h+='<div class="fsec">Pantalla de compra (práctica: el botón no cobra nada)</div>'+pc97OfertaHtml(true);
+    cp.innerHTML=h; if(chip){ chip.textContent="en preparación"; chip.className="chip s"; } return;
+  }
   var E=PC97.est;
   if(E && E.tiene){
     if(chip){ chip.textContent=tr("Comprada"); chip.className="chip a"; }
-    if(PC97.recien) h+=pc97AvisoCorreo();
-    h+='<p class="pc97p">'+esc(tr("Ya tiene la versión para PC."))+'</p>'+
-       '<p class="pc97p">'+esc(tr("Ábrala en su computadora con este enlace e inicie sesión con la misma cuenta de Google."))+'</p>'+
-       '<div class="pc97url"><input type="text" readonly value="'+esc(pc97Enlace())+'" aria-label="'+esc(tr("Enlace"))+'"><button type="button" class="b sm" data-pc97="copiar">'+esc(tr("Copiar enlace"))+'</button></div>'+
-       '<div class="fsec">'+esc(tr("Mis computadoras"))+'</div><div class="pc97eq">'+
-       (E.equipos||[]).map(function(e){
-         return '<div class="pc97e"><span><b>'+esc(e.nombre||"PC")+'</b>'+(e.visto?' <i>'+esc(haceCuanto(e.visto))+'</i>':'')+'</span>'+
-                '<button type="button" class="b sm" data-pc97="quitar" data-eq="'+esc(e.id)+'">'+esc(tr("Quitar"))+'</button></div>';
-       }).join("")+(E.equipos && E.equipos.length ? '' : '<p class="mut">'+esc(tr("Todavía no la ha abierto en ninguna computadora."))+'</p>')+'</div>'+
-       '<p class="mut">'+esc(tr("Puede usarla en dos computadoras a la vez."))+'</p>';
+    h+=pc97CompradoHtml(E, PC97.recien);
   } else {
     if(chip){ chip.textContent=PC97.precio||tr("Pago único"); chip.className="chip s"; }
-    h+='<p class="pc97p">'+esc(tr("La misma aplicación en pantalla grande, con sus datos al día: menú lateral, ventanas amplias y atajos de teclado. Se entra con la misma cuenta de Google. Incluye todo lo de Pro."))+'</p>'+
-       '<p class="pc97p"><b>'+esc(tr("Precio"))+':</b> '+esc(PC97.precio ? PC97.precio+" · "+tr("pago único") : tr("lo muestra Google Play al comprar."))+'</p>';
-    if(!pc97Sesion()){
-      h+='<div class="nota ojo">'+esc(tr("Para comprar, entre primero con su cuenta de Google: el plan queda atado a esa cuenta."))+'</div>'+
-         '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:10px"><button type="button" class="b ac" data-pc97="entrar">'+esc(tr("Entrar con Google"))+'</button></div>';
-    } else {
-      h+='<p class="pc97c">'+esc(tr("El plan quedará en la cuenta"))+': <b>'+esc(correoTapado(CTA.correo||""))+'</b></p>'+
-         '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:10px"><button type="button" class="b ac" data-pc97="comprar"'+(PC97.ocupado?' disabled':'')+'>'+esc(tr("Comprar"))+'</button></div>';
-    }
+    h+=pc97OfertaHtml(false);
   }
   cp.innerHTML=h;
 }
@@ -50430,6 +50455,18 @@ function pc97Montar(box){
 /* ---------- comprar ---------- */
 function pc97Comprar(){
   if(PC97.ocupado) return Promise.resolve(false);
+  if(!pc97Lista()){   /* PRÁCTICA (solo el dueño llega aquí): se hace el recorrido entero, sin cobrar ni mandar nada */
+    var corP=(typeof correoTapado==="function") ? correoTapado((pc97Sesion() && CTA.correo) || "persona@gmail.com") : "";
+    abrir('<div class="hoja"><div class="hh"><h3>Comprar la versión para PC (práctica)</h3><button class="x" data-cerrar>×</button></div>'+
+      '<div class="hb"><p style="margin:0 0 10px"><b>Es una compra de práctica.</b> No se cobra nada y no se manda ningún correo.</p>'+
+      '<div style="font-size:14px;line-height:1.75">'+esc(tr("El plan quedará en la cuenta"))+': <b>'+esc(corP)+'</b><br>'+esc(tr("¿Es la cuenta correcta?"))+'</div></div>'+
+      '<div class="hf"><button class="b" data-cerrar>'+esc(tr("Cancelar"))+'</button><button class="b ac" id="pc97Prac">Sí, comprar (práctica)</button></div></div>',
+      function(M){ M.querySelector("#pc97Prac").onclick=function(){
+        pc97Guardar("cripto-pc97-prac","1"); PC97.recien=true; cerrar(); pc97Pintar();
+        aviso(esc("Listo. Compra de práctica: no se cobró nada ni se mandó correo."));
+      }; });
+    return Promise.resolve(false);
+  }
   if(!pc97Sesion()){ aviso(esc(tr("Para comprar, entre primero con su cuenta de Google: el plan queda atado a esa cuenta.")), true); return Promise.resolve(false); }
   if(typeof window.getDigitalGoodsService!=="function" || typeof window.PaymentRequest==="undefined"){
     abrir('<div class="hoja"><div class="hh"><h3>'+esc(tr("Comprar la versión para PC"))+'</h3><button class="x" data-cerrar>×</button></div><div class="hb">'+
@@ -50494,25 +50531,33 @@ function pc97Mensaje(){
     if(pc97Leer("cripto-pc97-nunca")==="1" || pc97Leer("cripto-pc97-msg")===pc97Dia()) return;
     if(PC97.est && PC97.est.tiene) return;
     var d=document.createElement("div"); d.id="pc97Msg"; d.className="pc97m"; d.setAttribute("role","status");
-    d.innerHTML='<button type="button" class="pc97x" data-pc97="cerrarMsg" aria-label="'+esc(tr("Cerrar"))+'">×</button>'+
-      '<b>'+esc(tr("Versión para PC"))+'</b><span>'+esc(tr("La misma aplicación en pantalla grande, con sus datos al día."))+'</span>'+
-      '<div class="pc97mb"><button type="button" class="b ac sm" data-pc97="verMsg">'+esc(tr("Ver"))+'</button>'+
-      '<button type="button" class="b sm" data-pc97="nuncaMsg">'+esc(tr("No mostrar más"))+'</button></div>';
+    d.innerHTML=pc97MensajeHtml();
     document.body.appendChild(d);
     pc97Guardar("cripto-pc97-msg", pc97Dia());
   }catch(e){}
+}
+function pc97MensajeHtml(){
+  return '<button type="button" class="pc97x" data-pc97="cerrarMsg" aria-label="'+esc(tr("Cerrar"))+'">×</button>'+
+      '<b>'+esc(tr("Versión para PC"))+'</b><span>'+esc(tr("La misma aplicación en pantalla grande, con sus datos al día."))+'</span>'+
+      '<div class="pc97mb"><button type="button" class="b ac sm" data-pc97="verMsg">'+esc(tr("Ver"))+'</button>'+
+      '<button type="button" class="b sm" data-pc97="nuncaMsg">'+esc(tr("No mostrar más"))+'</button></div>';
 }
 function pc97CerrarMsg(){ var d=document.getElementById("pc97Msg"); if(d) d.remove(); }
 /* ---------- solo el dueño: ver todas las pantallas juntas, sin tocar nada ---------- */
 function pc97Previa(){
   var h='<div class="hoja"><div class="hh"><h3>Pantallas de la versión para PC</h3><button class="x" data-cerrar>×</button></div><div class="hb">'+
-    '<p class="mut" style="margin:0 0 12px">Así se ven, una por una, cuando la cuenta no puede abrir. Son solo de muestra: los botones no hacen nada aquí.</p>';
+    '<p class="mut" style="margin:0 0 12px">Así se ven las pantallas de la versión para PC. Son solo de muestra: los botones no hacen nada aquí.</p>'+
+    '<div class="fsec">1 · Pantalla de compra, en Ajustes (la ve quien todavía no la tiene)</div><div class="pc97prev"><div class="pc97caja">'+pc97OfertaHtml(true)+'</div></div>'+
+    '<div class="fsec">2 · Después de comprar</div><div class="pc97prev"><div class="pc97caja">'+pc97CompradoHtml({tiene:true, equipos:[{id:"x1", nombre:"Windows · Chrome", visto:Date.now()-36e5}]}, true)+'</div></div>'+
+    '<div class="fsec">3 · El mensaje que sale una vez al día en el teléfono</div><div class="pc97prev"><div class="pc97m">'+pc97MensajeHtml()+'</div></div>'+
+    '<div class="fsec">4 · Pantallas que tapan la PC cuando la cuenta no puede abrir</div>';
   var ej={equipos:[{id:"x1", nombre:"Windows · Chrome", visto:Date.now()-36e5}, {id:"x2", nombre:"Windows · Edge", visto:Date.now()-5*864e5}]};
   pc97TodasLasPantallas().forEach(function(t){
     h+='<div class="pc97prev"><div class="pc97caja">'+pc97HtmlPantalla(pc97Pantalla(t, t==="equipos"?ej:{correo:"persona@gmail.com"}), true)+'</div></div>';
   });
   h+='</div><div class="hf"><button class="b" data-cerrar>Cerrar</button></div></div>';
   abrir(h);
+  try{ [].forEach.call(document.querySelectorAll(".pc97prev button"), function(b){ b.disabled=true; }); }catch(e){}
 }
 /* ---------- los toques ---------- */
 function pc97Toque(ev){
@@ -50520,6 +50565,8 @@ function pc97Toque(ev){
   var a=b.getAttribute("data-pc97");
   ev.preventDefault(); ev.stopPropagation();
   if(a==="comprar") pc97Comprar();
+  else if(a==="pracBorrar"){ pc97Guardar("cripto-pc97-prac",""); PC97.recien=false; pc97Pintar(); aviso(esc("Compra de práctica borrada. Puede repetirla.")); }
+  else if(a==="reenviar" && !pc97Lista()) aviso(esc("Práctica: no se manda ningún correo de verdad."));
   else if(a==="entrar" || a==="cambiar"){
     if(a==="cambiar" && typeof salirDeCuenta==="function") salirDeCuenta();
     else if(typeof entrarConGoogle==="function") entrarConGoogle();
@@ -52906,6 +52953,10 @@ DIC_L.en=function(){return{
 "Todavía no ha acertado ninguna operación.":"You have not won any trade yet.",
 "Todavía no ha cerrado ninguna operación: esta cifra aparece al cerrar la primera.":"You have not closed any trade yet: this figure appears when you close the first one.",
 "Su compra quedó confirmada, pero el correo no salió. Pulse Reenviar.":"Your purchase is confirmed, but the email didn't go out. Press Resend.",
+"Correo de su plan":"Your plan's email",
+"Un solo correo de Google":"One Google email only",
+"Su plan queda atado a este correo. En la computadora entre con ese mismo correo: es el de la cuenta de Google de su teléfono. Con otro correo no se activa, aunque le pase la aplicación a otra persona.":"Your plan is tied to this email. On the computer, sign in with that same email: it is the one for the Google account on your phone. It will not activate with a different email, even if you pass the app to someone else.",
+"Al comprar, le mandamos por correo el enlace para abrir la versión para PC. Revise también la bandeja de spam.":"When you buy, we email you the link to open the PC version. Check your spam folder too.",
 /* v94 · Rumbo y Certero */
 "Sensibilidad":"Sensitivity",
 "Marcar también las ventas":"Also mark sells",
@@ -59729,6 +59780,10 @@ DIC_L.pt=function(){return{
 "Todavía no ha acertado ninguna operación.":"Ainda não acertou nenhuma operação.",
 "Todavía no ha cerrado ninguna operación: esta cifra aparece al cerrar la primera.":"Ainda não fechou nenhuma operação: este número aparece ao fechar a primeira.",
 "Su compra quedó confirmada, pero el correo no salió. Pulse Reenviar.":"Sua compra foi confirmada, mas o e-mail não saiu. Pressione Reenviar.",
+"Correo de su plan":"E-mail do seu plano",
+"Un solo correo de Google":"Um único e-mail do Google",
+"Su plan queda atado a este correo. En la computadora entre con ese mismo correo: es el de la cuenta de Google de su teléfono. Con otro correo no se activa, aunque le pase la aplicación a otra persona.":"Seu plano fica vinculado a este e-mail. No computador, entre com esse mesmo e-mail: é o da conta Google do seu celular. Com outro e-mail ele não é ativado, mesmo que o aplicativo seja passado para outra pessoa.",
+"Al comprar, le mandamos por correo el enlace para abrir la versión para PC. Revise también la bandeja de spam.":"Ao comprar, enviamos por e-mail o link para abrir a versão para PC. Verifique também a caixa de spam.",
 /* v94 · Rumbo y Certero */
 "Sensibilidad":"Sensibilidade",
 "Marcar también las ventas":"Marcar também as vendas",
@@ -66545,6 +66600,10 @@ DIC_L.fr=function(){return{
 "Todavía no ha acertado ninguna operación.":"Vous n'avez encore réussi aucune opération.",
 "Todavía no ha cerrado ninguna operación: esta cifra aparece al cerrar la primera.":"Vous n'avez encore fermé aucune opération : ce chiffre apparaît dès la fermeture de la première.",
 "Su compra quedó confirmada, pero el correo no salió. Pulse Reenviar.":"Votre achat est confirmé, mais l'e-mail n'est pas parti. Appuyez sur Renvoyer.",
+"Correo de su plan":"E-mail de votre formule",
+"Un solo correo de Google":"Un seul e-mail Google",
+"Su plan queda atado a este correo. En la computadora entre con ese mismo correo: es el de la cuenta de Google de su teléfono. Con otro correo no se activa, aunque le pase la aplicación a otra persona.":"Votre formule est liée à cet e-mail. Sur l'ordinateur, connectez-vous avec ce même e-mail : c'est celui du compte Google de votre téléphone. Avec un autre e-mail, elle ne s'active pas, même si vous passez l'application à quelqu'un d'autre.",
+"Al comprar, le mandamos por correo el enlace para abrir la versión para PC. Revise también la bandeja de spam.":"À l'achat, nous vous envoyons par e-mail le lien pour ouvrir la version PC. Vérifiez aussi vos courriers indésirables.",
 /* v94 · Rumbo y Certero */
 "Sensibilidad":"Sensibilité",
 "Marcar también las ventas":"Marquer aussi les ventes",
@@ -73361,6 +73420,10 @@ DIC_L.de=function(){return{
 "Todavía no ha acertado ninguna operación.":"Sie haben noch keinen Trade gewonnen.",
 "Todavía no ha cerrado ninguna operación: esta cifra aparece al cerrar la primera.":"Sie haben noch keinen Trade geschlossen: Diese Zahl erscheint, sobald der erste geschlossen ist.",
 "Su compra quedó confirmada, pero el correo no salió. Pulse Reenviar.":"Ihr Kauf ist bestätigt, aber die E-Mail wurde nicht gesendet. Drücken Sie auf Erneut senden.",
+"Correo de su plan":"E-Mail-Adresse Ihres Plans",
+"Un solo correo de Google":"Nur eine Google-E-Mail",
+"Su plan queda atado a este correo. En la computadora entre con ese mismo correo: es el de la cuenta de Google de su teléfono. Con otro correo no se activa, aunque le pase la aplicación a otra persona.":"Ihr Plan ist an diese E-Mail-Adresse gebunden. Melden Sie sich am Computer mit derselben E-Mail-Adresse an: Es ist die des Google-Kontos Ihres Telefons. Mit einer anderen E-Mail-Adresse wird er nicht aktiviert, auch wenn Sie die App an eine andere Person weitergeben.",
+"Al comprar, le mandamos por correo el enlace para abrir la versión para PC. Revise también la bandeja de spam.":"Nach dem Kauf senden wir Ihnen per E-Mail den Link zum Öffnen der PC-Version. Prüfen Sie auch Ihren Spam-Ordner.",
 /* v94 · Rumbo y Certero */
 "Sensibilidad":"Empfindlichkeit",
 "Marcar también las ventas":"Auch Verkäufe markieren",
@@ -80177,6 +80240,10 @@ DIC_L.it=function(){return{
 "Todavía no ha acertado ninguna operación.":"Non ha ancora vinto nessuna operazione.",
 "Todavía no ha cerrado ninguna operación: esta cifra aparece al cerrar la primera.":"Non ha ancora chiuso nessuna operazione: questa cifra compare alla chiusura della prima.",
 "Su compra quedó confirmada, pero el correo no salió. Pulse Reenviar.":"Il suo acquisto è confermato, ma l'e-mail non è partita. Tocchi Reinviare.",
+"Correo de su plan":"E-mail del suo piano",
+"Un solo correo de Google":"Un solo indirizzo Google",
+"Su plan queda atado a este correo. En la computadora entre con ese mismo correo: es el de la cuenta de Google de su teléfono. Con otro correo no se activa, aunque le pase la aplicación a otra persona.":"Il suo piano è legato a questo indirizzo e-mail. Sul computer acceda con lo stesso indirizzo: è quello dell'account Google del suo telefono. Con un altro indirizzo non si attiva, anche se passa l'app a un'altra persona.",
+"Al comprar, le mandamos por correo el enlace para abrir la versión para PC. Revise también la bandeja de spam.":"Dopo l'acquisto le inviamo via e-mail il link per aprire la versione per PC. Controlli anche la cartella dello spam.",
 /* v94 · Rumbo y Certero */
 "Sensibilidad":"Sensibilità",
 "Marcar también las ventas":"Segna anche le vendite",
@@ -86990,6 +87057,10 @@ DIC_L.nl=function(){return{
 "Todavía no ha acertado ninguna operación.":"U hebt nog geen enkele trade gewonnen.",
 "Todavía no ha cerrado ninguna operación: esta cifra aparece al cerrar la primera.":"U hebt nog geen enkele trade gesloten: dit cijfer verschijnt zodra de eerste wordt gesloten.",
 "Su compra quedó confirmada, pero el correo no salió. Pulse Reenviar.":"Uw aankoop is bevestigd, maar de e-mail is niet verstuurd. Tik op Opnieuw sturen.",
+"Correo de su plan":"E-mailadres van uw plan",
+"Un solo correo de Google":"Slechts één Google-e-mailadres",
+"Su plan queda atado a este correo. En la computadora entre con ese mismo correo: es el de la cuenta de Google de su teléfono. Con otro correo no se activa, aunque le pase la aplicación a otra persona.":"Uw plan is gekoppeld aan dit e-mailadres. Log op de computer in met datzelfde e-mailadres: het is dat van het Google-account op uw telefoon. Met een ander e-mailadres wordt het niet geactiveerd, ook niet als u de app aan iemand anders doorgeeft.",
+"Al comprar, le mandamos por correo el enlace para abrir la versión para PC. Revise también la bandeja de spam.":"Na de aankoop mailen wij u de link om de PC-versie te openen. Controleer ook uw spammap.",
 /* v94 · Rumbo y Certero */
 "Sensibilidad":"Gevoeligheid",
 "Marcar también las ventas":"Ook verkopen markeren",
@@ -94079,6 +94150,10 @@ DIC_L.pl=function(){return{
 "Todavía no ha acertado ninguna operación.":"Żadna transakcja nie była jeszcze trafiona.",
 "Todavía no ha cerrado ninguna operación: esta cifra aparece al cerrar la primera.":"Nie zamknięto jeszcze żadnej transakcji: ta liczba pojawi się po zamknięciu pierwszej.",
 "Su compra quedó confirmada, pero el correo no salió. Pulse Reenviar.":"Zakup został potwierdzony, ale e-mail nie wyszedł. Proszę nacisnąć Wyślij ponownie.",
+"Correo de su plan":"E-mail przypisany do planu",
+"Un solo correo de Google":"Tylko jedno konto Google",
+"Su plan queda atado a este correo. En la computadora entre con ese mismo correo: es el de la cuenta de Google de su teléfono. Con otro correo no se activa, aunque le pase la aplicación a otra persona.":"Plan jest przypisany do tego adresu e-mail. Na komputerze proszę zalogować się tym samym adresem: to adres konta Google w telefonie. Z innym adresem plan się nie aktywuje, nawet jeśli aplikacja zostanie przekazana innej osobie.",
+"Al comprar, le mandamos por correo el enlace para abrir la versión para PC. Revise también la bandeja de spam.":"Po zakupie wyślemy e-mailem link do otwarcia wersji na PC. Proszę sprawdzić także folder ze spamem.",
 /* v94 · Rumbo y Certero */
 "Sensibilidad":"Czułość",
 "Marcar también las ventas":"Oznaczaj także sprzedaże",
@@ -101168,6 +101243,10 @@ DIC_L.tr=function(){return{
 "Todavía no ha acertado ninguna operación.":"Henüz hiçbir işlemde başarılı olmadınız.",
 "Todavía no ha cerrado ninguna operación: esta cifra aparece al cerrar la primera.":"Henüz hiçbir işlemi kapatmadınız: bu rakam ilk işlemi kapattığınızda görünür.",
 "Su compra quedó confirmada, pero el correo no salió. Pulse Reenviar.":"Satın alma işleminiz onaylandı, ancak e-posta gönderilemedi. Yeniden gönder düğmesine basın.",
+"Correo de su plan":"Planınızın e-postası",
+"Un solo correo de Google":"Tek bir Google e-postası",
+"Su plan queda atado a este correo. En la computadora entre con ese mismo correo: es el de la cuenta de Google de su teléfono. Con otro correo no se activa, aunque le pase la aplicación a otra persona.":"Planınız bu e-postaya bağlıdır. Bilgisayarda aynı e-postayla giriş yapın: bu, telefonunuzdaki Google hesabının e-postasıdır. Uygulamayı başka birine verseniz bile, farklı bir e-postayla etkinleşmez.",
+"Al comprar, le mandamos por correo el enlace para abrir la versión para PC. Revise también la bandeja de spam.":"Satın aldığınızda, PC sürümünü açmanız için bağlantıyı e-postayla göndeririz. Spam klasörünüze de bakın.",
 /* v94 · Rumbo y Certero */
 "Sensibilidad":"Hassasiyet",
 "Marcar también las ventas":"Satışları da işaretle",
@@ -108257,6 +108336,10 @@ DIC_L.ru=function(){return{
 "Todavía no ha acertado ninguna operación.":"Пока ни одна сделка не была успешной.",
 "Todavía no ha cerrado ninguna operación: esta cifra aparece al cerrar la primera.":"Вы ещё не закрыли ни одной сделки: эта цифра появится, когда будет закрыта первая.",
 "Su compra quedó confirmada, pero el correo no salió. Pulse Reenviar.":"Ваша покупка подтверждена, но письмо не ушло. Нажмите «Выслать снова».",
+"Correo de su plan":"Почта вашего плана",
+"Un solo correo de Google":"Только одна почта Google",
+"Su plan queda atado a este correo. En la computadora entre con ese mismo correo: es el de la cuenta de Google de su teléfono. Con otro correo no se activa, aunque le pase la aplicación a otra persona.":"Ваш план привязан к этой почте. На компьютере войдите с той же почтой: это почта аккаунта Google на вашем телефоне. С другой почтой он не активируется, даже если вы передадите приложение другому человеку.",
+"Al comprar, le mandamos por correo el enlace para abrir la versión para PC. Revise también la bandeja de spam.":"После покупки мы отправим вам по почте ссылку, чтобы открыть версию для ПК. Проверьте также папку «Спам».",
 /* v94 · Rumbo y Certero */
 "Sensibilidad":"Чувствительность",
 "Marcar también las ventas":"Отмечать и продажи",
@@ -115346,6 +115429,10 @@ DIC_L.uk=function(){return{
 "Todavía no ha acertado ninguna operación.":"Поки жодна угода не була вдалою.",
 "Todavía no ha cerrado ninguna operación: esta cifra aparece al cerrar la primera.":"Ви ще не закрили жодної угоди: ця цифра з'явиться після закриття першої.",
 "Su compra quedó confirmada, pero el correo no salió. Pulse Reenviar.":"Вашу покупку підтверджено, але лист не надіслано. Натисніть «Вислати знову».",
+"Correo de su plan":"Пошта вашого плану",
+"Un solo correo de Google":"Лише одна пошта Google",
+"Su plan queda atado a este correo. En la computadora entre con ese mismo correo: es el de la cuenta de Google de su teléfono. Con otro correo no se activa, aunque le pase la aplicación a otra persona.":"Ваш план прив'язаний до цієї пошти. На комп'ютері увійдіть із тією самою поштою: це пошта облікового запису Google на вашому телефоні. З іншою поштою він не активується, навіть якщо ви передасте застосунок іншій людині.",
+"Al comprar, le mandamos por correo el enlace para abrir la versión para PC. Revise también la bandeja de spam.":"Після покупки ми надішлемо вам на пошту посилання для відкриття версії для ПК. Перевірте також папку «Спам».",
 /* v94 · Rumbo y Certero */
 "Sensibilidad":"Чутливість",
 "Marcar también las ventas":"Позначати і продажі",
@@ -122435,6 +122522,10 @@ DIC_L.id=function(){return{
 "Todavía no ha acertado ninguna operación.":"Belum ada transaksi yang berhasil.",
 "Todavía no ha cerrado ninguna operación: esta cifra aparece al cerrar la primera.":"Anda belum menutup transaksi apa pun: angka ini muncul setelah transaksi pertama ditutup.",
 "Su compra quedó confirmada, pero el correo no salió. Pulse Reenviar.":"Pembelian Anda sudah dikonfirmasi, tetapi e-mail tidak terkirim. Tekan Kirim ulang.",
+"Correo de su plan":"Email untuk paket Anda",
+"Un solo correo de Google":"Satu email Google saja",
+"Su plan queda atado a este correo. En la computadora entre con ese mismo correo: es el de la cuenta de Google de su teléfono. Con otro correo no se activa, aunque le pase la aplicación a otra persona.":"Paket Anda terikat pada email ini. Di komputer, masuk dengan email yang sama: itu adalah email akun Google di ponsel Anda. Dengan email lain paket tidak aktif, meskipun aplikasi diberikan kepada orang lain.",
+"Al comprar, le mandamos por correo el enlace para abrir la versión para PC. Revise también la bandeja de spam.":"Setelah membeli, kami mengirim tautan untuk membuka versi PC lewat email. Periksa juga folder spam.",
 /* v94 · Rumbo y Certero */
 "Sensibilidad":"Sensitivitas",
 "Marcar también las ventas":"Tandai juga penjualan",
@@ -129524,6 +129615,10 @@ DIC_L.vi=function(){return{
 "Todavía no ha acertado ninguna operación.":"Bạn chưa có lệnh thắng nào.",
 "Todavía no ha cerrado ninguna operación: esta cifra aparece al cerrar la primera.":"Bạn chưa đóng lệnh nào: con số này sẽ hiện khi đóng lệnh đầu tiên.",
 "Su compra quedó confirmada, pero el correo no salió. Pulse Reenviar.":"Giao dịch mua của quý khách đã được xác nhận, nhưng email chưa được gửi. Hãy nhấn Gửi lại.",
+"Correo de su plan":"Email của gói của bạn",
+"Un solo correo de Google":"Chỉ một email Google",
+"Su plan queda atado a este correo. En la computadora entre con ese mismo correo: es el de la cuenta de Google de su teléfono. Con otro correo no se activa, aunque le pase la aplicación a otra persona.":"Gói của bạn gắn với email này. Trên máy tính, hãy đăng nhập bằng đúng email đó: đây là email của tài khoản Google trên điện thoại của bạn. Với email khác, gói sẽ không được kích hoạt, dù bạn có chuyển ứng dụng cho người khác.",
+"Al comprar, le mandamos por correo el enlace para abrir la versión para PC. Revise también la bandeja de spam.":"Khi mua xong, chúng tôi gửi email kèm liên kết để mở phiên bản PC. Hãy kiểm tra cả thư mục spam.",
 /* v94 · Rumbo y Certero */
 "Sensibilidad":"Độ nhạy",
 "Marcar también las ventas":"Đánh dấu cả lệnh bán",
@@ -136613,6 +136708,10 @@ DIC_L.hi=function(){return{
 "Todavía no ha acertado ninguna operación.":"अभी तक कोई ट्रेड सफल नहीं हुआ।",
 "Todavía no ha cerrado ninguna operación: esta cifra aparece al cerrar la primera.":"अभी तक कोई ट्रेड बंद नहीं हुआ है: पहला ट्रेड बंद होने पर यह आँकड़ा दिखेगा।",
 "Su compra quedó confirmada, pero el correo no salió. Pulse Reenviar.":"आपकी खरीदारी की पुष्टि हो गई है, लेकिन ईमेल नहीं गया। «दोबारा भेजें» दबाएँ।",
+"Correo de su plan":"आपके प्लान का ईमेल",
+"Un solo correo de Google":"केवल एक Google ईमेल",
+"Su plan queda atado a este correo. En la computadora entre con ese mismo correo: es el de la cuenta de Google de su teléfono. Con otro correo no se activa, aunque le pase la aplicación a otra persona.":"आपका प्लान इसी ईमेल से जुड़ा है। कंप्यूटर पर इसी ईमेल से साइन इन करें: यह आपके फ़ोन के Google खाते का ईमेल है। किसी दूसरे ईमेल से यह चालू नहीं होगा, चाहे आप ऐप किसी और को दे दें।",
+"Al comprar, le mandamos por correo el enlace para abrir la versión para PC. Revise también la bandeja de spam.":"खरीदने पर हम PC वर्ज़न खोलने का लिंक ईमेल से भेजते हैं। स्पैम फ़ोल्डर भी देखें।",
 /* v94 · Rumbo y Certero */
 "Sensibilidad":"संवेदनशीलता",
 "Marcar también las ventas":"बिक्री भी चिह्नित करें",
@@ -143702,6 +143801,10 @@ DIC_L.ja=function(){return{
 "Todavía no ha acertado ninguna operación.":"まだ勝った取引はありません。",
 "Todavía no ha cerrado ninguna operación: esta cifra aparece al cerrar la primera.":"まだ決済した取引がありません。最初の取引を決済すると、この数字が表示されます。",
 "Su compra quedó confirmada, pero el correo no salió. Pulse Reenviar.":"ご購入は確認されましたが、メールは送信されませんでした。「再送信」を押してください。",
+"Correo de su plan":"ご利用プランのメールアドレス",
+"Un solo correo de Google":"Googleメールは1つだけ",
+"Su plan queda atado a este correo. En la computadora entre con ese mismo correo: es el de la cuenta de Google de su teléfono. Con otro correo no se activa, aunque le pase la aplicación a otra persona.":"プランはこのメールアドレスに紐づきます。パソコンでは同じメールアドレスでログインしてください。お使いのスマートフォンのGoogleアカウントのメールアドレスです。別のメールアドレスでは有効になりません。アプリを他の人に渡した場合も同様です。",
+"Al comprar, le mandamos por correo el enlace para abrir la versión para PC. Revise también la bandeja de spam.":"ご購入後、PC版を開くためのリンクをメールでお送りします。迷惑メールフォルダもご確認ください。",
 /* v94 · Rumbo y Certero */
 "Sensibilidad":"感度",
 "Marcar también las ventas":"売りも表示する",
@@ -150791,6 +150894,10 @@ DIC_L.ko=function(){return{
 "Todavía no ha acertado ninguna operación.":"아직 성공한 거래가 없습니다.",
 "Todavía no ha cerrado ninguna operación: esta cifra aparece al cerrar la primera.":"아직 종료한 거래가 없습니다. 첫 거래를 종료하면 이 숫자가 나타납니다.",
 "Su compra quedó confirmada, pero el correo no salió. Pulse Reenviar.":"구매는 확인되었지만 이메일이 발송되지 않았습니다. «다시 보내기»를 누르세요.",
+"Correo de su plan":"플랜 이메일",
+"Un solo correo de Google":"Google 이메일은 하나만",
+"Su plan queda atado a este correo. En la computadora entre con ese mismo correo: es el de la cuenta de Google de su teléfono. Con otro correo no se activa, aunque le pase la aplicación a otra persona.":"플랜은 이 이메일에 연결됩니다. 컴퓨터에서도 같은 이메일로 로그인하세요. 휴대폰의 Google 계정 이메일입니다. 다른 이메일로는 활성화되지 않으며, 앱을 다른 사람에게 넘겨도 마찬가지입니다.",
+"Al comprar, le mandamos por correo el enlace para abrir la versión para PC. Revise también la bandeja de spam.":"구매하시면 PC 버전을 여는 링크를 이메일로 보내 드립니다. 스팸 폴더도 확인해 주세요.",
 /* v94 · Rumbo y Certero */
 "Sensibilidad":"민감도",
 "Marcar también las ventas":"매도도 표시",
@@ -157880,6 +157987,10 @@ DIC_L.zh=function(){return{
 "Todavía no ha acertado ninguna operación.":"还没有盈利的交易。",
 "Todavía no ha cerrado ninguna operación: esta cifra aparece al cerrar la primera.":"还没有平仓的交易：平掉第一笔后会显示该数字。",
 "Su compra quedó confirmada, pero el correo no salió. Pulse Reenviar.":"您的购买已确认，但邮件没有发出。请点按“重新发送”。",
+"Correo de su plan":"您的方案邮箱",
+"Un solo correo de Google":"只能用一个 Google 邮箱",
+"Su plan queda atado a este correo. En la computadora entre con ese mismo correo: es el de la cuenta de Google de su teléfono. Con otro correo no se activa, aunque le pase la aplicación a otra persona.":"您的方案绑定在这个邮箱上。在电脑上请用同一个邮箱登录：它就是您手机上 Google 账户的邮箱。用其他邮箱无法激活，即使把应用转给别人也一样。",
+"Al comprar, le mandamos por correo el enlace para abrir la versión para PC. Revise también la bandeja de spam.":"购买后，我们会通过邮件发送打开 PC 版的链接。请同时检查垃圾邮件文件夹。",
 /* v94 · Rumbo y Certero */
 "Sensibilidad":"灵敏度",
 "Marcar también las ventas":"同时标记卖出",
