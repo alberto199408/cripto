@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="v" content="99">
+<meta name="v" content="101">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mi Portafolio Cripto</title>
 <meta name="theme-color" content="#0A0E14">
@@ -1689,6 +1689,19 @@ body.conPc97 #aviso{z-index:10001}
 .p99l li i{flex:none;width:20px;height:20px;margin-top:1px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:800;
   background:color-mix(in srgb,var(--up) 20%,transparent);color:var(--upTx)}
 .p99l li small{display:block;margin-top:1px;font-size:12.5px;color:var(--t3);line-height:1.4}
+.p99l li.p99dest>span{font-weight:700}
+.p99tw{padding:14px 20px 0}
+.p99tw h4{margin:0 0 8px;font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--t2)}
+.p99t{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;font-size:12.5px;line-height:1.35;border:1px solid var(--ln);border-radius:12px;overflow:hidden}
+.p99t th,.p99t td{padding:8px 6px;text-align:center;vertical-align:middle;border-top:1px solid var(--ln);color:var(--t2);white-space:normal;overflow-wrap:anywhere}
+.p99t thead th{border-top:0;background:var(--b2);font-size:11.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+.p99t th:first-child,.p99t td:first-child{width:36%}
+.p99t td:first-child{text-align:left;color:var(--tx);font-weight:600;padding-left:10px}
+.p99t th.pro,.p99t td.pro{background:color-mix(in srgb,var(--ac) 10%,transparent)}
+.p99t th.pro{color:var(--acTx,var(--ac))}
+.p99t td.pro{color:var(--tx);font-weight:700}
+.p99t .p99s{color:var(--upTx);font-weight:800;font-size:14px}
+.p99t .p99n{color:var(--t3)}
 .p99pl{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 20px 4px}
 .p99pc{position:relative;text-align:left;font:inherit;cursor:pointer;padding:12px 12px 11px;border-radius:13px;border:1px solid var(--ln);background:var(--b2);color:var(--tx)}
 .p99pc.on{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac) inset;background:color-mix(in srgb,var(--ac) 10%,var(--b2))}
@@ -7305,10 +7318,14 @@ function pedirRefresco(){
 }
 function ponTexto(el, txt, clase){
   if(!el) return;
+  /* v100 · con el ojo cerrado la cifra escondida se escribe YA sin signo y en gris: así el texto es igual al de la vez anterior,
+     no se vuelve a pintar nada y no hay destello verde/rojo cada vez que cambia el precio */
+  var oc=false;
+  if(OJO97.oculto && typeof txt==="string" && txt.indexOf("****")>=0){ txt=ojo97SinSigno(txt); oc=true; }
   if(el.textContent!==txt){
     el.textContent=txt;
     var s=el.getAttribute("data-s");
-    var t=s?TIC[s]:0;
+    var t=(s && !oc)?TIC[s]:0;
     if(t){
       el.classList.remove("sb","bj");
       void el.offsetWidth;
@@ -7318,9 +7335,10 @@ function ponTexto(el, txt, clase){
   }
   if(clase!=null){
     var base=el.getAttribute("data-cls")||"";
-    var nueva=(base+" "+clase).trim();
+    var nueva=(base+" "+clase+(oc?" oc97":"")).trim();
     if(el.className!==nueva) el.className=nueva;
   }
+  else if(oc && el.classList && !el.classList.contains("oc97")) el.classList.add("oc97");
 }
 function refrescarVivos(){
   var S=null, F=null, B=null, TD=null, G=null;
@@ -50109,7 +50127,7 @@ function pintarDat(){
 /* =====================================================================
    INSTALAR · que quede UNA sola aplicación, sin archivos sueltos
    ===================================================================== */
-var INSTALAR={evento:null};
+var INSTALAR={evento:null, tarde:false};      /* v101 · tarde: pasaron 3 s y el navegador no ofreció instalar */
 /* El programa es UN SOLO ARCHIVO. Desde el disco no hace falta nada más.
    Solo cuando corre desde internet se engancha el manifiesto, que es lo que
    le permite al teléfono (y a Chrome en la PC) instalarlo como aplicación. */
@@ -50125,12 +50143,16 @@ function prepararInstalar(){
   window.addEventListener("beforeinstallprompt", function(e){
     e.preventDefault(); INSTALAR.evento=e;
     if(typeof vista!=="undefined"&&vista==="dat") pintarDat();
+    try{ pc97InstCambio(); }catch(x){}      /* v101 · si la pantalla de entrada de la PC ya está puesta, le sale el botón */
   });
   window.addEventListener("appinstalled", function(){
     INSTALAR.evento=null;
     aviso("Listo. El programa quedó instalado como aplicación, con su icono.");
     if(typeof vista!=="undefined"&&vista==="dat") pintarDat();
+    try{ pc97InstaladaAhora(); }catch(x){}
   });
+  /* v101 · si en 3 s el navegador no ofreció instalar (Firefox, Safari, o ya instalada), la pantalla de entrada de la PC dice cómo hacerlo a mano */
+  setTimeout(function(){ INSTALAR.tarde=true; try{ pc97InstCambio(); }catch(x){} }, 3000);
 }
 function yaInstalado(){
   try{
@@ -50283,7 +50305,14 @@ function pc97Pantalla(tipo, d){
     case "cargando":
       return {t:"Comprobando su cuenta…", p:["Un momento."], b:[]};
     case "login":
+      /* v101 · lo primero que ve el cliente: instalar (un clic) y luego entrar. d.inst: "boton" = el navegador ofrece instalar · "pista" = no lo ofrece, se dice cómo · "" = todavía no se sabe */
+      if(d.inst==="boton") return {t:"Versión para PC", p:["Primero instale el programa en su computadora: un solo clic, y queda con su propio icono.", "Después, inicie sesión con su cuenta de Google."],
+              b:[{id:"instalar", tx:"Instalar como aplicación", ac:1}, {id:"entrar", tx:"Iniciar sesión con Google"}]};
+      if(d.inst==="pista") return {t:"Versión para PC", p:["Para abrir la versión para PC, inicie sesión con su cuenta de Google.", "Para instalar el programa, abra este enlace en Chrome o Edge y pulse el icono de instalar que sale al final de la barra de direcciones. Si ya lo instaló, ábralo desde su icono."],
+              b:[{id:"entrar", tx:"Iniciar sesión con Google", ac:1}]};
       return {t:"Versión para PC", p:["Para abrir la versión para PC, inicie sesión con su cuenta de Google."], b:[{id:"entrar", tx:"Iniciar sesión con Google", ac:1}]};
+    case "instalada":
+      return {t:"Ya está instalado", p:["Ábralo desde su icono nuevo y entre con su cuenta de Google. Ya puede cerrar esta pestaña."], b:[{id:"seguir", tx:"Seguir aquí, en el navegador"}]};
     case "sinInternet":
       return {t:"Sin conexión", p:["Para abrir la versión para PC en este equipo hace falta conectarse a internet una vez."], b:[{id:"reintentar", tx:"Reintentar", ac:1}]};
     case "vencido":
@@ -50304,7 +50333,7 @@ function pc97Pantalla(tipo, d){
       return {t:"No se pudo comprobar su cuenta", p:["Inténtelo otra vez en unos minutos. Si sigue igual, escriba a {correo}."], correoSop:PC97.soporte, b:[{id:"reintentar", tx:"Reintentar", ac:1}]};
   }
 }
-function pc97TodasLasPantallas(){ return ["login","cuenta","suscripcion","equipos","vencido","hora","sinInternet","reembolso","error"]; }
+function pc97TodasLasPantallas(){ return ["login","instalada","cuenta","suscripcion","equipos","vencido","hora","sinInternet","reembolso","error"]; }
 /* el texto de una pantalla ya traducido y con sus huecos llenos */
 function pc97Frase(f, P){
   var s=tr(f);
@@ -50333,6 +50362,7 @@ function pc97HtmlPantalla(P, vista){
 }
 /* la pantalla que tapa todo (solo en la PC, solo si la cuenta no tiene permiso) */
 function pc97Mostrar(tipo, d){
+  if(tipo==="login"){ d=d||{}; if(d.inst===undefined) d.inst=pc97InstEstado(); }      /* v101 */
   var P=pc97Pantalla(tipo, d), g=document.getElementById("pc97Gate");
   if(!g){
     g=document.createElement("div"); g.id="pc97Gate"; g.setAttribute("role","dialog"); g.setAttribute("aria-modal","true");
@@ -50474,7 +50504,7 @@ function pc97CompradoHtml(E, recien){
   var h="";
   if(recien) h+=pc97AvisoCorreo();
   h+='<p class="pc97p">'+esc(tr("Ya tiene la versión para PC."))+'</p>'+
-     '<p class="pc97p">'+esc(tr("Ábrala en su computadora con este enlace e inicie sesión con la misma cuenta de Google."))+'</p>'+
+     '<p class="pc97p">'+esc(tr("Ábrala en su computadora con este enlace, pulse «Instalar como aplicación» e inicie sesión con la misma cuenta de Google."))+'</p>'+
      '<div class="pc97url"><input type="text" readonly value="'+esc(pc97Enlace())+'" aria-label="'+esc(tr("Enlace"))+'"><button type="button" class="b sm" data-pc97="copiar">'+esc(tr("Copiar enlace"))+'</button></div>'+
      '<div class="fsec">'+esc(tr("Mis computadoras"))+'</div><div class="pc97eq">'+
      (E.equipos||[]).map(function(e){
@@ -50551,11 +50581,37 @@ function pc97Previa(){
     '<div class="fsec">4 · Pantallas que tapan la PC cuando la cuenta no puede abrir</div>';
   var ej={equipos:[{id:"x1", nombre:"Windows · Chrome", visto:Date.now()-36e5}, {id:"x2", nombre:"Windows · Edge", visto:Date.now()-5*864e5}]};
   pc97TodasLasPantallas().forEach(function(t){
+    if(t==="login"){      /* v101 · la de entrada tiene tres caras: con botón de instalar, con la pista y la de antes de saber */
+      ["boton","pista",""].forEach(function(i){ h+='<div class="pc97prev"><div class="pc97caja">'+pc97HtmlPantalla(pc97Pantalla(t, {correo:"persona@gmail.com", inst:i}), true)+'</div></div>'; });
+      return;
+    }
     h+='<div class="pc97prev"><div class="pc97caja">'+pc97HtmlPantalla(pc97Pantalla(t, t==="equipos"?ej:{correo:"persona@gmail.com"}), true)+'</div></div>';
   });
   h+='</div><div class="hf"><button class="b" data-cerrar>Cerrar</button></div></div>';
   abrir(h);
   try{ [].forEach.call(document.querySelectorAll(".pc97prev button"), function(b){ b.disabled=true; }); }catch(e){}
+}
+/* ---------- v101 · instalar desde la pantalla de entrada de la PC ---------- */
+/* "boton": el navegador ya ofreció instalar · "pista": no lo ofreció (pasaron 3 s o la persona dijo que no) · "": todavía no se sabe, o ya está instalada (no se ofrece nada) */
+function pc97InstEstado(){
+  try{
+    if(yaInstalado()) return "";
+    if(INSTALAR.evento) return "boton";
+    return INSTALAR.tarde ? "pista" : "";
+  }catch(e){ return ""; }
+}
+function pc97InstCambio(){ if(PC97.gate==="login") pc97Mostrar("login"); }
+function pc97InstaladaAhora(){ if(PC97.gate==="login" || PC97.gate==="instalada") pc97Mostrar("instalada"); }
+/* el clic del botón: el navegador EXIGE que la persona toque, por eso llama a prompt() aquí mismo, sin esperar nada */
+function pc97Instalar(){
+  var e=INSTALAR.evento;
+  if(!e){ INSTALAR.tarde=true; pc97InstCambio(); return; }
+  INSTALAR.evento=null;
+  var no=function(){ INSTALAR.tarde=true; pc97InstCambio(); };      /* dijo que no, o falló: la pantalla pasa a la pista */
+  try{
+    e.prompt();
+    e.userChoice.then(function(r){ if(!r || r.outcome!=="accepted") no(); }, no);
+  }catch(x){ no(); }
 }
 /* ---------- los toques ---------- */
 function pc97Toque(ev){
@@ -50569,6 +50625,8 @@ function pc97Toque(ev){
     else if(typeof entrarConGoogle==="function") entrarConGoogle();
   }
   else if(a==="reintentar") pc97Revisar();
+  else if(a==="instalar") pc97Instalar();
+  else if(a==="seguir") pc97Revisar();
   else if(a==="quitar") pc97Quitar(b.getAttribute("data-eq"));
   else if(a==="reenviar") pc97Llamar("/reenviar", {idioma:pc97Idioma()}).then(function(r){ aviso(esc(tr(r && r.http===200 ? "Enlace reenviado. Revise su bandeja de entrada y también la de spam." : "No se pudo reenviar ahora. Inténtelo en un rato.")), !(r && r.http===200)); });
   else if(a==="copiar"){ try{ navigator.clipboard.writeText(pc97Enlace()).then(function(){ aviso(esc(tr("Enlace copiado."))); }); }catch(e){} }
@@ -50594,7 +50652,7 @@ function pc97Iniciar(){
 
 /* =====================================================================
    v99 · PLAN GRATIS + PLAN PRO (Luis, 26 oct 15:14 → 15:24)
-   La aplicación es GRATIS. Una sola suscripción, «Pro», con la versión para PC incluida: US$2,49 al mes o US$16,99 al año, con 7 días de prueba gratis.
+   La aplicación es GRATIS. Una sola suscripción, «Pro», con la versión para PC incluida: US$2,49 al mes o US$16,99 al año, con 3 días de prueba gratis.
      GRATIS: portafolio, Spot, Futuros (registro y calculadora), alertas, dibujo, ojito, 16 idiomas, sincronización, hasta 3 indicadores a la vez,
              leer todos los patrones y trazarlos a mano.
      PRO:    Backtesting (la pestaña y el botón «Repetir» de las gráficas), patrones chartistas automáticos (buscarlos y dibujarlos solos),
@@ -50609,7 +50667,7 @@ var IC_CAND99='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 var PLAN99={
   precio:{mes:"US$2,49", anio:"US$16,99"},          /* de reserva: el precio de verdad lo manda Google Play */
   num:{mes:2.49, anio:16.99},
-  prueba:7,                                          /* días gratis */
+  prueba:3,                                          /* días gratis (v100: 3; la oferta en Play Console debe decir lo mismo) */
   skus:{mes:"pro_mensual", anio:"pro_anual"},        /* los dos productos de suscripción que se crean en Play Console */
   gratisInd:3,                                       /* indicadores a la vez en el plan gratis */
   elegido:"anio", gp:null, forzar:false, cache:null, cacheT:0
@@ -50754,10 +50812,28 @@ function plan99MotivoTxt(m){
     ind:"Ya tiene 3 indicadores en la gráfica: es el máximo del plan gratis. Con Pro puede poner todos los que quiera a la vez.",
     pat:"Buscar los patrones y dibujarlos solos en la gráfica es parte de Pro. Leerlos y trazarlos a mano sigue siendo gratis.",
     back:"Backtesting y el botón Repetir son parte de Pro: practique con las velas del pasado sin poner un centavo de verdad.",
+    excel:"Descargar el Excel con todo su historial es parte de Pro. El PDF, imprimir y la copia de seguridad siguen siendo gratis.",
     pc:"La versión para PC viene incluida con Pro.",
     gen:"Todo lo del plan gratis sigue siendo suyo. Pro agrega esto:"
   };
   return tr(T[m] || T.gen);
+}
+/* v100 · Gratis frente a Pro, fila por fila. Cada fila dice la verdad de lo que hace hoy la aplicación (el PDF, imprimir y la copia siguen siendo gratis). */
+function plan99Tabla(){
+  var si='<span class="p99s">✓</span>', no='<span class="p99n">—</span>';
+  var F=[
+    [tr("Portafolio, Spot y Futuros"), si, si],
+    [tr("Alertas de precio"), si, si],
+    [tr("Gráficas con dibujo a mano"), si, si],
+    [tr("Indicadores a la vez"), esc(tr("Hasta 3")), esc(tr("Todos"))],
+    [tr("Patrones chartistas"), esc(tr("Leer y trazar a mano")), esc(tr("Más de 100 automáticos"))],
+    [tr("Backtesting"), no, si],
+    ["Excel", no, si],
+    [tr("PDF y copia de seguridad"), si, si],
+    [tr("Versión para PC"), no, si]
+  ];
+  return '<div class="p99tw"><h4>'+esc(tr("Qué incluye cada plan"))+'</h4><table class="p99t"><thead><tr><th></th><th>'+esc(tr("Gratis"))+'</th><th class="pro">Pro</th></tr></thead><tbody>'+
+    F.map(function(f){ return '<tr><td>'+esc(f[0])+'</td><td>'+f[1]+'</td><td class="pro">'+f[2]+'</td></tr>'; }).join("")+'</tbody></table></div>';
 }
 function plan99PlanesHtml(){
   var ah=plan99Ahorro(), t=PLAN99.elegido;
@@ -50776,9 +50852,11 @@ function plan99Pedir(motivo){
     '<div class="p99ic">'+IC_PRO99+'</div><h3>'+esc(tr("Mi Portafolio Cripto"))+' <b>Pro</b></h3><p>'+esc(plan99MotivoTxt(motivo))+'</p></div>'+
     '<ul class="p99l">'+
     '<li><i>✓</i><span>'+esc(tr("Backtesting"))+'<small>'+esc(tr("Practique con las velas del pasado, sin arriesgar nada"))+'</small></span></li>'+
-    '<li><i>✓</i><span>'+esc(tr("Patrones chartistas automáticos"))+'<small>'+esc(tr("La aplicación los busca y los dibuja por usted"))+'</small></span></li>'+
+    '<li class="p99dest"><i>✓</i><span>'+esc(tr("Más de 100 patrones chartistas automáticos"))+'<small>'+esc(tr("La aplicación los busca y los dibuja por usted"))+'</small></span></li>'+
     '<li><i>✓</i><span>'+esc(tr("Todos los indicadores a la vez"))+'<small>'+esc(tr("En el plan gratis, hasta 3"))+'</small></span></li>'+
+    '<li><i>✓</i><span>'+esc(tr("Excel con todo su historial"))+'<small>'+esc(tr("Descargue sus movimientos y operaciones en una hoja de cálculo"))+'</small></span></li>'+
     '<li><i>✓</i><span>'+esc(tr("Versión para PC incluida"))+'<small>'+esc(tr("Con su misma cuenta de Google, en hasta 2 computadoras"))+'</small></span></li></ul>'+
+    plan99Tabla()+
     plan99Aviso()+
     '<div class="p99pl" id="p99Planes" role="radiogroup">'+plan99PlanesHtml()+'</div>'+
     '<div class="p99pie"><b>'+esc(tr("Pruebe {n} días gratis.").replace("{n}", PLAN99.prueba))+'</b> '+esc(tr("Después se cobra solo, y puede cancelar cuando quiera en Google Play."))+' '+
@@ -50866,7 +50944,7 @@ function plan99Pintar(){
     }
     h+=(E.practica ? '<div class="nota ojo"><b>Suscripción de práctica.</b> No se cobró nada ni se mandó ningún correo; sirve para ver cómo queda.</div>' : '')+
        '<p class="pc97p"><b>'+esc(tr("Tiene Pro"))+(E.tipo ? ' · '+esc(tr(E.tipo==="mes" ? "Mensual" : "Anual")) : '')+'.</b> '+esc(linea)+'</p>'+
-       '<p class="pc97p">'+esc(tr("Incluye Backtesting, los patrones automáticos, todos los indicadores y la versión para PC."))+'</p>'+
+       '<p class="pc97p">'+esc(tr("Incluye Backtesting, más de 100 patrones automáticos, todos los indicadores, Excel y la versión para PC."))+'</p>'+
        '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:6px">'+
        (E.practica ? '<button type="button" class="b" data-p99="pracBorrar">Borrar la suscripción de práctica</button>'
                    : '<a class="b" href="https://play.google.com/store/account/subscriptions" target="_blank" rel="noopener">'+esc(tr("Administrar o cancelar en Google Play"))+'</a>')+
@@ -50878,7 +50956,7 @@ function plan99Pintar(){
     if(fin && n==="gratis") h+='<div class="nota ojo"><b>'+esc(tr(fin==="reembolsada" ? "Pro está desactivado" : "Su suscripción a Pro terminó"))+'.</b> '+
       esc(tr(fin==="reembolsada" ? "Google devolvió su suscripción. No se borró nada: sus indicadores, patrones y pruebas siguen guardados." : "No se borró nada: sus indicadores, patrones y pruebas siguen guardados y vuelven apenas renueve Pro."))+'</div>';
     h+='<p class="pc97p">'+esc(tr("Tiene el plan gratis: portafolio, Spot, Futuros, alertas, dibujo y hasta 3 indicadores a la vez."))+'</p>'+
-       '<p class="pc97p"><b>'+esc(tr("Con Pro"))+':</b> '+esc(tr("Backtesting, patrones chartistas automáticos, todos los indicadores a la vez y la versión para PC."))+'</p>'+
+       '<p class="pc97p"><b>'+esc(tr("Con Pro"))+':</b> '+esc(tr("Backtesting, más de 100 patrones chartistas automáticos, todos los indicadores a la vez, Excel y la versión para PC."))+'</p>'+
        '<p class="pc97p" translate="no"><b>'+esc(plan99PrecioTxt("mes"))+'</b> '+esc(tr("al mes"))+' · <b>'+esc(plan99PrecioTxt("anio"))+'</b> '+esc(tr("al año"))+'</p>'+
        '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:6px"><button type="button" class="b ac" data-p99="ver" data-m="gen">'+esc(tr("Ver Pro"))+' · '+esc(tr("{n} días gratis").replace("{n}", PLAN99.prueba))+'</button></div>';
   }
@@ -51636,17 +51714,23 @@ function ojo97Boton(){
   b.className="b sm ojo97"+(OJO97.oculto?" cerrado":"");
 }
 /* con el ojo cerrado: quita el signo que quedaba pegado («+$****» → «$****») y pinta en gris lo escondido, para que no se note si es ganancia o pérdida */
-function ojo97Marcar(){
+function ojo97SinSigno(v){ return v.replace(/(^|[\s(\u00b7])[+\u2212-](?=[^\d\s+\u2212-]{0,4}\*{4})/g,"$1"); }
+function ojo97Nodo(t){
+  var v=t.nodeValue; if(!v || v.indexOf("****")<0) return;
+  var nv=ojo97SinSigno(v);
+  if(nv!==v) t.nodeValue=nv;
+  var p=t.parentNode;
+  if(p && p.nodeType===1 && !p.children.length && !p.classList.contains("oc97")) p.classList.add("oc97");
+}
+/* v100 · sin argumento revisa toda la pantalla; con un nodo, solo lo que cambió (así puede correr en cada cambio, antes de pintar) */
+function ojo97Marcar(desde){
   if(!OJO97.oculto) return;
-  var raiz=document.getElementById("app"); if(!raiz) return;
+  var raiz=desde||document.getElementById("app"); if(!raiz) return;
+  if(raiz.nodeType===3){ ojo97Nodo(raiz); return; }
+  if(raiz.nodeType!==1) return;
   var w=document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT, null), n, lista=[];
   while((n=w.nextNode())){ if(n.nodeValue && n.nodeValue.indexOf("****")>=0) lista.push(n); }
-  lista.forEach(function(t){
-    var v=t.nodeValue, nv=v.replace(/(^|[\s(\u00b7])[+\u2212-](?=[^\d\s+\u2212-]{0,4}\*{4})/g,"$1");
-    if(nv!==v) t.nodeValue=nv;
-    var p=t.parentNode;
-    if(p && p.nodeType===1 && !p.children.length && !p.classList.contains("oc97")) p.classList.add("oc97");
-  });
+  lista.forEach(ojo97Nodo);
 }
 function ojo97Limpiar(){
   [].slice.call(document.querySelectorAll(".oc97")).forEach(function(e){ e.classList.remove("oc97"); });
@@ -51667,10 +51751,18 @@ function ojo97Iniciar(){
   ojo97Boton();
   var raiz=document.getElementById("app");
   if(raiz && typeof MutationObserver==="function"){
-    new MutationObserver(function(){
-      if(!OJO97.oculto || OJO97_T) return;
-      OJO97_T=setTimeout(function(){ OJO97_T=0; try{ ojo97Marcar(); }catch(e){} }, 90);
-    }).observe(raiz,{childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:["class"]});
+    /* v100 · ya no espera 90 ms: el aviso del navegador llega ANTES de pintar, así que el signo y el color nunca llegan a verse */
+    var mo=new MutationObserver(function(recs){
+      if(!OJO97.oculto) return;
+      try{
+        recs.forEach(function(r){
+          if(r.type==="childList"){ [].forEach.call(r.addedNodes, function(n){ ojo97Marcar(n); }); }
+          else ojo97Marcar(r.target);
+        });
+      }catch(e){}
+      try{ mo.takeRecords(); }catch(e){}   /* lo que cambió la propia limpieza no hay que volver a revisarlo */
+    });
+    mo.observe(raiz,{childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:["class"]});
   }
   /* lo que se baja, se imprime o se manda como informe sale con las cifras reales aunque el ojo esté cerrado */
   ["textoCelda","htmlInforme","armarXlsx","datosInforme"].forEach(function(nom){
@@ -52443,6 +52535,7 @@ function armarXlsx(R){
 }
 var XLSX_OCUPADO=false;
 function exportarExcel(){
+  if(typeof plan99Bloq==="function" && plan99Bloq("excel")) return Promise.resolve(false);      /* v100 · el Excel es de Pro (PDF, imprimir y «Descargar copia» siguen gratis) */
   if(XLSX_OCUPADO) return Promise.resolve(false);
   XLSX_OCUPADO=true;
   var R;
@@ -53375,6 +53468,30 @@ function dicPerezoso90(){
 }
 
 DIC_L.en=function(){return{
+/* v101 · instalar desde la entrada de la PC */
+"Primero instale el programa en su computadora: un solo clic, y queda con su propio icono.":"First, install the program on your computer: one click, and it gets its own icon.",
+"Después, inicie sesión con su cuenta de Google.":"Then, sign in with your Google account.",
+"Ya está instalado":"It's installed",
+"Ábralo desde su icono nuevo y entre con su cuenta de Google. Ya puede cerrar esta pestaña.":"Open it from its new icon and sign in with your Google account. You can now close this tab.",
+"Seguir aquí, en el navegador":"Stay here, in the browser",
+"Para instalar el programa, abra este enlace en Chrome o Edge y pulse el icono de instalar que sale al final de la barra de direcciones. Si ya lo instaló, ábralo desde su icono.":"To install the program, open this link in Chrome or Edge and click the install icon at the end of the address bar. If you already installed it, open it from its icon.",
+"Ábrala en su computadora con este enlace, pulse «Instalar como aplicación» e inicie sesión con la misma cuenta de Google.":"Open it on your computer with this link, click “Install as an application”, and sign in with the same Google account.",
+/* v100 · hoja Pro más completa, Excel en Pro */
+"Más de 100 patrones chartistas automáticos":"Over 100 automatic chart patterns",
+"Excel con todo su historial":"Excel with your full history",
+"Descargue sus movimientos y operaciones en una hoja de cálculo":"Download your movements and trades as a spreadsheet",
+"Qué incluye cada plan":"What each plan includes",
+"Gratis":"Free",
+"Portafolio, Spot y Futuros":"Portfolio, Spot and Futures",
+"Gráficas con dibujo a mano":"Charts with freehand drawing",
+"Indicadores a la vez":"Indicators at once",
+"Hasta 3":"Up to 3",
+"Leer y trazar a mano":"Read and draw by hand",
+"Más de 100 automáticos":"Over 100 automatic",
+"PDF y copia de seguridad":"PDF and backup",
+"Descargar el Excel con todo su historial es parte de Pro. El PDF, imprimir y la copia de seguridad siguen siendo gratis.":"Downloading the Excel with your full history is part of Pro. The PDF, printing and backup are still free.",
+"Incluye Backtesting, más de 100 patrones automáticos, todos los indicadores, Excel y la versión para PC.":"Includes Backtesting, over 100 automatic chart patterns, all indicators, Excel and the PC version.",
+"Backtesting, más de 100 patrones chartistas automáticos, todos los indicadores a la vez, Excel y la versión para PC.":"Backtesting, over 100 automatic chart patterns, all indicators at once, Excel and the PC version.",
 /* v99 · suscripción Pro y avisos */
 "Administrar o cancelar en Google Play":"Manage or cancel on Google Play",
 "Ahorra {n} %":"Save {n} %",
@@ -60277,6 +60394,30 @@ DIC_L.en=function(){return{
 };};;
 /* PORTUGUÊS · # = número que o programa coloca · @ = símbolo de uma moeda */
 DIC_L.pt=function(){return{
+/* v101 · instalar desde la entrada de la PC */
+"Primero instale el programa en su computadora: un solo clic, y queda con su propio icono.":"Primeiro, instale o programa no seu computador: um só clique, e ele fica com o próprio ícone.",
+"Después, inicie sesión con su cuenta de Google.":"Depois, entre com a sua conta do Google.",
+"Ya está instalado":"Já está instalado",
+"Ábralo desde su icono nuevo y entre con su cuenta de Google. Ya puede cerrar esta pestaña.":"Abra-o pelo novo ícone e entre com a sua conta do Google. Já pode fechar esta aba.",
+"Seguir aquí, en el navegador":"Continuar aqui, no navegador",
+"Para instalar el programa, abra este enlace en Chrome o Edge y pulse el icono de instalar que sale al final de la barra de direcciones. Si ya lo instaló, ábralo desde su icono.":"Para instalar o programa, abra este link no Chrome ou no Edge e clique no ícone de instalar que aparece no fim da barra de endereços. Se já o instalou, abra-o pelo ícone.",
+"Ábrala en su computadora con este enlace, pulse «Instalar como aplicación» e inicie sesión con la misma cuenta de Google.":"Abra-a no seu computador com este link, clique em «Instalar como aplicativo» e entre com a mesma conta do Google.",
+/* v100 · hoja Pro más completa, Excel en Pro */
+"Más de 100 patrones chartistas automáticos":"Mais de 100 padrões gráficos automáticos",
+"Excel con todo su historial":"Excel com todo o seu histórico",
+"Descargue sus movimientos y operaciones en una hoja de cálculo":"Baixe seus movimentos e operações em uma planilha",
+"Qué incluye cada plan":"O que cada plano inclui",
+"Gratis":"Grátis",
+"Portafolio, Spot y Futuros":"Carteira, Spot e Futuros",
+"Gráficas con dibujo a mano":"Gráficos com desenho à mão",
+"Indicadores a la vez":"Indicadores ao mesmo tempo",
+"Hasta 3":"Até 3",
+"Leer y trazar a mano":"Ler e traçar à mão",
+"Más de 100 automáticos":"Mais de 100 automáticos",
+"PDF y copia de seguridad":"PDF e cópia de segurança",
+"Descargar el Excel con todo su historial es parte de Pro. El PDF, imprimir y la copia de seguridad siguen siendo gratis.":"Baixar o Excel com todo o seu histórico faz parte do Pro. O PDF, a impressão e a cópia de segurança continuam grátis.",
+"Incluye Backtesting, más de 100 patrones automáticos, todos los indicadores, Excel y la versión para PC.":"Inclui Backtesting, mais de 100 padrões gráficos automáticos, todos os indicadores, Excel e a versão para PC.",
+"Backtesting, más de 100 patrones chartistas automáticos, todos los indicadores a la vez, Excel y la versión para PC.":"Backtesting, mais de 100 padrões gráficos automáticos, todos os indicadores ao mesmo tempo, Excel e a versão para PC.",
 /* v99 · suscripción Pro y avisos */
 "Administrar o cancelar en Google Play":"Gerenciar ou cancelar no Google Play",
 "Ahorra {n} %":"Economize {n} %",
@@ -67172,6 +67313,30 @@ DIC_L.pt=function(){return{
 };};;
 /* FRANÇAIS · # = un nombre que le programme place · @ = le symbole d'une monnaie */
 DIC_L.fr=function(){return{
+/* v101 · instalar desde la entrada de la PC */
+"Primero instale el programa en su computadora: un solo clic, y queda con su propio icono.":"Commencez par installer le programme sur votre ordinateur : un seul clic, et il aura sa propre icône.",
+"Después, inicie sesión con su cuenta de Google.":"Ensuite, connectez-vous avec votre compte Google.",
+"Ya está instalado":"Installation terminée",
+"Ábralo desde su icono nuevo y entre con su cuenta de Google. Ya puede cerrar esta pestaña.":"Ouvrez-le depuis sa nouvelle icône et connectez-vous avec votre compte Google. Vous pouvez maintenant fermer cet onglet.",
+"Seguir aquí, en el navegador":"Rester ici, dans le navigateur",
+"Para instalar el programa, abra este enlace en Chrome o Edge y pulse el icono de instalar que sale al final de la barra de direcciones. Si ya lo instaló, ábralo desde su icono.":"Pour installer le programme, ouvrez ce lien dans Chrome ou Edge et cliquez sur l'icône d'installation à l'extrémité de la barre d'adresse. Si vous l'avez déjà installé, ouvrez-le depuis son icône.",
+"Ábrala en su computadora con este enlace, pulse «Instalar como aplicación» e inicie sesión con la misma cuenta de Google.":"Ouvrez-la sur votre ordinateur avec ce lien, cliquez sur « Installer comme application » et connectez-vous avec le même compte Google.",
+/* v100 · hoja Pro más completa, Excel en Pro */
+"Más de 100 patrones chartistas automáticos":"Plus de 100 figures chartistes automatiques",
+"Excel con todo su historial":"Excel avec tout votre historique",
+"Descargue sus movimientos y operaciones en una hoja de cálculo":"Téléchargez vos mouvements et opérations dans un tableur",
+"Qué incluye cada plan":"Ce que comprend chaque formule",
+"Gratis":"Gratuit",
+"Portafolio, Spot y Futuros":"Portefeuille, Spot et Futures",
+"Gráficas con dibujo a mano":"Graphiques avec dessin à la main",
+"Indicadores a la vez":"Indicateurs en même temps",
+"Hasta 3":"Jusqu'à 3",
+"Leer y trazar a mano":"Lire et tracer à la main",
+"Más de 100 automáticos":"Plus de 100 automatiques",
+"PDF y copia de seguridad":"PDF et copie de sauvegarde",
+"Descargar el Excel con todo su historial es parte de Pro. El PDF, imprimir y la copia de seguridad siguen siendo gratis.":"Télécharger le fichier Excel avec tout votre historique fait partie de Pro. Le PDF, l'impression et la copie de sauvegarde restent gratuits.",
+"Incluye Backtesting, más de 100 patrones automáticos, todos los indicadores, Excel y la versión para PC.":"Comprend Backtesting, plus de 100 figures chartistes automatiques, tous les indicateurs, Excel et la version PC.",
+"Backtesting, más de 100 patrones chartistas automáticos, todos los indicadores a la vez, Excel y la versión para PC.":"Backtesting, plus de 100 figures chartistes automatiques, tous les indicateurs en même temps, Excel et la version PC.",
 /* v99 · suscripción Pro y avisos */
 "Administrar o cancelar en Google Play":"Gérer ou annuler sur Google Play",
 "Ahorra {n} %":"Économisez {n} %",
@@ -74067,6 +74232,30 @@ DIC_L.fr=function(){return{
 };};;
 /* DEUTSCH · # = eine Zahl, die das Programm einsetzt · @ = das Kürzel einer Münze */
 DIC_L.de=function(){return{
+/* v101 · instalar desde la entrada de la PC */
+"Primero instale el programa en su computadora: un solo clic, y queda con su propio icono.":"Installieren Sie zuerst das Programm auf Ihrem Computer: ein Klick genügt, und es bekommt ein eigenes Symbol.",
+"Después, inicie sesión con su cuenta de Google.":"Melden Sie sich danach mit Ihrem Google-Konto an.",
+"Ya está instalado":"Installiert",
+"Ábralo desde su icono nuevo y entre con su cuenta de Google. Ya puede cerrar esta pestaña.":"Öffnen Sie es über das neue Symbol und melden Sie sich mit Ihrem Google-Konto an. Sie können diesen Tab jetzt schließen.",
+"Seguir aquí, en el navegador":"Hier im Browser bleiben",
+"Para instalar el programa, abra este enlace en Chrome o Edge y pulse el icono de instalar que sale al final de la barra de direcciones. Si ya lo instaló, ábralo desde su icono.":"Um das Programm zu installieren, öffnen Sie diesen Link in Chrome oder Edge und klicken Sie auf das Installationssymbol am Ende der Adressleiste. Falls Sie es schon installiert haben, öffnen Sie es über sein Symbol.",
+"Ábrala en su computadora con este enlace, pulse «Instalar como aplicación» e inicie sesión con la misma cuenta de Google.":"Öffnen Sie sie auf Ihrem Computer mit diesem Link, klicken Sie auf „Als Anwendung installieren“ und melden Sie sich mit demselben Google-Konto an.",
+/* v100 · hoja Pro más completa, Excel en Pro */
+"Más de 100 patrones chartistas automáticos":"Mehr als 100 automatische Chartmuster",
+"Excel con todo su historial":"Excel mit Ihrem gesamten Verlauf",
+"Descargue sus movimientos y operaciones en una hoja de cálculo":"Laden Sie Ihre Bewegungen und Trades als Tabelle herunter",
+"Qué incluye cada plan":"Was jeder Plan enthält",
+"Gratis":"Kostenlos",
+"Portafolio, Spot y Futuros":"Portfolio, Spot und Futures",
+"Gráficas con dibujo a mano":"Charts zum Zeichnen von Hand",
+"Indicadores a la vez":"Indikatoren gleichzeitig",
+"Hasta 3":"Bis zu 3",
+"Leer y trazar a mano":"Lesen und von Hand zeichnen",
+"Más de 100 automáticos":"Mehr als 100, automatisch",
+"PDF y copia de seguridad":"PDF und Sicherungskopie",
+"Descargar el Excel con todo su historial es parte de Pro. El PDF, imprimir y la copia de seguridad siguen siendo gratis.":"Der Download der Excel-Datei mit Ihrem gesamten Verlauf ist Teil von Pro. PDF, Drucken und Sicherungskopie bleiben kostenlos.",
+"Incluye Backtesting, más de 100 patrones automáticos, todos los indicadores, Excel y la versión para PC.":"Enthält Backtesting, mehr als 100 automatische Chartmuster, alle Indikatoren, Excel und die PC-Version.",
+"Backtesting, más de 100 patrones chartistas automáticos, todos los indicadores a la vez, Excel y la versión para PC.":"Backtesting, mehr als 100 automatische Chartmuster, alle Indikatoren gleichzeitig, Excel und die PC-Version.",
 /* v99 · suscripción Pro y avisos */
 "Administrar o cancelar en Google Play":"Bei Google Play verwalten oder kündigen",
 "Ahorra {n} %":"{n} % sparen",
@@ -80962,6 +81151,30 @@ DIC_L.de=function(){return{
 };};;
 /* ITALIANO · # = un numero che il programma inserisce · @ = il simbolo di una moneta */
 DIC_L.it=function(){return{
+/* v101 · instalar desde la entrada de la PC */
+"Primero instale el programa en su computadora: un solo clic, y queda con su propio icono.":"Per prima cosa installi il programma sul suo computer: basta un clic, e avrà la sua icona.",
+"Después, inicie sesión con su cuenta de Google.":"Poi acceda con il suo account Google.",
+"Ya está instalado":"Installato",
+"Ábralo desde su icono nuevo y entre con su cuenta de Google. Ya puede cerrar esta pestaña.":"Lo apra dalla nuova icona e acceda con il suo account Google. Ora può chiudere questa scheda.",
+"Seguir aquí, en el navegador":"Continuare qui, nel browser",
+"Para instalar el programa, abra este enlace en Chrome o Edge y pulse el icono de instalar que sale al final de la barra de direcciones. Si ya lo instaló, ábralo desde su icono.":"Per installare il programma, apra questo link in Chrome o Edge e clicchi sull'icona di installazione che compare in fondo alla barra degli indirizzi. Se l'ha già installato, lo apra dalla sua icona.",
+"Ábrala en su computadora con este enlace, pulse «Instalar como aplicación» e inicie sesión con la misma cuenta de Google.":"La apra sul suo computer con questo link, clicchi su «Installare come applicazione» e acceda con lo stesso account Google.",
+/* v100 · hoja Pro más completa, Excel en Pro */
+"Más de 100 patrones chartistas automáticos":"Più di 100 pattern grafici automatici",
+"Excel con todo su historial":"Excel con tutto il suo storico",
+"Descargue sus movimientos y operaciones en una hoja de cálculo":"Scarichi movimenti e operazioni in un foglio di calcolo",
+"Qué incluye cada plan":"Cosa include ogni piano",
+"Gratis":"Gratuito",
+"Portafolio, Spot y Futuros":"Portafoglio, Spot e Futures",
+"Gráficas con dibujo a mano":"Grafici con disegno a mano",
+"Indicadores a la vez":"Indicatori contemporaneamente",
+"Hasta 3":"Fino a 3",
+"Leer y trazar a mano":"Leggere e tracciare a mano",
+"Más de 100 automáticos":"Più di 100 automatici",
+"PDF y copia de seguridad":"PDF e copia di sicurezza",
+"Descargar el Excel con todo su historial es parte de Pro. El PDF, imprimir y la copia de seguridad siguen siendo gratis.":"Scaricare l'Excel con tutto il suo storico fa parte di Pro. Il PDF, la stampa e la copia di sicurezza restano gratuiti.",
+"Incluye Backtesting, más de 100 patrones automáticos, todos los indicadores, Excel y la versión para PC.":"Include Backtesting, più di 100 pattern grafici automatici, tutti gli indicatori, Excel e la versione per PC.",
+"Backtesting, más de 100 patrones chartistas automáticos, todos los indicadores a la vez, Excel y la versión para PC.":"Backtesting, più di 100 pattern grafici automatici, tutti gli indicatori contemporaneamente, Excel e la versione per PC.",
 /* v99 · suscripción Pro y avisos */
 "Administrar o cancelar en Google Play":"Gestire o annullare su Google Play",
 "Ahorra {n} %":"Risparmio del {n} %",
@@ -87857,6 +88070,30 @@ DIC_L.it=function(){return{
 };};;
 /* NEDERLANDS · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC_L.nl=function(){return{
+/* v101 · instalar desde la entrada de la PC */
+"Primero instale el programa en su computadora: un solo clic, y queda con su propio icono.":"Installeer eerst het programma op uw computer: één klik, en het krijgt een eigen pictogram.",
+"Después, inicie sesión con su cuenta de Google.":"Meld u daarna aan met uw Google-account.",
+"Ya está instalado":"Geïnstalleerd",
+"Ábralo desde su icono nuevo y entre con su cuenta de Google. Ya puede cerrar esta pestaña.":"Open het via het nieuwe pictogram en meld u aan met uw Google-account. U kunt dit tabblad nu sluiten.",
+"Seguir aquí, en el navegador":"Hier blijven, in de browser",
+"Para instalar el programa, abra este enlace en Chrome o Edge y pulse el icono de instalar que sale al final de la barra de direcciones. Si ya lo instaló, ábralo desde su icono.":"Om het programma te installeren, opent u deze link in Chrome of Edge en klikt u op het installatiepictogram aan het einde van de adresbalk. Hebt u het al geïnstalleerd, open het dan via het pictogram.",
+"Ábrala en su computadora con este enlace, pulse «Instalar como aplicación» e inicie sesión con la misma cuenta de Google.":"Open de PC-versie op uw computer met deze link, klik op ‘Installeren als app’ en meld u aan met hetzelfde Google-account.",
+/* v100 · hoja Pro más completa, Excel en Pro */
+"Más de 100 patrones chartistas automáticos":"Meer dan 100 automatische grafiekpatronen",
+"Excel con todo su historial":"Excel met uw volledige geschiedenis",
+"Descargue sus movimientos y operaciones en una hoja de cálculo":"Download uw mutaties en posities als spreadsheet",
+"Qué incluye cada plan":"Wat elk plan bevat",
+"Gratis":"Gratis",
+"Portafolio, Spot y Futuros":"Portfolio, Spot en Futures",
+"Gráficas con dibujo a mano":"Grafieken met handmatig tekenen",
+"Indicadores a la vez":"Indicatoren tegelijk",
+"Hasta 3":"Maximaal 3",
+"Leer y trazar a mano":"Lezen en met de hand intekenen",
+"Más de 100 automáticos":"Meer dan 100 automatisch",
+"PDF y copia de seguridad":"PDF en back-up",
+"Descargar el Excel con todo su historial es parte de Pro. El PDF, imprimir y la copia de seguridad siguen siendo gratis.":"Excel downloaden met uw volledige geschiedenis hoort bij Pro. De PDF, afdrukken en de back-up blijven gratis.",
+"Incluye Backtesting, más de 100 patrones automáticos, todos los indicadores, Excel y la versión para PC.":"Bevat Backtesting, meer dan 100 automatische grafiekpatronen, alle indicatoren, Excel en de PC-versie.",
+"Backtesting, más de 100 patrones chartistas automáticos, todos los indicadores a la vez, Excel y la versión para PC.":"Backtesting, meer dan 100 automatische grafiekpatronen, alle indicatoren tegelijk, Excel en de PC-versie.",
 /* v99 · suscripción Pro y avisos */
 "Administrar o cancelar en Google Play":"Beheren of opzeggen in Google Play",
 "Ahorra {n} %":"Bespaar {n} %",
@@ -95025,6 +95262,30 @@ DIC_L.nl=function(){return{
 };};;
 /* POLSKI · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC_L.pl=function(){return{
+/* v101 · instalar desde la entrada de la PC */
+"Primero instale el programa en su computadora: un solo clic, y queda con su propio icono.":"Najpierw proszę zainstalować program na komputerze: jedno kliknięcie, a program dostanie własną ikonę.",
+"Después, inicie sesión con su cuenta de Google.":"Następnie proszę zalogować się na konto Google.",
+"Ya está instalado":"Zainstalowano",
+"Ábralo desde su icono nuevo y entre con su cuenta de Google. Ya puede cerrar esta pestaña.":"Proszę otworzyć go z nowej ikony i zalogować się na konto Google. Tę kartę można już zamknąć.",
+"Seguir aquí, en el navegador":"Zostań tutaj, w przeglądarce",
+"Para instalar el programa, abra este enlace en Chrome o Edge y pulse el icono de instalar que sale al final de la barra de direcciones. Si ya lo instaló, ábralo desde su icono.":"Aby zainstalować program, proszę otworzyć ten link w Chrome lub Edge i kliknąć ikonę instalacji na końcu paska adresu. Jeśli program jest już zainstalowany, proszę otworzyć go z jego ikony.",
+"Ábrala en su computadora con este enlace, pulse «Instalar como aplicación» e inicie sesión con la misma cuenta de Google.":"Proszę otworzyć ją na komputerze za pomocą tego linku, kliknąć „Zainstaluj jako aplikację” i zalogować się na to samo konto Google.",
+/* v100 · hoja Pro más completa, Excel en Pro */
+"Más de 100 patrones chartistas automáticos":"Ponad 100 automatycznych formacji wykresowych",
+"Excel con todo su historial":"Excel z pełną historią",
+"Descargue sus movimientos y operaciones en una hoja de cálculo":"Pobierz ruchy i operacje do arkusza kalkulacyjnego",
+"Qué incluye cada plan":"Co zawiera każdy plan",
+"Gratis":"Bezpłatny",
+"Portafolio, Spot y Futuros":"Portfel, Spot i Futures",
+"Gráficas con dibujo a mano":"Wykresy z rysowaniem ręcznym",
+"Indicadores a la vez":"Wskaźniki naraz",
+"Hasta 3":"Do 3",
+"Leer y trazar a mano":"Czytanie i rysowanie ręczne",
+"Más de 100 automáticos":"Ponad 100 automatycznych",
+"PDF y copia de seguridad":"PDF i kopia zapasowa",
+"Descargar el Excel con todo su historial es parte de Pro. El PDF, imprimir y la copia de seguridad siguen siendo gratis.":"Pobranie pliku Excel z pełną historią to część Pro. PDF, drukowanie i kopia zapasowa nadal są bezpłatne.",
+"Incluye Backtesting, más de 100 patrones automáticos, todos los indicadores, Excel y la versión para PC.":"Obejmuje Backtesting, ponad 100 automatycznych formacji wykresowych, wszystkie wskaźniki, Excel i wersję na PC.",
+"Backtesting, más de 100 patrones chartistas automáticos, todos los indicadores a la vez, Excel y la versión para PC.":"Backtesting, ponad 100 automatycznych formacji wykresowych, wszystkie wskaźniki naraz, Excel i wersja na PC.",
 /* v99 · suscripción Pro y avisos */
 "Administrar o cancelar en Google Play":"Zarządzaj lub anuluj w Google Play",
 "Ahorra {n} %":"Oszczędność {n} %",
@@ -102193,6 +102454,30 @@ DIC_L.pl=function(){return{
 };};;
 /* TÜRKÇE · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC_L.tr=function(){return{
+/* v101 · instalar desde la entrada de la PC */
+"Primero instale el programa en su computadora: un solo clic, y queda con su propio icono.":"Önce programı bilgisayarınıza yükleyin: tek tıklama yeter, kendi simgesiyle gelir.",
+"Después, inicie sesión con su cuenta de Google.":"Sonra Google hesabınızla giriş yapın.",
+"Ya está instalado":"Yüklendi",
+"Ábralo desde su icono nuevo y entre con su cuenta de Google. Ya puede cerrar esta pestaña.":"Yeni simgesinden açın ve Google hesabınızla giriş yapın. Bu sekmeyi artık kapatabilirsiniz.",
+"Seguir aquí, en el navegador":"Burada, tarayıcıda devam et",
+"Para instalar el programa, abra este enlace en Chrome o Edge y pulse el icono de instalar que sale al final de la barra de direcciones. Si ya lo instaló, ábralo desde su icono.":"Programı yüklemek için bu bağlantıyı Chrome veya Edge'de açın ve adres çubuğunun sonundaki yükleme simgesine tıklayın. Zaten yüklediyseniz simgesinden açın.",
+"Ábrala en su computadora con este enlace, pulse «Instalar como aplicación» e inicie sesión con la misma cuenta de Google.":"Bu bağlantıyla bilgisayarınızda açın, “Uygulama olarak yükle”ye tıklayın ve aynı Google hesabıyla giriş yapın.",
+/* v100 · hoja Pro más completa, Excel en Pro */
+"Más de 100 patrones chartistas automáticos":"100'den fazla otomatik grafik formasyonu",
+"Excel con todo su historial":"Tüm geçmişinizle Excel",
+"Descargue sus movimientos y operaciones en una hoja de cálculo":"Hareketlerinizi ve işlemlerinizi bir hesap tablosu olarak indirin",
+"Qué incluye cada plan":"Her planın içeriği",
+"Gratis":"Ücretsiz",
+"Portafolio, Spot y Futuros":"Portföy, Spot ve Vadeli",
+"Gráficas con dibujo a mano":"Elle çizimli grafikler",
+"Indicadores a la vez":"Aynı anda göstergeler",
+"Hasta 3":"En fazla 3",
+"Leer y trazar a mano":"Okuma ve elle çizim",
+"Más de 100 automáticos":"100'den fazla otomatik",
+"PDF y copia de seguridad":"PDF ve yedek",
+"Descargar el Excel con todo su historial es parte de Pro. El PDF, imprimir y la copia de seguridad siguen siendo gratis.":"Tüm geçmişinizle Excel indirmek Pro'nun parçasıdır. PDF, yazdırma ve yedek ücretsiz olmaya devam eder.",
+"Incluye Backtesting, más de 100 patrones automáticos, todos los indicadores, Excel y la versión para PC.":"Backtesting, 100'den fazla otomatik grafik formasyonu, tüm göstergeler, Excel ve PC sürümünü içerir.",
+"Backtesting, más de 100 patrones chartistas automáticos, todos los indicadores a la vez, Excel y la versión para PC.":"Backtesting, 100'den fazla otomatik grafik formasyonu, tüm göstergeler aynı anda, Excel ve PC sürümü.",
 /* v99 · suscripción Pro y avisos */
 "Administrar o cancelar en Google Play":"Google Play'de yönet veya iptal et",
 "Ahorra {n} %":"% {n} tasarruf",
@@ -109361,6 +109646,30 @@ DIC_L.tr=function(){return{
 };};;
 /* РУССКИЙ · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC_L.ru=function(){return{
+/* v101 · instalar desde la entrada de la PC */
+"Primero instale el programa en su computadora: un solo clic, y queda con su propio icono.":"Сначала установите программу на свой компьютер: один щелчок — и у неё появится собственный значок.",
+"Después, inicie sesión con su cuenta de Google.":"Затем войдите в свой аккаунт Google.",
+"Ya está instalado":"Установлено",
+"Ábralo desde su icono nuevo y entre con su cuenta de Google. Ya puede cerrar esta pestaña.":"Откройте её по новому значку и войдите в свой аккаунт Google. Эту вкладку теперь можно закрыть.",
+"Seguir aquí, en el navegador":"Остаться здесь, в браузере",
+"Para instalar el programa, abra este enlace en Chrome o Edge y pulse el icono de instalar que sale al final de la barra de direcciones. Si ya lo instaló, ábralo desde su icono.":"Чтобы установить программу, откройте эту ссылку в Chrome или Edge и нажмите значок установки в конце адресной строки. Если вы уже установили программу, откройте её по значку.",
+"Ábrala en su computadora con este enlace, pulse «Instalar como aplicación» e inicie sesión con la misma cuenta de Google.":"Откройте её на компьютере по этой ссылке, нажмите «Установить как приложение» и войдите в тот же аккаунт Google.",
+/* v100 · hoja Pro más completa, Excel en Pro */
+"Más de 100 patrones chartistas automáticos":"Более 100 графических паттернов автоматически",
+"Excel con todo su historial":"Excel со всей вашей историей",
+"Descargue sus movimientos y operaciones en una hoja de cálculo":"Скачайте операции и сделки в виде таблицы",
+"Qué incluye cada plan":"Что входит в каждый план",
+"Gratis":"Бесплатно",
+"Portafolio, Spot y Futuros":"Портфель, Спот и Фьючерсы",
+"Gráficas con dibujo a mano":"Графики с ручным рисованием",
+"Indicadores a la vez":"Индикаторы одновременно",
+"Hasta 3":"До 3",
+"Leer y trazar a mano":"Читать и рисовать вручную",
+"Más de 100 automáticos":"Более 100 автоматических",
+"PDF y copia de seguridad":"PDF и резервная копия",
+"Descargar el Excel con todo su historial es parte de Pro. El PDF, imprimir y la copia de seguridad siguen siendo gratis.":"Скачивание Excel со всей вашей историей входит в Pro. PDF, печать и резервная копия по-прежнему бесплатны.",
+"Incluye Backtesting, más de 100 patrones automáticos, todos los indicadores, Excel y la versión para PC.":"Включает бэктестинг, более 100 автоматических графических паттернов, все индикаторы, Excel и версию для ПК.",
+"Backtesting, más de 100 patrones chartistas automáticos, todos los indicadores a la vez, Excel y la versión para PC.":"Бэктестинг, более 100 автоматических графических паттернов, все индикаторы одновременно, Excel и версия для ПК.",
 /* v99 · suscripción Pro y avisos */
 "Administrar o cancelar en Google Play":"Управление и отмена подписки в Google Play",
 "Ahorra {n} %":"Экономия {n} %",
@@ -116529,6 +116838,30 @@ DIC_L.ru=function(){return{
 };};;
 /* УКРАЇНСЬКА · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC_L.uk=function(){return{
+/* v101 · instalar desde la entrada de la PC */
+"Primero instale el programa en su computadora: un solo clic, y queda con su propio icono.":"Спершу встановіть програму на свій комп'ютер: один клац — і в неї з'явиться власна піктограма.",
+"Después, inicie sesión con su cuenta de Google.":"Потім увійдіть у свій акаунт Google.",
+"Ya está instalado":"Встановлено",
+"Ábralo desde su icono nuevo y entre con su cuenta de Google. Ya puede cerrar esta pestaña.":"Відкрийте її через нову піктограму та увійдіть у свій акаунт Google. Цю вкладку тепер можна закрити.",
+"Seguir aquí, en el navegador":"Залишитися тут, у браузері",
+"Para instalar el programa, abra este enlace en Chrome o Edge y pulse el icono de instalar que sale al final de la barra de direcciones. Si ya lo instaló, ábralo desde su icono.":"Щоб встановити програму, відкрийте це посилання в Chrome або Edge і натисніть піктограму встановлення в кінці адресного рядка. Якщо ви вже встановили програму, відкрийте її через піктограму програми.",
+"Ábrala en su computadora con este enlace, pulse «Instalar como aplicación» e inicie sesión con la misma cuenta de Google.":"Відкрийте її на комп'ютері за цим посиланням, натисніть «Встановити як застосунок» та увійдіть у той самий акаунт Google.",
+/* v100 · hoja Pro más completa, Excel en Pro */
+"Más de 100 patrones chartistas automáticos":"Понад 100 графічних патернів автоматично",
+"Excel con todo su historial":"Excel з усією вашою історією",
+"Descargue sus movimientos y operaciones en una hoja de cálculo":"Завантажте операції та угоди у вигляді таблиці",
+"Qué incluye cada plan":"Що входить у кожен план",
+"Gratis":"Безкоштовно",
+"Portafolio, Spot y Futuros":"Портфель, Спот і Ф'ючерси",
+"Gráficas con dibujo a mano":"Графіки з ручним малюванням",
+"Indicadores a la vez":"Індикатори одночасно",
+"Hasta 3":"До 3",
+"Leer y trazar a mano":"Читати й малювати вручну",
+"Más de 100 automáticos":"Понад 100 автоматичних",
+"PDF y copia de seguridad":"PDF і резервна копія",
+"Descargar el Excel con todo su historial es parte de Pro. El PDF, imprimir y la copia de seguridad siguen siendo gratis.":"Завантаження Excel з усією вашою історією входить до Pro. PDF, друк і резервна копія, як і раніше, безкоштовні.",
+"Incluye Backtesting, más de 100 patrones automáticos, todos los indicadores, Excel y la versión para PC.":"Включає бектестинг, понад 100 автоматичних графічних патернів, усі індикатори, Excel та версію для ПК.",
+"Backtesting, más de 100 patrones chartistas automáticos, todos los indicadores a la vez, Excel y la versión para PC.":"Бектестинг, понад 100 автоматичних графічних патернів, усі індикатори одночасно, Excel та версія для ПК.",
 /* v99 · suscripción Pro y avisos */
 "Administrar o cancelar en Google Play":"Керування та скасування підписки в Google Play",
 "Ahorra {n} %":"Економія {n} %",
@@ -123697,6 +124030,30 @@ DIC_L.uk=function(){return{
 };};;
 /* BAHASA INDONESIA · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC_L.id=function(){return{
+/* v101 · instalar desde la entrada de la PC */
+"Primero instale el programa en su computadora: un solo clic, y queda con su propio icono.":"Pertama, pasang programnya di komputer Anda: cukup satu klik, dan programnya akan punya ikon sendiri.",
+"Después, inicie sesión con su cuenta de Google.":"Lalu, masuk dengan akun Google Anda.",
+"Ya está instalado":"Sudah terpasang",
+"Ábralo desde su icono nuevo y entre con su cuenta de Google. Ya puede cerrar esta pestaña.":"Buka dari ikon barunya dan masuk dengan akun Google Anda. Tab ini sekarang boleh ditutup.",
+"Seguir aquí, en el navegador":"Tetap di sini, di browser",
+"Para instalar el programa, abra este enlace en Chrome o Edge y pulse el icono de instalar que sale al final de la barra de direcciones. Si ya lo instaló, ábralo desde su icono.":"Untuk memasang programnya, buka tautan ini di Chrome atau Edge lalu klik ikon pasang di ujung bilah alamat. Jika sudah dipasang, buka dari ikonnya.",
+"Ábrala en su computadora con este enlace, pulse «Instalar como aplicación» e inicie sesión con la misma cuenta de Google.":"Buka di komputer Anda dengan tautan ini, klik “Pasang sebagai aplikasi”, lalu masuk dengan akun Google yang sama.",
+/* v100 · hoja Pro más completa, Excel en Pro */
+"Más de 100 patrones chartistas automáticos":"Lebih dari 100 pola grafik otomatis",
+"Excel con todo su historial":"Excel dengan seluruh riwayat Anda",
+"Descargue sus movimientos y operaciones en una hoja de cálculo":"Unduh mutasi dan transaksi Anda dalam spreadsheet",
+"Qué incluye cada plan":"Isi setiap paket",
+"Gratis":"Gratis",
+"Portafolio, Spot y Futuros":"Portofolio, Spot, dan Futures",
+"Gráficas con dibujo a mano":"Grafik dengan gambar manual",
+"Indicadores a la vez":"Indikator sekaligus",
+"Hasta 3":"Hingga 3",
+"Leer y trazar a mano":"Baca dan gambar manual",
+"Más de 100 automáticos":"Lebih dari 100 otomatis",
+"PDF y copia de seguridad":"PDF dan cadangan",
+"Descargar el Excel con todo su historial es parte de Pro. El PDF, imprimir y la copia de seguridad siguen siendo gratis.":"Mengunduh Excel dengan seluruh riwayat Anda adalah bagian dari Pro. PDF, cetak, dan cadangan tetap gratis.",
+"Incluye Backtesting, más de 100 patrones automáticos, todos los indicadores, Excel y la versión para PC.":"Termasuk Backtesting, lebih dari 100 pola grafik otomatis, semua indikator, Excel, dan versi PC.",
+"Backtesting, más de 100 patrones chartistas automáticos, todos los indicadores a la vez, Excel y la versión para PC.":"Backtesting, lebih dari 100 pola grafik otomatis, semua indikator sekaligus, Excel, dan versi PC.",
 /* v99 · suscripción Pro y avisos */
 "Administrar o cancelar en Google Play":"Kelola atau batalkan di Google Play",
 "Ahorra {n} %":"Hemat {n} %",
@@ -130865,6 +131222,30 @@ DIC_L.id=function(){return{
 };};;
 /* TIẾNG VIỆT · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC_L.vi=function(){return{
+/* v101 · instalar desde la entrada de la PC */
+"Primero instale el programa en su computadora: un solo clic, y queda con su propio icono.":"Trước tiên, hãy cài đặt chương trình trên máy tính của bạn: chỉ cần một cú nhấp, chương trình sẽ có biểu tượng riêng.",
+"Después, inicie sesión con su cuenta de Google.":"Sau đó, hãy đăng nhập bằng tài khoản Google của bạn.",
+"Ya está instalado":"Đã cài đặt",
+"Ábralo desde su icono nuevo y entre con su cuenta de Google. Ya puede cerrar esta pestaña.":"Hãy mở chương trình từ biểu tượng mới và đăng nhập bằng tài khoản Google của bạn. Bây giờ bạn có thể đóng thẻ này.",
+"Seguir aquí, en el navegador":"Ở lại đây, trong trình duyệt",
+"Para instalar el programa, abra este enlace en Chrome o Edge y pulse el icono de instalar que sale al final de la barra de direcciones. Si ya lo instaló, ábralo desde su icono.":"Để cài đặt chương trình, hãy mở liên kết này trong Chrome hoặc Edge rồi nhấp vào biểu tượng cài đặt ở cuối thanh địa chỉ. Nếu đã cài rồi, hãy mở từ biểu tượng của chương trình.",
+"Ábrala en su computadora con este enlace, pulse «Instalar como aplicación» e inicie sesión con la misma cuenta de Google.":"Hãy mở trên máy tính của bạn bằng liên kết này, nhấp vào “Cài đặt như ứng dụng” rồi đăng nhập bằng cùng tài khoản Google.",
+/* v100 · hoja Pro más completa, Excel en Pro */
+"Más de 100 patrones chartistas automáticos":"Hơn 100 mẫu hình biểu đồ tự động",
+"Excel con todo su historial":"Excel với toàn bộ lịch sử của bạn",
+"Descargue sus movimientos y operaciones en una hoja de cálculo":"Tải giao dịch và lệnh của bạn xuống dạng bảng tính",
+"Qué incluye cada plan":"Mỗi gói gồm những gì",
+"Gratis":"Miễn phí",
+"Portafolio, Spot y Futuros":"Danh mục, Spot và Futures",
+"Gráficas con dibujo a mano":"Biểu đồ có vẽ bằng tay",
+"Indicadores a la vez":"Chỉ báo cùng lúc",
+"Hasta 3":"Tối đa 3",
+"Leer y trazar a mano":"Đọc và vẽ bằng tay",
+"Más de 100 automáticos":"Hơn 100 tự động",
+"PDF y copia de seguridad":"PDF và bản sao lưu",
+"Descargar el Excel con todo su historial es parte de Pro. El PDF, imprimir y la copia de seguridad siguen siendo gratis.":"Tải Excel với toàn bộ lịch sử là một phần của Pro. PDF, in và bản sao lưu vẫn miễn phí.",
+"Incluye Backtesting, más de 100 patrones automáticos, todos los indicadores, Excel y la versión para PC.":"Bao gồm Backtesting, hơn 100 mẫu hình biểu đồ tự động, tất cả chỉ báo, Excel và phiên bản PC.",
+"Backtesting, más de 100 patrones chartistas automáticos, todos los indicadores a la vez, Excel y la versión para PC.":"Backtesting, hơn 100 mẫu hình biểu đồ tự động, tất cả chỉ báo cùng lúc, Excel và phiên bản PC.",
 /* v99 · suscripción Pro y avisos */
 "Administrar o cancelar en Google Play":"Quản lý hoặc hủy trên Google Play",
 "Ahorra {n} %":"Tiết kiệm {n} %",
@@ -138033,6 +138414,30 @@ DIC_L.vi=function(){return{
 };};;
 /* हिन्दी · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC_L.hi=function(){return{
+/* v101 · instalar desde la entrada de la PC */
+"Primero instale el programa en su computadora: un solo clic, y queda con su propio icono.":"पहले अपने कंप्यूटर पर प्रोग्राम इंस्टॉल करें: बस एक क्लिक, और उसका अपना आइकन बन जाएगा।",
+"Después, inicie sesión con su cuenta de Google.":"फिर अपने Google खाते से साइन इन करें।",
+"Ya está instalado":"इंस्टॉल हो गया",
+"Ábralo desde su icono nuevo y entre con su cuenta de Google. Ya puede cerrar esta pestaña.":"इसे नए आइकन से खोलें और अपने Google खाते से साइन इन करें। अब आप यह टैब बंद कर सकते हैं।",
+"Seguir aquí, en el navegador":"यहीं, ब्राउज़र में रहें",
+"Para instalar el programa, abra este enlace en Chrome o Edge y pulse el icono de instalar que sale al final de la barra de direcciones. Si ya lo instaló, ábralo desde su icono.":"प्रोग्राम इंस्टॉल करने के लिए इस लिंक को Chrome या Edge में खोलें और एड्रेस बार के आख़िर में दिखने वाले इंस्टॉल आइकन पर क्लिक करें। अगर आप इसे पहले ही इंस्टॉल कर चुके हैं, तो इसके आइकन से खोलें।",
+"Ábrala en su computadora con este enlace, pulse «Instalar como aplicación» e inicie sesión con la misma cuenta de Google.":"इसे अपने कंप्यूटर पर इस लिंक से खोलें, “ऐप के रूप में इंस्टॉल करें” पर क्लिक करें और उसी Google खाते से साइन इन करें।",
+/* v100 · hoja Pro más completa, Excel en Pro */
+"Más de 100 patrones chartistas automáticos":"100 से ज़्यादा अपने-आप बनने वाले चार्ट पैटर्न",
+"Excel con todo su historial":"पूरे इतिहास वाला Excel",
+"Descargue sus movimientos y operaciones en una hoja de cálculo":"अपने लेन-देन और ट्रेड स्प्रेडशीट में डाउनलोड करें",
+"Qué incluye cada plan":"हर प्लान में क्या शामिल है",
+"Gratis":"मुफ़्त",
+"Portafolio, Spot y Futuros":"पोर्टफोलियो, स्पॉट और फ्यूचर्स",
+"Gráficas con dibujo a mano":"हाथ से ड्रॉइंग वाले चार्ट",
+"Indicadores a la vez":"एक साथ इंडिकेटर",
+"Hasta 3":"अधिकतम 3",
+"Leer y trazar a mano":"पढ़ें और हाथ से खींचें",
+"Más de 100 automáticos":"100 से ज़्यादा स्वचालित",
+"PDF y copia de seguridad":"PDF और बैकअप",
+"Descargar el Excel con todo su historial es parte de Pro. El PDF, imprimir y la copia de seguridad siguen siendo gratis.":"पूरे इतिहास वाला Excel डाउनलोड करना Pro का हिस्सा है। PDF, प्रिंट और बैकअप अब भी मुफ़्त हैं।",
+"Incluye Backtesting, más de 100 patrones automáticos, todos los indicadores, Excel y la versión para PC.":"इसमें बैकटेस्टिंग, 100 से ज़्यादा अपने-आप बनने वाले चार्ट पैटर्न, सभी इंडिकेटर, Excel और PC वर्ज़न शामिल हैं।",
+"Backtesting, más de 100 patrones chartistas automáticos, todos los indicadores a la vez, Excel y la versión para PC.":"बैकटेस्टिंग, 100 से ज़्यादा अपने-आप बनने वाले चार्ट पैटर्न, सभी इंडिकेटर एक साथ, Excel और PC वर्ज़न।",
 /* v99 · suscripción Pro y avisos */
 "Administrar o cancelar en Google Play":"Google Play में मैनेज करें या रद्द करें",
 "Ahorra {n} %":"{n} % बचाएँ",
@@ -145201,6 +145606,30 @@ DIC_L.hi=function(){return{
 };};;
 /* 日本語 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC_L.ja=function(){return{
+/* v101 · instalar desde la entrada de la PC */
+"Primero instale el programa en su computadora: un solo clic, y queda con su propio icono.":"まず、パソコンにプログラムをインストールしてください。ワンクリックで、専用のアイコンができます。",
+"Después, inicie sesión con su cuenta de Google.":"次に、Googleアカウントでログインしてください。",
+"Ya está instalado":"インストールしました",
+"Ábralo desde su icono nuevo y entre con su cuenta de Google. Ya puede cerrar esta pestaña.":"新しいアイコンから開いて、Googleアカウントでログインしてください。このタブは閉じても問題ありません。",
+"Seguir aquí, en el navegador":"ブラウザのままここで続ける",
+"Para instalar el programa, abra este enlace en Chrome o Edge y pulse el icono de instalar que sale al final de la barra de direcciones. Si ya lo instaló, ábralo desde su icono.":"プログラムをインストールするには、このリンクをChromeまたはEdgeで開き、アドレスバーの右端に表示されるインストールのアイコンをクリックしてください。すでにインストール済みの場合は、プログラムのアイコンから開いてください。",
+"Ábrala en su computadora con este enlace, pulse «Instalar como aplicación» e inicie sesión con la misma cuenta de Google.":"このリンクからパソコンで開き、「アプリとしてインストール」をクリックして、同じGoogleアカウントでログインしてください。",
+/* v100 · hoja Pro más completa, Excel en Pro */
+"Más de 100 patrones chartistas automáticos":"100種類以上の自動チャートパターン",
+"Excel con todo su historial":"全履歴入りのExcel",
+"Descargue sus movimientos y operaciones en una hoja de cálculo":"入出金と取引をスプレッドシートでダウンロード",
+"Qué incluye cada plan":"各プランの内容",
+"Gratis":"無料",
+"Portafolio, Spot y Futuros":"ポートフォリオ・現物・先物",
+"Gráficas con dibujo a mano":"手描きできるチャート",
+"Indicadores a la vez":"インジケーターの同時表示",
+"Hasta 3":"最大3つ",
+"Leer y trazar a mano":"読む・手で描く",
+"Más de 100 automáticos":"100種類以上（自動）",
+"PDF y copia de seguridad":"PDFとバックアップ",
+"Descargar el Excel con todo su historial es parte de Pro. El PDF, imprimir y la copia de seguridad siguen siendo gratis.":"全履歴入りのExcelのダウンロードはProの機能です。PDF、印刷、バックアップは引き続き無料です。",
+"Incluye Backtesting, más de 100 patrones automáticos, todos los indicadores, Excel y la versión para PC.":"バックテスト、100種類以上の自動チャートパターン、すべてのインジケーター、Excel、PC版が含まれます。",
+"Backtesting, más de 100 patrones chartistas automáticos, todos los indicadores a la vez, Excel y la versión para PC.":"バックテスト、100種類以上の自動チャートパターン、すべてのインジケーターの同時表示、Excel、そしてPC版。",
 /* v99 · suscripción Pro y avisos */
 "Administrar o cancelar en Google Play":"Google Playで管理・解約",
 "Ahorra {n} %":"{n} %お得",
@@ -152369,6 +152798,30 @@ DIC_L.ja=function(){return{
 };};;
 /* 한국어 · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC_L.ko=function(){return{
+/* v101 · instalar desde la entrada de la PC */
+"Primero instale el programa en su computadora: un solo clic, y queda con su propio icono.":"먼저 컴퓨터에 프로그램을 설치하세요. 한 번만 클릭하면 전용 아이콘이 생깁니다.",
+"Después, inicie sesión con su cuenta de Google.":"그다음 Google 계정으로 로그인하세요.",
+"Ya está instalado":"설치되었습니다",
+"Ábralo desde su icono nuevo y entre con su cuenta de Google. Ya puede cerrar esta pestaña.":"새 아이콘으로 열고 Google 계정으로 로그인하세요. 이제 이 탭은 닫아도 됩니다.",
+"Seguir aquí, en el navegador":"브라우저에서 계속하기",
+"Para instalar el programa, abra este enlace en Chrome o Edge y pulse el icono de instalar que sale al final de la barra de direcciones. Si ya lo instaló, ábralo desde su icono.":"프로그램을 설치하려면 이 링크를 Chrome이나 Edge에서 열고 주소 표시줄 끝에 나오는 설치 아이콘을 누르세요. 이미 설치했다면 프로그램 아이콘으로 여세요.",
+"Ábrala en su computadora con este enlace, pulse «Instalar como aplicación» e inicie sesión con la misma cuenta de Google.":"이 링크로 컴퓨터에서 열고 “앱으로 설치”를 누른 다음 같은 Google 계정으로 로그인하세요.",
+/* v100 · hoja Pro más completa, Excel en Pro */
+"Más de 100 patrones chartistas automáticos":"100개 이상의 자동 차트 패턴",
+"Excel con todo su historial":"전체 내역이 담긴 Excel",
+"Descargue sus movimientos y operaciones en una hoja de cálculo":"입출금과 거래를 스프레드시트로 다운로드하세요",
+"Qué incluye cada plan":"플랜별 포함 내용",
+"Gratis":"무료",
+"Portafolio, Spot y Futuros":"포트폴리오·현물·선물",
+"Gráficas con dibujo a mano":"직접 그리는 차트",
+"Indicadores a la vez":"지표 동시 사용",
+"Hasta 3":"최대 3개",
+"Leer y trazar a mano":"읽기와 직접 그리기",
+"Más de 100 automáticos":"100개 이상 (자동)",
+"PDF y copia de seguridad":"PDF와 백업",
+"Descargar el Excel con todo su historial es parte de Pro. El PDF, imprimir y la copia de seguridad siguen siendo gratis.":"전체 내역이 담긴 Excel 다운로드는 Pro에 포함됩니다. PDF, 인쇄, 백업은 계속 무료입니다.",
+"Incluye Backtesting, más de 100 patrones automáticos, todos los indicadores, Excel y la versión para PC.":"백테스트, 100개 이상의 자동 차트 패턴, 모든 지표, Excel, PC 버전이 포함됩니다.",
+"Backtesting, más de 100 patrones chartistas automáticos, todos los indicadores a la vez, Excel y la versión para PC.":"백테스트, 100개 이상의 자동 차트 패턴, 모든 지표 동시 사용, Excel, 그리고 PC 버전.",
 /* v99 · suscripción Pro y avisos */
 "Administrar o cancelar en Google Play":"Google Play에서 관리 또는 해지",
 "Ahorra {n} %":"{n} % 절약",
@@ -159537,6 +159990,30 @@ DIC_L.ko=function(){return{
 };};;
 /* 中文（简体） · v38 · # = número que pone el programa · @ = símbolo de una moneda */
 DIC_L.zh=function(){return{
+/* v101 · instalar desde la entrada de la PC */
+"Primero instale el programa en su computadora: un solo clic, y queda con su propio icono.":"请先在电脑上安装该程序：只需点击一下，就会生成它自己的图标。",
+"Después, inicie sesión con su cuenta de Google.":"然后用您的 Google 账号登录。",
+"Ya está instalado":"已安装",
+"Ábralo desde su icono nuevo y entre con su cuenta de Google. Ya puede cerrar esta pestaña.":"请从新图标打开，并用您的 Google 账号登录。现在可以关闭此标签页。",
+"Seguir aquí, en el navegador":"留在这里，继续使用浏览器",
+"Para instalar el programa, abra este enlace en Chrome o Edge y pulse el icono de instalar que sale al final de la barra de direcciones. Si ya lo instaló, ábralo desde su icono.":"要安装该程序，请在 Chrome 或 Edge 中打开此链接，然后点击地址栏末端的安装图标。如果已经安装，请从它的图标打开。",
+"Ábrala en su computadora con este enlace, pulse «Instalar como aplicación» e inicie sesión con la misma cuenta de Google.":"请在电脑上通过此链接打开，点击“安装为应用”，并用同一个 Google 账号登录。",
+/* v100 · hoja Pro más completa, Excel en Pro */
+"Más de 100 patrones chartistas automáticos":"超过 100 种自动图表形态",
+"Excel con todo su historial":"含完整历史记录的 Excel",
+"Descargue sus movimientos y operaciones en una hoja de cálculo":"将您的流水和交易下载为电子表格",
+"Qué incluye cada plan":"各方案包含的内容",
+"Gratis":"免费",
+"Portafolio, Spot y Futuros":"投资组合、现货和合约",
+"Gráficas con dibujo a mano":"可手动绘图的图表",
+"Indicadores a la vez":"同时使用的指标",
+"Hasta 3":"最多 3 个",
+"Leer y trazar a mano":"阅读并手动绘制",
+"Más de 100 automáticos":"超过 100 种（自动）",
+"PDF y copia de seguridad":"PDF 和备份",
+"Descargar el Excel con todo su historial es parte de Pro. El PDF, imprimir y la copia de seguridad siguen siendo gratis.":"下载含完整历史记录的 Excel 属于 Pro。PDF、打印和备份仍然免费。",
+"Incluye Backtesting, más de 100 patrones automáticos, todos los indicadores, Excel y la versión para PC.":"包含回测、超过 100 种自动图表形态、所有指标、Excel 和 PC 版。",
+"Backtesting, más de 100 patrones chartistas automáticos, todos los indicadores a la vez, Excel y la versión para PC.":"回测、超过 100 种自动图表形态、同时使用所有指标、Excel，以及 PC 版。",
 /* v99 · suscripción Pro y avisos */
 "Administrar o cancelar en Google Play":"在 Google Play 中管理或取消",
 "Ahorra {n} %":"立省 {n} %",
